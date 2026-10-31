@@ -16,9 +16,34 @@ jobs:
             - uses: shivammathur/setup-php@v2
               with:
                   php-version: ${{ matrix.php }}
-                  extensions: ctype, curl, dom, fileinfo, iconv, mbstring, xml, xmlwriter
+                  extensions: ctype, curl, dom, fileinfo, iconv, mbstring, pcntl, posix, xml, xmlwriter
                   tools: composer:v2
                   coverage: none
             - run: composer install --no-interaction --prefer-dist
             - run: composer check-platform-reqs
             - run: composer check
+
+    sandbox:
+        runs-on: ubuntu-24.04
+        timeout-minutes: 15
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.3'
+                  extensions: dom, mbstring, pcntl, posix, xml, xmlwriter
+                  tools: composer:v2
+                  coverage: none
+            # Test the library independently of Symfony and the root dependency graph.
+            - run: composer install --no-interaction --prefer-dist --working-dir=packages/php-code-mode
+            - run: composer test --working-dir=packages/php-code-mode
+            - name: Install the verified gVisor release on this disposable runner
+              run: sudo bash packages/php-code-mode/scripts/install-gvisor-ubuntu.sh
+            - name: Build and pin the isolated PHP image
+              run: |
+                  docker build -t php-code-mode-runner:proof packages/php-code-mode/runner
+                  echo "CODE_MODE_IMAGE=$(docker image inspect --format '{{.Id}}' php-code-mode-runner:proof)" >> "$GITHUB_ENV"
+            - run: composer test:sandbox --working-dir=packages/php-code-mode
+            - run: php packages/php-code-mode/examples/proof.php
