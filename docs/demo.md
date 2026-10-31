@@ -2,6 +2,8 @@
 
 The working slice is an editorial audit: check every published article for missing meta descriptions or hero-image alt text, with pagination, batched reads and a join between articles and media. It demonstrates orchestration in real PHP and authorization that stays outside generated code.
 
+The first judge-facing demo is **Symfony-only**: the Symfony application runs the agent and coordinates the PHP MCP fixture and isolated runner. Drupal is an optional follow-on demo using the same Composer package, not a prerequisite for this one.
+
 ## Run and inspect
 
 1. Install root Composer dependencies and set up the [dedicated gVisor host](../packages/php-code-mode/README.md#run-the-proof). Build the runner image, then configure its immutable `CODE_MODE_IMAGE`. For an alternate CLI, set `CODE_MODE_DOCKER_COMMAND` to a trusted JSON argv array. Symfony commands read these from `.env.local`; standalone package tests/examples need exported environment variables.
@@ -40,6 +42,8 @@ The server exposes `tools_search`, `tools_describe` and `php_execute`. Schemas a
 
 ## Drupal Tool API adapter
 
+This is a later integration; the first demo and its reference dataset run without Drupal.
+
 The integration uses [Tool API](https://www.drupal.org/project/tool), [MCP Server Tool Bridge](https://www.drupal.org/project/mcp_server_tool_bridge) and [Drupal MCP Server](https://www.drupal.org/project/mcp_server). The bridge exposes configured Tool API plugins and checks access against the MCP account. It does not itself provide the editorial audit tools: install or write read tools for published article metadata and media, with bounded pagination/batching and object access checks.
 
 Set up a dedicated read-only Drupal account and MCP authentication, configure the Tool Bridge mappings, and inspect the actual names and schemas returned by that site's `tools/list`. Copy only approved read tools into `.env.local`; the names below are placeholders, not guaranteed Drupal tool names:
@@ -62,7 +66,7 @@ The gateway preserves structured results, including Tool API envelopes such as `
 | 15–40 s | Run live Code Mode. Show discovery and actual model-generated PHP. Symfony AI drives the agent; the official SDK carries real MCP calls. |
 | 40–60 s | Open findings and the broker trace. Compare the verified direct run with identical batch-capable tools. Describe measured payload/provider totals without generalizing one run. |
 | 60–80 s | Show real denied-tool and timeout checks, then explain the host policy and gVisor boundary. |
-| 80–90 s | Show the Composer package and external MCP entry point; accurately describe the Drupal adapter's verified/unverified scope. |
+| 80–90 s | Show the reusable Composer package and Symfony integration. Mention Drupal briefly as a later demo built on the same foundation. |
 
 For a short guardrail demonstration, export the sandbox variables and run:
 
