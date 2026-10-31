@@ -9,7 +9,6 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class HealthController
 {
-    #[Route('/', name: 'app_home', methods: ['GET'])]
     #[Route('/health', name: 'app_health', methods: ['GET'])]
     public function __invoke(): JsonResponse
     {

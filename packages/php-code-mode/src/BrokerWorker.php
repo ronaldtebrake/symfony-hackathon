@@ -15,6 +15,9 @@ final class BrokerWorker
     /** @param list<string> $allowedTools */
     public function __construct(ToolBroker $broker, ExecutionIdentity $identity, array $allowedTools, private ExecutionLimits $limits)
     {
+        if ('cli' !== PHP_SAPI) {
+            throw new SandboxException('unsupported_host', 'Run the broker in a dedicated CLI worker.');
+        }
         $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
         if (false === $pair) {
             throw new SandboxException('broker_start', 'Cannot create broker channel.');

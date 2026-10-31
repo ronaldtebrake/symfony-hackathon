@@ -1,6 +1,6 @@
 # Security model and runtime decision
 
-Status: runner-and-broker proof, 31 October 2026. These tests demonstrate specific controls; they do not prove the absence of sandbox escapes or make this ready for anonymous multi-tenant hosting.
+Status: runner, broker and Code Mode demo proof, 31 October 2026. These tests demonstrate specific controls; they do not prove the absence of sandbox escapes or make this ready for anonymous multi-tenant hosting.
 
 ## Decision: native PHP in gVisor, deployed through Docker
 
@@ -26,13 +26,13 @@ flowchart LR
     A[Trusted CLI coordinator] -->|source over stdin| B[gVisor sandbox: PHP]
     B -->|untrusted bounded JSON| A
     A -->|validated request| C[Supervised trusted broker worker]
-    C -->|host identity + per-call authorization| D[Registered tool / future MCP client]
+    C -->|host identity + per-call authorization| D[Registered tool / MCP client]
     D -->|bounded JSON result| C
     C --> A
     A -->|result over stdin| B
 ```
 
-Trusted: package code, pinned image, Docker endpoint/argv, host identity, tool registration/schema, permission callbacks, and tool implementations. Untrusted: generated PHP, all guest output, tool names/arguments requested by the guest, upstream tool data, and the final answer. JSON schemas never fetch external references.
+Trusted: package code, pinned image, Docker endpoint/argv, host identity, local tool registration, permission callbacks, configured MCP endpoint and tool implementations. Untrusted: generated PHP, all guest output, tool names/arguments requested by the guest, upstream schemas/descriptions/data, and the final answer. JSON schemas never fetch external references. Discovered schemas are parsed and validated inside supervised workers; they cannot authorize a tool.
 
 The guest has no host mount, Docker socket, application/vendor directory, host environment forwarding, network interface with egress, published port, device passthrough, host PID namespace, or elevated Linux capability. Its root filesystem is read-only. It runs as UID/GID 65532 with `no-new-privileges`; only a private bounded `/tmp` is writable. `/tmp` is `noexec`, but PHP can still interpret PHP stored there: `noexec` is not a ban on interpreted code. The entire interpreter is already untrusted.
 
@@ -72,10 +72,20 @@ Production deployment still needs:
 - Authentication, request/concurrency/tenant quotas, queue admission, global CPU/memory budgets, and stale-container supervision. Per-run limits do not prevent many concurrent runs from exhausting a host.
 - Broker workers supervised by an OS service/container with aggregate resource limits. PHP's broker heap limit does not account for all native-extension allocations. Tool handlers are trusted code; the worker is for time supervision, not a sandbox for malicious handlers.
 - Fresh connections opened in broker handlers after fork. No inherited database/MCP sockets, cross-tenant global state, or detached background work. Tools need their own upstream timeouts and bounded queries/responses.
-- A policy for tool side effects, retries/idempotency, and durable audit logging. Killing a timed-out handler cannot reverse a remote action already committed. The returned ledger describes successful calls only; failures require host operational logging.
+- A policy for tool side effects, retries/idempotency, and durable audit logging. Killing a timed-out handler cannot reverse a remote action already committed. Execution exceptions retain completed/incomplete calls before failure. Incomplete does not mean rolled back. Cleanup errors can override the execution exception, and process death can lose the in-memory ledger. Durable logging remains deployment work.
 - Rendering/escaping of guest output and a data-access policy at the tool service. Allowing a generic URL fetcher, SQL tool, filesystem reader, or unrestricted administrative MCP tool can bypass the intended data boundary through the broker. Successful execution does not imply a truthful or safe answer.
 
-The package currently provides the runner and local handler broker. It does not yet implement model generation, MCP discovery/client transport, Drupal integration, mutation approvals, or a public HTTP execution endpoint.
+## MCP and demo boundary
+
+The package includes bounded MCP discovery, a fresh-client gateway and progressive discovery sessions. The caller configures the endpoint, transport timeouts and allowed names; generated PHP cannot select a server, credential, transport command or identity. Explicit local policy and upstream account/object access must both allow a call. Do not infer safety from `readOnlyHint` or a tool's prose. The fixture deliberately advertises an unapproved delete tool as read-only to exercise this distinction.
+
+The demo connects through STDIO to its PHP fixture or through HTTP to a configured Drupal MCP endpoint. HTTP redirects are disabled; bearer credentials remain in the host client. HTTPS is required except for trusted loopback development. Discovery is limited to 128 upstream tools, 8 continuation cursors, 64 KiB output and a 3-second supervised worker. Each schema/description is also bounded. Both gateway operations use a 64 MiB PHP worker heap; upstream transports need response/time bounds too because JSON decoding can allocate native memory.
+
+Symfony AI requests PHP, then receives only tool results. Model/tool prose cannot change runner policy. Code Mode has at most two execution attempts with 15 seconds and 30 broker calls each; individual tools have 3 seconds. The direct baseline uses the same approved tools and per-tool supervisor. Provider/model round counts can differ and are measured, not fixed to favor either path. Model output and CMS content remain untrusted even after an audit matches a fixture.
+
+The browser only reads a fixed local report through GET, with local client/Host checks, no-store headers, a restrictive CSP and text-only rendering of untrusted values. Execution starts from an operator CLI or locally configured STDIO MCP client. This is not public-service authentication. The HTTP `app_status` MCP endpoint is a separate foundation example and exposes no executor. Approved CMS results can reach the configured model provider and the local report; choose tools/data accordingly.
+
+The Drupal HTTP adapter is protocol-tested against a local MCP server; it has not yet been verified against a Drupal installation. Live inference requires a host Hugging Face key and remains a separate verification step. Mutation approval workflows and a public HTTP execution endpoint are outside this proof.
 
 ## Sources
 

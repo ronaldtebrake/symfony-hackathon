@@ -2,7 +2,7 @@
 
 A reusable Composer library for running real PHP in gVisor and composing explicitly authorized tools through a trusted host broker. This is a security-focused proof, not an audited public execution service. See [the security model and runtime decision](docs/security.md) and [the verification record](docs/verification.md).
 
-The package has no Symfony application, Drupal, model-provider, or MCP transport dependency. A host registers trusted handlers; those handlers can later call Symfony AI tools or an MCP client. Generated PHP receives only `$tools->call($name, $arguments)` and returns a JSON-compatible value. The broker owns the identity, schema, authorization, and call budget.
+The package has no Symfony application, Drupal or model-provider dependency. It uses the official PHP MCP SDK for an optional gateway; hosts can also register local trusted handlers. Generated PHP receives only `$tools->call($name, $arguments)` and returns a JSON-compatible value. The broker owns the identity, schema, authorization, and call budget.
 
 ## Run the proof
 
@@ -62,10 +62,33 @@ $result = (new GvisorSandbox($trustedImageId))->execute(
 );
 ```
 
-The PHP body has no `<?php` tag. `ExecutionResult::value` is untrusted guest output; it is never proof that an action occurred. Only `toolCalls` is recorded by the host. Catch `SandboxException` and use its stable `reason` for rejection reporting. Output from guest `echo`/STDERR is counted and discarded.
+The PHP body has no `<?php` tag. `ExecutionResult::value` is untrusted guest output; it is never proof that an action occurred. Only `toolCalls` is recorded by the host, with names, statuses, timings and serialized result sizes. Catch `SandboxException` and use its stable `reason` for rejection reporting; its `toolCalls` retains work before a failed execution. An `incomplete` call may already have caused upstream effects. Output from guest `echo`/STDERR is counted and discarded.
 
 Handlers run in a supervised fork of the CLI host. Open database/MCP/HTTP connections **inside the handler**; do not capture already-open connections or use parent-memory mutation for state. Check object/tenant access in the authorization callback and again at the upstream service. Timeouts do not undo completed side effects. Start with read-only tools.
 
+## MCP and progressive discovery
+
+`McpGateway` accepts a factory that opens a **fresh connected** `Mcp\Client`, plus explicit authorization callbacks keyed by approved upstream tool name. It filters discovery by this local configuration, retains input/output schemas, and creates broker handlers. Upstream annotations never grant access. Both discovery and invocation run in supervised CLI child processes; the factory must set transport byte/time limits too.
+
+```php
+use CodeMode\{CodeModeSession, ExecutionIdentity, ExecutionLimits};
+use CodeMode\Mcp\McpGateway;
+
+$gateway = new McpGateway($connectFreshClient, [
+    'articles.list' => static fn (ExecutionIdentity $user): bool => $user->allows('content.read'),
+]);
+$catalog = $gateway->discover();
+$session = new CodeModeSession($catalog, $gateway->broker($catalog), $sandbox,
+    new ExecutionIdentity('authenticated-user', ['content.read']), new ExecutionLimits());
+$matches = $session->search('articles');
+$schemas = $session->describe(['articles.list']);
+$result = $session->execute('return $tools->call("articles.list");');
+```
+
+Adapt the example to the discovered tool's required arguments. Only described, locally approved tools can be called; describing a tool does not bypass its authorization callback. The default session allows two execution attempts, including failures. Create a new session for a new host-authorized task. `CodeModeSession::definitions()` supplies the three canonical schemas for MCP servers and model toolboxes.
+
+Discovery permits 128 upstream tools, 8 continuation cursors, a 64 KiB result and a 3-second worker deadline. Search returns at most 8 name/description matches; describe accepts at most 16 names. Large catalogs must be narrowed upstream. Tool results must be structured JSON or a single text item; media/resource results are rejected. The gateway preserves envelopes such as Drupal Tool API's `success`, `message`, `data`. Output schemas are metadata, not proof of valid or trusted output.
+
 ## Demo for judges
 
-Show the same real PHP loop, its returned result, and the broker's three recorded calls. Then show an unauthorized tool rejection, an infinite loop being stopped, and the adversarial test suite passing. This makes the package's core behavior demonstrable before adding Symfony AI generation and the Drupal Tool API → MCP Server Tool Bridge → MCP Server demo. No token-saving or performance claim is made by this proof.
+The root Symfony app supplies an editorial audit, batched direct-call baseline, inspectable PHP/MCP trace, and separate reference/live modes. It also exposes Code Mode to external MCP clients over STDIO. See [the walkthrough](../../docs/demo.md). The Drupal backend targets **Tool API → MCP Server Tool Bridge → MCP Server**; an actual Drupal deployment still needs end-to-end verification. No token-saving claim is inferred from the reference run.

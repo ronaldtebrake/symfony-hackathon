@@ -1,0 +1,36 @@
+$articles = [];
+$offset = 0;
+do {
+    $page = $tools->call('cms_list_articles', ['offset' => $offset, 'limit' => 12]);
+    $ids = array_map(static fn ($item) => $item->id, $page->items);
+    if ($ids !== []) {
+        $details = $tools->call('cms_get_articles', ['ids' => $ids]);
+        array_push($articles, ...$details->items);
+    }
+    $offset = $page->next_offset;
+} while ($offset !== null);
+
+$imageIds = array_values(array_unique(array_map(static fn ($article) => $article->image_id, $articles)));
+$media = [];
+foreach (array_chunk($imageIds, 12) as $batch) {
+    $images = $tools->call('cms_get_media', ['ids' => $batch]);
+    foreach ($images->items as $image) {
+        $media[$image->id] = $image;
+    }
+}
+
+$findings = [];
+foreach ($articles as $article) {
+    $issues = [];
+    if (trim($article->meta_description) === '') {
+        $issues[] = 'missing_description';
+    }
+    if (trim($media[$article->image_id]->alt) === '') {
+        $issues[] = 'missing_alt';
+    }
+    if ($issues !== []) {
+        $findings[] = ['id' => $article->id, 'title' => $article->title, 'issues' => $issues];
+    }
+}
+usort($findings, static fn ($a, $b) => $a['id'] <=> $b['id']);
+return ['audited' => count($articles), 'findings' => $findings];

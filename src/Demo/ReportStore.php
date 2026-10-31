@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Demo;
+
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+
+final readonly class ReportStore
+{
+    public function __construct(#[Autowire('%kernel.project_dir%')] private string $projectDir) {}
+
+    public function save(array $report): void
+    {
+        $directory = $this->projectDir.'/var/demo';
+        if (!is_dir($directory) && !mkdir($directory, 0700, true) && !is_dir($directory)) {
+            throw new \RuntimeException('Cannot create the local report directory.');
+        }
+        $data = json_encode($report, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR, 40);
+        if (strlen($data) > 1048576) {
+            throw new \RuntimeException('The demo report exceeds its size limit.');
+        }
+        $temporary = tempnam($directory, 'report-');
+        try {
+            chmod($temporary, 0600);
+            if (false === file_put_contents($temporary, $data, LOCK_EX) || !rename($temporary, $directory.'/latest.json')) {
+                throw new \RuntimeException('Cannot save the local report.');
+            }
+        } finally {
+            if (is_file($temporary)) {
+                unlink($temporary);
+            }
+        }
+    }
+
+    public function read(): ?string
+    {
+        $path = $this->projectDir.'/var/demo/latest.json';
+        if (!is_file($path)) {
+            return null;
+        }
+        if (filesize($path) > 1048576) {
+            throw new \RuntimeException('The local report exceeds its size limit.');
+        }
+        return file_get_contents($path);
+    }
+}

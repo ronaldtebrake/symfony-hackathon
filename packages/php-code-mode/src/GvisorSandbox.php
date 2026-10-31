@@ -27,6 +27,7 @@ final readonly class GvisorSandbox implements SandboxExecutor
         $worker = new BrokerWorker($broker, $identity, $allowedTools, $limits);
         $process = null;
         $creationAttempted = false;
+        $calls = [];
         try {
             // No source mounts, credentials, published ports, devices, or environment passthrough.
             $creationAttempted = true;
@@ -57,7 +58,6 @@ final readonly class GvisorSandbox implements SandboxExecutor
             $process->write(json_encode(['code' => $code], JSON_THROW_ON_ERROR)."\n");
             $outputBytes = 0;
             $buffer = '';
-            $calls = [];
             $finished = false;
             $value = null;
             $receive = function (string $type, string $chunk) use ($process, $worker, $limits, $deadline, &$outputBytes, &$buffer, &$calls, &$finished, &$value): void {
@@ -92,8 +92,11 @@ final readonly class GvisorSandbox implements SandboxExecutor
                     }
                     $calls[] = ['name' => $frame->name, 'status' => 'pending'];
                     // Authorization and validation run before invocation, for every call.
+                    $callStarted = BrokerWorker::now();
                     $result = $worker->call($frame->name, $frame->arguments, $deadline);
                     $calls[array_key_last($calls)]['status'] = 'succeeded';
+                    $calls[array_key_last($calls)]['durationMs'] = (BrokerWorker::now() - $callStarted) * 1000;
+                    $calls[array_key_last($calls)]['resultBytes'] = strlen(json_encode($result, JSON_THROW_ON_ERROR, 32));
                     $process->write(json_encode(['id' => $frame->id, 'value' => $result], JSON_THROW_ON_ERROR, 32)."\n");
                 }
                 if (strlen($buffer) > $limits->maxFrameBytes) {
@@ -113,6 +116,14 @@ final readonly class GvisorSandbox implements SandboxExecutor
                 throw new SandboxException('guest_failed', 'The PHP program exited without a complete successful result.');
             }
             return new ExecutionResult($value, $calls, (BrokerWorker::now() - $started) * 1000, $outputBytes, $name);
+        } catch (\Throwable $error) {
+            foreach ($calls as &$call) {
+                if ('pending' === $call['status']) {
+                    $call['status'] = 'incomplete';
+                }
+            }
+            unset($call);
+            throw new SandboxException($error instanceof SandboxException ? $error->reason : 'execution_failed', 'Sandbox execution failed.', $calls, $error);
         } finally {
             $worker->close();
             $process?->close();

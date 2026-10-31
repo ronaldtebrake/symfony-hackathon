@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A working demonstration of isolated PHP Code Mode with Symfony AI and the PHP MCP SDK.">
+  <title>Code Mode — PHP, with a purpose.</title>
+  <link rel="stylesheet" href="/demo.css">
+  <script src="/demo.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="masthead">
+      <a class="brand" href="/demo" aria-label="Code Mode home"><span class="brand-mark">{ }</span><span>Code Mode<span class="brand-language"> / PHP</span></span></a>
+      <nav aria-label="Main navigation"><a class="active" href="#workbench">The demo</a><a href="#boundary">The boundary</a><a href="https://github.com/ronaldtebrake/symfony-hackathon" target="_blank" rel="noopener noreferrer">Source <span aria-hidden="true">↗</span></a></nav>
+      <span class="local-badge"><span class="dot"></span> Local workbench</span>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div>
+          <div class="eyebrow">Symfony AI &amp; MCP Hackathon · 2026</div>
+          <h1 id="page-title">Let PHP do<br>the busywork<span class="accent">.</span></h1>
+          <p class="lede">An agent writes a small program. PHP composes approved MCP tools in isolation. Only the findings come back.</p>
+        </div>
+        <div class="run-box">
+          <div class="run-box-heading"><span class="eyebrow">Run it yourself</span><span class="terminal-mark" aria-hidden="true">⌘</span></div>
+          <p>Same audit. Same batched tools.<br>Two ways to get to the answer.</p>
+          <div class="command"><code id="command-text">composer demo</code><button class="copy-button" id="copy-command" aria-label="Copy demo command">Copy</button></div>
+          <div class="run-options"><button id="reference-command" class="text-button selected">Reference run</button><span>/</span><button id="live-command" class="text-button">Live AI</button></div>
+          <p class="run-help" id="run-help">Runs real MCP + gVisor with a reference program. No model or API key required.</p>
+        </div>
+      </section>
+
+      <section id="workbench" aria-labelledby="audit-heading">
+        <div class="section-top"><div><span class="eyebrow">The assignment</span><h2 id="audit-heading">An editorial audit, without the busywork.</h2></div><span class="run-state" id="run-state" role="status">Waiting for a run</span></div>
+        <div class="assignment"><span class="assignment-icon" aria-hidden="true">↳</span><p>Find every published article with a missing meta description or hero-image alt text. Paginate, batch, join and return a concise report.</p><span class="dataset-label" id="dataset-label">Editorial fixture · read only</span></div>
+        <div class="mode-note" id="mode-note" role="status">Run <code>composer demo</code> in your terminal. This page follows the latest local result.</div>
+
+        <div class="comparison" aria-label="Measured approach comparison">
+          <article class="comparison-card" id="direct-card">
+            <div class="card-heading"><span class="method-number">01</span><h3>Direct tool calling</h3><span class="method-label">Data → agent</span></div>
+            <p class="method-description">Each batch of content returns through the agent’s tool interface.</p>
+            <div class="payload"><strong id="direct-bytes">—</strong><span>tool payload</span></div>
+            <dl class="metrics"><div><dt>Broker calls</dt><dd id="direct-calls">—</dd></div><div><dt>Agent tool calls</dt><dd id="direct-agent-calls">—</dd></div><div><dt>Provider tokens</dt><dd id="direct-tokens">—</dd></div></dl>
+            <div class="verification" id="direct-verification">No result yet</div>
+          </article>
+          <article class="comparison-card code-card" id="code-card">
+            <div class="card-heading"><span class="method-number">02</span><h3>PHP Code Mode</h3><span class="method-label">Data → PHP → findings</span></div>
+            <p class="method-description">A PHP program filters and joins tool data inside the sandbox.</p>
+            <div class="payload"><strong id="code-bytes">—</strong><span>tool payload</span><span class="difference" id="difference" hidden></span></div>
+            <dl class="metrics"><div><dt>Broker calls</dt><dd id="code-calls">—</dd></div><div><dt>Agent tool calls</dt><dd id="code-agent-calls">—</dd></div><div><dt>Provider tokens</dt><dd id="code-tokens">—</dd></div></dl>
+            <div class="verification" id="code-verification">No result yet</div>
+          </article>
+        </div>
+        <p class="measurement-note" id="measurement-note">Payload measures serialized tool-result messages, including Code Mode discovery. It excludes prompts, initial schemas and generated code. Token totals are shown only when a live provider reports them.</p>
+
+        <div class="inspection-grid">
+          <section class="inspector" aria-label="Execution details">
+            <div class="inspector-heading"><div class="tabs" role="tablist" aria-label="Inspect the run"><button role="tab" id="tab-code" aria-selected="true" aria-controls="panel-code">PHP program</button><button role="tab" id="tab-trace" aria-selected="false" aria-controls="panel-trace" tabindex="-1">MCP trace</button><button role="tab" id="tab-findings" aria-selected="false" aria-controls="panel-findings" tabindex="-1">Findings <span id="findings-count">0</span></button></div><span class="code-label" id="code-label">PHP 8.4</span></div>
+            <div role="tabpanel" id="panel-code" aria-labelledby="tab-code"><div class="code-caption" id="program-caption">The submitted program will appear here after a run.</div><pre class="code-view" tabindex="0"><code id="program">// Waiting for an execution.
+// Source is shown exactly as submitted to the sandbox.</code></pre></div>
+            <div role="tabpanel" id="panel-trace" aria-labelledby="tab-trace" hidden><div class="panel-toolbar"><label for="trace-approach">Inspect</label><select id="trace-approach"><option value="code">Code Mode</option><option value="direct">Direct tool calling</option></select><span>Recorded by the host</span></div><div class="table-scroll"><table><caption class="sr-only">MCP calls recorded by the trusted broker</caption><thead><tr><th>#</th><th>Tool</th><th>Status</th><th>Result</th><th>Time</th></tr></thead><tbody id="trace-rows"></tbody></table></div><p class="panel-empty" id="trace-empty">No broker calls recorded yet.</p></div>
+            <div role="tabpanel" id="panel-findings" aria-labelledby="tab-findings" hidden><div class="findings-heading"><strong id="findings-summary">No findings yet</strong><span id="findings-source">Code Mode result</span></div><div id="findings-list" class="findings-list"></div></div>
+          </section>
+          <aside class="execution-aside">
+            <div class="eyebrow">Follow the work</div><h3>Small program.<br>Visible boundaries.</h3>
+            <ol class="flow"><li><span class="flow-step">1</span><div><strong>Discover</strong><p>Search approved tools. Load only the schemas needed.</p></div></li><li><span class="flow-step">2</span><div><strong>Compose</strong><p>Write PHP that batches, loops and joins the data.</p></div></li><li><span class="flow-step">3</span><div><strong>Execute</strong><p>Run in gVisor. The host authorizes every tool call.</p></div></li><li><span class="flow-step">4</span><div><strong>Return</strong><p>Send the compact findings back to the agent.</p></div></li></ol>
+            <div class="source-note"><span class="small-dot"></span><p id="source-note">The fixture is a real PHP MCP server. It is separate from the runner and contains no live site data.</p></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="boundary" id="boundary" aria-labelledby="boundary-heading"><div><span class="eyebrow">The trust boundary</span><h2 id="boundary-heading">Useful access.<br>Explicit limits.</h2><p>The generated program is untrusted. The host owns tool permissions and execution limits.</p></div><div class="boundary-controls"><div><span>01</span><strong>gVisor required</strong><p>Native PHP in a userspace kernel sandbox. No ordinary-container fallback.</p></div><div><span>02</span><strong>No guest network</strong><p>No host mounts, credentials or Docker socket. A read-only root filesystem.</p></div><div><span>03</span><strong>Bounded execution</strong><p>15 seconds, 128 MiB, 30 tool calls per attempt. At most two attempts per session.</p></div><div><span>04</span><strong>Broker authorization</strong><p>Local allowlist and argument validation on every call. Upstream hints grant no permissions.</p></div></div></section>
+      <p class="security-note">This is a verified development proof. Production deployment still needs independent security review, admission limits and operational supervision. The web page only reads reports; execution starts from your CLI.</p>
+    </main>
+    <footer><span>Built with Symfony AI · PHP MCP SDK · gVisor</span><span id="updated-at">Local reports stay on this machine.</span></footer>
+  </div>
+</body>
+</html>

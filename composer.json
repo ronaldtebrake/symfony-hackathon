@@ -2,7 +2,7 @@
     "name": "ronaldtebrake/symfony-hackathon",
     "type": "project",
     "license": "MIT",
-    "description": "Starter for the Symfony AI and MCP Hackathon.",
+    "description": "PHP Code Mode demo using Symfony AI, the PHP MCP SDK and gVisor.",
     "minimum-stability": "beta",
     "prefer-stable": true,
     "require": {
@@ -80,7 +80,9 @@
         "test": "@php bin/phpunit",
         "test:package": "@php bin/phpunit -c packages/php-code-mode/phpunit.dist.xml --testsuite Unit",
         "test:sandbox": "@php bin/phpunit -c packages/php-code-mode/phpunit.dist.xml --testsuite Sandbox",
+        "test:demo": "@php bin/phpunit -c phpunit.sandbox.xml",
         "proof:code-mode": "@php packages/php-code-mode/examples/proof.php",
+        "demo": "@php bin/console code-mode:demo",
         "check": [
             "@composer validate --strict",
             "@composer validate --strict --working-dir=packages/php-code-mode",

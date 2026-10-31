@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/bootstrap.php" failOnWarning="true" failOnNotice="true" cacheDirectory=".phpunit.cache/sandbox">
+    <php><server name="APP_ENV" value="test" force="true"/></php>
+    <testsuites><testsuite name="Demo sandbox"><directory>tests/Sandbox</directory></testsuite></testsuites>
+</phpunit>

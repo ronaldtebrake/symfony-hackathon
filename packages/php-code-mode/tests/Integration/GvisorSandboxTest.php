@@ -152,6 +152,20 @@ PHP);
         self::assertSame('', file_get_contents($this->marker));
     }
 
+    public function testFailedExecutionRetainsEarlierHostRecordedCalls(): void
+    {
+        try {
+            $this->runPhp('$tools->call("demo.add", ["a" => 20, "b" => 22]); while (true) {}', new ExecutionLimits(wallTimeMs: 1000, toolTimeMs: 500));
+            self::fail('The program should exceed its deadline.');
+        } catch (SandboxException $error) {
+            self::assertSame('wall_timeout', $error->reason);
+            self::assertCount(1, $error->toolCalls);
+            self::assertSame('succeeded', $error->toolCalls[0]['status']);
+            self::assertSame(2, $error->toolCalls[0]['resultBytes']);
+            self::assertSame("alice\n", file_get_contents($this->marker));
+        }
+    }
+
     public function testCallsAfterResultNeverReachHandler(): void
     {
         $code = 'fwrite(STDOUT, "{\"type\":\"result\",\"value\":42}\n{\"type\":\"tool_call\",\"id\":1,\"name\":\"demo.add\",\"arguments\":{\"a\":1,\"b\":2}}\n"); exit(0);';

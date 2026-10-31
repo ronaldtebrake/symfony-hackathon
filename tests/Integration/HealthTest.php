@@ -12,7 +12,7 @@ final class HealthTest extends WebTestCase
     {
         $client = self::createClient();
 
-        foreach (['/', '/health'] as $path) {
+        foreach (['/health'] as $path) {
             $client->request('GET', $path);
 
             self::assertResponseIsSuccessful();
