@@ -1,0 +1,5 @@
+ai:
+    agent:
+        default:
+            platform: 'ai.platform.huggingface'
+            model: '%env(HUGGINGFACE_MODEL)%'

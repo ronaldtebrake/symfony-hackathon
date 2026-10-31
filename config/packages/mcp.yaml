@@ -1,0 +1,11 @@
+mcp:
+    servers:
+        default:
+            name: symfony-hackathon
+            version: 0.1.0
+            registry: 'App\Mcp\'
+            transports:
+                stdio: true
+                http: true
+            http:
+                path: /mcp
