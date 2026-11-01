@@ -47,7 +47,7 @@ final class CodeModeMcpCommand extends Command
                 return ['value' => $result->value, 'toolCalls' => $result->toolCalls, 'durationMs' => $result->durationMs];
             }),
         ];
-        $builder = Server::builder()->setServerInfo('PHP Code Mode', '0.2.0');
+        $builder = Server::builder()->setServerInfo('Symfony Code Mode', '0.2.0');
         foreach (CodeModeSession::definitions() as $definition) {
             $builder->addTool($handlers[$definition->name], name: $definition->name, description: $definition->description, inputSchema: get_object_vars($definition->inputSchema), annotations: new ToolAnnotations(readOnlyHint: true, destructiveHint: false));
         }

@@ -16,7 +16,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'code-mode:demo', description: 'Compare direct MCP tool calling and isolated PHP Code Mode on the same content audit.')]
+#[AsCommand(name: 'code-mode:demo', description: 'Compare direct MCP tool calling and Symfony Code Mode on the same content audit.')]
 final class CodeModeDemoCommand extends Command
 {
     public function __construct(private readonly DemoRunner $runner, private readonly ReportStore $store) { parent::__construct(); }
@@ -59,7 +59,7 @@ final class CodeModeDemoCommand extends Command
         }
         $report = ['version' => 2, 'createdAt' => gmdate(DATE_ATOM), 'status' => 'running', 'mode' => $mode, 'backend' => $backend, 'questionId' => $question->id, 'task' => $question->text, 'results' => []];
         $this->store->save($report);
-        $io->title('PHP Code Mode · '.('live' === $mode ? 'live inference' : 'reference run — no model'));
+        $io->title('Symfony Code Mode · '.('live' === $mode ? 'live inference' : 'reference run — no model'));
         $failed = false;
         $reviewRequired = false;
         foreach ('both' === $approach ? ['direct', 'code'] : [$approach] as $method) {

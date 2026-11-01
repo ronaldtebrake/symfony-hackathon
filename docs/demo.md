@@ -1,4 +1,4 @@
-# Code Mode demo
+# Symfony Code Mode demo
 
 The working slice is an editorial audit: check every published article for missing meta descriptions or hero-image alt text, with pagination, batched reads and a join between articles and media. It demonstrates orchestration in real PHP and authorization that stays outside generated code.
 

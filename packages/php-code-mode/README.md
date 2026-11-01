@@ -1,4 +1,4 @@
-# PHP Code Mode
+# Symfony Code Mode — PHP package
 
 A reusable Composer library for running real PHP in gVisor and composing explicitly authorized tools through a trusted host broker. This is a security-focused proof, not an audited public execution service. See [the security model and runtime decision](docs/security.md) and [the verification record](docs/verification.md).
 

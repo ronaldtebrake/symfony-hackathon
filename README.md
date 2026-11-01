@@ -1,4 +1,4 @@
-# PHP Code Mode for Symfony
+# Symfony Code Mode
 
 Give a Symfony AI agent a PHP runtime for composing approved MCP tools. It can paginate, batch, join and filter data in isolation, then return compact findings to the model.
 

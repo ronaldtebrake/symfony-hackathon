@@ -2,7 +2,7 @@
     "name": "ronaldtebrake/symfony-hackathon",
     "type": "project",
     "license": "MIT",
-    "description": "PHP Code Mode demo using Symfony AI, the PHP MCP SDK and gVisor.",
+    "description": "Symfony Code Mode: isolated PHP tool composition with Symfony AI, the PHP MCP SDK and gVisor.",
     "minimum-stability": "beta",
     "prefer-stable": true,
     "require": {

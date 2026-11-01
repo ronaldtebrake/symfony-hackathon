@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="740" viewBox="0 0 960 740" role="img" aria-labelledby="title description">
-  <title id="title">PHP Code Mode: same audit, less data returned to the agent.</title>
+  <title id="title">Symfony Code Mode: same audit, less data returned to the agent.</title>
   <desc id="description">Animated explanation of a verified reference run. Direct tool calling and Code Mode both check 48 published articles and return the same 10 findings using 10 batched MCP calls. Direct calls return 20,154 bytes of tool-result payload; Code Mode returns 3,014 bytes including discovery, about 85 percent less. PHP processes intermediate data inside gVisor; the host authorizes every tool call. No model was called and no model-token savings are claimed. With reduced motion, the complete comparison stays visible.</desc>
   <defs>
     <linearGradient id="paper" x2="0" y2="1"><stop stop-color="#fbfcf8"/><stop offset="1" stop-color="#f4f7f0"/></linearGradient>
@@ -33,7 +33,7 @@
   <g aria-hidden="true">
     <rect x="36" y="29" width="28" height="28" rx="8" fill="#1d2b26"/>
     <text x="50" y="49" text-anchor="middle" class="mono" style="fill:#f2f6ed;font-size:16px;font-weight:700">{ }</text>
-    <text x="73" y="49" font-size="20" font-weight="750" letter-spacing="-.8">Code Mode<tspan class="muted" font-weight="400"> / PHP</tspan></text>
+    <text x="73" y="49" font-size="20" font-weight="750" letter-spacing="-.8">Symfony Code Mode</text>
     <text x="923" y="46" text-anchor="end" class="eyebrow muted">SYMFONY AI × PHP MCP SDK</text>
     <text x="480" y="118" text-anchor="middle" font-size="54" font-weight="750" letter-spacing="-2.3">Same audit. <tspan class="green">Less data.</tspan></text>
     <text x="480" y="151" text-anchor="middle" font-size="17" class="muted">Let PHP do the work between tool calls.</text>
