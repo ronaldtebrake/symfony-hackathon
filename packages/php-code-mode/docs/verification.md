@@ -42,6 +42,6 @@ The crash test allows a terminated zombie process while its OS parent/subreaper 
 
 GitHub Actions defines an Ubuntu amd64 standalone-package job that installs the pinned gVisor release, builds the runner, and executes the security suite and full demo integration checks. **That remote CI job has not been run from this checkout.** Windows, rootless Docker, alternate gVisor platforms, and a native Linux coordinator have not been verified locally. Do not generalize this record into compatibility or security claims for those environments.
 
-Live Hugging Face inference remains unverified because no API key is configured. The Drupal HTTP adapter is tested against a local MCP server, not a Drupal installation. The demo video is planned but has not been recorded. These gates remain separate from the recorded local checks.
+Live Hugging Face inference remains unverified because no API key is configured. The Drupal HTTP adapter is tested against a local MCP server, not a Drupal installation. A [90-second narrated walkthrough](../../../docs/demo/rendered/README.md) has been rendered from the reviewed Codex capture and actual workbench screenshots. Its opening is labelled transcript excerpts because automated Codex-window access is blocked. It is not new execution footage and has not been published or submitted. These gates remain separate from the recorded local checks.
 
 See [setup and commands](../README.md) and [the threat model and deployment limits](security.md) before rerunning or embedding the package.

@@ -1,0 +1,86 @@
+{
+    "version": 1,
+    "kind": "security-proof",
+    "createdAt": "2026-11-01T09:18:49+00:00",
+    "status": "complete",
+    "runtime": "runsc",
+    "image": "sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b",
+    "cases": [
+        {
+            "id": "authorized_read",
+            "title": "Authorized read",
+            "expected": "succeeded",
+            "code": "return $tools->call(\"cms_list_articles\", [\"offset\" => 0, \"limit\" => 1])->total;",
+            "startedAt": "2026-11-01T09:18:50+00:00",
+            "wallTimeMs": 2000,
+            "memoryMiB": 128,
+            "runId": "code-mode-f428d79bf01f855e9da371d800b3bb33",
+            "value": 48,
+            "reason": null,
+            "toolCalls": [
+                {
+                    "name": "cms_list_articles",
+                    "status": "succeeded",
+                    "durationMs": 72.89975001185667,
+                    "resultBytes": 98
+                }
+            ],
+            "containerRemoved": true,
+            "durationMs": 472.856416,
+            "cleanupCheckedAt": "2026-11-01T09:18:50+00:00",
+            "passed": true,
+            "completedAt": "2026-11-01T09:18:50+00:00"
+        },
+        {
+            "id": "unauthorized_call",
+            "title": "Unauthorized tool",
+            "expected": "tool_denied",
+            "code": "return $tools->call(\"cms_delete_article\", [\"id\" => 1]);",
+            "startedAt": "2026-11-01T09:18:50+00:00",
+            "wallTimeMs": 2000,
+            "memoryMiB": 128,
+            "runId": "code-mode-f855ebcf09d00c2a0516eef41ce4c977",
+            "value": null,
+            "reason": "tool_denied",
+            "toolCalls": [
+                {
+                    "name": "cms_delete_article",
+                    "status": "denied",
+                    "reason": "tool_denied",
+                    "durationMs": 1.6585420089541003
+                }
+            ],
+            "containerRemoved": true,
+            "durationMs": 319.882833,
+            "cleanupCheckedAt": "2026-11-01T09:18:50+00:00",
+            "passed": true,
+            "completedAt": "2026-11-01T09:18:50+00:00"
+        },
+        {
+            "id": "infinite_loop",
+            "title": "Infinite loop",
+            "expected": "wall_timeout",
+            "code": "$tools->call(\"cms_list_articles\", [\"offset\" => 0, \"limit\" => 1]);\nwhile (true) {}",
+            "startedAt": "2026-11-01T09:18:50+00:00",
+            "wallTimeMs": 2000,
+            "memoryMiB": 128,
+            "runId": "code-mode-24bc0d06221ba75a432113f336f24b43",
+            "value": null,
+            "reason": "wall_timeout",
+            "toolCalls": [
+                {
+                    "name": "cms_list_articles",
+                    "status": "succeeded",
+                    "durationMs": 75.05387499986682,
+                    "resultBytes": 98
+                }
+            ],
+            "containerRemoved": true,
+            "durationMs": 2210.912083,
+            "cleanupCheckedAt": "2026-11-01T09:18:53+00:00",
+            "passed": true,
+            "completedAt": "2026-11-01T09:18:53+00:00"
+        }
+    ],
+    "completedAt": "2026-11-01T09:18:53+00:00"
+}

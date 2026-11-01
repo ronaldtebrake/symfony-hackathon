@@ -2,15 +2,17 @@
 
 **Symfony Code Mode: ask in Codex, let PHP do the data work, inspect the evidence.**
 
-This is a recording pack, not a finished video. It contains a timed shot list, [voice-over](narration.txt), [draft captions](captions.srt) and [copy-ready prompts](prompts.md). Keep the story Symfony-only. Target a 90-second export, including the closing frame; record the interactions at their real pace and trim waiting time in the edit.
+The [rendered 90-second walkthrough](rendered/symfony-code-mode-90s.mp4) is available in **1080p**, with synthetic narration and burned-in captions. It opens with labelled excerpts of the real Codex capture and continues through actual workbench screenshots, generated PHP, calls and security evidence. [Render details and source provenance](rendered/README.md).
+
+The recording pack below also contains a timed shot list for an optional desktop take, [voice-over](narration.txt), [draft captions](captions.srt) and [copy-ready prompts](prompts.md). The story stays Symfony-only.
 
 ## What is ready
 
 The workbench and screenshots are committed in `8372a7e`. The reviewed [1 November Codex capture](../evidence/codex-conversation-2026-11-01.json) contains two different generated programs, two successful executions and 20 host-recorded upstream calls. The local comparison and security reports also exist and passed their recorded checks. Opening the viewer does not execute anything.
 
-**Still needed for the recording:** actual Codex UI footage. The saved rehearsal used an ephemeral Codex app-server conversation; the JSON capture is not a replayable desktop chat or an existing video. Record a new two-turn Codex conversation using the prompts below. The workbench deliberately continues to show the reviewed 1 November capture. Label the cut to that earlier rehearsal explicitly; do not imply it automatically synchronized the newly filmed conversation. The shot list and narration already make this distinction.
+**Optional replacement for the rendered opening:** actual Codex UI footage. The automation tool blocks access to the Codex window, and the saved rehearsal used an ephemeral app-server conversation. The current video therefore identifies its opening as transcript excerpts, not desktop footage. To replace it, manually record a new two-turn Codex conversation using the prompts below. Keep the cut to the workbench's reviewed 1 November capture labelled; it does not synchronize newly filmed conversations.
 
-## Shot list and voice-over
+## Optional desktop take: shot list and voice-over
 
 | Time | Screen and action | Say |
 | --- | --- | --- |
@@ -51,4 +53,4 @@ The [brief](https://symfony.com/hackathon), checked on 1 November 2026, asks for
 
 The brief also asks entrants to use **Hugging Face Inference Providers**. The project's Symfony AI live comparison path is implemented and locally tested with mocked provider responses, but live Hugging Face inference remains unverified. Complete that check before submission, keeping the key in ignored `.env.local`. Codex footage and the model-free comparison do not demonstrate that integration. If a verified live report replaces the reference segment, update its narration, captions and figures from the actual result; do not reuse the 85% reference claim automatically.
 
-This pack does not claim production security, a completed video, live report synchronization, or a verified Drupal integration. The current [verification record](../../packages/php-code-mode/docs/verification.md) is the source for tested scope.
+The rendered walkthrough is complete locally and has not been submitted or published. It uses recorded evidence, not new executions. The current [verification record](../../packages/php-code-mode/docs/verification.md) is the source for tested scope.
