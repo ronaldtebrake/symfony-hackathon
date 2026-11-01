@@ -93,7 +93,14 @@ final readonly class GvisorSandbox implements SandboxExecutor
                     $calls[] = ['name' => $frame->name, 'status' => 'pending'];
                     // Authorization and validation run before invocation, for every call.
                     $callStarted = BrokerWorker::now();
-                    $result = $worker->call($frame->name, $frame->arguments, $deadline);
+                    try {
+                        $result = $worker->call($frame->name, $frame->arguments, $deadline);
+                    } catch (SandboxException $error) {
+                        $calls[array_key_last($calls)]['status'] = 'tool_denied' === $error->reason ? 'denied' : 'incomplete';
+                        $calls[array_key_last($calls)]['reason'] = $error->reason;
+                        $calls[array_key_last($calls)]['durationMs'] = (BrokerWorker::now() - $callStarted) * 1000;
+                        throw $error;
+                    }
                     $calls[array_key_last($calls)]['status'] = 'succeeded';
                     $calls[array_key_last($calls)]['durationMs'] = (BrokerWorker::now() - $callStarted) * 1000;
                     $calls[array_key_last($calls)]['resultBytes'] = strlen(json_encode($result, JSON_THROW_ON_ERROR, 32));
@@ -123,7 +130,7 @@ final readonly class GvisorSandbox implements SandboxExecutor
                 }
             }
             unset($call);
-            throw new SandboxException($error instanceof SandboxException ? $error->reason : 'execution_failed', 'Sandbox execution failed.', $calls, $error);
+            throw new SandboxException($error instanceof SandboxException ? $error->reason : 'execution_failed', 'Sandbox execution failed.', $calls, $error, runId: $name);
         } finally {
             $worker->close();
             $process?->close();

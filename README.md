@@ -1,6 +1,6 @@
 # Symfony Code Mode
 
-Give a Symfony AI agent a PHP runtime for composing approved MCP tools. It can paginate, batch, join and filter data in isolation, then return compact findings to the model.
+Give an MCP-capable agent a PHP runtime for composing approved tools. The human asks and refines the task in their agent; Code Mode paginates, batches, joins and filters data in isolation, then returns compact findings. The Symfony AI demo measures the same workflow.
 
 ![Animated Code Mode comparison: both paths audit 48 articles with ten MCP calls; PHP processes intermediate data and returns 85% less tool-result payload in the verified reference run.](docs/images/code-mode-value.svg)
 
@@ -30,14 +30,15 @@ composer install
 docker build -t php-code-mode-runner:proof packages/php-code-mode/runner
 export CODE_MODE_IMAGE="$(docker image inspect --format '{{.Id}}' php-code-mode-runner:proof)"
 composer demo
+composer demo:security
 composer start
 ```
 
-Open [the workbench](http://127.0.0.1:8000/demo). The reference run needs no API key: it executes real PHP and MCP calls with a checked-in program, explicitly labelled as **no model called**. `/health` returns JSON. Stop the preview with Ctrl+C. Execution starts from the CLI; the web page only displays local reports.
+Open [the workbench](http://127.0.0.1:8000/demo) to inspect the comparison and security proof. The fixed proof programs need no API key and are labelled **no model called**. The security report records an authorized read, a denied tool call, and an infinite loop stopped by the watchdog, with host traces and a per-container cleanup check. `/health` returns JSON. Stop the preview with Ctrl+C.
 
 For live generation, set `HUGGINGFACE_API_KEY` in ignored `.env.local`, then run `composer demo -- --mode=live`. The default model is `openai/gpt-oss-120b`; calls consume inference credits. Reports include provider token usage only when supplied. See [demo setup, Drupal connection and 90-second walkthrough](docs/demo.md).
 
-Change the question in the workbench and copy its CLI command, or try `composer demo -- --mode=live --scenario=impact` to group issues and find shared-image impact. `--question='Count published articles by language. Return counts.'` accepts a custom question in live mode. Both use the same read-only Symfony fixture tools and sandbox limits. Custom answers are marked for review; they do not receive a correctness or savings badge.
+Connect `php bin/console code-mode:mcp` as a STDIO server in your agent. Ask follow-up questions and clarify scope in that conversation; the workbench is a read-only evidence viewer. The host retains all permissions and limits. See [agent setup and the CLI comparison harness](docs/demo.md#agent-conversations).
 
 ## Verify
 

@@ -41,12 +41,4 @@ final readonly class DemoQuestion
         }
     }
 
-    public static function choices(): array
-    {
-        return [
-            ['id' => 'audit', 'label' => 'Find missing descriptions and alt text', 'summary' => 'Find every published article with a missing meta description or hero-image alt text.', 'reference' => true],
-            ['id' => 'impact', 'label' => 'Group issues and find shared-image impact', 'summary' => 'Group article IDs by issue, then find images whose missing alt text affects multiple articles.', 'reference' => false],
-            ['id' => 'custom', 'label' => 'Ask your own question', 'summary' => 'Ask about published articles, languages, metadata or hero images. Custom answers require your review.', 'reference' => false],
-        ];
-    }
 }

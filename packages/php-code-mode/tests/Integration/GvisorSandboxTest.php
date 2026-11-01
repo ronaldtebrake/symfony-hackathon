@@ -148,7 +148,15 @@ PHP);
 
     public function testDeniedCallNeverReachesHostHandler(): void
     {
-        $this->assertRejected('tool_denied', fn () => $this->runPhp('return $tools->call("demo.add", ["a" => 2, "b" => 3]);', allowed: []));
+        try {
+            $this->runPhp('return $tools->call("demo.add", ["a" => 2, "b" => 3]);', allowed: []);
+            self::fail('The call must be denied.');
+        } catch (SandboxException $error) {
+            self::assertSame('tool_denied', $error->reason);
+            self::assertMatchesRegularExpression('/\Acode-mode-[a-f0-9]{32}\z/', $error->runId);
+            self::assertSame('denied', $error->toolCalls[0]['status']);
+            self::assertSame('tool_denied', $error->toolCalls[0]['reason']);
+        }
         self::assertSame('', file_get_contents($this->marker));
     }
 
@@ -159,6 +167,7 @@ PHP);
             self::fail('The program should exceed its deadline.');
         } catch (SandboxException $error) {
             self::assertSame('wall_timeout', $error->reason);
+            self::assertMatchesRegularExpression('/\Acode-mode-[a-f0-9]{32}\z/', $error->runId);
             self::assertCount(1, $error->toolCalls);
             self::assertSame('succeeded', $error->toolCalls[0]['status']);
             self::assertSame(2, $error->toolCalls[0]['resultBytes']);

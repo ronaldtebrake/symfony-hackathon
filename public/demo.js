@@ -1,13 +1,8 @@
 'use strict';
 
-import {buildDemoCommand} from './demo-questions.js';
-
 const byId = (id) => document.getElementById(id);
 let latest = null;
 let lastBody = '';
-let liveCommand = false;
-let questionChoices = [];
-let questionMaxBytes = 2000;
 const bytes = (value) => typeof value !== 'number' ? '—' : value >= 1000 ? `${(value / 1000).toFixed(2)} kB` : `${value} B`;
 const number = (value) => typeof value === 'number' ? value.toLocaleString() : '—';
 const results = () => Object.fromEntries((latest?.results ?? []).map((item) => [item.approach, item]));
@@ -36,7 +31,7 @@ function render(report) {
   const runs = results();
   const live = report.mode === 'live';
   byId('run-state').textContent = report.status === 'running' ? 'RUNNING' : report.status === 'failed' ? 'CHECK FAILED' : report.status === 'review_required' ? 'REVIEW REQUIRED' : report.status === 'complete' ? 'RUN COMPLETE' : 'WAITING FOR A RUN';
-  byId('recorded-question').textContent = report.task ?? 'No question has been run yet. Choosing a question above does not change the recorded results below.';
+  byId('recorded-question').textContent = report.task ?? 'No comparison has been recorded yet. Run composer demo for the reference audit.';
   byId('mode-note').classList.toggle('live', live);
   byId('mode-note').textContent = live
     ? `LIVE INFERENCE · ${runs.code?.model ?? runs.direct?.model ?? 'Hugging Face'} · Results below come from the recorded execution.`
@@ -112,69 +107,6 @@ tabs.forEach((tab, index) => {
   });
 });
 byId('trace-approach').addEventListener('change', renderTrace);
-byId('reference-command').addEventListener('click', () => setCommand(false));
-byId('live-command').addEventListener('click', () => setCommand(true));
-function setCommand(live) {
-  liveCommand = live;
-  byId('reference-command').classList.toggle('selected', !live);
-  byId('live-command').classList.toggle('selected', live);
-  byId('run-help').textContent = live ? 'Uses Symfony AI + Hugging Face. Configure HUGGINGFACE_API_KEY in .env.local. Provider usage consumes credits.' : 'Runs real MCP + gVisor with a reference program. No model or API key required.';
-  updateCommand();
-}
-
-function updateCommand() {
-  try {
-    const command = buildDemoCommand({mode: liveCommand ? 'live' : 'reference', scenario: byId('question-choice').value, question: byId('custom-question').value}, questionMaxBytes);
-    byId('command-text').textContent = command;
-    byId('copy-command').disabled = false;
-    byId('question-error').hidden = true;
-  } catch (error) {
-    byId('command-text').textContent = 'Complete your question below.';
-    byId('copy-command').disabled = true;
-    byId('question-error').textContent = error.message;
-    byId('question-error').hidden = false;
-  }
-}
-
-function selectQuestion() {
-  const choice = questionChoices.find((item) => item.id === byId('question-choice').value);
-  if (!choice) return;
-  byId('question-summary').textContent = choice.summary;
-  byId('custom-question-field').hidden = choice.id !== 'custom';
-  byId('reference-command').disabled = !choice.reference;
-  setCommand(choice.reference ? liveCommand : true);
-}
-byId('question-choice').addEventListener('change', selectQuestion);
-byId('custom-question').addEventListener('input', updateCommand);
-
-async function loadQuestions() {
-  try {
-    const response = await fetch('/demo/questions', {cache: 'no-store', credentials: 'same-origin'});
-    if (!response.ok) throw new Error('Questions unavailable');
-    const config = await response.json();
-    questionChoices = config.choices;
-    questionMaxBytes = config.maxBytes;
-    byId('question-choice').replaceChildren(...questionChoices.map((choice) => {
-      const option = node('option', choice.label);
-      option.value = choice.id;
-      return option;
-    }));
-    byId('question-choice').disabled = false;
-    selectQuestion();
-  } catch {
-    byId('question-summary').textContent = 'Question choices could not be loaded. Reload the page to try again.';
-  }
-}
-byId('copy-command').addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(byId('command-text').textContent);
-    byId('copy-command').textContent = 'Copied';
-  } catch {
-    byId('copy-command').textContent = 'Select text';
-  }
-  setTimeout(() => { byId('copy-command').textContent = 'Copy'; }, 1800);
-});
-
 async function refresh() {
   try {
     const response = await fetch('/demo/report', {cache: 'no-store', credentials: 'same-origin'});
@@ -191,4 +123,71 @@ async function refresh() {
   }
 }
 refresh();
-loadQuestions();
+
+function renderSecurity(report) {
+  const state = byId('security-state');
+  state.textContent = report.status === 'complete' ? '3 CHECKS PASSED' : report.status === 'running' ? 'RUNNING' : report.status === 'failed' ? 'PROOF FAILED' : 'NOT RUN';
+  byId('security-note').textContent = report.status === 'empty'
+    ? 'No security proof has been recorded. Results appear only after execution.'
+    : report.error ? `The proof could not finish: ${report.error}. No successful execution is implied.`
+    : report.status === 'running' ? 'The operator is running fixed probes. This page follows the host-recorded observations.'
+    : report.status === 'failed' ? 'PROOF FAILED · At least one required observation is missing or incorrect. Inspect the traces; a configured limit alone does not prove it was enforced.'
+    : 'REAL EXECUTION · Fixed PHP probes, real MCP and gVisor. No model was called. Expand each trace to inspect the evidence.';
+  const cards = byId('security-cases');
+  cards.replaceChildren();
+  const outcomes = {authorized_read: 'Read allowed', unauthorized_call: 'Call blocked', infinite_loop: 'Loop terminated'};
+  for (const item of report.cases ?? []) {
+    const card = node('article', undefined, 'security-card');
+    const heading = node('div', undefined, 'card-heading');
+    heading.append(node('h3', item.title), node('span', item.passed === true ? outcomes[item.id] ?? 'Passed' : 'Check failed', item.passed === true ? 'proof-outcome passed' : 'proof-outcome failed'));
+    card.append(heading);
+    const source = node('pre', undefined, 'proof-source');
+    source.tabIndex = 0;
+    source.append(node('code', item.code));
+    card.append(source);
+    const facts = node('dl', undefined, 'proof-facts');
+    for (const [label, value] of [
+      ['Observed', item.reason ?? 'succeeded'],
+      ['Elapsed', typeof item.durationMs === 'number' ? `${item.durationMs.toFixed(0)} ms` : '—'],
+      ['Container', item.containerRemoved === true ? 'Removed · checked' : item.containerRemoved === false ? 'Still present' : 'Not confirmed'],
+    ]) {
+      const row = node('div');
+      row.append(node('dt', label), node('dd', value));
+      facts.append(row);
+    }
+    card.append(facts);
+    if (item.id === 'authorized_read' && item.value != null) card.append(node('p', `Published articles returned: ${JSON.stringify(item.value)}`, 'proof-result'));
+    const calls = node('ul', undefined, 'proof-calls');
+    for (const call of item.toolCalls ?? []) calls.append(node('li', `${call.name} · ${call.status}${call.reason ? ` (${call.reason})` : ''}`));
+    card.append(calls);
+    const details = node('details', undefined, 'proof-details');
+    details.append(node('summary', 'Inspect execution trace'));
+    const evidence = node('pre', JSON.stringify(item, null, 2));
+    evidence.tabIndex = 0;
+    details.append(evidence);
+    card.append(details);
+    cards.append(card);
+  }
+  byId('security-record').textContent = report.createdAt
+    ? `Recorded ${new Date(report.createdAt).toLocaleString()} · Runtime required: ${report.runtime} · Image: ${report.image}` : '';
+}
+
+let lastSecurityBody = '';
+async function refreshSecurity() {
+  try {
+    const response = await fetch('/demo/security-report', {cache: 'no-store', credentials: 'same-origin'});
+    if (!response.ok) throw new Error('Security report unavailable');
+    const body = await response.text();
+    if (body !== lastSecurityBody) {
+      renderSecurity(JSON.parse(body));
+      lastSecurityBody = body;
+    }
+  } catch {
+    lastSecurityBody = '';
+    byId('security-state').textContent = 'REPORT UNAVAILABLE';
+    byId('security-note').textContent = 'The security report could not be loaded. Any observations below are from the previous successful refresh.';
+  } finally {
+    setTimeout(refreshSecurity, 2500);
+  }
+}
+refreshSecurity();

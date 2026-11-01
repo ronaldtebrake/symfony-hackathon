@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Demo\ReportStore;
-use App\Demo\DemoQuestion;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,11 +30,11 @@ final readonly class DemoController
         return $this->response($this->store->read() ?? '{"status":"empty","results":[]}', 'application/json');
     }
 
-    #[Route('/demo/questions', name: 'app_demo_questions', methods: ['GET'])]
-    public function questions(Request $request): Response
+    #[Route('/demo/security-report', name: 'app_demo_security_report', methods: ['GET'])]
+    public function securityReport(Request $request): Response
     {
         $this->requireLocalRequest($request);
-        return $this->response(json_encode(['choices' => DemoQuestion::choices(), 'maxBytes' => DemoQuestion::MAX_BYTES], JSON_THROW_ON_ERROR), 'application/json');
+        return $this->response($this->store->readSecurityProof() ?? '{"status":"empty","cases":[]}', 'application/json');
     }
 
     private function requireLocalRequest(Request $request): void

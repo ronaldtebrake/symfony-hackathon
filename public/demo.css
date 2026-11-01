@@ -35,7 +35,7 @@ a {
   text-decoration:none;
 }
 
-button,select,textarea {
+button,select {
   font:inherit;
 }
 
@@ -43,7 +43,7 @@ button {
   cursor:pointer;
 }
 
-button:focus-visible,a:focus-visible,select:focus-visible,textarea:focus-visible,pre:focus-visible {
+button:focus-visible,a:focus-visible,select:focus-visible,pre:focus-visible {
   outline:3px solid var(--accent);
   outline-offset:4px;
 }
@@ -195,56 +195,7 @@ h1 {
   overflow:auto;
 }
 
-button:disabled {
-  opacity:.5;
-  cursor:not-allowed;
-}
-
-.question-builder {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:40px;
-  padding:26px;
-  margin:0 0 40px;
-  border:1px solid var(--line);
-  border-radius:8px;
-  background:#fffefa;
-}
-
-.question-builder h2 {
-  font:normal 25px/1.2 Georgia,serif;
-  margin:10px 0;
-}
-
-.question-builder p {
-  color:var(--muted);
-  font-size:12px;
-  margin:8px 0;
-}
-
-.question-controls label {
-  display:block;
-  font-size:11px;
-  font-weight:600;
-  margin-bottom:6px;
-}
-
-.question-controls select,.question-controls textarea {
-  width:100%;
-  border:1px solid var(--line);
-  border-radius:4px;
-  padding:10px;
-  background:var(--paper);
-  color:var(--ink);
-}
-
-.question-controls textarea {
-  resize:vertical;
-  min-height:95px;
-  font-size:13px;
-}
-
-.question-controls .question-error,.verification.review {
+.verification.review {
   color:#9b5c3a;
 }
 
@@ -260,42 +211,6 @@ button:disabled {
 
 .assignment p {
   overflow-wrap:anywhere;
-}
-
-.copy-button {
-  border:1px solid #62655e;
-  color:#d8dcd1;
-  background:transparent;
-  font-size:10px;
-  padding:4px 8px;
-  border-radius:4px;
-}
-
-.copy-button:hover {
-  background:#454b42;
-}
-
-.run-options {
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-top:13px;
-  color:#bbbfb3;
-  font-size:11px;
-}
-
-.text-button {
-  background:none;
-  border:none;
-  padding:0;
-  color:var(--muted);
-  font-size:11px;
-}
-
-.text-button.selected {
-  color:var(--ink);
-  text-decoration:underline;
-  text-underline-offset:4px;
 }
 
 .run-box .run-help {
@@ -779,6 +694,142 @@ td:first-child {
   background:var(--accent);
 }
 
+.security-proof {
+  border-top:1px solid var(--line);
+  margin-top:48px;
+  padding-top:35px;
+}
+
+.security-intro {
+  color:var(--muted);
+  max-width:780px;
+}
+
+.proof-run {
+  display:flex;
+  gap:18px;
+  align-items:center;
+  margin:20px 0;
+}
+
+.proof-run code {
+  background:var(--ink);
+  color:var(--paper);
+  padding:10px 16px;
+  border-radius:5px;
+  font:12px var(--mono);
+}
+
+.proof-run span {
+  font-size:11px;
+  color:var(--muted);
+}
+
+.security-cases {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
+  align-items:start;
+}
+
+.security-card {
+  border:1px solid var(--line);
+  border-radius:7px;
+  padding:20px;
+  background:#fffefa;
+  min-width:0;
+}
+
+.security-card .card-heading {
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.security-card h3 {
+  font-size:17px;
+  margin:0;
+}
+
+.proof-outcome {
+  font-size:10px;
+  padding:3px 6px;
+  border-radius:3px;
+}
+
+.proof-outcome.passed {
+  background:var(--soft-green);
+  color:var(--green);
+}
+
+.proof-outcome.failed {
+  background:#f8eade;
+  color:#aa452d;
+}
+
+.proof-source {
+  background:#222820;
+  color:#d1d9c9;
+  padding:14px;
+  border-radius:4px;
+  font:11px/1.7 var(--mono);
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  min-height:106px;
+}
+
+.proof-facts {
+  margin:18px 0;
+  font-size:11px;
+}
+
+.proof-facts>div {
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  margin:5px 0;
+}
+
+.proof-facts dt {
+  color:var(--muted);
+}
+
+.proof-facts dd {
+  margin:0;
+  font-family:var(--mono);
+}
+
+.proof-result,.proof-calls {
+  font-size:11px;
+  overflow-wrap:anywhere;
+}
+
+.proof-calls {
+  padding-left:16px;
+  color:var(--muted);
+}
+
+.proof-details {
+  border-top:1px solid var(--line);
+  padding-top:12px;
+}
+
+.proof-details summary {
+  cursor:pointer;
+  font-size:11px;
+}
+
+.proof-details pre {
+  font:10px/1.7 var(--mono);
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  max-height:380px;
+  overflow:auto;
+}
+
+#security-record {
+  overflow-wrap:anywhere;
+}
+
 .boundary {
   display:grid;
   grid-template-columns:1fr 2.2fr;
@@ -883,10 +934,12 @@ footer {
 }
 
 @media(max-width:760px) {
-  .question-builder {
+  .security-cases {
     grid-template-columns:1fr;
-    gap:18px;
-    padding:20px;
+  }
+  .proof-run {
+    flex-wrap:wrap;
+    gap:8px;
   }
   .shell {
     padding:0 20px;

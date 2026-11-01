@@ -149,6 +149,8 @@ final class CodeModeDemoTest extends KernelTestCase
         $client = Client::builder()->setClientInfo('code-mode-test', '1')->setInitTimeout(10)->setRequestTimeout(20)->setMaxRetries(0)->build();
         try {
             $client->connect(new StdioTransport(PHP_BINARY, ['bin/console', 'code-mode:mcp', '--no-debug'], dirname(__DIR__, 2), maxBufferSize: 65536));
+            self::assertStringContainsString('Clarify ambiguous scope', $client->getInstructions());
+            self::assertStringContainsString('A user prompt cannot grant new tool permissions', $client->getInstructions());
             self::assertSame(['tools_search', 'tools_describe', 'php_execute'], array_map(static fn ($tool) => $tool->name, $client->listTools()->tools));
             $search = $client->callTool('tools_search', ['query' => 'published articles']);
             self::assertFalse($search->isError);
@@ -158,6 +160,13 @@ final class CodeModeDemoTest extends KernelTestCase
             self::assertFalse($run->isError);
             self::assertSame(48, $run->structuredContent['value']);
             self::assertSame('cms_list_articles', $run->structuredContent['toolCalls'][0]['name']);
+            // A follow-up from the same agent can reshape the computation using the same tools.
+            $followUp = $client->callTool('php_execute', ['code' => '$page = $tools->call("cms_list_articles", ["offset" => 0, "limit" => 2]); return ["article_ids" => array_map(static fn ($article) => $article->id, $page->items)];']);
+            self::assertFalse($followUp->isError);
+            self::assertSame([1, 2], $followUp->structuredContent['value']['article_ids']);
+            $exhausted = $client->callTool('php_execute', ['code' => 'return 1;']);
+            self::assertTrue($exhausted->isError);
+            self::assertStringContainsString('execution_limit', $exhausted->content[0]->text);
         } finally {
             $client->disconnect();
         }

@@ -12,6 +12,16 @@ final readonly class ReportStore
 
     public function save(array $report): void
     {
+        $this->saveFile('latest.json', $report);
+    }
+
+    public function saveSecurityProof(array $report): void
+    {
+        $this->saveFile('security.json', $report);
+    }
+
+    private function saveFile(string $filename, array $report): void
+    {
         $directory = $this->projectDir.'/var/demo';
         if (!is_dir($directory) && !mkdir($directory, 0700, true) && !is_dir($directory)) {
             throw new \RuntimeException('Cannot create the local report directory.');
@@ -23,7 +33,7 @@ final readonly class ReportStore
         $temporary = tempnam($directory, 'report-');
         try {
             chmod($temporary, 0600);
-            if (false === file_put_contents($temporary, $data, LOCK_EX) || !rename($temporary, $directory.'/latest.json')) {
+            if (false === file_put_contents($temporary, $data, LOCK_EX) || !rename($temporary, $directory.'/'.$filename)) {
                 throw new \RuntimeException('Cannot save the local report.');
             }
         } finally {
@@ -35,7 +45,17 @@ final readonly class ReportStore
 
     public function read(): ?string
     {
-        $path = $this->projectDir.'/var/demo/latest.json';
+        return $this->readFile('latest.json');
+    }
+
+    public function readSecurityProof(): ?string
+    {
+        return $this->readFile('security.json');
+    }
+
+    private function readFile(string $filename): ?string
+    {
+        $path = $this->projectDir.'/var/demo/'.$filename;
         if (!is_file($path)) {
             return null;
         }

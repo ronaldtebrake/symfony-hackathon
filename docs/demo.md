@@ -13,24 +13,64 @@ The first judge-facing demo is **Symfony-only**: the Symfony application runs th
 
 The browser cannot start executions. A fresh CLI invocation creates fresh Code Mode sessions. The MCP-facing server allows only two execution attempts over its process lifetime; restart it for a new operator-authorized task.
 
-## Change the question
+## Agent conversations
 
-The workbench offers the original audit, a grouped impact question and a custom question. Select a question and copy the generated command into your terminal. Selecting a question does not change the previous recorded results: their exact question remains visible above the comparison. The browser has no execution or question-submission endpoint.
+The human talks to their MCP-capable agent. The agent can ask clarifying questions, discover the available tools, write PHP, inspect the result and respond to the human. Symfony Code Mode supplies tool discovery and isolated execution; it does not own the conversation or provide a chat UI.
+
+For example, a human can ask for the editorial audit, then follow up with “Group those issues and show which missing image descriptions affect multiple articles.” If scope or the desired result is unclear, the agent should clarify with the human before calling `php_execute`. Server initialization instructions describe this workflow. They guide the agent; the broker and sandbox enforce permissions independently.
+
+Configure a local MCP client with an absolute project path:
+
+```json
+{
+  "mcpServers": {
+    "symfony-code-mode": {
+      "command": "php",
+      "args": ["/absolute/path/symfony-hackathon/bin/console", "code-mode:mcp", "--no-debug"]
+    }
+  }
+}
+```
+
+The server exposes `tools_search`, `tools_describe` and `php_execute`. Only described, locally approved tools can execute. User agreement in a conversation cannot add permissions, expose credentials or change runtime limits. For unavailable capabilities, the agent can explain the limitation and help the human reshape the task. It must not retry a denial indefinitely.
+
+The current proof permits **two PHP execution attempts per server process**, including failed attempts. A follow-up can use the remaining attempt; exhaustion requires the operator to start a new server process. No budget-reset tool is exposed to the agent. This bounded process lifetime is a proof limitation, not a complete conversation/session service.
+
+This path uses the client agent's model and does not require the demo's Hugging Face key. External MCP-client tests cover discovery, two different computations and refusal of a third execution. They do not establish that a particular agent/model successfully reasons through the task. The external-client path does not currently save conversation traces to the comparison report.
+
+## CLI comparison harness
+
+The Symfony AI CLI is a reproducible comparison harness, separate from the human's agent conversation. It sends the same question to direct-tool and Code Mode agents:
 
 ```bash
 composer demo -- --mode=live --scenario=impact
 composer demo -- --mode=live --question='Count published articles by language. Return counts.'
 ```
 
-Both approaches receive exactly the same question. Symfony AI supplies the PHP for Code Mode; no application-specific orchestration tool is added when the question changes. The new questions use only the Symfony fixture backend. Each run creates fresh sessions with the existing host identity, three allowed read tools, gVisor profile and execution limits. Question text cannot select an endpoint, credential, policy or runtime profile. System prompts guide the agent; the broker and sandbox enforce access even if the agent follows a hostile question.
+These changed questions use the read-only Symfony fixture and require live inference. Reference mode supports only the original checked-in audit. The impact scenario has an independent oracle for 48 articles, two groups of article IDs and three shared images without alt text. Custom JSON answers require supporting MCP reads but are marked **review required**, with no correctness or payload-savings badge.
 
-The impact scenario has its own independent fixture oracle: 48 articles, two groups of article IDs and three shared images without alt text. Custom questions return a JSON object and need successful MCP reads, but have no general correctness oracle. They are marked **review required** and never display a payload-savings badge. An error, invalid JSON or answer without supporting reads fails verification.
+Custom CLI input is limited to 2000 UTF-8 bytes, with terminal controls and invisible formatting rejected. Questions cannot change host identity, endpoints, policies or execution limits. Live questions go to the configured provider and the local report. Local tests mock provider responses while executing the alternate program through real MCP/gVisor; live Hugging Face generation remains unverified.
 
-Custom input is limited to 2000 UTF-8 bytes. Terminal controls and invisible formatting characters are rejected. The page renders questions and results as text and quotes custom questions as one shell argument. Avoid including secrets: live questions are sent to the configured model provider and saved in the local report.
+## Visible security proof
 
-Changed questions require live inference; reference mode supports only the original audit and fails explicitly for other questions. Local tests supply mocked provider responses to verify question propagation, the alternate PHP program through real MCP/gVisor, and rejection of an attempted delete. This verifies the integration, **not a model's ability to generate the new program**. Live Hugging Face generation remains unverified.
+```bash
+composer demo:security
+composer start
+```
 
-Run the command-quoting checks with `node --test tests/Browser/demo-questions.test.mjs` (Node 18+). The PHP checks are included in `composer check`; the real-runtime checks are included in `composer test:demo` with the sandbox configuration exported as described above.
+Open [the proof viewer](http://127.0.0.1:8000/demo#security-proof). The CLI runs three fixed programs against the read-only Symfony MCP fixture, using the same broker and gVisor implementation as Code Mode:
+
+| Probe | Required observation |
+| --- | --- |
+| Authorized read | PHP returns 48 published articles, with a successful `cms_list_articles` call in the host ledger. |
+| Unauthorized tool | A `cms_delete_article` request is rejected with `tool_denied` and a host-recorded `denied` call. An upstream failure alone cannot pass this check. |
+| Infinite loop | PHP completes an approved read, then enters `while (true) {}`. The host must report `wall_timeout`; a timeout before the read completes does not pass. |
+
+Each fixed probe is a separate operator-authorized execution with a **2-second wall budget, 128 MiB memory and three-call maximum**. The normal agent demonstration retains its 15-second, 30-call profile and two-attempt session cap. The proof's elapsed time includes container creation and cleanup; its watchdog starts at attachment.
+
+Both successful results and runner failures identify the host-generated container. After each run, the proof independently queries Docker for that exact name. The check passes only when the expected outcome and supporting ledger match and container absence is confirmed. Missing runtime configuration, unknown cleanup state or an unexpected error fails the proof. No success is fabricated when infrastructure is unavailable.
+
+Reports are atomically written with owner-only permissions to `var/demo/security.json`, separately from the comparison in `latest.json`. The page reads them through a loopback-only GET endpoint, renders source/results as text and exposes the full recorded case in each expandable trace. There is no HTTP execution endpoint. These are real executions of fixed probe programs; no model is called, and this is not an external security audit.
 
 ## What is measured
 
@@ -41,23 +81,6 @@ The reference algorithms make the same 10 MCP calls: 4 list pages, 4 detail batc
 `toolPayloadBytes` counts the exact UTF-8 JSON strings returned by the application toolbox. Code Mode search/describe results and errors are included. Prompts, initial schemas, generated PHP and protocol framing are excluded. These are **payload bytes, not token estimates or billing totals**. Provider token usage is shown only when Symfony AI receives usage metadata; missing usage stays blank. Compare provider totals only for successful live runs of both paths. A single run is not a reliable performance benchmark.
 
 The host ledger includes calls completed before failed attempts, so retries do not erase their work. `incomplete` means a result was not successfully received; upstream effects may already have happened. Failed final runs never display a payload-savings badge. Duration includes setup/model work and is not a pure sandbox speed comparison.
-
-## External MCP clients
-
-Configure a local MCP client with an absolute project path:
-
-```json
-{
-  "mcpServers": {
-    "php-code-mode": {
-      "command": "php",
-      "args": ["/absolute/path/symfony-hackathon/bin/console", "code-mode:mcp", "--no-debug"]
-    }
-  }
-}
-```
-
-The server exposes `tools_search`, `tools_describe` and `php_execute`. Schemas are loaded progressively; execution can call only described tools. The server owns identity and policies. It is meant for a trusted local client, not anonymous network access. Run the audit prompt shown in the workbench, then inspect the returned host ledger. This external-client path does not write the comparison report.
 
 ## Drupal Tool API adapter
 
@@ -83,14 +106,8 @@ The gateway preserves structured results, including Tool API envelopes such as `
 | --- | --- |
 | 0–15 s | State the audit task: content passes repeatedly through an agent when PHP can batch, join and filter it. |
 | 15–40 s | Run live Code Mode. Show discovery, actual model-generated PHP, and the verified comparison with the same batch-capable tools. |
-| 40–60 s | Switch to the impact question. Show a different generated program and its grouped result using the same tools and limits. Rehearse inference timing before recording. |
-| 60–80 s | Show real denied-tool and timeout checks, then explain the host policy and gVisor boundary. |
+| 40–60 s | Ask the agent a follow-up in the same conversation. Show the revised PHP and result using the same tools and remaining execution budget. |
+| 60–80 s | Open the recorded security proof: authorized read, denied tool call and terminated loop. Expand a host trace and its container-removal check. |
 | 80–90 s | Show the reusable Composer package and Symfony integration. Mention Drupal briefly as a later demo built on the same foundation. |
-
-For a short guardrail demonstration, export the sandbox variables and run:
-
-```bash
-php bin/phpunit -c packages/php-code-mode/phpunit.dist.xml --testsuite Sandbox --filter 'testDeniedCallNeverReachesHostHandler|CPU loop' --testdox
-```
 
 Before recording, verify a real Hugging Face run, retain its report, rehearse both paths, and keep the explicitly labelled reference run available if inference is unavailable. A reference recording cannot be presented as model generation. No submission video has been recorded or published. The [hackathon brief](https://symfony.com/hackathon) asks for working, runnable code and a 90-second demo by 22 November 2026, 18:00 CET.

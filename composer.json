@@ -83,6 +83,7 @@
         "test:demo": "@php bin/phpunit -c phpunit.sandbox.xml",
         "proof:code-mode": "@php packages/php-code-mode/examples/proof.php",
         "demo": "@php bin/console code-mode:demo",
+        "demo:security": "@php bin/console code-mode:security-proof",
         "check": [
             "@composer validate --strict",
             "@composer validate --strict --working-dir=packages/php-code-mode",
