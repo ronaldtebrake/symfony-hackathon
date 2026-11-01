@@ -14,14 +14,9 @@ The editorial audit checks **48 articles** and returns the same **10 findings** 
 
 The animation illustrates those measured results. Reference mode uses checked-in PHP; MCP calls and sandbox execution are real. Payload excludes prompts, initial schemas and generated code. **This is not a model-token savings claim.** [Verification record](packages/php-code-mode/docs/verification.md).
 
-<details>
-<summary>See the actual reference-run screenshot</summary>
-
 ![Actual local Code Mode workbench showing matching findings, measured payloads and PHP executed in gVisor. No model was called.](docs/images/code-mode-proof.jpg)
 
 *Captured on 31 October 2026. This is a tested development proof, not an audited public execution service.*
-
-</details>
 
 ## Run locally
 
