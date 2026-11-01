@@ -12,7 +12,7 @@
   <div class="shell">
     <header class="masthead">
       <a class="brand" href="/demo" aria-label="Symfony Code Mode home"><span class="brand-mark">{ }</span><span>Symfony Code Mode</span></a>
-      <nav aria-label="Main navigation"><a class="active" href="#workbench">The demo</a><a href="#security-proof">Security proof</a><a href="https://github.com/ronaldtebrake/symfony-hackathon" target="_blank" rel="noopener noreferrer">Source <span aria-hidden="true">↗</span></a></nav>
+      <nav aria-label="Main navigation"><a class="active" href="#workbench">Execution proof</a><a href="#security-proof">Security proof</a><a href="https://github.com/ronaldtebrake/symfony-hackathon" target="_blank" rel="noopener noreferrer">Source <span aria-hidden="true">↗</span></a></nav>
       <span class="local-badge"><span class="dot"></span> Local workbench</span>
     </header>
 
@@ -20,20 +20,20 @@
       <section class="intro" aria-labelledby="page-title">
         <div>
           <div class="eyebrow">Symfony AI &amp; MCP Hackathon · 2026</div>
-          <h1 id="page-title">Let PHP do<br>the busywork<span class="accent">.</span></h1>
-          <p class="lede">Ask in your agent. It writes PHP to compose approved MCP tools in isolation, then brings the result back to your conversation.</p>
+          <h1 id="page-title">Let PHP do<br><span class="headline-accent">the busywork.</span></h1>
+          <p class="lede">Ask and refine the task in Codex. Here, inspect the PHP, tool calls and recorded results from real execution.</p>
         </div>
         <div class="run-box">
-          <div class="run-box-heading"><span class="eyebrow">Use it from your agent</span><span class="terminal-mark" aria-hidden="true">⌘</span></div>
-          <p>Human + agent → Code Mode</p>
+          <div class="run-box-heading"><span class="eyebrow">Conversations stay in Codex</span><span class="terminal-mark" aria-hidden="true">⌘</span></div>
+          <p>Human + Codex → Code Mode</p>
           <div class="command"><code>php bin/console code-mode:mcp</code></div>
-          <p class="run-help">Connect this STDIO MCP server to your agent with the project as its working directory. Ask and refine your question there.</p>
+          <p class="run-help">Connect this STDIO MCP server to Codex with the project as its working directory. Ask follow-up questions in that conversation.</p>
           <p class="run-help">This page displays local proof reports. Generate the comparison with <code>composer demo</code> and the security proof with <code>composer demo:security</code>.</p>
         </div>
       </section>
 
       <section id="workbench" aria-labelledby="audit-heading">
-        <div class="section-top"><div><span class="eyebrow">The recorded run</span><h2 id="audit-heading">The question behind these results.</h2></div><span class="run-state" id="run-state" role="status">Waiting for a run</span></div>
+        <div class="section-top"><div><span class="eyebrow">The recorded run</span><h2 id="audit-heading">The execution behind the answer.</h2></div><span class="run-state" id="run-state" role="status">Waiting for a run</span></div>
         <div class="assignment"><span class="assignment-icon" aria-hidden="true">↳</span><p id="recorded-question">No comparison has been recorded yet. Run composer demo for the reference audit.</p><span class="dataset-label" id="dataset-label">Editorial fixture · read only</span></div>
         <div class="mode-note" id="mode-note" role="status">Run <code>composer demo</code> in your terminal. This page follows the latest local result.</div>
 
@@ -82,7 +82,7 @@
       </section>
 
       <section class="boundary" id="boundary" aria-labelledby="boundary-heading"><div><span class="eyebrow">The trust boundary</span><h2 id="boundary-heading">Useful access.<br>Explicit limits.</h2><p>The generated program is untrusted. The host owns tool permissions and execution limits.</p></div><div class="boundary-controls"><div><span>01</span><strong>gVisor required</strong><p>Native PHP in a userspace kernel sandbox. No ordinary-container fallback.</p></div><div><span>02</span><strong>No guest network</strong><p>No host mounts, credentials or Docker socket. A read-only root filesystem.</p></div><div><span>03</span><strong>Bounded execution</strong><p>15 seconds, 128 MiB, 30 tool calls per attempt. At most two attempts per session.</p></div><div><span>04</span><strong>Broker authorization</strong><p>Local allowlist and argument validation on every call. Upstream hints grant no permissions.</p></div></div></section>
-      <p class="security-note">This is a verified development proof. Production deployment still needs independent security review, admission limits and operational supervision. The web page only reads proof reports. Conversations stay in your agent; execution starts through MCP or the operator CLI.</p>
+      <p class="security-note">This is a verified development proof. Production deployment still needs independent security review, admission limits and operational supervision. The web page only reads proof reports. Conversations stay in Codex; execution starts through MCP or the operator CLI.</p>
     </main>
     <footer><span>Built with Symfony AI · PHP MCP SDK · gVisor</span><span id="updated-at">Local reports stay on this machine.</span></footer>
   </div>
