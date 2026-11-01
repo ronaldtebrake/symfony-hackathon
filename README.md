@@ -16,7 +16,9 @@ The animation illustrates those measured results. Reference mode uses checked-in
 
 ![Actual local Code Mode workbench showing matching findings, measured payloads and PHP executed in gVisor. No model was called.](docs/images/code-mode-proof.jpg)
 
-*Captured on 31 October 2026. This is a tested development proof, not an audited public execution service.*
+*Screenshot refreshed on 1 November 2026; reference execution recorded on 31 October. This is a tested development proof, not an audited public execution service.*
+
+The workbench also shows a [real two-turn Codex conversation](docs/codex-conversation.md): an audit, then a follow-up that recomputes shared-image repair priorities. Select either turn to inspect its exact generated PHP, returned answer and actual MCP requests, with **20 host-recorded upstream calls** across both executions. [View the captured follow-up](docs/images/codex-proof.jpg).
 
 ## Run locally
 
@@ -34,7 +36,7 @@ composer demo:security
 composer start
 ```
 
-Open [the workbench](http://127.0.0.1:8000/demo) to inspect the comparison and security proof. The fixed proof programs need no API key and are labelled **no model called**. The security report records an authorized read, a denied tool call, and an infinite loop stopped by the watchdog, with host traces and a per-container cleanup check. `/health` returns JSON. Stop the preview with Ctrl+C.
+Open [the workbench](http://127.0.0.1:8000/demo) to inspect the recorded Codex conversation, separate comparison and security proof. Viewing the checked-in Codex capture needs no API key or sandbox run. The fixed comparison and security programs are labelled **no model called**. The security report records an authorized read, a denied tool call, and an infinite loop stopped by the watchdog, with host traces and a per-container cleanup check. `/health` returns JSON. Stop the preview with Ctrl+C.
 
 For live generation, set `HUGGINGFACE_API_KEY` in ignored `.env.local`, then run `composer demo -- --mode=live`. The default model is `openai/gpt-oss-120b`; calls consume inference credits. Reports include provider token usage only when supplied. See [demo setup, Drupal connection and 90-second walkthrough](docs/demo.md).
 

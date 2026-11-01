@@ -37,6 +37,13 @@ final readonly class DemoController
         return $this->response($this->store->readSecurityProof() ?? '{"status":"empty","cases":[]}', 'application/json');
     }
 
+    #[Route('/demo/codex-report', name: 'app_demo_codex_report', methods: ['GET'])]
+    public function codexReport(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+        return $this->response($this->store->readCodexProof() ?? '{"status":"empty","turns":[]}', 'application/json');
+    }
+
     private function requireLocalRequest(Request $request): void
     {
         if (!in_array($request->getClientIp(), ['127.0.0.1', '::1'], true) || !in_array($request->getHost(), ['127.0.0.1', 'localhost', '[::1]'], true)) {

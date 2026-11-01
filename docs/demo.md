@@ -7,7 +7,7 @@ The first judge-facing demo is **Symfony-only**: the Symfony application runs th
 ## Run and inspect
 
 1. Install root Composer dependencies and set up the [dedicated gVisor host](../packages/php-code-mode/README.md#run-the-proof). Build the runner image, then configure its immutable `CODE_MODE_IMAGE`. For an alternate CLI, set `CODE_MODE_DOCKER_COMMAND` to a trusted JSON argv array. Symfony commands read these from `.env.local`; PHPUnit sandbox suites and standalone package examples need exported environment variables.
-2. Run `composer demo`, then `composer start`. Open [the workbench](http://127.0.0.1:8000/demo). It shows the exact PHP, host-recorded calls, findings and comparison. Reference mode makes no provider calls. Reports stay in ignored `var/demo/latest.json` with owner-only file permissions; the newest run replaces the previous one.
+2. Run `composer demo`, then `composer start`. Open [the workbench](http://127.0.0.1:8000/demo). Its **Recorded Codex run** section shows the checked-in two-turn conversation, generated PHP, actual MCP requests and host calls. The separate comparison shows its own PHP, calls and findings. Reference mode makes no provider calls. Comparison reports stay in ignored `var/demo/latest.json` with owner-only file permissions; the newest run replaces the previous one.
 3. For live generation, set `HUGGINGFACE_API_KEY` in ignored `.env.local` to a token with Inference Providers permission. Run `composer demo -- --mode=live`. Optionally use `--approach=code` or `--approach=direct`. Each path runs its own Symfony AI agent against `HUGGINGFACE_MODEL` (default `openai/gpt-oss-120b`). A missing key fails explicitly; there is no reference fallback.
 4. Run `composer check`, then `composer test:sandbox`, then `composer test:demo`. The latter two require the pinned image/runtime and fail if unavailable. Use a dedicated endpoint and run them sequentially.
 
@@ -36,7 +36,7 @@ The server exposes `tools_search`, `tools_describe` and `php_execute`. Only desc
 
 The current proof permits **two PHP execution attempts per server process**, including failed attempts. A follow-up can use the remaining attempt; exhaustion requires the operator to start a new server process. No budget-reset tool is exposed to the agent. This bounded process lifetime is a proof limitation, not a complete conversation/session service.
 
-This path uses the client agent's model and does not require the demo's Hugging Face key. External MCP-client tests cover discovery, two different computations and refusal of a third execution. Separately, a [live Codex conversation](codex-conversation.md) verified an audit followed by a recomputed repair plan using two different generated programs in one MCP process. See [Codex connection setup](codex.md). The external-client path does not save conversation traces to the comparison report; the live rehearsal has its own evidence capture.
+This path uses the client agent's model and does not require the demo's Hugging Face key. External MCP-client tests cover discovery, two different computations and refusal of a third execution. Separately, a [live Codex conversation](codex-conversation.md) verified an audit followed by a recomputed repair plan using two different generated programs in one MCP process. See [Codex connection setup](codex.md). The external-client path does not save conversation traces to the comparison report. The workbench reads only the reviewed rehearsal capture; new conversations are not automatically imported, and viewing it needs no model or sandbox execution.
 
 ## CLI comparison harness
 
@@ -71,6 +71,8 @@ Each fixed probe is a separate operator-authorized execution with a **2-second w
 Both successful results and runner failures identify the host-generated container. After each run, the proof independently queries Docker for that exact name. The check passes only when the expected outcome and supporting ledger match and container absence is confirmed. Missing runtime configuration, unknown cleanup state or an unexpected error fails the proof. No success is fabricated when infrastructure is unavailable.
 
 Reports are atomically written with owner-only permissions to `var/demo/security.json`, separately from the comparison in `latest.json`. The page reads them through a loopback-only GET endpoint, renders source/results as text and exposes the full recorded case in each expandable trace. There is no HTTP execution endpoint. These are real executions of fixed probe programs; no model is called, and this is not an external security audit.
+
+![Actual security proof: an authorized read succeeds, an unauthorized tool is denied, and an infinite loop is terminated. Captured 1 November 2026.](images/security-proof.jpg)
 
 ## What is measured
 

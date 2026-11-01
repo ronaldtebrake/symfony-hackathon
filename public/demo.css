@@ -258,6 +258,157 @@ h1 {
   align-items:center;
 }
 
+.codex-intro {
+  color:var(--muted);
+  max-width:880px;
+  margin:0 0 9px;
+}
+
+.codex-provenance {
+  font:10px/1.7 var(--mono);
+  color:var(--brand-muted);
+  margin:0 0 24px;
+}
+
+.codex-turns {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin:0 0 20px;
+}
+
+.codex-turns button {
+  text-align:left;
+  color:var(--muted);
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:7px;
+  padding:13px 18px;
+}
+
+.codex-turns button[aria-pressed=true] {
+  color:var(--brand);
+  background:var(--soft-accent);
+  border-color:var(--accent);
+  box-shadow:inset 3px 0 0 var(--accent);
+}
+
+.codex-turns span {
+  display:block;
+  font:10px var(--mono);
+  margin-bottom:5px;
+}
+
+.codex-turns strong {
+  font-size:13px;
+  font-weight:600;
+}
+
+.codex-grid {
+  display:grid;
+  grid-template-columns:minmax(260px, .85fr) minmax(0, 1.8fr);
+  gap:24px;
+  align-items:start;
+}
+
+.codex-request {
+  padding:20px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:7px;
+}
+
+.codex-request blockquote {
+  margin:12px 0 20px;
+  font-size:12px;
+  line-height:1.75;
+  overflow-wrap:anywhere;
+}
+
+.codex-outcome {
+  border-top:1px solid var(--line);
+  padding-top:15px;
+  font-size:12px;
+}
+
+.codex-outcome h3,.codex-mcp h3 {
+  font-size:12px;
+  margin:0 0 8px;
+  color:var(--brand);
+}
+
+.codex-outcome p {
+  font-weight:600;
+  margin:0 0 10px;
+}
+
+.codex-outcome ul {
+  margin:0;
+  padding-left:16px;
+  color:var(--muted);
+  font-size:11px;
+}
+
+.codex-outcome li+li {
+  margin-top:5px;
+}
+
+.codex-validation {
+  color:var(--brand);
+  font-size:10px;
+  margin:16px 0 0;
+}
+
+.codex-scroll {
+  height:465px;
+  overflow:auto;
+}
+
+.codex-scroll .table-scroll {
+  max-height:none;
+}
+
+.codex-scroll th,.codex-scroll td {
+  padding:9px 12px;
+}
+
+.codex-mcp,.codex-response {
+  padding:16px;
+}
+
+.codex-mcp>p {
+  font-size:11px;
+  color:var(--muted);
+}
+
+.codex-mcp details+details {
+  margin-top:12px;
+}
+
+.codex-response summary {
+  color:var(--brand);
+  cursor:pointer;
+  font-size:11px;
+}
+
+.codex-response pre {
+  font:11px/1.7 var(--mono);
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+
+.codex-footnote a {
+  color:var(--brand);
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+
+.reference-proof {
+  border-top:1px solid var(--line);
+  margin-top:48px;
+  padding-top:35px;
+}
+
 .section-top h2 {
   font-size:23px;
   line-height:1.4;
@@ -981,6 +1132,15 @@ footer {
 }
 
 @media(max-width:760px) {
+  .codex-grid {
+    grid-template-columns:1fr;
+  }
+  .codex-turns button {
+    padding:12px;
+  }
+  .codex-turns strong {
+    font-size:12px;
+  }
   .security-cases {
     grid-template-columns:1fr;
   }

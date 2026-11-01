@@ -14,15 +14,18 @@ function node(tag, text, className) {
   return element;
 }
 
-function renderTrace() {
-  const run = results()[byId('trace-approach').value];
-  const rows = byId('trace-rows');
+function renderCallRows(rows, calls) {
   rows.replaceChildren();
-  (run?.brokerCalls ?? []).forEach((call, index) => {
+  calls.forEach((call, index) => {
     const row = node('tr');
     row.append(node('td', String(index + 1).padStart(2, '0')), node('td', call.name), node('td', call.status), node('td', bytes(call.resultBytes)), node('td', typeof call.durationMs === 'number' ? `${call.durationMs.toFixed(0)} ms` : '—'));
     rows.append(row);
   });
+}
+
+function renderTrace() {
+  const run = results()[byId('trace-approach').value];
+  renderCallRows(byId('trace-rows'), run?.brokerCalls ?? []);
   byId('trace-empty').hidden = Boolean(run?.brokerCalls?.length);
 }
 
@@ -83,27 +86,29 @@ function render(report) {
     list.append(row);
   });
   byId('source-note').textContent = report.backend === 'drupal' ? 'Connected through MCP to the configured Drupal Tool API bridge. Review external findings on the site; fixture verification does not apply.' : 'The fixture is a real PHP MCP server. Both paths use the same dataset, authorization and batched tools.';
-  if (report.createdAt) byId('updated-at').textContent = `Last run · ${new Date(report.createdAt).toLocaleString()}`;
+  if (report.createdAt) byId('updated-at').textContent = `Comparison recorded · ${new Date(report.createdAt).toLocaleString()}`;
   renderTrace();
 }
 
-const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
-function selectTab(tab) {
-  tabs.forEach((item) => {
-    const active = item === tab;
-    item.setAttribute('aria-selected', String(active));
-    item.tabIndex = active ? 0 : -1;
-    byId(item.getAttribute('aria-controls')).hidden = !active;
-  });
-}
-tabs.forEach((tab, index) => {
-  tab.addEventListener('click', () => selectTab(tab));
-  tab.addEventListener('keydown', (event) => {
-    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-    event.preventDefault();
-    const target = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-    selectTab(tabs[target]);
-    tabs[target].focus();
+document.querySelectorAll('[role="tablist"]').forEach((tablist) => {
+  const tabs = Array.from(tablist.querySelectorAll('[role="tab"]'));
+  const selectTab = (tab) => {
+    tabs.forEach((item) => {
+      const active = item === tab;
+      item.setAttribute('aria-selected', String(active));
+      item.tabIndex = active ? 0 : -1;
+      byId(item.getAttribute('aria-controls')).hidden = !active;
+    });
+  };
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => selectTab(tab));
+    tab.addEventListener('keydown', (event) => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const target = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      selectTab(tabs[target]);
+      tabs[target].focus();
+    });
   });
 });
 byId('trace-approach').addEventListener('change', renderTrace);
@@ -191,3 +196,90 @@ async function refreshSecurity() {
   }
 }
 refreshSecurity();
+
+let codexCapture = null;
+const turnButtons = Array.from(document.querySelectorAll('[data-codex-turn]'));
+
+function renderCodexTurn(index) {
+  if (!codexCapture) return;
+  const turn = codexCapture.turns[index];
+  const calls = turn.items.filter((item) => item.type === 'mcpToolCall');
+  const execution = calls.find((item) => item.tool === 'php_execute');
+  const result = execution.result.structuredContent;
+  const value = result.value;
+  turnButtons.forEach((button) => button.setAttribute('aria-pressed', String(Number(button.dataset.codexTurn) === index)));
+  byId('codex-turn-label').textContent = index === 0 ? 'Original question · recorded' : 'Follow-up · recorded';
+  byId('codex-prompt').textContent = turn.prompt;
+  byId('codex-program').textContent = execution.arguments.code;
+  byId('codex-program').parentElement.scrollTop = 0;
+  byId('codex-program-caption').textContent = `Codex-generated PHP · executed in gVisor · ${result.durationMs.toFixed(0)} ms runner time`;
+  byId('codex-call-count').textContent = result.toolCalls.length;
+  renderCallRows(byId('codex-call-rows'), result.toolCalls);
+  byId('codex-answer').textContent = JSON.stringify(value, null, 2);
+  byId('codex-answer').scrollTop = 0;
+  byId('codex-response').textContent = turn.items.filter((item) => item.type === 'agentMessage' && item.phase === 'final_answer').map((item) => item.text).join('\n\n');
+  const mcpCalls = byId('codex-mcp-calls');
+  mcpCalls.replaceChildren();
+  for (const call of calls) {
+    const details = node('details', undefined, 'proof-details');
+    details.append(node('summary', `${call.tool} · ${call.status}`));
+    const trace = node('pre', JSON.stringify(call, null, 2));
+    trace.tabIndex = 0;
+    details.append(trace);
+    mcpCalls.append(details);
+  }
+  const detail = byId('codex-result-detail');
+  detail.replaceChildren();
+  if (index === 0) {
+    byId('codex-result-summary').textContent = `${value.total_audited} articles audited · ${value.affected_count} affected`;
+    detail.append(node('li', `Affected IDs: ${value.affected_articles.map((article) => article.id).join(', ')}`));
+  } else {
+    byId('codex-result-summary').textContent = `${value.total_audited} articles rechecked · ${value.hero_image_alt_fixes.length} shared-image fixes`;
+    for (const fix of value.hero_image_alt_fixes) {
+      detail.append(node('li', `Image ${fix.image_id} → articles ${fix.article_ids.join(', ')} (${fix.published_article_count} helped)`));
+    }
+    detail.append(node('li', `Missing descriptions: ${value.missing_meta_description.map((article) => article.id).join(', ')}`));
+  }
+  const verified = codexCapture.verification?.[index === 0 ? 'auditMatchesIndependentOracle' : 'impactMatchesIndependentOracle'];
+  byId('codex-validation').textContent = verified === true ? 'Recorded fixture check: matched the independent expected result.' : 'No successful fixture check recorded for this turn.';
+}
+
+turnButtons.forEach((button) => button.addEventListener('click', () => renderCodexTurn(Number(button.dataset.codexTurn))));
+
+async function loadCodexCapture() {
+  try {
+    const response = await fetch('/demo/codex-report', {cache: 'no-store', credentials: 'same-origin'});
+    if (!response.ok) throw new Error('Capture unavailable');
+    const report = await response.json();
+    if (report.status === 'empty') {
+      byId('codex-state').textContent = 'NO CAPTURE';
+      byId('codex-note').textContent = 'The recorded Codex capture is not available in this checkout.';
+      return;
+    }
+    // This viewer handles the reviewed two-turn Symfony rehearsal, not arbitrary imports.
+    if (report.backend !== 'Symfony fixture' || !Array.isArray(report.turns) || report.turns.length !== 2) throw new Error('Invalid capture');
+    const executions = report.turns.map((turn) => {
+      const runs = turn.items.filter((item) => item.type === 'mcpToolCall' && item.tool === 'php_execute');
+      if (turn.status !== 'completed' || typeof turn.prompt !== 'string' || runs.length !== 1
+        || runs[0].status !== 'completed' || runs[0].error || typeof runs[0].arguments?.code !== 'string'
+        || !Array.isArray(runs[0].result?.structuredContent?.toolCalls)) throw new Error('Incomplete capture');
+      return runs[0].result.structuredContent;
+    });
+    codexCapture = report;
+    renderCodexTurn(0);
+    byId('codex-state').textContent = '2 RECORDED TURNS';
+    byId('codex-note').textContent = 'Two scripted human prompts; Codex generated both responses and PHP programs live. Inspect the saved evidence here. Conversations stay in Codex.';
+    const recorded = new Date(report.recordedAt).toLocaleString('en-GB', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Amsterdam', timeZoneName: 'short'});
+    const callCount = executions.reduce((count, execution) => count + execution.toolCalls.length, 0);
+    byId('codex-provenance').textContent = `${report.model} · ${report.backend} · ${executions.length} PHP executions · ${callCount} upstream calls · Recorded ${recorded}`;
+    byId('codex-session-note').textContent = report.mcpProcess?.samePidObservedDuringBothTurns === true
+      ? 'Both turns used the same MCP process and its two-attempt budget.' : 'A shared MCP process was not confirmed in this capture.';
+    byId('codex-evidence').hidden = false;
+  } catch {
+    codexCapture = null;
+    byId('codex-evidence').hidden = true;
+    byId('codex-state').textContent = 'CAPTURE UNAVAILABLE';
+    byId('codex-note').textContent = 'The saved Codex evidence could not be loaded. No execution or successful result is implied.';
+  }
+}
+loadCodexCapture();

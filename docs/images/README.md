@@ -6,6 +6,15 @@ Edit the SVG directly. Preserve the reference-run label, byte-versus-token disti
 
 The palette follows [Symfony AI](https://ai.symfony.com/), inspected on 1 November 2026: brand violet `#5a55a5`, deep purple `#4c1d95`, magenta `#db2777`, blue `#1d4ed8`, and accent violet `#7f5bff`. Pale lavender surfaces and a dark purple code panel adapt those colors to this comparison. The SVG remains self-contained.
 
-`code-mode-proof.jpg` is an actual browser capture of the local Symfony workbench on 31 October 2026. It shows the verified reference report: 48 published articles, 10 matching findings and 10 batched MCP calls per approach; 20,154 versus 3,014 tool-result bytes. No model was called. The screenshot has not been retouched.
+The proof screenshots are actual browser captures refreshed on **1 November 2026**, using the same Symfony AI palette as the animation. They have not been retouched.
 
-To refresh it, run `composer demo` with the configured gVisor host, start `composer start`, open `/demo#workbench`, and capture the comparison and PHP program. Keep the reference/live label and payload definition visible. Use the synthetic fixture for repository screenshots.
+| Image | Recorded evidence shown |
+| --- | --- |
+| `code-mode-proof.jpg` | Reference report from **31 October**: 48 published articles, 10 matching findings and 10 batched MCP calls per approach; 20,154 versus 3,014 tool-result bytes. No model was called. |
+| `codex-proof.jpg` | The **1 November** live Codex rehearsal: follow-up prompt, shared-image repair result and exact generated PHP. The screenshot shows the beginning of the scrollable program. |
+| `codex-tool-calls.jpg` | The same follow-up's ten actual host-recorded upstream calls, outcomes, result sizes and timings. |
+| `security-proof.jpg` | The **1 November** fixed security probes: authorized read, blocked unauthorized tool and terminated infinite loop, with checked container removal. No model was called. |
+
+Start `composer start` and open `/demo#codex-run`, `/demo#workbench` or `/demo#security-proof`. The Codex section reads the reviewed [capture](../evidence/codex-conversation-2026-11-01.json); it does not import current conversations. The other sections read ignored `var/demo/latest.json` and `var/demo/security.json`. If those reports are missing, generate them with `composer demo` and `composer demo:security` against the configured gVisor host before capturing. Styling-only refreshes can reuse existing reports; record the screenshot date separately from the execution date.
+
+Use the synthetic Symfony fixture for repository screenshots. Preserve the recorded/reference labels and payload-versus-token distinction. Capture the actual browser; do not alter execution outcomes or substitute illustrative results.

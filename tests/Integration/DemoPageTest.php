@@ -17,6 +17,8 @@ final class DemoPageTest extends WebTestCase
         self::assertResponseHeaderSame('x-content-type-options', 'nosniff');
         self::assertStringContainsString("script-src 'self'", $client->getResponse()->headers->get('Content-Security-Policy'));
         self::assertCount(0, $crawler->filterXPath('//textarea'));
+        self::assertCount(0, $crawler->filterXPath('//form|//input'));
+        self::assertCount(1, $crawler->filterXPath('//*[@id="codex-run"]'));
         self::assertCount(1, $crawler->filterXPath('//*[@id="security-proof"]'));
         $client->request('GET', '/demo/questions');
         self::assertResponseStatusCodeSame(404);
@@ -40,6 +42,38 @@ final class DemoPageTest extends WebTestCase
         $client->request('GET', '/demo/report', server: ['REMOTE_ADDR' => '203.0.113.1']);
         self::assertResponseStatusCodeSame(403);
         $client->request('GET', '/demo/report', server: ['REMOTE_ADDR' => '127.0.0.1', 'HTTP_HOST' => 'attacker.example']);
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testCodexCaptureIsExactReadOnlyAndLocallyScoped(): void
+    {
+        $client = self::createClient();
+        $client->request('GET', '/demo/codex-report');
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('content-type', 'application/json');
+        self::assertResponseHeaderSame('x-content-type-options', 'nosniff');
+        self::assertStringContainsString('no-store', $client->getResponse()->headers->get('cache-control'));
+        self::assertStringContainsString("script-src 'self'", $client->getResponse()->headers->get('Content-Security-Policy'));
+        $capture = file_get_contents(dirname(__DIR__, 2).'/docs/evidence/codex-conversation-2026-11-01.json');
+        self::assertSame($capture, $client->getResponse()->getContent(), 'Do not rewrite source, responses or host traces.');
+        $report = json_decode($capture, true, flags: JSON_THROW_ON_ERROR);
+        self::assertSame('Symfony fixture', $report['backend']);
+        self::assertCount(2, $report['turns']);
+        $programs = [];
+        foreach ($report['turns'] as $turn) {
+            $executions = array_values(array_filter($turn['items'], static fn ($item) => 'mcpToolCall' === $item['type'] && 'php_execute' === $item['tool']));
+            self::assertCount(1, $executions);
+            $programs[] = $executions[0]['arguments']['code'];
+            self::assertCount(10, $executions[0]['result']['structuredContent']['toolCalls']);
+        }
+        self::assertNotSame($programs[0], $programs[1]);
+        $client->request('GET', '/demo/codex-report?path=../../.env.local&file=latest.json');
+        self::assertSame($capture, $client->getResponse()->getContent(), 'HTTP parameters cannot select another file.');
+        $client->request('POST', '/demo/codex-report', content: '{"prompt":"run PHP"}');
+        self::assertResponseStatusCodeSame(405);
+        $client->request('GET', '/demo/codex-report', server: ['REMOTE_ADDR' => '203.0.113.1']);
+        self::assertResponseStatusCodeSame(403);
+        $client->request('GET', '/demo/codex-report', server: ['HTTP_HOST' => 'attacker.example']);
         self::assertResponseStatusCodeSame(403);
     }
 }

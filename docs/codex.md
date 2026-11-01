@@ -1,6 +1,6 @@
 # Use Symfony Code Mode from Codex
 
-Ask the question in Codex. It discovers the approved MCP tools, writes PHP, submits it to the isolated runner and answers from the result. Follow-up questions stay in that conversation. The workbench remains a viewer for separate proof reports.
+Ask the question in Codex. It discovers the approved MCP tools, writes PHP, submits it to the isolated runner and answers from the result. Follow-up questions stay in that conversation. The workbench is a read-only viewer for the recorded Codex rehearsal, comparison and security proofs.
 
 ## Connect this project
 
@@ -40,3 +40,11 @@ The conversation does not write to the comparison or security-proof workbench re
 ## Recorded live run
 
 The [1 November Codex conversation](codex-conversation.md) succeeded with two different generated programs in one MCP process: an article audit, then a repair plan ranked by shared-image impact. Both answers matched the independent fixture oracles. The record includes the exact submitted PHP, all 20 successful upstream calls, returned values and the machine-readable conversation capture. The human prompts were scripted for the rehearsal; the model responses and execution were live.
+
+Run `composer start` and open [Recorded Codex run](http://127.0.0.1:8000/demo#codex-run). Select the original question or follow-up, then inspect **Generated PHP**, **Tool calls** or **Answer**. The calls tab separates the host's upstream ledger from Codex's outer MCP requests, including their exact arguments and responses. The answer tab includes the returned JSON and Codex's verbatim final response.
+
+![Recorded Codex follow-up and the actual generated PHP in the Symfony AI palette.](images/codex-proof.jpg)
+
+![Host-recorded upstream calls from the follow-up.](images/codex-tool-calls.jpg)
+
+This reads the reviewed, checked-in [fixture capture](evidence/codex-conversation-2026-11-01.json). It does not execute PHP, call a model or synchronize new Codex conversations. Selecting a turn only changes the displayed evidence. New conversations remain in Codex and are not automatically imported. The screenshot capture date is 1 November 2026; timing and verification labels describe the recorded run.

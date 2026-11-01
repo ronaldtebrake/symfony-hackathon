@@ -53,15 +53,29 @@ final readonly class ReportStore
         return $this->readFile('security.json');
     }
 
+    public function readCodexProof(): ?string
+    {
+        // A reviewed, checked-in fixture capture. No caller can select a path or import a conversation.
+        return $this->readPath($this->projectDir.'/docs/evidence/codex-conversation-2026-11-01.json');
+    }
+
     private function readFile(string $filename): ?string
     {
-        $path = $this->projectDir.'/var/demo/'.$filename;
+        return $this->readPath($this->projectDir.'/var/demo/'.$filename);
+    }
+
+    private function readPath(string $path): ?string
+    {
         if (!is_file($path)) {
             return null;
         }
-        if (filesize($path) > 1048576) {
+        $data = file_get_contents($path, false, null, 0, 1048577);
+        if (false === $data) {
+            throw new \RuntimeException('Cannot read the local report.');
+        }
+        if (strlen($data) > 1048576) {
             throw new \RuntimeException('The local report exceeds its size limit.');
         }
-        return file_get_contents($path);
+        return $data;
     }
 }
