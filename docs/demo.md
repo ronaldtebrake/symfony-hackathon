@@ -104,12 +104,6 @@ The gateway preserves structured results, including Tool API envelopes such as `
 
 ## 90-second recording plan
 
-| Time | Show |
-| --- | --- |
-| 0–15 s | State the audit task: content passes repeatedly through an agent when PHP can batch, join and filter it. |
-| 15–40 s | Run live Code Mode. Show discovery, actual model-generated PHP, and the verified comparison with the same batch-capable tools. |
-| 40–60 s | Ask the agent a follow-up in the same conversation. Show the revised PHP and result using the same tools and remaining execution budget. |
-| 60–80 s | Open the recorded security proof: authorized read, denied tool call and terminated loop. Expand a host trace and its container-removal check. |
-| 80–90 s | Show the reusable Composer package and Symfony integration. Mention Drupal briefly as a later demo built on the same foundation. |
+Use the [recording pack](demo/README.md): a timed shot list, 177-word voice-over, exact Codex prompts and draft SRT captions. Start with the audit and follow-up in Codex, then show the reviewed workbench capture's generated PHP and actual calls, the separate reference comparison, and the three security probes. Finish on the reusable Composer package. The judge demo stays Symfony-only.
 
-The Codex conversation has been rehearsed with live generation. Before recording a live direct-versus-Code-Mode comparison, also verify a real Hugging Face run and retain its report. Keep the explicitly labelled reference comparison available if inference is unavailable; a reference recording cannot be presented as model generation. No submission video has been recorded or published. The [hackathon brief](https://symfony.com/hackathon) asks for working, runnable code and a 90-second demo by 22 November 2026, 18:00 CET.
+The reviewed rehearsal is an ephemeral app-server capture, not existing Codex desktop footage. Record the opening interaction and label the cut to the earlier 1 November capture; the workbench does not synchronize new conversations. No submission video has been recorded or published. The [hackathon brief](https://symfony.com/hackathon), checked on 1 November, asks for a public runnable repository and a 90-second video by **22 November 2026, 18:00 CET**. It also asks entrants to use Hugging Face Inference Providers; the implemented live path still needs verification before submission. The reference comparison makes no model calls and cannot stand in for that provider check.

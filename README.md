@@ -38,7 +38,7 @@ composer start
 
 Open [the workbench](http://127.0.0.1:8000/demo) to inspect the recorded Codex conversation, separate comparison and security proof. Viewing the checked-in Codex capture needs no API key or sandbox run. The fixed comparison and security programs are labelled **no model called**. The security report records an authorized read, a denied tool call, and an infinite loop stopped by the watchdog, with host traces and a per-container cleanup check. `/health` returns JSON. Stop the preview with Ctrl+C.
 
-For live generation, set `HUGGINGFACE_API_KEY` in ignored `.env.local`, then run `composer demo -- --mode=live`. The default model is `openai/gpt-oss-120b`; calls consume inference credits. Reports include provider token usage only when supplied. See [demo setup, Drupal connection and 90-second walkthrough](docs/demo.md).
+For live generation, set `HUGGINGFACE_API_KEY` in ignored `.env.local`, then run `composer demo -- --mode=live`. The default model is `openai/gpt-oss-120b`; calls consume inference credits. Reports include provider token usage only when supplied. See [demo setup](docs/demo.md) and the [90-second recording pack](docs/demo/README.md).
 
 Connect `php bin/console code-mode:mcp` as a STDIO server in your agent. Ask follow-up questions and clarify scope in that conversation; the workbench is a read-only evidence viewer. The host retains all permissions and limits. See [Codex setup](docs/codex.md) and [the live two-turn conversation with generated PHP and actual calls](docs/codex-conversation.md).
 
