@@ -36,7 +36,7 @@ The server exposes `tools_search`, `tools_describe` and `php_execute`. Only desc
 
 The current proof permits **two PHP execution attempts per server process**, including failed attempts. A follow-up can use the remaining attempt; exhaustion requires the operator to start a new server process. No budget-reset tool is exposed to the agent. This bounded process lifetime is a proof limitation, not a complete conversation/session service.
 
-This path uses the client agent's model and does not require the demo's Hugging Face key. External MCP-client tests cover discovery, two different computations and refusal of a third execution. They do not establish that a particular agent/model successfully reasons through the task. The external-client path does not currently save conversation traces to the comparison report.
+This path uses the client agent's model and does not require the demo's Hugging Face key. External MCP-client tests cover discovery, two different computations and refusal of a third execution. Separately, a [live Codex conversation](codex-conversation.md) verified an audit followed by a recomputed repair plan using two different generated programs in one MCP process. See [Codex connection setup](codex.md). The external-client path does not save conversation traces to the comparison report; the live rehearsal has its own evidence capture.
 
 ## CLI comparison harness
 
@@ -110,4 +110,4 @@ The gateway preserves structured results, including Tool API envelopes such as `
 | 60–80 s | Open the recorded security proof: authorized read, denied tool call and terminated loop. Expand a host trace and its container-removal check. |
 | 80–90 s | Show the reusable Composer package and Symfony integration. Mention Drupal briefly as a later demo built on the same foundation. |
 
-Before recording, verify a real Hugging Face run, retain its report, rehearse both paths, and keep the explicitly labelled reference run available if inference is unavailable. A reference recording cannot be presented as model generation. No submission video has been recorded or published. The [hackathon brief](https://symfony.com/hackathon) asks for working, runnable code and a 90-second demo by 22 November 2026, 18:00 CET.
+The Codex conversation has been rehearsed with live generation. Before recording a live direct-versus-Code-Mode comparison, also verify a real Hugging Face run and retain its report. Keep the explicitly labelled reference comparison available if inference is unavailable; a reference recording cannot be presented as model generation. No submission video has been recorded or published. The [hackathon brief](https://symfony.com/hackathon) asks for working, runnable code and a 90-second demo by 22 November 2026, 18:00 CET.

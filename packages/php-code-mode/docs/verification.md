@@ -28,6 +28,10 @@ Latest verification: 1 November 2026. The initial reference measurements below w
 - Package archive inspected: runner, library, tests and documentation included; vendor, caches, local secrets and Git metadata excluded.
 - PHP syntax, installer shell syntax, Composer platform requirements and Git whitespace checks passed. Composer reported no known dependency advisories during installation/update; this is not a runtime/image vulnerability scan.
 
+## Live Codex — 1 November 2026
+
+A separate live Codex rehearsal on 1 November used Codex app-server `0.165.0-alpha.1.2` with `gpt-6-astra` and the existing ChatGPT sign-in. Two scripted human prompts produced two different PHP programs in one conversation and MCP process: an audit, then a repair plan grouped by issue and shared-image impact. Both returned values matched the independent fixture oracles after field-name normalization. Each execution made four list calls, four article-batch calls and two media-batch calls; all 20 calls succeeded. No managed containers remained after teardown. The exact programs, outputs and host ledgers are in the [live conversation record](../../../docs/codex-conversation.md). This verifies that recorded interaction, not general model reliability or live Hugging Face support.
+
 ## Verification limits
 
 The crash test allows a terminated zombie process while its OS parent/subreaper completes reaping; it rejects a live worker after the fallback deadline. An ordinary cancellation reaps the broker directly. The output and frame flood tests use bounded host reads. The network test first proves that the control server is reachable from a trusted control container, then verifies the isolated guest cannot connect.

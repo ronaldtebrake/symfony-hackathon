@@ -38,7 +38,7 @@ Open [the workbench](http://127.0.0.1:8000/demo) to inspect the comparison and s
 
 For live generation, set `HUGGINGFACE_API_KEY` in ignored `.env.local`, then run `composer demo -- --mode=live`. The default model is `openai/gpt-oss-120b`; calls consume inference credits. Reports include provider token usage only when supplied. See [demo setup, Drupal connection and 90-second walkthrough](docs/demo.md).
 
-Connect `php bin/console code-mode:mcp` as a STDIO server in your agent. Ask follow-up questions and clarify scope in that conversation; the workbench is a read-only evidence viewer. The host retains all permissions and limits. See [agent setup and the CLI comparison harness](docs/demo.md#agent-conversations).
+Connect `php bin/console code-mode:mcp` as a STDIO server in your agent. Ask follow-up questions and clarify scope in that conversation; the workbench is a read-only evidence viewer. The host retains all permissions and limits. See [Codex setup](docs/codex.md) and [the live two-turn conversation with generated PHP and actual calls](docs/codex-conversation.md).
 
 ## Verify
 
@@ -50,4 +50,4 @@ composer test:demo     # Real MCP + gVisor comparison and external MCP client
 
 Run the sandbox suites sequentially on a dedicated test Docker endpoint. The demo also exposes `tools_search`, `tools_describe` and `php_execute` over STDIO: `php bin/console code-mode:mcp`. [Verification record](packages/php-code-mode/docs/verification.md).
 
-The Symfony reference audit and mocked-provider AI pipeline are verified locally. Live Hugging Face inference is the next verification step. Drupal is optional follow-on work. Submission needs a public runnable repository and a 90-second video by **22 November 2026, 18:00 CET**.
+The Symfony reference audit, mocked-provider AI pipeline and a live two-turn Codex conversation are verified locally. Live Hugging Face inference remains unverified. Drupal is optional follow-on work. Submission needs a public runnable repository and a 90-second video by **22 November 2026, 18:00 CET**.
