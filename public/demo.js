@@ -1,8 +1,13 @@
 'use strict';
 
+import {buildDemoCommand} from './demo-questions.js';
+
 const byId = (id) => document.getElementById(id);
 let latest = null;
 let lastBody = '';
+let liveCommand = false;
+let questionChoices = [];
+let questionMaxBytes = 2000;
 const bytes = (value) => typeof value !== 'number' ? '—' : value >= 1000 ? `${(value / 1000).toFixed(2)} kB` : `${value} B`;
 const number = (value) => typeof value === 'number' ? value.toLocaleString() : '—';
 const results = () => Object.fromEntries((latest?.results ?? []).map((item) => [item.approach, item]));
@@ -30,7 +35,8 @@ function render(report) {
   latest = report;
   const runs = results();
   const live = report.mode === 'live';
-  byId('run-state').textContent = report.status === 'running' ? 'RUNNING' : report.status === 'failed' ? 'CHECK FAILED' : report.status === 'complete' ? 'RUN COMPLETE' : 'WAITING FOR A RUN';
+  byId('run-state').textContent = report.status === 'running' ? 'RUNNING' : report.status === 'failed' ? 'CHECK FAILED' : report.status === 'review_required' ? 'REVIEW REQUIRED' : report.status === 'complete' ? 'RUN COMPLETE' : 'WAITING FOR A RUN';
+  byId('recorded-question').textContent = report.task ?? 'No question has been run yet. Choosing a question above does not change the recorded results below.';
   byId('mode-note').classList.toggle('live', live);
   byId('mode-note').textContent = live
     ? `LIVE INFERENCE · ${runs.code?.model ?? runs.direct?.model ?? 'Hugging Face'} · Results below come from the recorded execution.`
@@ -47,6 +53,7 @@ function render(report) {
     verification.textContent = run?.verification?.message ?? (report.status === 'running' ? 'Execution in progress…' : 'No result yet');
     if (run?.verification?.passed === true) verification.classList.add('passed');
     if (run?.verification?.passed === false) verification.classList.add('failed');
+    if (run?.verification?.passed === null) verification.classList.add('review');
   }
   const difference = byId('difference');
   difference.hidden = !(runs.direct?.verification?.passed === true && runs.code?.verification?.passed === true && runs.direct.toolPayloadBytes > 0 && typeof runs.code.toolPayloadBytes === 'number');
@@ -61,8 +68,13 @@ function render(report) {
   const auditRun = codeRun?.report ? codeRun : runs.direct;
   const audit = auditRun?.report;
   const findings = Array.isArray(audit?.findings) ? audit.findings : [];
+  const originalAudit = !report.questionId || report.questionId === 'audit';
+  byId('findings-list').hidden = !originalAudit;
+  byId('result-json').hidden = originalAudit || audit == null;
+  byId('result-json').textContent = audit == null ? '' : JSON.stringify(audit, null, 2);
+  byId('findings-count').hidden = !originalAudit;
   byId('findings-count').textContent = number(findings.length);
-  byId('findings-summary').textContent = audit ? `${number(audit.audited)} articles checked · ${findings.length} findings` : 'No findings yet';
+  byId('findings-summary').textContent = !audit ? 'No result yet' : originalAudit ? `${number(audit.audited)} articles checked · ${findings.length} findings` : report.questionId === 'impact' ? 'Issue groups and shared-image impact' : 'Custom answer · review required';
   byId('findings-source').textContent = auditRun?.approach === 'direct' ? 'Direct tool-calling result' : 'Code Mode result';
   const list = byId('findings-list');
   list.replaceChildren();
@@ -103,10 +115,55 @@ byId('trace-approach').addEventListener('change', renderTrace);
 byId('reference-command').addEventListener('click', () => setCommand(false));
 byId('live-command').addEventListener('click', () => setCommand(true));
 function setCommand(live) {
-  byId('command-text').textContent = live ? 'composer demo -- --mode=live' : 'composer demo';
+  liveCommand = live;
   byId('reference-command').classList.toggle('selected', !live);
   byId('live-command').classList.toggle('selected', live);
   byId('run-help').textContent = live ? 'Uses Symfony AI + Hugging Face. Configure HUGGINGFACE_API_KEY in .env.local. Provider usage consumes credits.' : 'Runs real MCP + gVisor with a reference program. No model or API key required.';
+  updateCommand();
+}
+
+function updateCommand() {
+  try {
+    const command = buildDemoCommand({mode: liveCommand ? 'live' : 'reference', scenario: byId('question-choice').value, question: byId('custom-question').value}, questionMaxBytes);
+    byId('command-text').textContent = command;
+    byId('copy-command').disabled = false;
+    byId('question-error').hidden = true;
+  } catch (error) {
+    byId('command-text').textContent = 'Complete your question below.';
+    byId('copy-command').disabled = true;
+    byId('question-error').textContent = error.message;
+    byId('question-error').hidden = false;
+  }
+}
+
+function selectQuestion() {
+  const choice = questionChoices.find((item) => item.id === byId('question-choice').value);
+  if (!choice) return;
+  byId('question-summary').textContent = choice.summary;
+  byId('custom-question-field').hidden = choice.id !== 'custom';
+  byId('reference-command').disabled = !choice.reference;
+  setCommand(choice.reference ? liveCommand : true);
+}
+byId('question-choice').addEventListener('change', selectQuestion);
+byId('custom-question').addEventListener('input', updateCommand);
+
+async function loadQuestions() {
+  try {
+    const response = await fetch('/demo/questions', {cache: 'no-store', credentials: 'same-origin'});
+    if (!response.ok) throw new Error('Questions unavailable');
+    const config = await response.json();
+    questionChoices = config.choices;
+    questionMaxBytes = config.maxBytes;
+    byId('question-choice').replaceChildren(...questionChoices.map((choice) => {
+      const option = node('option', choice.label);
+      option.value = choice.id;
+      return option;
+    }));
+    byId('question-choice').disabled = false;
+    selectQuestion();
+  } catch {
+    byId('question-summary').textContent = 'Question choices could not be loaded. Reload the page to try again.';
+  }
 }
 byId('copy-command').addEventListener('click', async () => {
   try {
@@ -134,3 +191,4 @@ async function refresh() {
   }
 }
 refresh();
+loadQuestions();

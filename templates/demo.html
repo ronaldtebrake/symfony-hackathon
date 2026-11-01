@@ -6,7 +6,7 @@
   <meta name="description" content="A working demonstration of isolated PHP Code Mode with Symfony AI and the PHP MCP SDK.">
   <title>Code Mode — PHP, with a purpose.</title>
   <link rel="stylesheet" href="/demo.css">
-  <script src="/demo.js" defer></script>
+  <script src="/demo.js" type="module"></script>
 </head>
 <body>
   <div class="shell">
@@ -25,16 +25,27 @@
         </div>
         <div class="run-box">
           <div class="run-box-heading"><span class="eyebrow">Run it yourself</span><span class="terminal-mark" aria-hidden="true">⌘</span></div>
-          <p>Same audit. Same batched tools.<br>Two ways to get to the answer.</p>
+          <p>Your question. The same tools.<br>Two ways to get to the answer.</p>
           <div class="command"><code id="command-text">composer demo</code><button class="copy-button" id="copy-command" aria-label="Copy demo command">Copy</button></div>
           <div class="run-options"><button id="reference-command" class="text-button selected">Reference run</button><span>/</span><button id="live-command" class="text-button">Live AI</button></div>
           <p class="run-help" id="run-help">Runs real MCP + gVisor with a reference program. No model or API key required.</p>
         </div>
       </section>
 
+      <section class="question-builder" aria-labelledby="question-heading">
+        <div><span class="eyebrow">Try another question</span><h2 id="question-heading">Change the question. Keep the boundaries.</h2><p>Choose a question, then copy the command above and run it in your terminal. Live AI writes the PHP; the same three read-only tools stay available.</p></div>
+        <div class="question-controls">
+          <label for="question-choice">Question</label>
+          <select id="question-choice" disabled><option value="audit">Loading questions…</option></select>
+          <p id="question-summary">The original audit works without an API key.</p>
+          <div id="custom-question-field" hidden><label for="custom-question">Your question</label><textarea id="custom-question" rows="3" maxlength="2000" placeholder="Which languages have articles with missing descriptions? Return counts by language." aria-describedby="question-error question-summary"></textarea></div>
+          <p id="question-error" class="question-error" role="status" hidden></p>
+        </div>
+      </section>
+
       <section id="workbench" aria-labelledby="audit-heading">
-        <div class="section-top"><div><span class="eyebrow">The assignment</span><h2 id="audit-heading">An editorial audit, without the busywork.</h2></div><span class="run-state" id="run-state" role="status">Waiting for a run</span></div>
-        <div class="assignment"><span class="assignment-icon" aria-hidden="true">↳</span><p>Find every published article with a missing meta description or hero-image alt text. Paginate, batch, join and return a concise report.</p><span class="dataset-label" id="dataset-label">Editorial fixture · read only</span></div>
+        <div class="section-top"><div><span class="eyebrow">The recorded run</span><h2 id="audit-heading">The question behind these results.</h2></div><span class="run-state" id="run-state" role="status">Waiting for a run</span></div>
+        <div class="assignment"><span class="assignment-icon" aria-hidden="true">↳</span><p id="recorded-question">No question has been run yet. Choosing a question above does not change the recorded results below.</p><span class="dataset-label" id="dataset-label">Editorial fixture · read only</span></div>
         <div class="mode-note" id="mode-note" role="status">Run <code>composer demo</code> in your terminal. This page follows the latest local result.</div>
 
         <div class="comparison" aria-label="Measured approach comparison">
@@ -57,11 +68,11 @@
 
         <div class="inspection-grid">
           <section class="inspector" aria-label="Execution details">
-            <div class="inspector-heading"><div class="tabs" role="tablist" aria-label="Inspect the run"><button role="tab" id="tab-code" aria-selected="true" aria-controls="panel-code">PHP program</button><button role="tab" id="tab-trace" aria-selected="false" aria-controls="panel-trace" tabindex="-1">MCP trace</button><button role="tab" id="tab-findings" aria-selected="false" aria-controls="panel-findings" tabindex="-1">Findings <span id="findings-count">0</span></button></div><span class="code-label" id="code-label">PHP 8.4</span></div>
+            <div class="inspector-heading"><div class="tabs" role="tablist" aria-label="Inspect the run"><button role="tab" id="tab-code" aria-selected="true" aria-controls="panel-code">PHP program</button><button role="tab" id="tab-trace" aria-selected="false" aria-controls="panel-trace" tabindex="-1">MCP trace</button><button role="tab" id="tab-findings" aria-selected="false" aria-controls="panel-findings" tabindex="-1">Results <span id="findings-count">0</span></button></div><span class="code-label" id="code-label">PHP 8.4</span></div>
             <div role="tabpanel" id="panel-code" aria-labelledby="tab-code"><div class="code-caption" id="program-caption">The submitted program will appear here after a run.</div><pre class="code-view" tabindex="0"><code id="program">// Waiting for an execution.
 // Source is shown exactly as submitted to the sandbox.</code></pre></div>
             <div role="tabpanel" id="panel-trace" aria-labelledby="tab-trace" hidden><div class="panel-toolbar"><label for="trace-approach">Inspect</label><select id="trace-approach"><option value="code">Code Mode</option><option value="direct">Direct tool calling</option></select><span>Recorded by the host</span></div><div class="table-scroll"><table><caption class="sr-only">MCP calls recorded by the trusted broker</caption><thead><tr><th>#</th><th>Tool</th><th>Status</th><th>Result</th><th>Time</th></tr></thead><tbody id="trace-rows"></tbody></table></div><p class="panel-empty" id="trace-empty">No broker calls recorded yet.</p></div>
-            <div role="tabpanel" id="panel-findings" aria-labelledby="tab-findings" hidden><div class="findings-heading"><strong id="findings-summary">No findings yet</strong><span id="findings-source">Code Mode result</span></div><div id="findings-list" class="findings-list"></div></div>
+            <div role="tabpanel" id="panel-findings" aria-labelledby="tab-findings" hidden><div class="findings-heading"><strong id="findings-summary">No result yet</strong><span id="findings-source">Code Mode result</span></div><div id="findings-list" class="findings-list"></div><pre id="result-json" class="result-json" tabindex="0" hidden></pre></div>
           </section>
           <aside class="execution-aside">
             <div class="eyebrow">Follow the work</div><h3>Small program.<br>Visible boundaries.</h3>

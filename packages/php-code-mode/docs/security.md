@@ -85,6 +85,8 @@ Symfony AI requests PHP, then receives only tool results. Model/tool prose canno
 
 The browser only reads a fixed local report through GET, with local client/Host checks, no-store headers, a restrictive CSP and text-only rendering of untrusted values. Execution starts from an operator CLI or locally configured STDIO MCP client. This is not public-service authentication. The HTTP `app_status` MCP endpoint is a separate foundation example and exposes no executor. Approved CMS results can reach the configured model provider and the local report; choose tools/data accordingly.
 
+The workbench also reads a fixed question catalog through GET and constructs a quoted CLI command locally. It cannot submit questions or start execution over HTTP. Changed questions are bounded UTF-8 user-message data and are supported only against the Symfony fixture in live mode. They do not change host identity, tool policies, endpoints or limits. Custom JSON answers are explicitly unverified even after successful execution. All question and result rendering uses text; question control characters are rejected before execution.
+
 The Drupal HTTP adapter is protocol-tested against a local MCP server; it has not yet been verified against a Drupal installation. Live inference requires a host Hugging Face key and remains a separate verification step. Mutation approval workflows and a public HTTP execution endpoint are outside this proof.
 
 ## Sources

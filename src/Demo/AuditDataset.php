@@ -60,4 +60,34 @@ final class AuditDataset
         }
         return ['audited' => $audited, 'findings' => $findings];
     }
+
+    /** Independent oracle for the impact question; never supplied to the agent. */
+    public function expectedImpact(): array
+    {
+        $groups = ['missing_description' => [], 'missing_alt' => []];
+        $images = [];
+        $media = $this->media();
+        $audited = 0;
+        foreach ($this->articles() as $article) {
+            if ('published' !== $article['status']) {
+                continue;
+            }
+            ++$audited;
+            if ('' === trim($article['meta_description'])) {
+                $groups['missing_description'][] = $article['id'];
+            }
+            if ('' === trim($media[$article['image_id']]['alt'])) {
+                $groups['missing_alt'][] = $article['id'];
+                $images[$article['image_id']][] = $article['id'];
+            }
+        }
+        ksort($images);
+        $shared = [];
+        foreach ($images as $imageId => $ids) {
+            if (count($ids) > 1) {
+                $shared[] = ['image_id' => $imageId, 'article_ids' => $ids];
+            }
+        }
+        return ['audited' => $audited, 'groups' => $groups, 'shared_images' => $shared];
+    }
 }

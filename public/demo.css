@@ -35,7 +35,7 @@ a {
   text-decoration:none;
 }
 
-button,select {
+button,select,textarea {
   font:inherit;
 }
 
@@ -43,7 +43,7 @@ button {
   cursor:pointer;
 }
 
-button:focus-visible,a:focus-visible,select:focus-visible,pre:focus-visible {
+button:focus-visible,a:focus-visible,select:focus-visible,textarea:focus-visible,pre:focus-visible {
   outline:3px solid var(--accent);
   outline-offset:4px;
 }
@@ -188,6 +188,77 @@ h1 {
 .command code {
   font:12px var(--mono);
   flex:1;
+  overflow-wrap:anywhere;
+  min-width:0;
+  white-space:pre-wrap;
+  max-height:180px;
+  overflow:auto;
+}
+
+button:disabled {
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.question-builder {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:40px;
+  padding:26px;
+  margin:0 0 40px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#fffefa;
+}
+
+.question-builder h2 {
+  font:normal 25px/1.2 Georgia,serif;
+  margin:10px 0;
+}
+
+.question-builder p {
+  color:var(--muted);
+  font-size:12px;
+  margin:8px 0;
+}
+
+.question-controls label {
+  display:block;
+  font-size:11px;
+  font-weight:600;
+  margin-bottom:6px;
+}
+
+.question-controls select,.question-controls textarea {
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:10px;
+  background:var(--paper);
+  color:var(--ink);
+}
+
+.question-controls textarea {
+  resize:vertical;
+  min-height:95px;
+  font-size:13px;
+}
+
+.question-controls .question-error,.verification.review {
+  color:#9b5c3a;
+}
+
+.result-json {
+  margin:0;
+  padding:20px;
+  max-height:417px;
+  overflow:auto;
+  font:12px/1.7 var(--mono);
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+
+.assignment p {
   overflow-wrap:anywhere;
 }
 
@@ -812,6 +883,11 @@ footer {
 }
 
 @media(max-width:760px) {
+  .question-builder {
+    grid-template-columns:1fr;
+    gap:18px;
+    padding:20px;
+  }
   .shell {
     padding:0 20px;
   }

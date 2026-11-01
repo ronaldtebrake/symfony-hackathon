@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Demo\AuditDataset;
 use App\Demo\BackendFactory;
+use App\Demo\DemoQuestion;
 use App\Demo\DemoRunner;
 use App\Demo\ReportStore;
 use App\Demo\RunTrace;
@@ -25,7 +25,9 @@ final class CodeModeDemoCommand extends Command
     {
         $this->addOption('mode', null, InputOption::VALUE_REQUIRED, 'reference (no AI) or live (Hugging Face)', 'reference')
             ->addOption('approach', null, InputOption::VALUE_REQUIRED, 'both, code or direct', 'both')
-            ->addOption('backend', null, InputOption::VALUE_REQUIRED, 'fixture or drupal', 'fixture');
+            ->addOption('backend', null, InputOption::VALUE_REQUIRED, 'fixture or drupal', 'fixture')
+            ->addOption('scenario', null, InputOption::VALUE_REQUIRED, 'audit or impact (impact requires live mode)', 'audit')
+            ->addOption('question', null, InputOption::VALUE_REQUIRED, 'Custom read-only question (live Symfony fixture only; at most 2000 UTF-8 bytes)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -39,22 +41,36 @@ final class CodeModeDemoCommand extends Command
             $io->error('Choose reference/live, both/code/direct, and fixture/drupal. Drupal requires live mode.');
             return Command::INVALID;
         }
+        try {
+            if (null !== $input->getOption('question') && 'audit' !== $input->getOption('scenario')) {
+                throw new \InvalidArgumentException('Choose either --scenario or --question.');
+            }
+            $question = null === $input->getOption('question')
+                ? DemoQuestion::preset($input->getOption('scenario'))
+                : DemoQuestion::custom($input->getOption('question'));
+            $question->requireSupportedRun($mode, $backend);
+        } catch (\InvalidArgumentException $e) {
+            $io->error($e->getMessage());
+            return Command::INVALID;
+        }
         if ('live' === $mode && '' === BackendFactory::env('HUGGINGFACE_API_KEY')) {
             $io->error('Set HUGGINGFACE_API_KEY in .env.local for live inference. Reference mode makes no model requests.');
             return Command::INVALID;
         }
-        $report = ['version' => 1, 'createdAt' => gmdate(DATE_ATOM), 'status' => 'running', 'mode' => $mode, 'backend' => $backend, 'task' => AuditDataset::TASK, 'results' => []];
+        $report = ['version' => 2, 'createdAt' => gmdate(DATE_ATOM), 'status' => 'running', 'mode' => $mode, 'backend' => $backend, 'questionId' => $question->id, 'task' => $question->text, 'results' => []];
         $this->store->save($report);
         $io->title('PHP Code Mode · '.('live' === $mode ? 'live inference' : 'reference run — no model'));
         $failed = false;
+        $reviewRequired = false;
         foreach ('both' === $approach ? ['direct', 'code'] : [$approach] as $method) {
             $io->section('code' === $method ? 'Code Mode' : 'Direct MCP tools');
             try {
                 $result = $this->runner->run($mode, $method, $backend, progress: static function (RunTrace $trace) use ($io): void {
                     $io->write('.');
-                });
+                }, question: $question);
                 $report['results'][] = $result;
                 $failed = $failed || false === $result['verification']['passed'];
+                $reviewRequired = $reviewRequired || null === $result['verification']['passed'];
                 $io->newLine();
                 $io->table(['Broker calls', 'Tool payload bytes', 'Model requests', 'Provider tokens'], [[count($result['brokerCalls']), $result['toolPayloadBytes'], $result['modelRequests'], $result['providerTokens']['total'] ?? 'not reported']]);
                 $io->text($result['verification']['message']);
@@ -66,7 +82,7 @@ final class CodeModeDemoCommand extends Command
             }
             $this->store->save($report);
         }
-        $report['status'] = $failed ? 'failed' : 'complete';
+        $report['status'] = $failed ? 'failed' : ($reviewRequired ? 'review_required' : 'complete');
         $this->store->save($report);
         $io->text('Open http://127.0.0.1:8000/demo after composer start. Reports stay in ignored var/demo/.');
         return $failed ? Command::FAILURE : Command::SUCCESS;

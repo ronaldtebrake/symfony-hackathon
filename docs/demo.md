@@ -6,12 +6,31 @@ The first judge-facing demo is **Symfony-only**: the Symfony application runs th
 
 ## Run and inspect
 
-1. Install root Composer dependencies and set up the [dedicated gVisor host](../packages/php-code-mode/README.md#run-the-proof). Build the runner image, then configure its immutable `CODE_MODE_IMAGE`. For an alternate CLI, set `CODE_MODE_DOCKER_COMMAND` to a trusted JSON argv array. Symfony commands read these from `.env.local`; standalone package tests/examples need exported environment variables.
+1. Install root Composer dependencies and set up the [dedicated gVisor host](../packages/php-code-mode/README.md#run-the-proof). Build the runner image, then configure its immutable `CODE_MODE_IMAGE`. For an alternate CLI, set `CODE_MODE_DOCKER_COMMAND` to a trusted JSON argv array. Symfony commands read these from `.env.local`; PHPUnit sandbox suites and standalone package examples need exported environment variables.
 2. Run `composer demo`, then `composer start`. Open [the workbench](http://127.0.0.1:8000/demo). It shows the exact PHP, host-recorded calls, findings and comparison. Reference mode makes no provider calls. Reports stay in ignored `var/demo/latest.json` with owner-only file permissions; the newest run replaces the previous one.
 3. For live generation, set `HUGGINGFACE_API_KEY` in ignored `.env.local` to a token with Inference Providers permission. Run `composer demo -- --mode=live`. Optionally use `--approach=code` or `--approach=direct`. Each path runs its own Symfony AI agent against `HUGGINGFACE_MODEL` (default `openai/gpt-oss-120b`). A missing key fails explicitly; there is no reference fallback.
 4. Run `composer check`, then `composer test:sandbox`, then `composer test:demo`. The latter two require the pinned image/runtime and fail if unavailable. Use a dedicated endpoint and run them sequentially.
 
 The browser cannot start executions. A fresh CLI invocation creates fresh Code Mode sessions. The MCP-facing server allows only two execution attempts over its process lifetime; restart it for a new operator-authorized task.
+
+## Change the question
+
+The workbench offers the original audit, a grouped impact question and a custom question. Select a question and copy the generated command into your terminal. Selecting a question does not change the previous recorded results: their exact question remains visible above the comparison. The browser has no execution or question-submission endpoint.
+
+```bash
+composer demo -- --mode=live --scenario=impact
+composer demo -- --mode=live --question='Count published articles by language. Return counts.'
+```
+
+Both approaches receive exactly the same question. Symfony AI supplies the PHP for Code Mode; no application-specific orchestration tool is added when the question changes. The new questions use only the Symfony fixture backend. Each run creates fresh sessions with the existing host identity, three allowed read tools, gVisor profile and execution limits. Question text cannot select an endpoint, credential, policy or runtime profile. System prompts guide the agent; the broker and sandbox enforce access even if the agent follows a hostile question.
+
+The impact scenario has its own independent fixture oracle: 48 articles, two groups of article IDs and three shared images without alt text. Custom questions return a JSON object and need successful MCP reads, but have no general correctness oracle. They are marked **review required** and never display a payload-savings badge. An error, invalid JSON or answer without supporting reads fails verification.
+
+Custom input is limited to 2000 UTF-8 bytes. Terminal controls and invisible formatting characters are rejected. The page renders questions and results as text and quotes custom questions as one shell argument. Avoid including secrets: live questions are sent to the configured model provider and saved in the local report.
+
+Changed questions require live inference; reference mode supports only the original audit and fails explicitly for other questions. Local tests supply mocked provider responses to verify question propagation, the alternate PHP program through real MCP/gVisor, and rejection of an attempted delete. This verifies the integration, **not a model's ability to generate the new program**. Live Hugging Face generation remains unverified.
+
+Run the command-quoting checks with `node --test tests/Browser/demo-questions.test.mjs` (Node 18+). The PHP checks are included in `composer check`; the real-runtime checks are included in `composer test:demo` with the sandbox configuration exported as described above.
 
 ## What is measured
 
@@ -63,8 +82,8 @@ The gateway preserves structured results, including Tool API envelopes such as `
 | Time | Show |
 | --- | --- |
 | 0–15 s | State the audit task: content passes repeatedly through an agent when PHP can batch, join and filter it. |
-| 15–40 s | Run live Code Mode. Show discovery and actual model-generated PHP. Symfony AI drives the agent; the official SDK carries real MCP calls. |
-| 40–60 s | Open findings and the broker trace. Compare the verified direct run with identical batch-capable tools. Describe measured payload/provider totals without generalizing one run. |
+| 15–40 s | Run live Code Mode. Show discovery, actual model-generated PHP, and the verified comparison with the same batch-capable tools. |
+| 40–60 s | Switch to the impact question. Show a different generated program and its grouped result using the same tools and limits. Rehearse inference timing before recording. |
 | 60–80 s | Show real denied-tool and timeout checks, then explain the host policy and gVisor boundary. |
 | 80–90 s | Show the reusable Composer package and Symfony integration. Mention Drupal briefly as a later demo built on the same foundation. |
 

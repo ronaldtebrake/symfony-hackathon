@@ -1,6 +1,6 @@
 # Proof verification
 
-Verified locally on 31 October 2026. This records observed behavior, not an external security audit.
+Baseline verified locally on 31 October 2026; question-selection checks added on 1 November 2026 below. This records observed behavior, not an external security audit.
 
 | Component | Tested version/environment |
 | --- | --- |
@@ -22,10 +22,19 @@ Results:
 - Package archive inspected: runner, library, tests and documentation included; vendor, caches, local secrets and Git metadata excluded.
 - PHP syntax, installer shell syntax, Composer platform requirements and Git whitespace checks passed. Composer reported no known dependency advisories during installation/update; this is not a runtime/image vulnerability scan.
 
+## Question selection — 1 November 2026
+
+- `composer check`: configuration checks, **31 application tests and 29 package tests passed**. New coverage includes prompt propagation through both agent paths, fixed execution permissions, question bounds, HTTP read-only access and rejection before execution/report replacement.
+- Demo integration suite with the existing runtime configuration exported: **6 real MCP/gVisor tests passed** (five together, then the added CLI case separately). An alternate program returned the expected issue groups and three shared-image impacts; a custom question attempting to authorize a delete still received `tool_denied`. The CLI saved a successful custom answer with `review_required` status. Provider responses are mocked; no live inference is claimed.
+- `node --test tests/Browser/demo-questions.test.mjs`: **3 tests passed**, including literal argument round trips through both sh and zsh, shell metacharacters, multiline input and UTF-8/control-character limits.
+- Browser checked: preset and custom selection, Live AI command generation, empty-question rejection, literal HTML/shell characters, and separation of the selected question from the previous recorded run. No HTTP execution endpoint was added.
+
+The existing 28-test package sandbox suite was last run on 31 October; runner and broker enforcement were unchanged by question selection.
+
 The crash test allows a terminated zombie process while its OS parent/subreaper completes reaping; it rejects a live worker after the fallback deadline. An ordinary cancellation reaps the broker directly. The output and frame flood tests use bounded host reads. The network test first proves that the control server is reachable from a trusted control container, then verifies the isolated guest cannot connect.
 
 GitHub Actions defines an Ubuntu amd64 standalone-package job that installs the pinned gVisor release, builds the runner, and executes the security suite and full demo integration checks. **That remote CI job has not been run from this checkout.** Windows, rootless Docker, alternate gVisor platforms, and a native Linux coordinator have not been verified locally. Do not generalize this record into compatibility or security claims for those environments.
 
-Live Hugging Face inference remains unverified because no API key is configured. The Drupal HTTP adapter is tested against a local MCP server, not a Drupal installation. The demo video is planned but has not been recorded. These gates remain separate from the 71 passing local tests.
+Live Hugging Face inference remains unverified because no API key is configured. The Drupal HTTP adapter is tested against a local MCP server, not a Drupal installation. The demo video is planned but has not been recorded. These gates remain separate from the recorded local checks.
 
 See [setup and commands](../README.md) and [the threat model and deployment limits](security.md) before rerunning or embedding the package.

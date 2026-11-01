@@ -37,6 +37,8 @@ Open [the workbench](http://127.0.0.1:8000/demo). The reference run needs no API
 
 For live generation, set `HUGGINGFACE_API_KEY` in ignored `.env.local`, then run `composer demo -- --mode=live`. The default model is `openai/gpt-oss-120b`; calls consume inference credits. Reports include provider token usage only when supplied. See [demo setup, Drupal connection and 90-second walkthrough](docs/demo.md).
 
+Change the question in the workbench and copy its CLI command, or try `composer demo -- --mode=live --scenario=impact` to group issues and find shared-image impact. `--question='Count published articles by language. Return counts.'` accepts a custom question in live mode. Both use the same read-only Symfony fixture tools and sandbox limits. Custom answers are marked for review; they do not receive a correctness or savings badge.
+
 ## Verify
 
 ```bash
