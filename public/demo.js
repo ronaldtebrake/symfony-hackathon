@@ -198,10 +198,12 @@ async function refreshSecurity() {
 refreshSecurity();
 
 let codexCapture = null;
+let selectedCodexTurn = 0;
 const turnButtons = Array.from(document.querySelectorAll('[data-codex-turn]'));
 
 function renderCodexTurn(index) {
   if (!codexCapture) return;
+  selectedCodexTurn = index;
   const turn = codexCapture.turns[index];
   const calls = turn.items.filter((item) => item.type === 'mcpToolCall');
   const execution = calls.find((item) => item.tool === 'php_execute');
@@ -245,6 +247,58 @@ function renderCodexTurn(index) {
 }
 
 turnButtons.forEach((button) => button.addEventListener('click', () => renderCodexTurn(Number(button.dataset.codexTurn))));
+
+// Present only the reviewed capture. Code is text, never HTML or executable JS.
+const phpPresentation = byId('php-presentation');
+byId('present-php').addEventListener('click', () => {
+  if (!codexCapture) return;
+  const source = byId('codex-program').textContent;
+  const lines = source.split('\n');
+  const code = byId('php-presentation-code');
+  code.replaceChildren();
+  lines.forEach((line, index) => {
+    const row = node('span', line + (index < lines.length - 1 ? '\n' : ''), 'php-source-line');
+    row.dataset.line = index + 1;
+    row.classList.toggle('php-tool-line', line.includes('$tools->call('));
+    code.append(row);
+  });
+  byId('php-presentation-title').textContent = selectedCodexTurn === 0 ? '01 · Audit the published articles.' : '02 · Rank the shared-image fixes.';
+  const date = new Date(codexCapture.recordedAt).toLocaleDateString('en-GB', {day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Amsterdam'});
+  byId('php-presentation-meta').textContent = `Recorded ${date} · ${byId('codex-program-caption').textContent}`;
+  byId('php-copy-status').textContent = '';
+  const navigation = byId('php-source-nav');
+  navigation.replaceChildren();
+  const sections = selectedCodexTurn === 0
+    ? [['List articles', '$listed ='], ['Read batches', '$articles ='], ['Find issues', '$affected ='], ['Return findings', 'return [']]
+    : [['Read articles', '$listed ='], ['Group images', '$byImage ='], ['Rank fixes', 'usort($imageRepairs,'], ['Return plan', 'return [']];
+  for (const [label, marker] of sections) {
+    const index = lines.findIndex((line) => line.startsWith(marker));
+    if (index < 0) continue;
+    const button = node('button', label);
+    button.type = 'button';
+    button.addEventListener('click', () => {
+      navigation.querySelectorAll('button').forEach((item) => item.removeAttribute('aria-current'));
+      button.setAttribute('aria-current', 'location');
+      code.querySelectorAll('.php-source-focus').forEach((row) => row.classList.remove('php-source-focus'));
+      const row = code.children[index];
+      row.classList.add('php-source-focus');
+      row.scrollIntoView({block: 'start', behavior: 'instant'});
+    });
+    navigation.append(button);
+  }
+  phpPresentation.showModal();
+  byId('php-presentation-source').scrollTop = 0;
+  byId('php-presentation-source').scrollLeft = 0;
+});
+byId('close-php').addEventListener('click', () => phpPresentation.close());
+byId('copy-php').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(byId('php-presentation-code').textContent);
+    byId('php-copy-status').textContent = 'Exact submitted PHP copied.';
+  } catch {
+    byId('php-copy-status').textContent = 'Clipboard unavailable. Select and copy the source above.';
+  }
+});
 
 async function loadCodexCapture() {
   try {

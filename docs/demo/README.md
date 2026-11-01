@@ -1,56 +1,80 @@
-# 90-second judge demo
+# Record the 90-second judge demo
 
 **Symfony Code Mode: ask in Codex, let PHP do the data work, inspect the evidence.**
 
-The [rendered 90-second walkthrough](rendered/symfony-code-mode-90s.mp4) is available in **1080p**, with synthetic narration and burned-in captions. It opens with labelled excerpts of the real Codex capture and continues through actual workbench screenshots, generated PHP, calls and security evidence. [Render details and source provenance](rendered/README.md).
+The previous rendered video and its slideshow renderer have been removed. The replacement will open with your actual Codex recording. Record the interaction at its natural pace; we will cut the finished footage to 90 seconds. Keep this Symfony-only.
 
-The recording pack below also contains a timed shot list for an optional desktop take, [voice-over](narration.txt), [draft captions](captions.srt) and [copy-ready prompts](prompts.md). The story stays Symfony-only.
+## 1. Prepare the take
 
-## What is ready
+- Use the synthetic Symfony fixture and the existing [Codex MCP connection](../codex.md). Check registration with `codex mcp get symfony_code_mode` from this project. The configured gVisor host and runner image must be available. Codex uses its own model access; this conversation needs no Hugging Face key.
+- Start a fresh, operator-authorized MCP process for the task. Its budget is **two PHP attempts, including failures**. Keep both for the two prompts; a new chat alone is not proof that the server process restarted. There is no agent-accessible reset.
+- Record the Codex window at a readable size, preferably **1920 × 1080 or higher, 30 fps**. Hide unrelated chats and notifications. Keep tool arguments and results readable in the final 1080p crop. Do not record settings containing credentials.
+- Record silently first; narration comes after the picture edit. Leave **three seconds before and after each action**. Keep the full original recording, including waits and any errors.
+- Start `composer start` for the workbench. Existing local comparison/security reports can be reused. If they are missing, run `composer demo` and `composer demo:security` sequentially against the configured gVisor host. These are separate executions from the Codex conversation.
 
-The workbench and screenshots are committed in `8372a7e`. The reviewed [1 November Codex capture](../evidence/codex-conversation-2026-11-01.json) contains two different generated programs, two successful executions and 20 host-recorded upstream calls. The local comparison and security reports also exist and passed their recorded checks. Opening the viewer does not execute anything.
+## 2. Capture these exact moments in Codex
 
-**Optional replacement for the rendered opening:** actual Codex UI footage. The automation tool blocks access to the Codex window, and the saved rehearsal used an ephemeral app-server conversation. The current video therefore identifies its opening as transcript excerpts, not desktop footage. To replace it, manually record a new two-turn Codex conversation using the prompts below. Keep the cut to the workbench's reviewed 1 November capture labelled; it does not synchronize newly filmed conversations.
+Use the full copy-ready messages in [prompts.md](prompts.md), without adding expected answers or reference PHP.
 
-## Optional desktop take: shot list and voice-over
-
-| Time | Screen and action | Say |
+| Capture | What must be visible | Hold after the action |
 | --- | --- | --- |
-| **00–10** | **Codex.** Show the original audit prompt and the actual `tools_search` → `tools_describe` → `php_execute` calls in the conversation. Record the real interaction, then cut out generation waits. Caption: **Symfony Code Mode · Symfony fixture**. | This is Symfony Code Mode. I ask Codex to audit published articles. It writes PHP to combine approved MCP tools. |
-| **10–20** | **Same Codex conversation.** Show the follow-up asking which shared-image repairs help the most articles. Include the second real `php_execute` call and its response. Keep the prompt visible long enough to recognize the changed task. | Then I ask which shared-image fixes help the most articles. Same conversation, new computation, same permissions. |
-| **20–35** | **Workbench → Codex run.** Cut with the label **Recorded rehearsal · 1 November 2026**. Briefly show **Original question**, then select **Follow-up → Generated PHP**. Hold on the three image-to-article pairs. Scroll the PHP to `$byImage`, then `usort($imageRepairs, ...)` so the changed computation is visible. | This saved rehearsal shows both turns. The follow-up rechecked forty-eight articles and found three shared-image fixes, each helping two articles. Here is the exact PHP it submitted. |
-| **35–48** | **Follow-up → Tool calls.** Hold on the ten-row host ledger. Scroll inside that inspector to **Codex → Code Mode** and expand **php_execute · completed**. Show the recorded arguments and response. A short cut within this same recorded turn is fine. | The host recorded ten upstream calls: four list pages, four article batches and two media batches. Expand PHP execute for the actual request and response. |
-| **48–60** | **Comparison.** Keep the **REFERENCE RUN · No model was called** label, both ten-call counts and payload definition in the frame. Caption: **Separate reference execution · 31 October 2026**. Hold on **20.15 kB → 3.01 kB**. | A separate Symfony AI reference comparison returns the same findings with ten calls each and eighty-five percent less tool-result payload. That measures bytes, not model tokens. |
-| **60–82** | **Security proof.** Caption: **Recorded fixed probes · 1 November 2026 · No model called**. Hold on all three outcomes. Expand the infinite-loop trace to show the successful read witness, `wall_timeout` and checked container absence. Show the **No guest network** boundary below if there is time. | These fixed probes ran real PHP in gVisor. An approved read succeeded. A delete call was denied. An infinite loop hit the two-second watchdog. Each container was confirmed removed. The guest has no network or host credentials. These checks are evidence, not a security audit. |
-| **82–90** | **Package README in the editor.** Hold on the reusable package introduction, with the repository URL as a small closing overlay. Overlay: **Symfony AI + PHP MCP SDK · reusable Composer package**. End at 90 seconds. | A reusable Composer package for Symfony AI and MCP agents. Conversations stay in Codex; the host controls execution. |
+| **A · The question** | Paste and submit the **First message — audit** prompt. Keep its request to audit published Symfony articles and stay read-only readable. | 5 seconds on the submitted prompt. |
+| **B · Real execution** | Let Codex finish. Open the actual tool-call details available in your client: discovery (`tools_search` / `tools_describe`), then **`php_execute`**. Show its submitted `code` and returned result. Include the audit answer and total audited. | 6 seconds each on PHP, result and answer. |
+| **C · The follow-up** | In the **same conversation**, submit **Follow-up — reshape the task**. Keep “shared hero images” and the request to recompute visible. Let the second execution finish. | 5 seconds on the prompt. |
+| **D · The changed computation** | Open the second actual **`php_execute`** call. Show the new code, its returned repair plan, and **`toolCalls`** with tool names and statuses. Finish on Codex’s answer explaining the shared-image repairs. | 6–8 seconds per detail, scrolling slowly if needed. |
 
-The voice-over is 177 whitespace-separated words, leaving room for the clicks and short pauses. The captions are timed to these shots, not an already-recorded voice track; align them to the final take before export. Read `php_execute` as “PHP execute” and gVisor as “gee visor.”
+This can take several minutes. Do not rush generation or attempt to finish the interaction in the opening's 20 seconds. A failed execution stays a failed take; keep its original evidence. If the UI does not expose the raw request/result, retain whatever it does show and flag that gap before the edit. Model-written summaries do not replace raw tool results.
 
-## Prepare the recording
+## 3. Show the PHP clearly
 
-1. Use the synthetic Symfony fixture and the existing [Codex MCP configuration](../codex.md). Check the dedicated gVisor host and immutable runner image before filming. Keep credentials out of the screen recording. Start a fresh, operator-authorized MCP process for this task; it permits two execution attempts, including failures. Do not use either attempt for a warm-up call.
-2. Use the two exact prompts in [prompts.md](prompts.md), in one conversation. Let Codex discover the schemas and generate its own PHP. Keep the actual calls and results visible in Codex. Do not paste an expected answer or a reference program into the conversation. Record the result actually obtained; a failed or exhausted run is not a successful take.
-3. From the repository root, run `composer start`. Open the [Codex capture](http://127.0.0.1:8000/demo#codex-run), [comparison](http://127.0.0.1:8000/demo#workbench) and [security proof](http://127.0.0.1:8000/demo#security-proof). The Codex section is checked in; the other two reports are local and ignored by Git. If missing, run `composer demo` and `composer demo:security` sequentially against the configured gVisor host. If rerun, use their new dates and observations in the edit.
-4. Check the evidence against the table below. Use the existing reports for this recording unless there is a reason to rerun them. A styling change does not require new execution. Stop the local server with Ctrl+C when finished.
-5. Record the Codex and workbench shots as separate clips. Use readable text at the final export size. Preserve the recorded/reference labels and distinguish a new Codex interaction from the older workbench capture. Trim waiting, navigation and dead air; keep outcomes and source code intact. Screenshots in [../images](../images/README.md) are useful references, but do not replace the actual Codex footage.
-6. Record the narration, align the draft captions, and export exactly 90 seconds. Watch the final export once to check readable source, visible call results, correct evidence dates and audible narration. No uploading or submission is part of this pack.
+In the [workbench](http://127.0.0.1:8000/demo#codex-run), select **Follow-up → Generated PHP → Present PHP**. The large view has line numbers, tinted tool-call lines, and these navigation buttons:
 
-## Evidence to keep visible
+1. **Read articles** — pagination and the authorized `$tools->call(...)`.
+2. **Group images** — build the image-to-article groups.
+3. **Rank fixes** — sort by the number of published articles helped.
+4. **Return plan** — return the compact answer to the agent.
 
-| Claim in the demo | Source and exact scope |
-| --- | --- |
-| Audit, then a recomputed repair plan | [Reviewed Codex capture](../evidence/codex-conversation-2026-11-01.json): two distinct `php_execute.arguments.code` values in one MCP process. This capture is independent of the new footage. |
-| 48 articles, three shared-image fixes | Recorded follow-up: image **7 → articles 7, 31**; **14 → 14, 38**; **21 → 21, 45**. All tie at two articles helped. Missing descriptions remain on **11, 22, 33, 44**. No content was changed. |
-| Ten upstream calls in each recorded turn | Four `cms_list_articles`, four `cms_get_articles`, two `cms_get_media`. The outer MCP call is `php_execute`; these are the inner broker calls. The ledger records outcomes, durations and result sizes, not separate per-call argument snapshots. |
-| 85% less tool-result payload | Separate **31 October reference execution**, not the Codex follow-up: **20,154 vs 3,014 bytes**, same ten calls and same findings. Includes Code Mode discovery. Excludes prompts, initial schemas and generated code. No model-token, cost or latency savings claim. |
-| Authorization and execution limits | Separate **1 November fixed probes**: authorized read succeeds; delete is `tool_denied`; loop is `wall_timeout` after a successful read. Exact container absence checked for all three. The probes use a **2-second / three-call** profile; normal agent executions retain **15 seconds / 30 calls / two attempts per process**. |
-| Symfony AI and PHP MCP SDK integration | [`AuditToolbox`](../../src/Demo/AuditToolbox.php) implements Symfony AI's `ToolboxInterface`; [`DemoRunner`](../../src/Demo/DemoRunner.php) supplies it to Symfony AI's `Agent` in live mode and exercises it without inference in reference mode. The [STDIO command](../../src/Command/CodeModeMcpCommand.php) exposes Code Mode through the official PHP MCP SDK. Codex itself supplies the model for the conversation footage. |
-| Reusable package | [Package README](../../packages/php-code-mode/README.md): the library is in the repository, used via Composer's path repository. It is not yet published on Packagist. |
+Hold each useful section for 5–8 seconds when recording inserts. **Copy exact PHP** copies the submitted body without line numbers or an added PHP opening tag. Escape returns to the workbench; open **Tool calls** for the host ledger and expand **php_execute · completed** for the outer MCP request/result. Source navigation is not a per-line execution trace; the runner does not record line-level timing.
 
-## Fit with the hackathon
+![Actual PHP presentation view showing the recorded follow-up's ranking and return statements.](../images/codex-php-presentation.jpg)
 
-The [brief](https://symfony.com/hackathon), checked on 1 November 2026, asks for a creative use of Symfony AI and the PHP MCP SDK, working runnable code, craft, and a 90-second video. Submission closes **22 November 2026 at 18:00 CET**. This sequence demonstrates a changed question producing a new PHP computation, inspectable real execution, and enforced boundaries in a reusable package.
+**Match the take to its evidence.** Today this view reads the reviewed **1 November rehearsal**, not your newly filmed conversation. A fresh model run may produce different PHP and batching. For the preferred seamless edit, retain each new call's exact `arguments.code`, full raw result (including `value` and `toolCalls`), and the two prompts/responses. We can review that capture and update the checked-in evidence before recording the workbench inserts. Do not swap in new code while retaining old results or verification flags.
 
-The brief also asks entrants to use **Hugging Face Inference Providers**. The project's Symfony AI live comparison path is implemented and locally tested with mocked provider responses, but live Hugging Face inference remains unverified. Complete that check before submission, keeping the key in ignored `.env.local`. Codex footage and the model-free comparison do not demonstrate that integration. If a verified live report replaces the reference segment, update its narration, captions and figures from the actual result; do not reuse the 85% reference claim automatically.
+Until matching evidence is available, either show the new take's PHP directly in Codex (or copy its exact submitted body into a read-only editor tab), or use the current workbench with a visible **Recorded rehearsal · 1 November 2026** transition. The included narration uses that honest fallback. There is no upload, execution or conversation composer in the workbench.
 
-The rendered walkthrough is complete locally and has not been submitted or published. It uses recorded evidence, not new executions. The current [verification record](../../packages/php-code-mode/docs/verification.md) is the source for tested scope.
+## 4. The exact 90-second splice
+
+Use hard cuts between real actions and remove generation waits. Do not speed-scroll through code or add a simulated execution cursor. At **30 fps**, the final timeline is **2,700 frames**.
+
+| Timeline | Duration | Picture / edit |
+| --- | --- | --- |
+| **00:00–00:10** | 10s | Actual Codex: submitted audit question (4s), discovery/PHP call (3s), completed answer (3s). Small title: **Symfony Code Mode**. |
+| **00:10–00:20** | 10s | Same chat: follow-up (4s), second `php_execute` (3s), repair-plan answer (3s). Keep enough conversation context to recognize the follow-up. |
+| **00:20–00:35** | 15s | PHP insert: cut from the submitted code to the **same program** in Present PHP or the editor. Hold grouping (7s), ranking (5s), return (3s). If using the older workbench evidence, introduce its recorded date instead of implying continuity. |
+| **00:35–00:48** | 13s | Workbench **Tool calls**: host ledger (8s), expanded actual MCP request/result (5s). The code and calls must belong to the same turn. |
+| **00:48–01:00** | 12s | Separate **reference comparison**. Keep the “No model was called” label, equal call counts and payload definition visible. Caption: **Separate reference execution · 31 October 2026**. |
+| **01:00–01:22** | 22s | Separate **security proof**: authorized read (5s), blocked tool (5s), infinite loop (5s), expanded loop trace with `wall_timeout`, read witness and checked removal (7s). Caption: **Fixed probes · 1 November 2026**. |
+| **01:22–01:30** | 8s | Reusable Composer package README and repository URL. End on **Symfony AI + PHP MCP SDK**. |
+
+The edit points are frames **0, 300, 600, 1050, 1440, 1800, 2460, 2700**. There is no old movie to splice into: assemble a new timeline from your footage and the workbench inserts. Record [narration.txt](narration.txt) after choosing the shots, then align [draft captions](captions.srt) to that voice track. If the new take replaces the rehearsal, change the rehearsal wording and all counts to its verified observations. Export H.264 MP4 at 1080p/30 fps, with readable captions and exactly 90 seconds.
+
+## 5. Files to keep for the edit
+
+Put the originals in ignored `var/demo-recording/` and provide their local paths when ready:
+
+- `codex-two-turns.mov` (or `.mp4`): the untrimmed two-turn recording, plus any separate close-ups.
+- `turn-1.php.txt` and `turn-2.php.txt`: **exact submitted bodies**, copied from tool arguments rather than an earlier proposed code block. Keep them as text; do not execute them on the host.
+- `turn-1-result.json` and `turn-2-result.json`: full raw MCP results, if accessible; preserve returned values, tool ledger, errors and timing. Keep the corresponding prompts/responses and recording date.
+- Workbench inserts and optional narration as separate files. Retain the original recordings when making cropped or trimmed copies.
+
+The video is pending those manual recordings. No upload or submission is part of this step.
+
+## Evidence and submission scope
+
+The checked-in [Codex rehearsal](../evidence/codex-conversation-2026-11-01.json) has two different programs in one MCP process, each with **10 upstream calls**: four article-list pages, four article batches and two media batches. The follow-up rechecks **48 articles**; shared images **7, 14 and 21** each affect two articles. These are observations from that capture, not guaranteed counts for a new take. The host ledger records tool names, statuses, durations and result sizes; upstream arguments are visible in PHP, not separately logged.
+
+The separate **31 October reference comparison** measured **20,154 → 3,014 tool-result bytes**, about **85% less**, with equal findings and ten calls each. This includes Code Mode discovery but excludes prompts, initial schemas and generated code. It is not a model-token, cost or latency measurement.
+
+The separate **1 November security probes** show an authorized read, `tool_denied`, and `wall_timeout` after a successful read. Container absence was checked for all three. Their profile is **2 seconds / 128 MiB / three tool calls**; ordinary agent executions retain **15 seconds / 128 MiB / 30 calls / two attempts per process**. These checks demonstrate specific controls, not an independent security audit.
+
+The [hackathon brief](https://symfony.com/hackathon), checked on 1 November 2026, requests Symfony AI and PHP MCP SDK integration, runnable public code and a 90-second video by **22 November 2026 at 18:00 CET**. It also asks entrants to use **Hugging Face Inference Providers**. Live Hugging Face inference remains unverified; the Codex footage and model-free comparison do not demonstrate that integration. Complete that check before submission and update the edit if a live comparison replaces the reference shot. The [verification record](../../packages/php-code-mode/docs/verification.md) describes the tested scope.

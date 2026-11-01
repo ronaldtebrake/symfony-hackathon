@@ -684,6 +684,148 @@ h1 {
   tab-size:4;
 }
 
+.php-toolbar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  background:var(--code-bar);
+  padding-right:12px;
+}
+
+.php-toolbar button,#php-presentation button {
+  font:inherit;
+  font-size:12px;
+  padding:8px 12px;
+  border:1px solid var(--accent-border);
+  border-radius:6px;
+  background:var(--soft-accent);
+  color:var(--brand);
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+#php-presentation {
+  width:calc(100vw - 32px);
+  max-width:1500px;
+  height:calc(100dvh - 32px);
+  max-height:100dvh;
+  padding:0;
+  border:1px solid var(--accent-border);
+  border-radius:12px;
+  background:var(--paper);
+  color:var(--ink);
+  overflow:hidden;
+}
+
+#php-presentation[open] {
+  display:flex;
+  flex-direction:column;
+}
+
+#php-presentation::backdrop {
+  background:rgb(23 16 39 / 80%);
+}
+
+#php-presentation .php-presentation-heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:20px;
+  padding:22px 28px 14px;
+  flex-shrink:0;
+}
+
+#php-presentation h2 {
+  font:normal clamp(22px,3vw,34px)/1.2 Georgia,serif;
+  letter-spacing:-.6px;
+  margin:6px 0;
+}
+
+#php-presentation-meta {
+  font-size:12px;
+  color:var(--muted);
+  margin:0;
+}
+
+.php-presentation-tools {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  gap:12px;
+  padding:0 28px 16px;
+}
+
+#php-source-nav {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+#php-source-nav button[aria-current] {
+  background:var(--brand);
+  color:var(--surface);
+  border-color:var(--brand);
+}
+
+#php-presentation-source {
+  flex:1;
+  min-height:0;
+  overflow:auto;
+  margin:0;
+  padding:18px 0;
+  font:clamp(14px,1.4vw,20px)/1.65 var(--mono);
+  tab-size:4;
+  background:var(--code-bg);
+  color:var(--code-text);
+  overscroll-behavior:contain;
+  scroll-padding-top:18px;
+}
+
+#php-presentation-code {
+  display:block;
+  width:max-content;
+  min-width:100%;
+}
+
+.php-source-line {
+  display:block;
+  position:relative;
+  padding:0 28px 0 76px;
+  min-height:1.65em;
+  border-left:3px solid transparent;
+}
+
+.php-source-line::before {
+  content:attr(data-line);
+  position:absolute;
+  left:16px;
+  width:36px;
+  text-align:right;
+  font-size:12px;
+  line-height:inherit;
+  color:var(--code-muted);
+  user-select:none;
+}
+
+.php-tool-line {
+  background:rgb(127 91 255 / 14%);
+  border-left-color:var(--accent);
+}
+
+.php-source-focus {
+  background:rgb(219 39 119 / 18%);
+  border-left-color:#f472b6;
+}
+
+#php-presentation footer {
+  padding:12px 28px;
+  flex-shrink:0;
+  flex-wrap:wrap;
+  gap:6px 20px;
+  font-size:11px;
+}
+
 .panel-toolbar {
   display:flex;
   align-items:center;

@@ -20,7 +20,7 @@ The animation illustrates those measured results. Reference mode uses checked-in
 
 The workbench also shows a [real two-turn Codex conversation](docs/codex-conversation.md): an audit, then a follow-up that recomputes shared-image repair priorities. Select either turn to inspect its exact generated PHP, returned answer and actual MCP requests, with **20 host-recorded upstream calls** across both executions. [View the captured follow-up](docs/images/codex-proof.jpg).
 
-[Watch the 90-second walkthrough](docs/demo/rendered/symfony-code-mode-90s.mp4): recorded Codex excerpts, real workbench evidence and security proofs, with narration and captions. [Video sources and scope](docs/demo/rendered/README.md).
+[Record the 90-second judge demo](docs/demo/README.md): actual Codex footage, readable PHP, recorded calls and security proofs. In the workbench, choose **Generated PHP → Present PHP** for the large source view.
 
 ## Run locally
 

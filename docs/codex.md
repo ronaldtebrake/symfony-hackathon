@@ -43,6 +43,8 @@ The [1 November Codex conversation](codex-conversation.md) succeeded with two di
 
 Run `composer start` and open [Recorded Codex run](http://127.0.0.1:8000/demo#codex-run). Select the original question or follow-up, then inspect **Generated PHP**, **Tool calls** or **Answer**. The calls tab separates the host's upstream ledger from Codex's outer MCP requests, including their exact arguments and responses. The answer tab includes the returned JSON and Codex's verbatim final response.
 
+Choose **Generated PHP → Present PHP** for large source text, line numbers, jumps to the computation and **Copy exact PHP**. Navigation highlights the selected source location; it does not simulate line execution. Press Escape to return to the calls and results. The [recording guide](demo/README.md) explains how to match a new manual Codex take to its evidence.
+
 ![Recorded Codex follow-up and the actual generated PHP in the Symfony AI palette.](images/codex-proof.jpg)
 
 ![Host-recorded upstream calls from the follow-up.](images/codex-tool-calls.jpg)

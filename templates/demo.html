@@ -50,7 +50,7 @@
             </aside>
             <section class="inspector codex-inspector" aria-label="Recorded Codex execution details">
               <div class="inspector-heading"><div class="tabs" role="tablist" aria-label="Inspect the Codex turn"><button role="tab" id="codex-tab-php" aria-selected="true" aria-controls="codex-panel-php">Generated PHP</button><button role="tab" id="codex-tab-calls" aria-selected="false" aria-controls="codex-panel-calls" tabindex="-1">Tool calls <span id="codex-call-count">—</span></button><button role="tab" id="codex-tab-answer" aria-selected="false" aria-controls="codex-panel-answer" tabindex="-1">Answer</button></div></div>
-              <div role="tabpanel" id="codex-panel-php" aria-labelledby="codex-tab-php"><div class="code-caption" id="codex-program-caption"></div><pre class="code-view" tabindex="0"><code id="codex-program"></code></pre></div>
+              <div role="tabpanel" id="codex-panel-php" aria-labelledby="codex-tab-php"><div class="php-toolbar"><div class="code-caption" id="codex-program-caption"></div><button type="button" id="present-php">Present PHP ↗</button></div><pre class="code-view" tabindex="0"><code id="codex-program"></code></pre></div>
               <div role="tabpanel" id="codex-panel-calls" aria-labelledby="codex-tab-calls" class="codex-scroll" hidden>
                 <div class="panel-toolbar"><strong>Inside PHP</strong><span>Host-recorded broker calls</span></div>
                 <div class="table-scroll"><table><caption class="sr-only">Upstream calls made by the selected Codex program</caption><thead><tr><th>#</th><th>Tool</th><th>Status</th><th>Result</th><th>Time</th></tr></thead><tbody id="codex-call-rows"></tbody></table></div>
@@ -117,5 +117,11 @@
     </main>
     <footer><span>Built with Symfony AI · PHP MCP SDK · gVisor · <a href="https://github.com/ronaldtebrake/symfony-hackathon" target="_blank" rel="noopener noreferrer">Source ↗</a></span><span id="updated-at">Local reports stay on this machine.</span></footer>
   </div>
+  <dialog id="php-presentation" aria-labelledby="php-presentation-title" aria-describedby="php-presentation-note">
+    <header class="php-presentation-heading"><div><span class="eyebrow">Symfony Code Mode · recorded source</span><h2 id="php-presentation-title">The PHP Codex submitted.</h2><p id="php-presentation-meta"></p></div><button type="button" id="close-php" autofocus>Close · Esc</button></header>
+    <div class="php-presentation-tools"><nav id="php-source-nav" aria-label="Jump within the recorded PHP"></nav><button type="button" id="copy-php">Copy exact PHP</button></div>
+    <pre id="php-presentation-source" tabindex="0" aria-label="Exact submitted PHP with line numbers"><code id="php-presentation-code"></code></pre>
+    <footer><span id="php-presentation-note">Source navigation, not a line-by-line execution trace. Tool-call lines are tinted.</span><span id="php-copy-status" role="status"></span></footer>
+  </dialog>
 </body>
 </html>
