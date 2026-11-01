@@ -38,9 +38,9 @@ Hold each useful section for 5–8 seconds when recording inserts. **Copy exact 
 
 ![Actual PHP presentation view showing the recorded follow-up's ranking and return statements.](../images/codex-php-presentation.jpg)
 
-**Match the take to its evidence.** Today this view reads the reviewed **1 November rehearsal**, not your newly filmed conversation. A fresh model run may produce different PHP and batching. For the preferred seamless edit, retain each new call's exact `arguments.code`, full raw result (including `value` and `toolCalls`), and the two prompts/responses. We can review that capture and update the checked-in evidence before recording the workbench inserts. Do not swap in new code while retaining old results or verification flags.
+**The workbench now matches the fresh desktop rehearsal.** Record chat `01a196eb-12bd-7412-9fad-4d279e2cbcf8`, started **1 November 2026 at 12:42 CET**, and use this view for its PHP and call inserts. The [capture record](../codex-conversation.md) contains both exact prompts, programs, returned values and all 20 host-recorded calls. The earlier 10:31 CET capture has been replaced. The narrator can now say, “Here is the PHP from that conversation.”
 
-Until matching evidence is available, either show the new take's PHP directly in Codex (or copy its exact submitted body into a read-only editor tab), or use the current workbench with a visible **Recorded rehearsal · 1 November 2026** transition. The included narration uses that honest fallback. There is no upload, execution or conversation composer in the workbench.
+If you run another take, retain both actual `arguments.code` bodies and complete tool results for review before replacing this capture. New model runs may change the PHP, batching or result fields. The workbench does not synchronize conversations automatically. Its buttons only inspect the selected evidence; they cannot upload or execute code.
 
 ## 4. The exact 90-second splice
 
@@ -50,13 +50,13 @@ Use hard cuts between real actions and remove generation waits. Do not speed-scr
 | --- | --- | --- |
 | **00:00–00:10** | 10s | Actual Codex: submitted audit question (4s), discovery/PHP call (3s), completed answer (3s). Small title: **Symfony Code Mode**. |
 | **00:10–00:20** | 10s | Same chat: follow-up (4s), second `php_execute` (3s), repair-plan answer (3s). Keep enough conversation context to recognize the follow-up. |
-| **00:20–00:35** | 15s | PHP insert: cut from the submitted code to the **same program** in Present PHP or the editor. Hold grouping (7s), ranking (5s), return (3s). If using the older workbench evidence, introduce its recorded date instead of implying continuity. |
+| **00:20–00:35** | 15s | PHP insert: cut from the submitted code to the **same program** in Present PHP or the editor. Hold grouping (7s), ranking (5s), return (3s). Use the matching 12:42 CET desktop chat for both shots. |
 | **00:35–00:48** | 13s | Workbench **Tool calls**: host ledger (8s), expanded actual MCP request/result (5s). The code and calls must belong to the same turn. |
 | **00:48–01:00** | 12s | Separate **reference comparison**. Keep the “No model was called” label, equal call counts and payload definition visible. Caption: **Separate reference execution · 31 October 2026**. |
 | **01:00–01:22** | 22s | Separate **security proof**: authorized read (5s), blocked tool (5s), infinite loop (5s), expanded loop trace with `wall_timeout`, read witness and checked removal (7s). Caption: **Fixed probes · 1 November 2026**. |
 | **01:22–01:30** | 8s | Reusable Composer package README and repository URL. End on **Symfony AI + PHP MCP SDK**. |
 
-The edit points are frames **0, 300, 600, 1050, 1440, 1800, 2460, 2700**. There is no old movie to splice into: assemble a new timeline from your footage and the workbench inserts. Record [narration.txt](narration.txt) after choosing the shots, then align [draft captions](captions.srt) to that voice track. If the new take replaces the rehearsal, change the rehearsal wording and all counts to its verified observations. Export H.264 MP4 at 1080p/30 fps, with readable captions and exactly 90 seconds.
+The edit points are frames **0, 300, 600, 1050, 1440, 1800, 2460, 2700**. There is no old movie to splice into: assemble a new timeline from your footage and the workbench inserts. Record [narration.txt](narration.txt) after choosing the shots, then align [draft captions](captions.srt) to that voice track. The narration now refers to this matching desktop capture. If you record another take, update the evidence and counts before exporting. Export H.264 MP4 at 1080p/30 fps, with readable captions and exactly 90 seconds.
 
 ## 5. Files to keep for the edit
 
@@ -71,7 +71,7 @@ The video is pending those manual recordings. No upload or submission is part of
 
 ## Evidence and submission scope
 
-The checked-in [Codex rehearsal](../evidence/codex-conversation-2026-11-01.json) has two different programs in one MCP process, each with **10 upstream calls**: four article-list pages, four article batches and two media batches. The follow-up rechecks **48 articles**; shared images **7, 14 and 21** each affect two articles. These are observations from that capture, not guaranteed counts for a new take. The host ledger records tool names, statuses, durations and result sizes; upstream arguments are visible in PHP, not separately logged.
+The checked-in [Codex rehearsal](../evidence/codex-conversation-2026-11-01.json) has two different programs in one desktop chat, each with **10 upstream calls**: four article-list pages, four article batches and two media batches. The follow-up rechecks **48 articles**; shared images **7, 14 and 21** each affect two articles. These are observations from that capture, not guaranteed counts for a new take. The host ledger records tool names, statuses, durations and result sizes; upstream arguments are visible in PHP, not separately logged.
 
 The separate **31 October reference comparison** measured **20,154 → 3,014 tool-result bytes**, about **85% less**, with equal findings and ten calls each. This includes Code Mode discovery but excludes prompts, initial schemas and generated code. It is not a model-token, cost or latency measurement.
 

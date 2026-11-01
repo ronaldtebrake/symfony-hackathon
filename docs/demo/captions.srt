@@ -23,7 +23,7 @@ permissions.
 
 6
 00:00:20,000 --> 00:00:23,184
-This saved rehearsal shows both turns.
+Here is the PHP from that conversation.
 
 7
 00:00:23,184 --> 00:00:26,872

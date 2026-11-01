@@ -30,13 +30,19 @@ Latest verification: 1 November 2026. The initial reference measurements below w
 
 ## Live Codex — 1 November 2026
 
-A separate live Codex rehearsal on 1 November used Codex app-server `0.165.0-alpha.1.2` with `gpt-6-astra` and the existing ChatGPT sign-in. Two scripted human prompts produced two different PHP programs in one conversation and MCP process: an audit, then a repair plan grouped by issue and shared-image impact. Both returned values matched the independent fixture oracles after field-name normalization. Each execution made four list calls, four article-batch calls and two media-batch calls; all 20 calls succeeded. No managed containers remained after teardown. The exact programs, outputs and host ledgers are in the [live conversation record](../../../docs/codex-conversation.md). This verifies that recorded interaction, not general model reliability or live Hugging Face support.
+The initial 10:31 CET rehearsal used an ephemeral app-server conversation. The workbench now shows a fresh desktop chat, **`01a196eb-12bd-7412-9fad-4d279e2cbcf8`, started at 12:42 CET**, against source commit `1b6e313`. The user authorized both prompts through the desktop tools. Codex discovered the approved schemas and generated two different PHP programs: an audit, then a recomputed repair plan grouped by issue and shared-image impact.
+
+Both returned values matched the independent fixture checks after field-name normalization. Each execution made four list calls, four article-batch calls and two media-batch calls; all 20 succeeded. Runner durations were **765.199 ms** and **776.923 ms**, excluding model generation, container creation and final cleanup. The post-execution inventory found no managed containers. The exact programs, results and host ledgers are in the [conversation record](../../../docs/codex-conversation.md).
+
+The checked-in capture preserves the actual MCP records and agent messages from the persisted full-turn export. It does not include reasoning items or desktop delivery wrappers. Prompt text was extracted from those wrappers. The export does not record the model or MCP process identity, so metadata from the older capture has not been reused. This verifies that interaction, not general model reliability or Hugging Face inference.
 
 ## Read-only viewer — 1 November 2026
 
 The read-only Codex viewer was checked separately on 1 November: **3 targeted HTTP/store tests / 41 assertions passed**, covering exact capture delivery, GET-only access, local client/Host restrictions, ignored path parameters and rejection of oversized evidence. Browser checks confirmed both submitted programs, the follow-up's outer MCP call, returned JSON and final agent response match the capture exactly. Keyboard navigation stays within each independent inspector. Screenshots were refreshed with the Symfony AI palette. This viewer check did not rerun the model or sandbox proofs above.
 
 The PHP presentation view was then browser-checked for both recorded turns: source text remained identical, section navigation selected the expected lines, clipboard output matched the submitted body, and Escape/Close restored focus to the opener. No browser warnings or errors were observed. The same **3 tests / 41 assertions** passed again; JavaScript syntax and Git whitespace checks passed. The presentation adds no execution or import endpoint. Its screenshot shows source navigation, not line-level runtime tracing.
+
+After importing the fresh 12:42 CET desktop capture, **4 targeted HTTP/store/evidence tests / 71 assertions passed**. The added check compares both recorded results against the independent fixture, validates impact ranking and confirms successful approved read calls. Browser checks matched both displayed PHP bodies, returned JSON, final responses and complete outer MCP records to the imported capture. The follow-up's grouping and ranking buttons select the new program's actual variables. All three Codex screenshots and the recording guide now refer to this same chat. No new model or sandbox execution was needed to update the viewer.
 
 ## Verification limits
 

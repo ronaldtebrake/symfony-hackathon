@@ -236,11 +236,11 @@ function renderCodexTurn(index) {
     byId('codex-result-summary').textContent = `${value.total_audited} articles audited · ${value.affected_count} affected`;
     detail.append(node('li', `Affected IDs: ${value.affected_articles.map((article) => article.id).join(', ')}`));
   } else {
-    byId('codex-result-summary').textContent = `${value.total_audited} articles rechecked · ${value.hero_image_alt_fixes.length} shared-image fixes`;
-    for (const fix of value.hero_image_alt_fixes) {
-      detail.append(node('li', `Image ${fix.image_id} → articles ${fix.article_ids.join(', ')} (${fix.published_article_count} helped)`));
+    byId('codex-result-summary').textContent = `${value.total_audited} articles rechecked · ${value.shared_hero_image_fix_count} shared-image fixes`;
+    for (const fix of value.hero_image_alt_fixes_ranked_by_impact) {
+      detail.append(node('li', `Image ${fix.image_id} → articles ${fix.affected_article_ids.join(', ')} (${fix.affected_article_count} helped)`));
     }
-    detail.append(node('li', `Missing descriptions: ${value.missing_meta_description.map((article) => article.id).join(', ')}`));
+    detail.append(node('li', `Missing descriptions: ${value.meta_description_fixes.map((article) => article.id).join(', ')}`));
   }
   const verified = codexCapture.verification?.[index === 0 ? 'auditMatchesIndependentOracle' : 'impactMatchesIndependentOracle'];
   byId('codex-validation').textContent = verified === true ? 'Recorded fixture check: matched the independent expected result.' : 'No successful fixture check recorded for this turn.';
@@ -270,7 +270,7 @@ byId('present-php').addEventListener('click', () => {
   navigation.replaceChildren();
   const sections = selectedCodexTurn === 0
     ? [['List articles', '$listed ='], ['Read batches', '$articles ='], ['Find issues', '$affected ='], ['Return findings', 'return [']]
-    : [['Read articles', '$listed ='], ['Group images', '$byImage ='], ['Rank fixes', 'usort($imageRepairs,'], ['Return plan', 'return [']];
+    : [['Read articles', '$listed ='], ['Group images', '$imageUsage ='], ['Rank fixes', 'usort($imageFixes,'], ['Return plan', 'return [']];
   for (const [label, marker] of sections) {
     const index = lines.findIndex((line) => line.startsWith(marker));
     if (index < 0) continue;
@@ -322,12 +322,11 @@ async function loadCodexCapture() {
     codexCapture = report;
     renderCodexTurn(0);
     byId('codex-state').textContent = '2 RECORDED TURNS';
-    byId('codex-note').textContent = 'Two scripted human prompts; Codex generated both responses and PHP programs live. Inspect the saved evidence here. Conversations stay in Codex.';
+    byId('codex-note').textContent = 'Two prompts in one Codex desktop chat; both responses and PHP programs were generated live. This capture matches the fresh judge-demo rehearsal. Conversations stay in Codex.';
     const recorded = new Date(report.recordedAt).toLocaleString('en-GB', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Amsterdam', timeZoneName: 'short'});
     const callCount = executions.reduce((count, execution) => count + execution.toolCalls.length, 0);
-    byId('codex-provenance').textContent = `${report.model} · ${report.backend} · ${executions.length} PHP executions · ${callCount} upstream calls · Recorded ${recorded}`;
-    byId('codex-session-note').textContent = report.mcpProcess?.samePidObservedDuringBothTurns === true
-      ? 'Both turns used the same MCP process and its two-attempt budget.' : 'A shared MCP process was not confirmed in this capture.';
+    byId('codex-provenance').textContent = `${report.client} · ${report.backend} · ${executions.length} PHP executions · ${callCount} upstream calls · Recorded ${recorded}`;
+    byId('codex-session-note').textContent = 'Audit and follow-up are from the same recorded Codex chat, with one PHP execution per turn. This export does not include the model or MCP process identity.';
     byId('codex-evidence').hidden = false;
   } catch {
     codexCapture = null;

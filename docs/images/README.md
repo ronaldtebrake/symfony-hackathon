@@ -11,10 +11,12 @@ The proof screenshots are actual browser captures refreshed on **1 November 2026
 | Image | Recorded evidence shown |
 | --- | --- |
 | `code-mode-proof.jpg` | Reference report from **31 October**: 48 published articles, 10 matching findings and 10 batched MCP calls per approach; 20,154 versus 3,014 tool-result bytes. No model was called. |
-| `codex-proof.jpg` | The **1 November** live Codex rehearsal: follow-up prompt, shared-image repair result and exact generated PHP. The screenshot shows the beginning of the scrollable program. |
+| `codex-proof.jpg` | The fresh **1 November, 12:42 CET** desktop Codex rehearsal: follow-up prompt, shared-image repair result and exact generated PHP. The screenshot shows the beginning of the scrollable program. |
 | `codex-tool-calls.jpg` | The same follow-up's ten actual host-recorded upstream calls, outcomes, result sizes and timings. |
 | `codex-php-presentation.jpg` | The same follow-up in **Present PHP**, captured on 1 November: large exact source, line numbers and a manually selected ranking section. The highlight indicates source navigation, not live line execution. |
 | `security-proof.jpg` | The **1 November** fixed security probes: authorized read, blocked unauthorized tool and terminated infinite loop, with checked container removal. No model was called. |
+
+All three Codex screenshots now match chat `01a196eb-12bd-7412-9fad-4d279e2cbcf8`, replacing the earlier 10:31 CET rehearsal.
 
 Start `composer start` and open `/demo#codex-run`, `/demo#workbench` or `/demo#security-proof`. The Codex section reads the reviewed [capture](../evidence/codex-conversation-2026-11-01.json); it does not import current conversations. The other sections read ignored `var/demo/latest.json` and `var/demo/security.json`. If those reports are missing, generate them with `composer demo` and `composer demo:security` against the configured gVisor host before capturing. Styling-only refreshes can reuse existing reports; record the screenshot date separately from the execution date.
 

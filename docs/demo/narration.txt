@@ -2,7 +2,7 @@ This is Symfony Code Mode. I ask Codex to audit published articles. It writes PH
 
 Then I ask which shared-image fixes help the most articles. Same conversation, new computation, same permissions.
 
-This saved rehearsal shows both turns. The follow-up rechecked forty-eight articles and found three shared-image fixes, each helping two articles. Here is the exact PHP it submitted.
+Here is the PHP from that conversation. The follow-up rechecked forty-eight articles and found three shared-image fixes, each helping two articles. Here is the exact PHP it submitted.
 
 The host recorded ten upstream calls: four list pages, four article batches and two media batches. Expand PHP execute for the actual request and response.
 
