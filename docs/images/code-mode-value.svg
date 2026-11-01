@@ -1,18 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="740" viewBox="0 0 960 740" role="img" aria-labelledby="title description">
   <title id="title">Symfony Code Mode: same audit, less data returned to the agent.</title>
   <desc id="description">Animated explanation of a verified reference run. Direct tool calling and Code Mode both check 48 published articles and return the same 10 findings using 10 batched MCP calls. Direct calls return 20,154 bytes of tool-result payload; Code Mode returns 3,014 bytes including discovery, about 85 percent less. PHP processes intermediate data inside gVisor; the host authorizes every tool call. No model was called and no model-token savings are claimed. With reduced motion, the complete comparison stays visible.</desc>
+  <!-- Palette adapted from ai.symfony.com: #5a55a5, #4c1d95, #db2777, #1d4ed8, #7f5bff. -->
   <defs>
-    <linearGradient id="paper" x2="0" y2="1"><stop stop-color="#fbfcf8"/><stop offset="1" stop-color="#f4f7f0"/></linearGradient>
-    <linearGradient id="smart" x2="1" y2="1"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#f1f8ec"/></linearGradient>
-    <linearGradient id="scan" x2="1"><stop stop-color="#8ce5b0" stop-opacity="0"/><stop offset=".5" stop-color="#8ce5b0" stop-opacity=".18"/><stop offset="1" stop-color="#8ce5b0" stop-opacity="0"/></linearGradient>
+    <linearGradient id="brand" x2="1" y2="0"><stop stop-color="#4c1d95"/><stop offset="1" stop-color="#db2777"/></linearGradient>
+    <linearGradient id="paper" x2="0" y2="1"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#f8f7ff"/></linearGradient>
+    <linearGradient id="smart" x2="1" y2="1"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#f3eeff"/></linearGradient>
+    <linearGradient id="scan" x2="1"><stop stop-color="#b99aff" stop-opacity="0"/><stop offset=".5" stop-color="#b99aff" stop-opacity=".18"/><stop offset="1" stop-color="#b99aff" stop-opacity="0"/></linearGradient>
     <clipPath id="php-clip"><rect x="516" y="365" width="384" height="113" rx="9"/></clipPath>
   </defs>
   <style>
-    text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;fill:#1d2b26}
-    .muted{fill:#6b756c}.green{fill:#166747}.mono{font-family:ui-monospace,'SFMono-Regular',Consolas,monospace}
+    text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;fill:#191226}
+    .muted{fill:#686174}.accent{fill:#4c1d95}.mono{font-family:ui-monospace,'SFMono-Regular',Consolas,monospace}
     .eyebrow{font-size:9px;font-weight:650;letter-spacing:1.7px}.small{font-size:11px}.label{font-size:10px;font-weight:600;letter-spacing:.8px}
-    .batch-flash{fill:#cbd9c3;opacity:0;animation:batch 12s ease-in-out infinite;animation-delay:var(--delay)}
-    .tool-dot{fill:#91bc8c;opacity:.32;animation:dot 12s ease-in-out infinite;animation-delay:var(--delay)}
+    .batch-flash{fill:#cdd8fa;opacity:0;animation:batch 12s ease-in-out infinite;animation-delay:var(--delay)}
+    .tool-dot{fill:#b99aff;opacity:.32;animation:dot 12s ease-in-out infinite;animation-delay:var(--delay)}
     .packet{opacity:0;animation:packet 12s linear infinite;animation-delay:var(--delay)}
     .branch-left{animation:branch-left 12s linear infinite;opacity:0}.branch-right{animation:branch-right 12s linear infinite;opacity:0}
     .scan{animation:scan 12s ease-in-out infinite;opacity:0}.findings-flash{animation:findings 12s ease-in-out infinite;opacity:0}
@@ -29,121 +31,121 @@
     @keyframes saving{0%,60%,84%,100%{opacity:0}65%,73%{opacity:.7}}
     @media(prefers-reduced-motion:reduce){.batch-flash,.tool-dot,.packet,.branch-left,.branch-right,.scan,.return-packet,.findings-flash,.saving-ring{animation:none!important}.tool-dot{opacity:1}}
   </style>
-  <rect x=".5" y=".5" width="959" height="739" rx="22" fill="url(#paper)" stroke="#dce3d8"/>
+  <rect x=".5" y=".5" width="959" height="739" rx="22" fill="url(#paper)" stroke="#e4dfee"/>
   <g aria-hidden="true">
-    <rect x="36" y="29" width="28" height="28" rx="8" fill="#1d2b26"/>
-    <text x="50" y="49" text-anchor="middle" class="mono" style="fill:#f2f6ed;font-size:16px;font-weight:700">{ }</text>
+    <rect x="36" y="29" width="28" height="28" rx="8" fill="url(#brand)"/>
+    <text x="50" y="49" text-anchor="middle" class="mono" style="fill:#ffffff;font-size:16px;font-weight:700">{ }</text>
     <text x="73" y="49" font-size="20" font-weight="750" letter-spacing="-.8">Symfony Code Mode</text>
-    <text x="923" y="46" text-anchor="end" class="eyebrow muted">SYMFONY AI × PHP MCP SDK</text>
-    <text x="480" y="118" text-anchor="middle" font-size="54" font-weight="750" letter-spacing="-2.3">Same audit. <tspan class="green">Less data.</tspan></text>
+    <text x="923" y="46" text-anchor="end" class="eyebrow" style="fill:#5a55a5">SYMFONY AI × PHP MCP SDK</text>
+    <text x="480" y="118" text-anchor="middle" font-size="54" font-weight="750" letter-spacing="-2.3">Same audit. <tspan fill="url(#brand)">Less data.</tspan></text>
     <text x="480" y="151" text-anchor="middle" font-size="17" class="muted">Let PHP do the work between tool calls.</text>
 
-    <rect x="160" y="182" width="640" height="72" rx="13" fill="#dce4d7" opacity=".4"/>
-    <rect x="160" y="178" width="640" height="72" rx="13" fill="#fff" stroke="#d9e0d4"/>
-    <path d="M160 207H800" stroke="#e8ece4"/>
-    <path d="M179 190h8m-8 4h5m-5 4h8" stroke="#6b756c" stroke-width="1.2"/>
+    <rect x="160" y="182" width="640" height="72" rx="13" fill="#d8cfea" opacity=".4"/>
+    <rect x="160" y="178" width="640" height="72" rx="13" fill="#fff" stroke="#e1d9ed"/>
+    <path d="M160 207H800" stroke="#eeeaf5"/>
+    <path d="M179 190h8m-8 4h5m-5 4h8" stroke="#686174" stroke-width="1.2"/>
     <text x="196" y="197" class="label muted">THE AUDIT</text>
     <text x="783" y="197" text-anchor="end" class="mono small muted">48 articles · 24 images</text>
     <text x="480" y="234" text-anchor="middle" font-size="14">Find missing meta descriptions and hero-image alt text.</text>
 
-    <path d="M480 250v10q0 6-6 6H258q-6 0-6 6v12" fill="none" stroke="#cad4c2" stroke-width="1.5"/>
-    <path d="M480 250v10q0 6 6 6h216q6 0 6 6v12" fill="none" stroke="#a5c19c" stroke-width="1.5"/>
-    <path d="m248 279 4 5 4-5m448 0 4 5 4-5" fill="none" stroke="#a5b99a" stroke-width="1.5"/>
-    <circle r="3" fill="#879b78" class="branch-left"/>
-    <circle r="3" fill="#166747" class="branch-right"/>
+    <path d="M480 250v10q0 6-6 6H258q-6 0-6 6v12" fill="none" stroke="#c8d2e9" stroke-width="1.5"/>
+    <path d="M480 250v10q0 6 6 6h216q6 0 6 6v12" fill="none" stroke="#bba6ef" stroke-width="1.5"/>
+    <path d="m248 279 4 5 4-5m448 0 4 5 4-5" fill="none" stroke="#a99bc5" stroke-width="1.5"/>
+    <circle r="3" fill="#1d4ed8" class="branch-left"/>
+    <circle r="3" fill="#4c1d95" class="branch-right"/>
 
-    <rect x="36" y="284" width="432" height="352" rx="16" fill="#fff" stroke="#dce3d7"/>
-    <rect x="492" y="284" width="432" height="352" rx="16" fill="url(#smart)" stroke="#c4d8bb"/>
+    <rect x="36" y="284" width="432" height="352" rx="16" fill="#fff" stroke="#e3e4ec"/>
+    <rect x="492" y="284" width="432" height="352" rx="16" fill="url(#smart)" stroke="#d3c2f2"/>
     <text x="60" y="318" font-size="21" font-weight="700" letter-spacing="-.6">Direct tool calling</text>
-    <rect x="343" y="299" width="101" height="23" rx="5" fill="#eef1e9"/>
-    <text x="393.5" y="314" text-anchor="middle" font-size="9" font-weight="650" letter-spacing=".7" class="muted">10 MCP CALLS</text>
+    <rect x="343" y="299" width="101" height="23" rx="5" fill="#eef2ff"/>
+    <text x="393.5" y="314" text-anchor="middle" font-size="9" font-weight="650" letter-spacing=".7" style="fill:#1d4ed8">10 MCP CALLS</text>
     <text x="60" y="343" font-size="13" class="muted">Every batch returns to the agent.</text>
     <text x="516" y="318" font-size="21" font-weight="700" letter-spacing="-.6">With Code Mode</text>
-    <rect x="799" y="299" width="101" height="23" rx="5" fill="#e5f1de"/>
-    <text x="849.5" y="314" text-anchor="middle" font-size="9" font-weight="650" letter-spacing=".7" class="green">10 MCP CALLS</text>
+    <rect x="799" y="299" width="101" height="23" rx="5" fill="#ede5ff"/>
+    <text x="849.5" y="314" text-anchor="middle" font-size="9" font-weight="650" letter-spacing=".7" class="accent">10 MCP CALLS</text>
     <text x="516" y="343" font-size="13" class="muted">PHP joins and filters the intermediate data.</text>
 
     <text x="60" y="383" class="label muted" style="font-size:8.5px;letter-spacing:.4px">LIST</text>
     <g>
-      <rect x="132" y="365" width="72" height="28" rx="5" fill="#f0f3eb" stroke="#dfe6d8"/>
+      <rect x="132" y="365" width="72" height="28" rx="5" fill="#f4f5f9" stroke="#e0e4ee"/>
       <rect class="batch-flash" style="--delay:0.0s" x="132" y="365" width="72" height="28" rx="5"/>
-      <rect x="141" y="376" width="5" height="6" rx="1" fill="#819176"/>
-      <text x="152" y="383" class="mono" font-size="10" style="fill:#59674e">12 IDs</text>
+      <rect x="141" y="376" width="5" height="6" rx="1" fill="#5a55a5"/>
+      <text x="152" y="383" class="mono" font-size="10" style="fill:#4e5370">12 IDs</text>
     </g>
-    <circle cx="168" cy="393" r="2.4" fill="#8ca27a" class="packet" style="--delay:0.0s;--travel:108px"/>
+    <circle cx="168" cy="393" r="2.4" fill="#1d4ed8" class="packet" style="--delay:0.0s;--travel:108px"/>
     <g>
-      <rect x="210" y="365" width="72" height="28" rx="5" fill="#f0f3eb" stroke="#dfe6d8"/>
+      <rect x="210" y="365" width="72" height="28" rx="5" fill="#f4f5f9" stroke="#e0e4ee"/>
       <rect class="batch-flash" style="--delay:0.22s" x="210" y="365" width="72" height="28" rx="5"/>
-      <rect x="219" y="376" width="5" height="6" rx="1" fill="#819176"/>
-      <text x="230" y="383" class="mono" font-size="10" style="fill:#59674e">12 IDs</text>
+      <rect x="219" y="376" width="5" height="6" rx="1" fill="#5a55a5"/>
+      <text x="230" y="383" class="mono" font-size="10" style="fill:#4e5370">12 IDs</text>
     </g>
-    <circle cx="246" cy="393" r="2.4" fill="#8ca27a" class="packet" style="--delay:0.22s;--travel:108px"/>
+    <circle cx="246" cy="393" r="2.4" fill="#1d4ed8" class="packet" style="--delay:0.22s;--travel:108px"/>
     <g>
-      <rect x="288" y="365" width="72" height="28" rx="5" fill="#f0f3eb" stroke="#dfe6d8"/>
+      <rect x="288" y="365" width="72" height="28" rx="5" fill="#f4f5f9" stroke="#e0e4ee"/>
       <rect class="batch-flash" style="--delay:0.44s" x="288" y="365" width="72" height="28" rx="5"/>
-      <rect x="297" y="376" width="5" height="6" rx="1" fill="#819176"/>
-      <text x="308" y="383" class="mono" font-size="10" style="fill:#59674e">12 IDs</text>
+      <rect x="297" y="376" width="5" height="6" rx="1" fill="#5a55a5"/>
+      <text x="308" y="383" class="mono" font-size="10" style="fill:#4e5370">12 IDs</text>
     </g>
-    <circle cx="324" cy="393" r="2.4" fill="#8ca27a" class="packet" style="--delay:0.44s;--travel:108px"/>
+    <circle cx="324" cy="393" r="2.4" fill="#1d4ed8" class="packet" style="--delay:0.44s;--travel:108px"/>
     <g>
-      <rect x="366" y="365" width="72" height="28" rx="5" fill="#f0f3eb" stroke="#dfe6d8"/>
+      <rect x="366" y="365" width="72" height="28" rx="5" fill="#f4f5f9" stroke="#e0e4ee"/>
       <rect class="batch-flash" style="--delay:0.66s" x="366" y="365" width="72" height="28" rx="5"/>
-      <rect x="375" y="376" width="5" height="6" rx="1" fill="#819176"/>
-      <text x="386" y="383" class="mono" font-size="10" style="fill:#59674e">12 IDs</text>
+      <rect x="375" y="376" width="5" height="6" rx="1" fill="#5a55a5"/>
+      <text x="386" y="383" class="mono" font-size="10" style="fill:#4e5370">12 IDs</text>
     </g>
-    <circle cx="402" cy="393" r="2.4" fill="#8ca27a" class="packet" style="--delay:0.66s;--travel:108px"/>
+    <circle cx="402" cy="393" r="2.4" fill="#1d4ed8" class="packet" style="--delay:0.66s;--travel:108px"/>
     <text x="60" y="425" class="label muted" style="font-size:8.5px;letter-spacing:.4px">ARTICLES</text>
     <g>
-      <rect x="132" y="407" width="72" height="28" rx="5" fill="#f0f3eb" stroke="#dfe6d8"/>
+      <rect x="132" y="407" width="72" height="28" rx="5" fill="#f4f5f9" stroke="#e0e4ee"/>
       <rect class="batch-flash" style="--delay:0.88s" x="132" y="407" width="72" height="28" rx="5"/>
-      <rect x="141" y="418" width="5" height="6" rx="1" fill="#819176"/>
-      <text x="152" y="425" class="mono" font-size="10" style="fill:#59674e">12 rows</text>
+      <rect x="141" y="418" width="5" height="6" rx="1" fill="#5a55a5"/>
+      <text x="152" y="425" class="mono" font-size="10" style="fill:#4e5370">12 rows</text>
     </g>
-    <circle cx="168" cy="435" r="2.4" fill="#8ca27a" class="packet" style="--delay:0.88s;--travel:66px"/>
+    <circle cx="168" cy="435" r="2.4" fill="#1d4ed8" class="packet" style="--delay:0.88s;--travel:66px"/>
     <g>
-      <rect x="210" y="407" width="72" height="28" rx="5" fill="#f0f3eb" stroke="#dfe6d8"/>
+      <rect x="210" y="407" width="72" height="28" rx="5" fill="#f4f5f9" stroke="#e0e4ee"/>
       <rect class="batch-flash" style="--delay:1.1s" x="210" y="407" width="72" height="28" rx="5"/>
-      <rect x="219" y="418" width="5" height="6" rx="1" fill="#819176"/>
-      <text x="230" y="425" class="mono" font-size="10" style="fill:#59674e">12 rows</text>
+      <rect x="219" y="418" width="5" height="6" rx="1" fill="#5a55a5"/>
+      <text x="230" y="425" class="mono" font-size="10" style="fill:#4e5370">12 rows</text>
     </g>
-    <circle cx="246" cy="435" r="2.4" fill="#8ca27a" class="packet" style="--delay:1.1s;--travel:66px"/>
+    <circle cx="246" cy="435" r="2.4" fill="#1d4ed8" class="packet" style="--delay:1.1s;--travel:66px"/>
     <g>
-      <rect x="288" y="407" width="72" height="28" rx="5" fill="#f0f3eb" stroke="#dfe6d8"/>
+      <rect x="288" y="407" width="72" height="28" rx="5" fill="#f4f5f9" stroke="#e0e4ee"/>
       <rect class="batch-flash" style="--delay:1.32s" x="288" y="407" width="72" height="28" rx="5"/>
-      <rect x="297" y="418" width="5" height="6" rx="1" fill="#819176"/>
-      <text x="308" y="425" class="mono" font-size="10" style="fill:#59674e">12 rows</text>
+      <rect x="297" y="418" width="5" height="6" rx="1" fill="#5a55a5"/>
+      <text x="308" y="425" class="mono" font-size="10" style="fill:#4e5370">12 rows</text>
     </g>
-    <circle cx="324" cy="435" r="2.4" fill="#8ca27a" class="packet" style="--delay:1.32s;--travel:66px"/>
+    <circle cx="324" cy="435" r="2.4" fill="#1d4ed8" class="packet" style="--delay:1.32s;--travel:66px"/>
     <g>
-      <rect x="366" y="407" width="72" height="28" rx="5" fill="#f0f3eb" stroke="#dfe6d8"/>
+      <rect x="366" y="407" width="72" height="28" rx="5" fill="#f4f5f9" stroke="#e0e4ee"/>
       <rect class="batch-flash" style="--delay:1.54s" x="366" y="407" width="72" height="28" rx="5"/>
-      <rect x="375" y="418" width="5" height="6" rx="1" fill="#819176"/>
-      <text x="386" y="425" class="mono" font-size="10" style="fill:#59674e">12 rows</text>
+      <rect x="375" y="418" width="5" height="6" rx="1" fill="#5a55a5"/>
+      <text x="386" y="425" class="mono" font-size="10" style="fill:#4e5370">12 rows</text>
     </g>
-    <circle cx="402" cy="435" r="2.4" fill="#8ca27a" class="packet" style="--delay:1.54s;--travel:66px"/>
+    <circle cx="402" cy="435" r="2.4" fill="#1d4ed8" class="packet" style="--delay:1.54s;--travel:66px"/>
     <text x="60" y="467" class="label muted" style="font-size:8.5px;letter-spacing:.4px">IMAGES</text>
     <g>
-      <rect x="132" y="449" width="72" height="28" rx="5" fill="#f0f3eb" stroke="#dfe6d8"/>
+      <rect x="132" y="449" width="72" height="28" rx="5" fill="#f4f5f9" stroke="#e0e4ee"/>
       <rect class="batch-flash" style="--delay:1.76s" x="132" y="449" width="72" height="28" rx="5"/>
-      <rect x="141" y="460" width="5" height="6" rx="1" fill="#819176"/>
-      <text x="152" y="467" class="mono" font-size="10" style="fill:#59674e">12 rows</text>
+      <rect x="141" y="460" width="5" height="6" rx="1" fill="#5a55a5"/>
+      <text x="152" y="467" class="mono" font-size="10" style="fill:#4e5370">12 rows</text>
     </g>
-    <circle cx="168" cy="477" r="2.4" fill="#8ca27a" class="packet" style="--delay:1.76s;--travel:24px"/>
+    <circle cx="168" cy="477" r="2.4" fill="#1d4ed8" class="packet" style="--delay:1.76s;--travel:24px"/>
     <g>
-      <rect x="210" y="449" width="72" height="28" rx="5" fill="#f0f3eb" stroke="#dfe6d8"/>
+      <rect x="210" y="449" width="72" height="28" rx="5" fill="#f4f5f9" stroke="#e0e4ee"/>
       <rect class="batch-flash" style="--delay:1.98s" x="210" y="449" width="72" height="28" rx="5"/>
-      <rect x="219" y="460" width="5" height="6" rx="1" fill="#819176"/>
-      <text x="230" y="467" class="mono" font-size="10" style="fill:#59674e">12 rows</text>
+      <rect x="219" y="460" width="5" height="6" rx="1" fill="#5a55a5"/>
+      <text x="230" y="467" class="mono" font-size="10" style="fill:#4e5370">12 rows</text>
     </g>
-    <circle cx="246" cy="477" r="2.4" fill="#8ca27a" class="packet" style="--delay:1.98s;--travel:24px"/>
-    <path d="M252 481v9m-3-3 3 3 3-3" stroke="#9caa91" fill="none"/>
-    <rect x="60" y="494" width="384" height="34" rx="7" fill="#f5f6f1" stroke="#e0e5d9"/>
+    <circle cx="246" cy="477" r="2.4" fill="#1d4ed8" class="packet" style="--delay:1.98s;--travel:24px"/>
+    <path d="M252 481v9m-3-3 3 3 3-3" stroke="#a4a9c3" fill="none"/>
+    <rect x="60" y="494" width="384" height="34" rx="7" fill="#f6f7fb" stroke="#e0e4ee"/>
     <text x="75" y="515" class="label muted" style="font-size:9px">AGENT CONTEXT</text>
-    <text x="430" y="515" text-anchor="end" class="mono small" style="fill:#56624d">10 batches of raw results</text>
+    <text x="430" y="515" text-anchor="end" class="mono small" style="fill:#4e5370">10 batches of raw results</text>
 
-    <rect x="516" y="365" width="384" height="113" rx="9" fill="#20352c"/>
-    <path d="M516 393H900" stroke="#385043"/>
-    <text x="530" y="383" class="mono" font-size="10" style="fill:#a9cbb4">PHP · isolated in gVisor</text>
+    <rect x="516" y="365" width="384" height="113" rx="9" fill="#171027"/>
+    <path d="M516 393H900" stroke="#38294f"/>
+    <text x="530" y="383" class="mono" font-size="10" style="fill:#c4b5fd">PHP · isolated in gVisor</text>
 
     <circle cx="802" cy="379" r="2" class="tool-dot" style="--delay:0.0s"/>
     <circle cx="811" cy="379" r="2" class="tool-dot" style="--delay:0.22s"/>
@@ -156,30 +158,30 @@
     <circle cx="874" cy="379" r="2" class="tool-dot" style="--delay:1.76s"/>
     <circle cx="883" cy="379" r="2" class="tool-dot" style="--delay:1.98s"/>
     <g clip-path="url(#php-clip)"><rect x="516" y="396" width="384" height="20" fill="url(#scan)" class="scan"/></g>
-    <text x="530" y="414" class="mono" font-size="11" style="fill:#e1eddf">foreach ($articles as $article) {</text>
-    <text x="530" y="432" class="mono" font-size="11" style="fill:#e1eddf">  $image = $media[$article-&gt;image_id];</text>
-    <text x="530" y="450" class="mono" font-size="11" style="fill:#9ac5a4">  // Keep only the audit findings.</text>
-    <text x="530" y="468" class="mono" font-size="11" style="fill:#e1eddf">}</text>
-    <path d="M708 478v12m-3-3 3 3 3-3" stroke="#79a16d" fill="none"/>
-    <circle cx="708" cy="480" r="3" fill="#166747" class="return-packet"/>
-    <rect x="516" y="494" width="384" height="34" rx="7" fill="#e8f3e1" stroke="#c8ddbe"/>
-    <rect x="516" y="494" width="384" height="34" rx="7" fill="#b7dba5" class="findings-flash"/>
-    <path d="m531 511 3 3 6-7" fill="none" stroke="#166747" stroke-width="1.7"/>
-    <text x="549" y="515" font-size="12" font-weight="650" class="green">10 findings</text>
-    <text x="886" y="515" text-anchor="end" class="mono small green">compact JSON → agent</text>
+    <text x="530" y="414" class="mono" font-size="11" style="fill:#f5f0ff">foreach ($articles as $article) {</text>
+    <text x="530" y="432" class="mono" font-size="11" style="fill:#f5f0ff">  $image = $media[$article-&gt;image_id];</text>
+    <text x="530" y="450" class="mono" font-size="11" style="fill:#bca9dc">  // Keep only the audit findings.</text>
+    <text x="530" y="468" class="mono" font-size="11" style="fill:#f5f0ff">}</text>
+    <path d="M708 478v12m-3-3 3 3 3-3" stroke="#7f5bff" fill="none"/>
+    <circle cx="708" cy="480" r="3" fill="#4c1d95" class="return-packet"/>
+    <rect x="516" y="494" width="384" height="34" rx="7" fill="#eee7ff" stroke="#d7c5f7"/>
+    <rect x="516" y="494" width="384" height="34" rx="7" fill="#d8b4fe" class="findings-flash"/>
+    <path d="m531 511 3 3 6-7" fill="none" stroke="#4c1d95" stroke-width="1.7"/>
+    <text x="549" y="515" font-size="12" font-weight="650" class="accent">10 findings</text>
+    <text x="886" y="515" text-anchor="end" class="mono small accent">compact JSON → agent</text>
 
-    <path d="M60 544H444M516 544H900" stroke="#e1e7db"/>
+    <path d="M60 544H444M516 544H900" stroke="#e7e1ef"/>
     <text x="60" y="566" class="small muted">Tool-result payload returned to the agent</text>
     <text x="516" y="566" class="small muted">Tool-result payload, including discovery</text>
     <text x="60" y="614" font-size="45" font-weight="700" letter-spacing="-1.8">20.15<tspan font-size="16" font-weight="400" letter-spacing="0" class="muted"> kB</tspan></text>
-    <text x="516" y="614" font-size="45" font-weight="700" letter-spacing="-1.8" class="green">3.01<tspan font-size="16" font-weight="400" letter-spacing="0" class="muted"> kB</tspan></text>
+    <text x="516" y="614" font-size="45" font-weight="700" letter-spacing="-1.8" class="accent">3.01<tspan font-size="16" font-weight="400" letter-spacing="0" class="muted"> kB</tspan></text>
     <text x="444" y="608" text-anchor="end" class="small muted">Full tool results</text>
-    <rect x="794" y="589" width="106" height="27" rx="6" fill="#dff0d5"/>
-    <rect x="790" y="585" width="114" height="35" rx="9" fill="none" stroke="#86b378" class="saving-ring"/>
-    <text x="847" y="607" text-anchor="middle" font-size="12" font-weight="650" class="green">85% less data</text>
+    <rect x="794" y="589" width="106" height="27" rx="6" fill="#e9ddff"/>
+    <rect x="790" y="585" width="114" height="35" rx="9" fill="none" stroke="#7f5bff" class="saving-ring"/>
+    <text x="847" y="607" text-anchor="middle" font-size="12" font-weight="650" class="accent">85% less data</text>
 
-    <path d="m267 669 4 4 8-9" fill="none" stroke="#166747" stroke-width="1.8"/>
-    <text x="488" y="675" text-anchor="middle" font-size="16" font-weight="600" letter-spacing="-.3" class="green">Same 48 articles checked. Same 10 findings.</text>
+    <path d="m267 669 4 4 8-9" fill="none" stroke="#4c1d95" stroke-width="1.8"/>
+    <text x="488" y="675" text-anchor="middle" font-size="16" font-weight="600" letter-spacing="-.3" class="accent">Same 48 articles checked. Same 10 findings.</text>
     <text x="480" y="704" text-anchor="middle" font-size="9.5" class="muted">Measured tool-result bytes. Prompts, initial schemas and generated PHP are excluded.</text>
     <text x="480" y="721" text-anchor="middle" font-size="9.5" class="muted">Illustrated reference run · No model called · Payload bytes are not model tokens</text>
   </g>
