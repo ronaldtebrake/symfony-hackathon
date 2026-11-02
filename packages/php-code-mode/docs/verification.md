@@ -64,7 +64,7 @@ The crash test allows a terminated zombie process while its OS parent/subreaper 
 
 GitHub Actions defines an Ubuntu amd64 standalone-package job that installs the pinned gVisor release, builds the runner, and executes the security suite and full demo integration checks. **That remote CI job has not been run from this checkout.** Windows, rootless Docker, alternate gVisor platforms, and a native Linux coordinator have not been verified locally. Do not generalize this record into compatibility or security claims for those environments.
 
-Live Hugging Face inference remains unverified because no API key is configured. The Drupal HTTP adapter is tested against a local MCP server, not a Drupal installation. The previous rendered walkthrough was removed at the author's request. The [replacement recording guide](../../../docs/demo/README.md) calls for manually recorded Codex footage and matching PHP/tool evidence; that video is pending. These gates remain separate from the recorded local checks.
+Live Hugging Face inference is verified by the 2 November capture below; a live direct-tool comparison and the optional bundle AI adapter's paid-provider path remain unverified. The Drupal HTTP adapter is tested against a local MCP server, not a Drupal installation. The previous rendered walkthrough was removed at the author's request. The [replacement recording guide](../../../docs/demo/README.md) calls for manually recorded Codex footage and matching PHP/tool evidence; that video is pending. These gates remain separate from the recorded local checks.
 
 See [setup and commands](../README.md) and [the threat model and deployment limits](security.md) before rerunning or embedding the package.
 
@@ -81,4 +81,20 @@ Validation on PHP 8.3.19:
 - SDK helper proposal verification: temporary copy only; seven JSON shapes, structured error round-trip, invalid JSON rejection and unchanged existing factories.
 - Actual browser: original Codex proof, comparison and security reports still render; the new recovery capture loads, exact PHP expands, and no browser warnings/errors were observed.
 
-`APP_ENV=test` does not load `.env.local`. For these local sandbox tests the trusted image ID and Docker argv were passed explicitly from the development environment; no secrets were printed. Runtime settings remain the existing pinned image and required runsc profile. No Drupal production code or dataset was changed. Live Symfony AI + Hugging Face generation remains unverified and deferred.
+`APP_ENV=test` does not load `.env.local`. For these local sandbox tests the trusted image ID and Docker argv were passed explicitly from the development environment; no secrets were printed. Runtime settings remain the existing pinned image and required runsc profile. No Drupal production code or dataset was changed. Live Symfony AI + Hugging Face generation was still pending at this milestone; see the subsequent capture below.
+
+## 2 November 2026 — real Symfony AI + Hugging Face capture
+
+The [reviewed capture](../../../docs/huggingface-proof.md) at **10:52 CET** used Symfony AI Agent and its Hugging Face bridge with `openai/gpt-oss-120b`, the original audit toolbox, the real PHP MCP fixture and the same core Code Mode package. One generated PHP program audited 48 articles through ten authorized calls and returned all ten expected findings. Both the PHP output and final model JSON passed the independent oracle. The submitted source matched the recorded execution and host ledger, exact payload bytes were recounted, and the exact container name was independently confirmed absent.
+
+Observed: **four provider requests; 3,014 tool-result bytes; 4,942 input + 1,884 output = 6,826 provider-reported tokens; 3.53 seconds total capture; 787 ms runner duration**. The first operator-started attempt failed the output contract and is retained with its actual PHP and results: four requests, ten calls, 3,064 tool-result bytes and 6,511 tokens. We clarified the prompt's issue-list schema before the second invocation; permissions, execution limits and verification requirements stayed unchanged. This is not a live direct-tool token comparison or a live run of the optional bundle AI adapter.
+
+The new fixed CLI capture checks prerequisites before inference, admits at most eight model requests before network invocation, disables redirects, and records safe failure codes. The key is host-only. The read-only viewer shows PHP, upstream calls, exact agent tool requests/results, independent checks and the earlier failure. It exposes no execution endpoint. The reviewed evidence was scanned for the actual credential before committing; it contains no provider headers or transport diagnostics.
+
+Validation:
+
+- `composer check`: valid manifests/configuration; **60 application tests / 458 assertions**, **29 core unit tests / 44 assertions**.
+- Full real MCP/gVisor demo regression suite: **8 tests / 99 assertions**, including existing comparison, security probes, external-client limits and bundle denial/recovery. These tests make no paid provider requests.
+- Actual browser: the new PHP, call ledger and results/checks tabs show the capture; original Codex, recovery, comparison and security reports still load. No browser warnings/errors observed. The unretouched screenshot is `docs/images/huggingface-proof.jpg`.
+
+The core sandbox implementation, runtime profile and Drupal demo were unchanged. The earlier adversarial sandbox suite results remain scoped to their recorded date.

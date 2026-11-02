@@ -396,3 +396,75 @@ async function loadBoundaryRecovery() {
   }
 }
 loadBoundaryRecovery();
+
+function renderHuggingFaceProof(report) {
+  const evidence = byId('hf-evidence');
+  evidence.hidden = true;
+  byId('hf-state').textContent = report.status === 'complete' ? 'VERIFIED LIVE RUN' : report.status === 'running' ? 'CAPTURE IN PROGRESS' : report.status === 'failed' ? 'CHECK FAILED' : 'NOT CAPTURED';
+  byId('hf-note').textContent = report.status === 'empty'
+    ? 'No real Hugging Face execution has been captured. Configure the provider token locally and run the CLI command; this viewer cannot start inference.'
+    : report.status === 'running' ? 'The operator started a live capture. Success is not yet verified.'
+    : report.status === 'complete' ? 'Real provider generation through Symfony AI. Exact PHP, host-recorded MCP calls and independently checked findings.'
+    : `The attempt did not pass every required check${report.error ? ` (${report.error})` : ''}. Retained evidence below does not imply a successful audit.`;
+  const result = report.result;
+  if (!result) {
+    if (report.status === 'complete') throw new Error('Missing live result');
+    return;
+  }
+  if (!Array.isArray(result.programs) || !Array.isArray(result.executions) || !Array.isArray(result.agentCalls) || !Array.isArray(result.brokerCalls)) throw new Error('Incomplete live evidence');
+  const requiredChecks = ['phpResultMatchesFixture', 'finalAnswerMatchesFixture', 'submittedPhpAndHostLedgerLinked', 'containersRemoved', 'payloadBytesRecounted', 'modelRequestsObserved'];
+  if (report.status === 'complete' && (report.kind !== 'huggingface-proof' || report.mode !== 'live' || report.verification?.passed !== true || requiredChecks.some((key) => report.verification.checks?.[key] !== true))) throw new Error('Unverified live capture');
+  byId('hf-provenance').textContent = `${report.model} · ${report.provider} · ${report.backend} · ${new Date(report.createdAt).toLocaleString()} · Required runtime: ${report.runtime}`;
+  byId('hf-model-requests').textContent = number(result.modelRequests);
+  byId('hf-call-counts').textContent = `${result.programs.length} / ${result.brokerCalls.length}`;
+  byId('hf-payload').textContent = `${number(result.toolPayloadBytes)} B`;
+  byId('hf-tokens').textContent = result.providerTokens?.total == null ? 'Not reported' : number(result.providerTokens.total);
+  byId('hf-verification').textContent = report.verification?.message ?? 'Verification pending.';
+  const programs = byId('hf-programs'); programs.replaceChildren();
+  result.programs.forEach((source, index) => {
+    const execution = result.executions[index];
+    const block = node('section', undefined, 'hf-program');
+    block.append(node('div', `Attempt ${index + 1} · ${execution?.status ?? 'incomplete'}${execution?.reason ? ` · ${execution.reason}` : ''} · Container removal ${execution?.containerRemoved === true ? 'checked' : 'not confirmed'}`, 'code-caption'));
+    const pre = node('pre', undefined, 'code-view'); pre.tabIndex = 0; pre.append(node('code', source)); block.append(pre);
+    block.append(node('p', execution?.runId ?? 'No container allocation recorded', 'recovery-run-id'));
+    programs.append(block);
+  });
+  if (!result.programs.length) programs.append(node('p', 'No generated PHP reached the runner.', 'mode-note'));
+  renderCallRows(byId('hf-call-rows'), result.brokerCalls);
+  const calls = byId('hf-agent-calls'); calls.replaceChildren();
+  result.agentCalls.forEach((call, index) => {
+    const detail = node('details', undefined, 'proof-details');
+    detail.append(node('summary', `${index + 1}. ${call.name} · ${number(call.bytesToModel)} bytes returned to the model`));
+    const pre = node('pre', JSON.stringify(call, null, 2)); pre.tabIndex = 0; detail.append(pre); calls.append(detail);
+  });
+  byId('hf-result').textContent = JSON.stringify(result.report, null, 2);
+  byId('hf-result-summary').textContent = result.report?.audited != null ? `${result.report.audited} articles · ${result.report.findings?.length ?? 0} findings` : 'No complete result';
+  byId('hf-answer').textContent = result.answer ?? '';
+  const checks = byId('hf-checks'); checks.replaceChildren();
+  const labels = {phpResultMatchesFixture:'PHP result matches fixture', finalAnswerMatchesFixture:'Final answer matches fixture', submittedPhpAndHostLedgerLinked:'Source and host ledger linked', containersRemoved:'Containers removed', payloadBytesRecounted:'Payload bytes recounted', modelRequestsObserved:'Model requests observed'};
+  Object.entries(report.verification?.checks ?? {}).forEach(([key, passed]) => checks.append(node('p', `${passed ? '✓' : '×'} ${labels[key] ?? key}`)));
+  byId('hf-timing').textContent = `Total capture: ${(report.elapsedMs / 1000).toFixed(1)} s, including model generation and cleanup. Successful runner durations: ${result.executions.filter((run) => run.status === 'succeeded').map((run) => `${run.durationMs.toFixed(0)} ms`).join(', ') || 'none'}. Runner durations exclude container creation and final cleanup.`;
+  const history = byId('hf-history'); history.replaceChildren();
+  (report.previousAttempts ?? []).forEach((attempt, index) => {
+    const detail = node('details', undefined, 'proof-details');
+    detail.append(node('summary', `Earlier live attempt ${index + 1} · ${attempt.status} · ${number(attempt.result?.providerTokens?.total)} provider tokens`));
+    detail.append(node('p', 'The first run returned issue maps instead of the required lists. It was rejected. The output contract was clarified for the subsequent operator-started run; validation and security limits stayed in place.'));
+    const pre = node('pre', JSON.stringify(attempt, null, 2)); pre.tabIndex = 0; detail.append(pre); history.append(detail);
+  });
+  evidence.hidden = false;
+}
+let lastHuggingFaceBody = '';
+async function refreshHuggingFaceProof() {
+  try {
+    const response = await fetch('/demo/huggingface-report', {cache: 'no-store', credentials: 'same-origin'});
+    if (!response.ok) throw new Error('Proof unavailable');
+    const body = await response.text();
+    if (body !== lastHuggingFaceBody) { renderHuggingFaceProof(JSON.parse(body)); lastHuggingFaceBody = body; }
+  } catch {
+    lastHuggingFaceBody = '';
+    byId('hf-evidence').hidden = true;
+    byId('hf-state').textContent = 'CAPTURE UNAVAILABLE';
+    byId('hf-note').textContent = 'The live proof could not be loaded or verified. No successful execution is implied.';
+  } finally { setTimeout(refreshHuggingFaceProof, 2500); }
+}
+refreshHuggingFaceProof();

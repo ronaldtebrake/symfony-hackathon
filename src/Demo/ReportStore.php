@@ -20,6 +20,16 @@ final readonly class ReportStore
         $this->saveFile('security.json', $report);
     }
 
+    public function saveHuggingFaceProof(array $report): void
+    {
+        $this->saveFile('huggingface.json', $report);
+    }
+
+    public function readHuggingFaceProof(): ?string
+    {
+        return $this->readFile('huggingface.json') ?? $this->readPath($this->projectDir.'/docs/evidence/huggingface-proof.json');
+    }
+
     private function saveFile(string $filename, array $report): void
     {
         $directory = $this->projectDir.'/var/demo';

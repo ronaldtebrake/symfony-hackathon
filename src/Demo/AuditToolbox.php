@@ -85,6 +85,7 @@ final class AuditToolbox implements ToolboxInterface
             // Returning the exact encoded string makes the measured payload match the model message.
             $encoded = json_encode($value, JSON_THROW_ON_ERROR, 32);
             $this->trace->toolPayloadBytes += strlen($encoded);
+            $this->trace->captureCall($toolCall->getName(), $arguments, $encoded);
             $this->trace->record('tool_result', $name, ['bytesToModel' => strlen($encoded)]);
             return new ToolResult($toolCall, $encoded);
         } catch (\Throwable $error) {
@@ -92,6 +93,7 @@ final class AuditToolbox implements ToolboxInterface
             $this->trace->record('rejected', $name, ['reason' => $reason]);
             $encoded = json_encode(['error' => ['reason' => $reason, 'message' => 'The host rejected or could not complete this tool call. Check the described schema and available execution budget.']], JSON_THROW_ON_ERROR);
             $this->trace->toolPayloadBytes += strlen($encoded);
+            $this->trace->captureCall($toolCall->getName(), $arguments, $encoded);
             return new ToolResult($toolCall, $encoded);
         }
     }
@@ -105,9 +107,11 @@ final class AuditToolbox implements ToolboxInterface
             $result = $this->session->execute($code);
         } catch (SandboxException $error) {
             array_push($this->trace->brokerCalls, ...$error->toolCalls);
+            $this->trace->executions[] = ['programIndex' => count($this->trace->programs) - 1, 'runId' => $error->runId, 'status' => 'failed', 'reason' => $error->reason, 'toolCalls' => $error->toolCalls];
             throw $error;
         }
         array_push($this->trace->brokerCalls, ...$result->toolCalls);
+        $this->trace->executions[] = ['programIndex' => count($this->trace->programs) - 1, 'runId' => $result->runId, 'status' => 'succeeded', 'durationMs' => $result->durationMs, 'outputBytes' => $result->outputBytes, 'toolCalls' => $result->toolCalls];
         $this->trace->report = $result->value;
         return ['result' => $result->value, 'toolCalls' => count($result->toolCalls)];
     }

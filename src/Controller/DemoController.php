@@ -51,6 +51,13 @@ final readonly class DemoController
         return $this->response($this->store->readBoundaryRecovery() ?? '{"status":"empty","turns":[]}', 'application/json');
     }
 
+    #[Route('/demo/huggingface-report', name: 'app_demo_huggingface_report', methods: ['GET'])]
+    public function huggingFaceReport(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+        return $this->response($this->store->readHuggingFaceProof() ?? '{"status":"empty","result":null}', 'application/json');
+    }
+
     private function requireLocalRequest(Request $request): void
     {
         if (!in_array($request->getClientIp(), ['127.0.0.1', '::1'], true) || !in_array($request->getHost(), ['127.0.0.1', 'localhost', '[::1]'], true)) {

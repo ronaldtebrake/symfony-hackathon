@@ -14,6 +14,8 @@ The editorial audit checks **48 articles** and returns the same **10 findings** 
 
 The animation illustrates those measured results. Reference mode uses checked-in PHP; MCP calls and sandbox execution are real. Payload excludes prompts, initial schemas and generated code. **This is not a model-token savings claim.** [Verification record](packages/php-code-mode/docs/verification.md).
 
+**Real Symfony AI + Hugging Face generation is now verified.** The [live capture](docs/huggingface-proof.md) shows model-generated PHP auditing all 48 articles through 10 authorized MCP calls: **4 model requests, 3,014 tool-result bytes and 6,826 provider-reported tokens**. Inspect its exact source, calls, findings and cleanup checks in the workbench’s **Symfony AI run** section. The rejected first attempt is retained too.
+
 ![Actual local Code Mode workbench showing matching findings, measured payloads and PHP executed in gVisor. No model was called.](docs/images/code-mode-proof.jpg)
 
 *Screenshot refreshed on 1 November 2026; reference execution recorded on 31 October. This is a tested development proof, not an audited public execution service.*
@@ -57,7 +59,7 @@ composer start
 
 Open [the workbench](http://127.0.0.1:8000/demo) to inspect the recorded Codex conversation, separate comparison and security proof. Viewing the checked-in Codex capture needs no API key or sandbox run. The fixed comparison and security programs are labelled **no model called**. The security report records an authorized read, a denied tool call, and an infinite loop stopped by the watchdog, with host traces and a per-container cleanup check. `/health` returns JSON. Stop the preview with Ctrl+C.
 
-For live generation, set `HUGGINGFACE_API_KEY` in ignored `.env.local`, then run `composer demo -- --mode=live`. The default model is `openai/gpt-oss-120b`; calls consume inference credits. Reports include provider token usage only when supplied. See [demo setup](docs/demo.md) and the [90-second recording pack](docs/demo/README.md).
+To capture fresh live generation, set `HUGGINGFACE_API_KEY` in ignored `.env.local`, then run `php bin/console code-mode:huggingface-proof --no-debug`. The default model is `openai/gpt-oss-120b`; calls consume inference credits. Reports include provider token usage only when supplied. The reviewed capture can be viewed without a key. See [live proof and reproduction](docs/huggingface-proof.md), [comparison setup](docs/demo.md) and the [90-second recording pack](docs/demo/README.md).
 
 Connect `php bin/console code-mode:mcp` as a STDIO server in your agent. Ask follow-up questions and clarify scope in that conversation; the workbench is a read-only evidence viewer. The host retains all permissions and limits. See [Codex setup](docs/codex.md) and [the live two-turn conversation with generated PHP and actual calls](docs/codex-conversation.md).
 
@@ -71,4 +73,4 @@ composer test:demo     # Real MCP + gVisor comparison and external MCP client
 
 Run the sandbox suites sequentially on a dedicated test Docker endpoint. The demo also exposes `tools_search`, `tools_describe` and `php_execute` over STDIO: `php bin/console code-mode:mcp`. [Verification record](packages/php-code-mode/docs/verification.md).
 
-The Symfony reference audit, mocked-provider AI pipeline, live Codex audit and boundary-recovery conversations, Symfony bundle execution, and local Drupal STDIO authorization proof are verified. Live Hugging Face inference and Drupal HTTP authentication remain unverified. Submission needs a public runnable repository and a 90-second video by **22 November 2026, 18:00 CET**.
+The Symfony reference audit, real Symfony AI + Hugging Face audit, live Codex conversations, Symfony bundle execution, and local Drupal STDIO authorization proof are verified. Drupal HTTP authentication remains unverified. Submission needs a public runnable repository and a 90-second video by **22 November 2026, 18:00 CET**.

@@ -4,6 +4,8 @@ The working slice is an editorial audit: check every published article for missi
 
 The first judge-facing demo is **Symfony-only**: the Symfony application runs the agent and coordinates the PHP MCP fixture and isolated runner. Drupal is an optional follow-on demo using the same Composer package, not a prerequisite for this one.
 
+The [real Symfony AI + Hugging Face capture](huggingface-proof.md) is now available in **Symfony AI run**: exact generated PHP, ten host-recorded MCP calls, 48 audited articles, ten verified findings and measured provider usage. Reproduce it with `php bin/console code-mode:huggingface-proof --no-debug`; its report is separate from the comparison below.
+
 ## Run and inspect
 
 1. Install root Composer dependencies and set up the [dedicated gVisor host](../packages/php-code-mode/README.md#run-the-proof). Build the runner image, then configure its immutable `CODE_MODE_IMAGE`. For an alternate CLI, set `CODE_MODE_DOCKER_COMMAND` to a trusted JSON argv array. Symfony commands read these from `.env.local`; PHPUnit sandbox suites and standalone package examples need exported environment variables.
@@ -49,7 +51,7 @@ composer demo -- --mode=live --question='Count published articles by language. R
 
 These changed questions use the read-only Symfony fixture and require live inference. Reference mode supports only the original checked-in audit. The impact scenario has an independent oracle for 48 articles, two groups of article IDs and three shared images without alt text. Custom JSON answers require supporting MCP reads but are marked **review required**, with no correctness or payload-savings badge.
 
-Custom CLI input is limited to 2000 UTF-8 bytes, with terminal controls and invisible formatting rejected. Questions cannot change host identity, endpoints, policies or execution limits. Live questions go to the configured provider and the local report. Local tests mock provider responses while executing the alternate program through real MCP/gVisor; live Hugging Face generation remains unverified.
+Custom CLI input is limited to 2000 UTF-8 bytes, with terminal controls and invisible formatting rejected. Questions cannot change host identity, endpoints, policies or execution limits. Live questions go to the configured provider and the local report. Local tests mock provider responses while executing alternate programs through real MCP/gVisor. Real Hugging Face generation is verified for the fixed editorial audit; custom questions and a live direct-tool comparison have not been captured.
 
 ## Visible security proof
 
@@ -108,4 +110,4 @@ The [recording guide](demo/README.md) contains exact Codex prompts, capture inst
 
 The previous rendered video has been removed. Its replacement awaits the manual footage. The workbench now matches the **1 November, 12:42 CET** desktop chat `01a196eb-12bd-7412-9fad-4d279e2cbcf8`. Record that chat and its matching workbench inserts. Further conversations do not synchronize automatically; retain their exact PHP arguments and tool results for review before replacing this capture.
 
-The [hackathon brief](https://symfony.com/hackathon), checked on 1 November, asks for a public runnable repository and a 90-second video by **22 November 2026, 18:00 CET**. It also asks entrants to use Hugging Face Inference Providers; the implemented live path still needs verification before submission. The reference comparison makes no model calls and cannot stand in for that provider check.
+The [hackathon brief](https://symfony.com/hackathon), checked on 1 November, asks for a public runnable repository and a 90-second video by **22 November 2026, 18:00 CET**. The separate [live capture](huggingface-proof.md) now demonstrates Symfony AI using Hugging Face Inference Providers. Include that evidence in the recording; the reference comparison makes no model calls.

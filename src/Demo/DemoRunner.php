@@ -21,8 +21,11 @@ final readonly class DemoRunner
         #[Autowire('%kernel.project_dir%')] private string $projectDir,
     ) {}
 
-    public function run(string $mode, string $approach, string $backend = 'fixture', ?DemoContext $context = null, ?\Closure $progress = null, ?DemoQuestion $question = null): array
+    public function run(string $mode, string $approach, string $backend = 'fixture', ?DemoContext $context = null, ?\Closure $progress = null, ?DemoQuestion $question = null, ?int $maxModelRequests = null): array
     {
+        if (null !== $maxModelRequests && ($maxModelRequests < 1 || $maxModelRequests > 20)) {
+            throw new \InvalidArgumentException('Choose a bounded model request budget between one and twenty.');
+        }
         if (!in_array($mode, ['reference', 'live'], true) || ('reference' === $mode && 'fixture' !== $backend)) {
             throw new \InvalidArgumentException('Use reference with the fixture, or live with either backend.');
         }
@@ -48,13 +51,13 @@ final readonly class DemoRunner
             $prompt .= 'code' === $approach
                 ? 'Use tools_search, then tools_describe for the needed tools, then php_execute. Write real PHP that retrieves, joins and filters the data; return only the compact audit from PHP. Tool JSON objects are stdClass (use ->); JSON lists are arrays. There is no host network or filesystem. You have at most two execution attempts. The PHP result is the source for your final JSON.'
                 : 'Call the available MCP tools directly. The tools support batching; use it. Tool aliases refer to the original MCP tools described. Produce the same compact audit from their results.';
-            $agent = new Agent($this->platform, BackendFactory::env('HUGGINGFACE_MODEL', 'openai/gpt-oss-120b'), name: 'audit-'.$approach, toolbox: $context->toolbox, maxToolCalls: 20);
+            if ('audit' === $question->id) {
+                $prompt .= ' The output contract is {"audited": integer, "findings": [{"id": integer, "title": string, "issues": string[]}]}. Each issues value must be a JSON list of the applicable strings "missing_description" and/or "missing_alt". Use PHP $issues[] = "missing_alt" to append an issue. Return this shape from PHP and in the final answer.';
+            }
+            $platform = new BudgetedPlatform($this->platform, $trace, $maxModelRequests ?? 21);
+            $agent = new Agent($platform, BackendFactory::env('HUGGINGFACE_MODEL', 'openai/gpt-oss-120b'), name: 'audit-'.$approach, toolbox: $context->toolbox, maxToolCalls: 20);
             $execution = $agent->call(new MessageBag(Message::forSystem($prompt), Message::ofUser($question->text)), ['temperature' => 0, 'max_tokens' => 8192]);
             $execution->onProgress(static function (Progress $update) use ($trace, $progress): void {
-                if (Progress::STAGE_MODEL_REQUEST === $update->getStage()) {
-                    ++$trace->modelRequests;
-                    $trace->record('model_request', 'Hugging Face inference request '.$trace->modelRequests);
-                }
                 $progress?->__invoke($trace);
             });
             $answer = (string) $execution->getContent();
@@ -78,6 +81,7 @@ final readonly class DemoRunner
             'durationMs' => (hrtime(true) - $started) / 1_000_000, 'modelRequests' => $trace->modelRequests,
             'agentToolCalls' => $trace->agentToolCalls, 'toolPayloadBytes' => $trace->toolPayloadBytes,
             'providerTokens' => $tokens, 'brokerCalls' => $trace->brokerCalls, 'programs' => $trace->programs,
+            'executions' => $trace->executions, 'agentCalls' => $trace->agentCalls,
             'report' => $trace->report, 'verification' => $verification, 'events' => $trace->events, 'answer' => $answer,
         ];
     }

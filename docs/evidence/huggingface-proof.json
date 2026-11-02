@@ -1,0 +1,713 @@
+{
+    "version": 1,
+    "kind": "huggingface-proof",
+    "mode": "live",
+    "status": "complete",
+    "createdAt": "2026-11-02T09:52:43+00:00",
+    "provider": "Hugging Face Inference Providers",
+    "endpoint": "https://router.huggingface.co/v1/chat/completions",
+    "backend": "Symfony MCP fixture",
+    "model": "openai/gpt-oss-120b",
+    "task": "Audit every published article for an empty meta_description and an empty alt text on its hero image. Use the available batched tools. Return JSON with audited (the number of published articles checked) and findings (sorted by article id). Each finding has id, title, and issues containing missing_description and/or missing_alt. Exclude drafts. Do not change any content.",
+    "runtime": "runsc",
+    "image": "sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b",
+    "limits": {
+        "wallTimeMs": 15000,
+        "toolTimeMs": 3000,
+        "memoryMiB": 128,
+        "maxToolCalls": 30,
+        "executionAttempts": 2,
+        "maxModelRequests": 8
+    },
+    "components": {
+        "symfony/ai-agent": "v1.0.0-BETA1",
+        "symfony/ai-hugging-face-platform": "v1.0.0-BETA1",
+        "mcp/sdk": "v0.9.0",
+        "ronaldtebrake/php-code-mode": "0.1.0"
+    },
+    "result": {
+        "questionId": "audit",
+        "task": "Audit every published article for an empty meta_description and an empty alt text on its hero image. Use the available batched tools. Return JSON with audited (the number of published articles checked) and findings (sorted by article id). Each finding has id, title, and issues containing missing_description and/or missing_alt. Exclude drafts. Do not change any content.",
+        "approach": "code",
+        "mode": "live",
+        "model": "openai/gpt-oss-120b",
+        "durationMs": 3231.192792,
+        "modelRequests": 4,
+        "agentToolCalls": 3,
+        "toolPayloadBytes": 3014,
+        "providerTokens": {
+            "prompt": 4942,
+            "completion": 1884,
+            "total": 6826
+        },
+        "brokerCalls": [
+            {
+                "name": "cms_list_articles",
+                "status": "succeeded",
+                "durationMs": 74.18608400621451,
+                "resultBytes": 744
+            },
+            {
+                "name": "cms_list_articles",
+                "status": "succeeded",
+                "durationMs": 51.146707992302254,
+                "resultBytes": 747
+            },
+            {
+                "name": "cms_list_articles",
+                "status": "succeeded",
+                "durationMs": 49.10350000136532,
+                "resultBytes": 753
+            },
+            {
+                "name": "cms_list_articles",
+                "status": "succeeded",
+                "durationMs": 50.04791599640157,
+                "resultBytes": 749
+            },
+            {
+                "name": "cms_get_articles",
+                "status": "succeeded",
+                "durationMs": 51.30216700490564,
+                "resultBytes": 3485
+            },
+            {
+                "name": "cms_get_articles",
+                "status": "succeeded",
+                "durationMs": 50.082792004104704,
+                "resultBytes": 3504
+            },
+            {
+                "name": "cms_get_articles",
+                "status": "succeeded",
+                "durationMs": 49.0728750010021,
+                "resultBytes": 3501
+            },
+            {
+                "name": "cms_get_articles",
+                "status": "succeeded",
+                "durationMs": 48.67175000254065,
+                "resultBytes": 3499
+            },
+            {
+                "name": "cms_get_media",
+                "status": "succeeded",
+                "durationMs": 49.50766700494569,
+                "resultBytes": 1609
+            },
+            {
+                "name": "cms_get_media",
+                "status": "succeeded",
+                "durationMs": 48.86991700914223,
+                "resultBytes": 1563
+            }
+        ],
+        "programs": [
+            "$audited = 0;\n$findings = [];\n$allArticles = [];\n$offset = 0;\n$limit = 12;\ndo {\n    $listResp = $tools->call(\"cms_list_articles\", [\"offset\" => $offset, \"limit\" => $limit]);\n    if (!isset($listResp->items) || !is_array($listResp->items)) {\n        break;\n    }\n    foreach ($listResp->items as $item) {\n        $allArticles[] = $item->id;\n    }\n    $offset = $listResp->next_offset !== null ? $listResp->next_offset : null;\n} while ($offset !== null);\n\n$articleMap = [];\n// Batch fetch article details\nfor ($i = 0; $i < count($allArticles); $i += 12) {\n    $batchIds = array_slice($allArticles, $i, 12);\n    $articlesResp = $tools->call(\"cms_get_articles\", [\"ids\" => $batchIds]);\n    if (!isset($articlesResp->items) || !is_array($articlesResp->items)) {\n        continue;\n    }\n    foreach ($articlesResp->items as $art) {\n        $articleMap[$art->id] = [\n            \"title\" => $art->title,\n            \"meta_description\" => $art->meta_description,\n            \"image_id\" => $art->image_id\n        ];\n    }\n}\n$audited = count($articleMap);\n// Collect unique media ids\n$mediaIds = [];\nforeach ($articleMap as $a) {\n    if (!empty($a[\"image_id\"])) {\n        $mediaIds[] = $a[\"image_id\"];\n    }\n}\n$mediaIds = array_values(array_unique($mediaIds));\n$mediaMap = [];\nfor ($i = 0; $i < count($mediaIds); $i += 12) {\n    $batch = array_slice($mediaIds, $i, 12);\n    $mediaResp = $tools->call(\"cms_get_media\", [\"ids\" => $batch]);\n    if (!isset($mediaResp->items) || !is_array($mediaResp->items)) {\n        continue;\n    }\n    foreach ($mediaResp->items as $m) {\n        $mediaMap[$m->id] = $m->alt;\n    }\n}\n// Build findings\nforeach ($articleMap as $id => $info) {\n    $issues = [];\n    if (trim($info[\"meta_description\"]) === \"\") {\n        $issues[] = \"missing_description\";\n    }\n    $imgId = $info[\"image_id\"];\n    if (!empty($imgId) && array_key_exists($imgId, $mediaMap)) {\n        $alt = $mediaMap[$imgId];\n        if (trim($alt) === \"\") {\n            $issues[] = \"missing_alt\";\n        }\n    }\n    if (!empty($issues)) {\n        $findings[] = [\"id\" => $id, \"title\" => $info[\"title\"], \"issues\" => $issues];\n    }\n}\n// sort findings by id\nusort($findings, function($a, $b) { return $a[\"id\"] <=> $b[\"id\"]; });\nreturn [\"audited\" => $audited, \"findings\" => $findings];"
+        ],
+        "executions": [
+            {
+                "programIndex": 0,
+                "runId": "code-mode-8325da44ee9fffff32a09b8e48474526",
+                "status": "succeeded",
+                "durationMs": 787.4020419985754,
+                "outputBytes": 1938,
+                "toolCalls": [
+                    {
+                        "name": "cms_list_articles",
+                        "status": "succeeded",
+                        "durationMs": 74.18608400621451,
+                        "resultBytes": 744
+                    },
+                    {
+                        "name": "cms_list_articles",
+                        "status": "succeeded",
+                        "durationMs": 51.146707992302254,
+                        "resultBytes": 747
+                    },
+                    {
+                        "name": "cms_list_articles",
+                        "status": "succeeded",
+                        "durationMs": 49.10350000136532,
+                        "resultBytes": 753
+                    },
+                    {
+                        "name": "cms_list_articles",
+                        "status": "succeeded",
+                        "durationMs": 50.04791599640157,
+                        "resultBytes": 749
+                    },
+                    {
+                        "name": "cms_get_articles",
+                        "status": "succeeded",
+                        "durationMs": 51.30216700490564,
+                        "resultBytes": 3485
+                    },
+                    {
+                        "name": "cms_get_articles",
+                        "status": "succeeded",
+                        "durationMs": 50.082792004104704,
+                        "resultBytes": 3504
+                    },
+                    {
+                        "name": "cms_get_articles",
+                        "status": "succeeded",
+                        "durationMs": 49.0728750010021,
+                        "resultBytes": 3501
+                    },
+                    {
+                        "name": "cms_get_articles",
+                        "status": "succeeded",
+                        "durationMs": 48.67175000254065,
+                        "resultBytes": 3499
+                    },
+                    {
+                        "name": "cms_get_media",
+                        "status": "succeeded",
+                        "durationMs": 49.50766700494569,
+                        "resultBytes": 1609
+                    },
+                    {
+                        "name": "cms_get_media",
+                        "status": "succeeded",
+                        "durationMs": 48.86991700914223,
+                        "resultBytes": 1563
+                    }
+                ],
+                "containerRemoved": true,
+                "cleanupCheckedAt": "2026-11-02T09:52:46+00:00"
+            }
+        ],
+        "agentCalls": [
+            {
+                "name": "tools_search",
+                "arguments": {
+                    "query": "article"
+                },
+                "result": "[{\"name\":\"cms_list_articles\",\"description\":\"List published article IDs and titles for a content metadata audit. Paginate with offset and limit (maximum 12). Returns items, total and next_offset (null at the end). Drafts are excluded by the server.\"},{\"name\":\"cms_get_articles\",\"description\":\"Read metadata for up to 12 published article IDs in one call. Returns items with id, title, meta_description, image_id, language, path and updated. Draft IDs are denied. Empty meta_description needs editorial attention.\"},{\"name\":\"cms_get_media\",\"description\":\"Read up to 12 public media records in one batch. Returns items with id, alt, file_name, width and height. An empty alt needs accessibility review. Join article image_id to media id.\"}]",
+                "bytesToModel": 737
+            },
+            {
+                "name": "tools_describe",
+                "arguments": {
+                    "names": [
+                        "cms_list_articles",
+                        "cms_get_articles",
+                        "cms_get_media"
+                    ]
+                },
+                "result": "[{\"name\":\"cms_list_articles\",\"description\":\"List published article IDs and titles for a content metadata audit. Paginate with offset and limit (maximum 12). Returns items, total and next_offset (null at the end). Drafts are excluded by the server.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"offset\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1000},\"limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":12}},\"required\":[\"offset\",\"limit\"],\"additionalProperties\":false}},{\"name\":\"cms_get_articles\",\"description\":\"Read metadata for up to 12 published article IDs in one call. Returns items with id, title, meta_description, image_id, language, path and updated. Draft IDs are denied. Empty meta_description needs editorial attention.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"ids\":{\"type\":\"array\",\"items\":{\"type\":\"integer\",\"minimum\":1},\"minItems\":1,\"maxItems\":12,\"uniqueItems\":true}},\"required\":[\"ids\"],\"additionalProperties\":false}},{\"name\":\"cms_get_media\",\"description\":\"Read up to 12 public media records in one batch. Returns items with id, alt, file_name, width and height. An empty alt needs accessibility review. Join article image_id to media id.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"ids\":{\"type\":\"array\",\"items\":{\"type\":\"integer\",\"minimum\":1},\"minItems\":1,\"maxItems\":12,\"uniqueItems\":true}},\"required\":[\"ids\"],\"additionalProperties\":false}}]",
+                "bytesToModel": 1356
+            },
+            {
+                "name": "php_execute",
+                "arguments": {
+                    "code": "$audited = 0;\n$findings = [];\n$allArticles = [];\n$offset = 0;\n$limit = 12;\ndo {\n    $listResp = $tools->call(\"cms_list_articles\", [\"offset\" => $offset, \"limit\" => $limit]);\n    if (!isset($listResp->items) || !is_array($listResp->items)) {\n        break;\n    }\n    foreach ($listResp->items as $item) {\n        $allArticles[] = $item->id;\n    }\n    $offset = $listResp->next_offset !== null ? $listResp->next_offset : null;\n} while ($offset !== null);\n\n$articleMap = [];\n// Batch fetch article details\nfor ($i = 0; $i < count($allArticles); $i += 12) {\n    $batchIds = array_slice($allArticles, $i, 12);\n    $articlesResp = $tools->call(\"cms_get_articles\", [\"ids\" => $batchIds]);\n    if (!isset($articlesResp->items) || !is_array($articlesResp->items)) {\n        continue;\n    }\n    foreach ($articlesResp->items as $art) {\n        $articleMap[$art->id] = [\n            \"title\" => $art->title,\n            \"meta_description\" => $art->meta_description,\n            \"image_id\" => $art->image_id\n        ];\n    }\n}\n$audited = count($articleMap);\n// Collect unique media ids\n$mediaIds = [];\nforeach ($articleMap as $a) {\n    if (!empty($a[\"image_id\"])) {\n        $mediaIds[] = $a[\"image_id\"];\n    }\n}\n$mediaIds = array_values(array_unique($mediaIds));\n$mediaMap = [];\nfor ($i = 0; $i < count($mediaIds); $i += 12) {\n    $batch = array_slice($mediaIds, $i, 12);\n    $mediaResp = $tools->call(\"cms_get_media\", [\"ids\" => $batch]);\n    if (!isset($mediaResp->items) || !is_array($mediaResp->items)) {\n        continue;\n    }\n    foreach ($mediaResp->items as $m) {\n        $mediaMap[$m->id] = $m->alt;\n    }\n}\n// Build findings\nforeach ($articleMap as $id => $info) {\n    $issues = [];\n    if (trim($info[\"meta_description\"]) === \"\") {\n        $issues[] = \"missing_description\";\n    }\n    $imgId = $info[\"image_id\"];\n    if (!empty($imgId) && array_key_exists($imgId, $mediaMap)) {\n        $alt = $mediaMap[$imgId];\n        if (trim($alt) === \"\") {\n            $issues[] = \"missing_alt\";\n        }\n    }\n    if (!empty($issues)) {\n        $findings[] = [\"id\" => $id, \"title\" => $info[\"title\"], \"issues\" => $issues];\n    }\n}\n// sort findings by id\nusort($findings, function($a, $b) { return $a[\"id\"] <=> $b[\"id\"]; });\nreturn [\"audited\" => $audited, \"findings\" => $findings];"
+                },
+                "result": "{\"result\":{\"audited\":48,\"findings\":[{\"id\":7,\"title\":\"Repairing the things we keep \\u00b7 1\",\"issues\":[\"missing_alt\"]},{\"id\":11,\"title\":\"Making room for slower travel \\u00b7 2\",\"issues\":[\"missing_description\"]},{\"id\":14,\"title\":\"What a library can become \\u00b7 2\",\"issues\":[\"missing_alt\"]},{\"id\":21,\"title\":\"A practical guide to local energy \\u00b7 3\",\"issues\":[\"missing_alt\"]},{\"id\":22,\"title\":\"What a library can become \\u00b7 3\",\"issues\":[\"missing_description\"]},{\"id\":31,\"title\":\"Repairing the things we keep \\u00b7 4\",\"issues\":[\"missing_alt\"]},{\"id\":33,\"title\":\"Designing accessible navigation \\u00b7 5\",\"issues\":[\"missing_description\"]},{\"id\":38,\"title\":\"What a library can become \\u00b7 5\",\"issues\":[\"missing_alt\"]},{\"id\":44,\"title\":\"The people behind the workshop \\u00b7 6\",\"issues\":[\"missing_description\"]},{\"id\":45,\"title\":\"A practical guide to local energy \\u00b7 6\",\"issues\":[\"missing_alt\"]}]},\"toolCalls\":10}",
+                "bytesToModel": 921
+            }
+        ],
+        "report": {
+            "audited": 48,
+            "findings": [
+                {
+                    "id": 7,
+                    "title": "Repairing the things we keep · 1",
+                    "issues": [
+                        "missing_alt"
+                    ]
+                },
+                {
+                    "id": 11,
+                    "title": "Making room for slower travel · 2",
+                    "issues": [
+                        "missing_description"
+                    ]
+                },
+                {
+                    "id": 14,
+                    "title": "What a library can become · 2",
+                    "issues": [
+                        "missing_alt"
+                    ]
+                },
+                {
+                    "id": 21,
+                    "title": "A practical guide to local energy · 3",
+                    "issues": [
+                        "missing_alt"
+                    ]
+                },
+                {
+                    "id": 22,
+                    "title": "What a library can become · 3",
+                    "issues": [
+                        "missing_description"
+                    ]
+                },
+                {
+                    "id": 31,
+                    "title": "Repairing the things we keep · 4",
+                    "issues": [
+                        "missing_alt"
+                    ]
+                },
+                {
+                    "id": 33,
+                    "title": "Designing accessible navigation · 5",
+                    "issues": [
+                        "missing_description"
+                    ]
+                },
+                {
+                    "id": 38,
+                    "title": "What a library can become · 5",
+                    "issues": [
+                        "missing_alt"
+                    ]
+                },
+                {
+                    "id": 44,
+                    "title": "The people behind the workshop · 6",
+                    "issues": [
+                        "missing_description"
+                    ]
+                },
+                {
+                    "id": 45,
+                    "title": "A practical guide to local energy · 6",
+                    "issues": [
+                        "missing_alt"
+                    ]
+                }
+            ]
+        },
+        "verification": {
+            "passed": true,
+            "message": "All 48 published articles checked; all 10 expected findings match."
+        },
+        "events": [
+            {
+                "stage": "model_request",
+                "label": "Hugging Face inference request 1",
+                "details": []
+            },
+            {
+                "stage": "tool_result",
+                "label": "tools_search",
+                "details": {
+                    "bytesToModel": 737
+                }
+            },
+            {
+                "stage": "model_request",
+                "label": "Hugging Face inference request 2",
+                "details": []
+            },
+            {
+                "stage": "tool_result",
+                "label": "tools_describe",
+                "details": {
+                    "bytesToModel": 1356
+                }
+            },
+            {
+                "stage": "model_request",
+                "label": "Hugging Face inference request 3",
+                "details": []
+            },
+            {
+                "stage": "execution",
+                "label": "PHP submitted to the isolated runner",
+                "details": []
+            },
+            {
+                "stage": "tool_result",
+                "label": "php_execute",
+                "details": {
+                    "bytesToModel": 921
+                }
+            },
+            {
+                "stage": "model_request",
+                "label": "Hugging Face inference request 4",
+                "details": []
+            }
+        ],
+        "answer": "{\"audited\":48,\"findings\":[{\"id\":7,\"title\":\"Repairing the things we keep \\u00b7 1\",\"issues\":[\"missing_alt\"]},{\"id\":11,\"title\":\"Making room for slower travel \\u00b7 2\",\"issues\":[\"missing_description\"]},{\"id\":14,\"title\":\"What a library can become \\u00b7 2\",\"issues\":[\"missing_alt\"]},{\"id\":21,\"title\":\"A practical guide to local energy \\u00b7 3\",\"issues\":[\"missing_alt\"]},{\"id\":22,\"title\":\"What a library can become \\u00b7 3\",\"issues\":[\"missing_description\"]},{\"id\":31,\"title\":\"Repairing the things we keep \\u00b7 4\",\"issues\":[\"missing_alt\"]},{\"id\":33,\"title\":\"Designing accessible navigation \\u00b7 5\",\"issues\":[\"missing_description\"]},{\"id\":38,\"title\":\"What a library can become \\u00b7 5\",\"issues\":[\"missing_alt\"]},{\"id\":44,\"title\":\"The people behind the workshop \\u00b7 6\",\"issues\":[\"missing_description\"]},{\"id\":45,\"title\":\"A practical guide to local energy \\u00b7 6\",\"issues\":[\"missing_alt\"]}]}"
+    },
+    "verification": {
+        "passed": true,
+        "checks": {
+            "phpResultMatchesFixture": true,
+            "finalAnswerMatchesFixture": true,
+            "submittedPhpAndHostLedgerLinked": true,
+            "containersRemoved": true,
+            "payloadBytesRecounted": true,
+            "modelRequestsObserved": true
+        },
+        "message": "PHP and final answer match all 48 articles and 10 findings; source, host calls, payload bytes and cleanup checked."
+    },
+    "elapsedMs": 3532.755666,
+    "completedAt": "2026-11-02T09:52:46+00:00",
+    "captureNote": "Real Symfony AI + Hugging Face inference, using the reusable php-code-mode package through the existing Symfony MCP audit toolbox. The earlier live attempt was rejected for returning issue maps instead of lists. The system prompt was clarified before the second operator-started run; permissions, runtime limits and fixture validation were not relaxed.",
+    "previousAttempts": [
+        {
+            "version": 1,
+            "kind": "huggingface-proof",
+            "mode": "live",
+            "status": "failed",
+            "createdAt": "2026-11-02T09:49:51+00:00",
+            "provider": "Hugging Face Inference Providers",
+            "endpoint": "https://router.huggingface.co/v1/chat/completions",
+            "backend": "Symfony MCP fixture",
+            "model": "openai/gpt-oss-120b",
+            "task": "Audit every published article for an empty meta_description and an empty alt text on its hero image. Use the available batched tools. Return JSON with audited (the number of published articles checked) and findings (sorted by article id). Each finding has id, title, and issues containing missing_description and/or missing_alt. Exclude drafts. Do not change any content.",
+            "runtime": "runsc",
+            "image": "sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b",
+            "limits": {
+                "wallTimeMs": 15000,
+                "toolTimeMs": 3000,
+                "memoryMiB": 128,
+                "maxToolCalls": 30,
+                "executionAttempts": 2,
+                "maxModelRequests": 8
+            },
+            "components": {
+                "symfony/ai-agent": "v1.0.0-BETA1",
+                "symfony/ai-hugging-face-platform": "v1.0.0-BETA1",
+                "mcp/sdk": "v0.9.0",
+                "ronaldtebrake/php-code-mode": "0.1.0"
+            },
+            "result": {
+                "questionId": "audit",
+                "task": "Audit every published article for an empty meta_description and an empty alt text on its hero image. Use the available batched tools. Return JSON with audited (the number of published articles checked) and findings (sorted by article id). Each finding has id, title, and issues containing missing_description and/or missing_alt. Exclude drafts. Do not change any content.",
+                "approach": "code",
+                "mode": "live",
+                "model": "openai/gpt-oss-120b",
+                "durationMs": 3739.860833,
+                "modelRequests": 4,
+                "agentToolCalls": 3,
+                "toolPayloadBytes": 3064,
+                "providerTokens": {
+                    "prompt": 4643,
+                    "completion": 1868,
+                    "total": 6511
+                },
+                "brokerCalls": [
+                    {
+                        "name": "cms_list_articles",
+                        "status": "succeeded",
+                        "durationMs": 78.03845900343731,
+                        "resultBytes": 744
+                    },
+                    {
+                        "name": "cms_list_articles",
+                        "status": "succeeded",
+                        "durationMs": 52.23541699524503,
+                        "resultBytes": 747
+                    },
+                    {
+                        "name": "cms_list_articles",
+                        "status": "succeeded",
+                        "durationMs": 49.60275000485126,
+                        "resultBytes": 753
+                    },
+                    {
+                        "name": "cms_list_articles",
+                        "status": "succeeded",
+                        "durationMs": 48.78800000005867,
+                        "resultBytes": 749
+                    },
+                    {
+                        "name": "cms_get_articles",
+                        "status": "succeeded",
+                        "durationMs": 49.03633298818022,
+                        "resultBytes": 3485
+                    },
+                    {
+                        "name": "cms_get_articles",
+                        "status": "succeeded",
+                        "durationMs": 48.47550000704359,
+                        "resultBytes": 3504
+                    },
+                    {
+                        "name": "cms_get_articles",
+                        "status": "succeeded",
+                        "durationMs": 48.85275001288392,
+                        "resultBytes": 3501
+                    },
+                    {
+                        "name": "cms_get_articles",
+                        "status": "succeeded",
+                        "durationMs": 48.975083002005704,
+                        "resultBytes": 3499
+                    },
+                    {
+                        "name": "cms_get_media",
+                        "status": "succeeded",
+                        "durationMs": 50.25316699175164,
+                        "resultBytes": 1609
+                    },
+                    {
+                        "name": "cms_get_media",
+                        "status": "succeeded",
+                        "durationMs": 50.05566599720623,
+                        "resultBytes": 1563
+                    }
+                ],
+                "programs": [
+                    "$offset = 0;\n$limit = 12;\n$allArticles = [];\ndo {\n    $listResp = $tools->call('cms_list_articles', ['offset' => $offset, 'limit' => $limit]);\n    if (!isset($listResp->items) || !is_array($listResp->items)) {\n        break;\n    }\n    foreach ($listResp->items as $item) {\n        $allArticles[] = ['id' => $item->id, 'title' => $item->title];\n    }\n    $next = $listResp->next_offset ?? null;\n    if ($next === null) {\n        break;\n    }\n    $offset = $next;\n} while (true);\n\n$totalAudited = count($allArticles);\n\n// Fetch article metadata in batches\n$articleData = [];\n$imageIds = [];\nfor ($i = 0; $i < $totalAudited; $i += 12) {\n    $batchIds = array_slice(array_column($allArticles, 'id'), $i, 12);\n    $resp = $tools->call('cms_get_articles', ['ids' => $batchIds]);\n    if (!isset($resp->items) || !is_array($resp->items)) continue;\n    foreach ($resp->items as $art) {\n        $articleData[$art->id] = [\n            'id' => $art->id,\n            'title' => $art->title,\n            'meta_description' => $art->meta_description ?? '',\n            'image_id' => $art->image_id ?? null,\n        ];\n        if (!empty($art->image_id)) {\n            $imageIds[$art->image_id] = true;\n        }\n    }\n}\n\n// Fetch media metadata for image ids\n$mediaMap = [];\n$imageIdList = array_keys($imageIds);\nfor ($i = 0; $i < count($imageIdList); $i += 12) {\n    $batch = array_slice($imageIdList, $i, 12);\n    $resp = $tools->call('cms_get_media', ['ids' => $batch]);\n    if (!isset($resp->items) || !is_array($resp->items)) continue;\n    foreach ($resp->items as $media) {\n        $mediaMap[$media->id] = $media->alt ?? '';\n    }\n}\n\n$findings = [];\nforeach ($articleData as $aid => $ad) {\n    $issues = [];\n    if (trim($ad['meta_description']) === '') {\n        $issues['missing_description'] = true;\n    }\n    $imgId = $ad['image_id'];\n    if ($imgId !== null) {\n        $alt = $mediaMap[$imgId] ?? null;\n        if ($alt === null || trim($alt) === '') {\n            $issues['missing_alt'] = true;\n        }\n    }\n    if (!empty($issues)) {\n        $findings[] = [\n            'id' => $ad['id'],\n            'title' => $ad['title'],\n            'issues' => $issues,\n        ];\n    }\n}\n\nusort($findings, function($a, $b) { return $a['id'] <=> $b['id']; });\n\nreturn ['audited' => $totalAudited, 'findings' => $findings];"
+                ],
+                "executions": [
+                    {
+                        "programIndex": 0,
+                        "runId": "code-mode-7682bc06e937e1bbdab0449b9ea7cc1b",
+                        "status": "succeeded",
+                        "durationMs": 755.9650420007529,
+                        "outputBytes": 1988,
+                        "toolCalls": [
+                            {
+                                "name": "cms_list_articles",
+                                "status": "succeeded",
+                                "durationMs": 78.03845900343731,
+                                "resultBytes": 744
+                            },
+                            {
+                                "name": "cms_list_articles",
+                                "status": "succeeded",
+                                "durationMs": 52.23541699524503,
+                                "resultBytes": 747
+                            },
+                            {
+                                "name": "cms_list_articles",
+                                "status": "succeeded",
+                                "durationMs": 49.60275000485126,
+                                "resultBytes": 753
+                            },
+                            {
+                                "name": "cms_list_articles",
+                                "status": "succeeded",
+                                "durationMs": 48.78800000005867,
+                                "resultBytes": 749
+                            },
+                            {
+                                "name": "cms_get_articles",
+                                "status": "succeeded",
+                                "durationMs": 49.03633298818022,
+                                "resultBytes": 3485
+                            },
+                            {
+                                "name": "cms_get_articles",
+                                "status": "succeeded",
+                                "durationMs": 48.47550000704359,
+                                "resultBytes": 3504
+                            },
+                            {
+                                "name": "cms_get_articles",
+                                "status": "succeeded",
+                                "durationMs": 48.85275001288392,
+                                "resultBytes": 3501
+                            },
+                            {
+                                "name": "cms_get_articles",
+                                "status": "succeeded",
+                                "durationMs": 48.975083002005704,
+                                "resultBytes": 3499
+                            },
+                            {
+                                "name": "cms_get_media",
+                                "status": "succeeded",
+                                "durationMs": 50.25316699175164,
+                                "resultBytes": 1609
+                            },
+                            {
+                                "name": "cms_get_media",
+                                "status": "succeeded",
+                                "durationMs": 50.05566599720623,
+                                "resultBytes": 1563
+                            }
+                        ],
+                        "containerRemoved": true,
+                        "cleanupCheckedAt": "2026-11-02T09:49:55+00:00"
+                    }
+                ],
+                "agentCalls": [
+                    {
+                        "name": "tools_search",
+                        "arguments": {
+                            "query": "article"
+                        },
+                        "result": "[{\"name\":\"cms_list_articles\",\"description\":\"List published article IDs and titles for a content metadata audit. Paginate with offset and limit (maximum 12). Returns items, total and next_offset (null at the end). Drafts are excluded by the server.\"},{\"name\":\"cms_get_articles\",\"description\":\"Read metadata for up to 12 published article IDs in one call. Returns items with id, title, meta_description, image_id, language, path and updated. Draft IDs are denied. Empty meta_description needs editorial attention.\"},{\"name\":\"cms_get_media\",\"description\":\"Read up to 12 public media records in one batch. Returns items with id, alt, file_name, width and height. An empty alt needs accessibility review. Join article image_id to media id.\"}]",
+                        "bytesToModel": 737
+                    },
+                    {
+                        "name": "tools_describe",
+                        "arguments": {
+                            "names": [
+                                "cms_list_articles",
+                                "cms_get_articles",
+                                "cms_get_media"
+                            ]
+                        },
+                        "result": "[{\"name\":\"cms_list_articles\",\"description\":\"List published article IDs and titles for a content metadata audit. Paginate with offset and limit (maximum 12). Returns items, total and next_offset (null at the end). Drafts are excluded by the server.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"offset\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1000},\"limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":12}},\"required\":[\"offset\",\"limit\"],\"additionalProperties\":false}},{\"name\":\"cms_get_articles\",\"description\":\"Read metadata for up to 12 published article IDs in one call. Returns items with id, title, meta_description, image_id, language, path and updated. Draft IDs are denied. Empty meta_description needs editorial attention.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"ids\":{\"type\":\"array\",\"items\":{\"type\":\"integer\",\"minimum\":1},\"minItems\":1,\"maxItems\":12,\"uniqueItems\":true}},\"required\":[\"ids\"],\"additionalProperties\":false}},{\"name\":\"cms_get_media\",\"description\":\"Read up to 12 public media records in one batch. Returns items with id, alt, file_name, width and height. An empty alt needs accessibility review. Join article image_id to media id.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"ids\":{\"type\":\"array\",\"items\":{\"type\":\"integer\",\"minimum\":1},\"minItems\":1,\"maxItems\":12,\"uniqueItems\":true}},\"required\":[\"ids\"],\"additionalProperties\":false}}]",
+                        "bytesToModel": 1356
+                    },
+                    {
+                        "name": "php_execute",
+                        "arguments": {
+                            "code": "$offset = 0;\n$limit = 12;\n$allArticles = [];\ndo {\n    $listResp = $tools->call('cms_list_articles', ['offset' => $offset, 'limit' => $limit]);\n    if (!isset($listResp->items) || !is_array($listResp->items)) {\n        break;\n    }\n    foreach ($listResp->items as $item) {\n        $allArticles[] = ['id' => $item->id, 'title' => $item->title];\n    }\n    $next = $listResp->next_offset ?? null;\n    if ($next === null) {\n        break;\n    }\n    $offset = $next;\n} while (true);\n\n$totalAudited = count($allArticles);\n\n// Fetch article metadata in batches\n$articleData = [];\n$imageIds = [];\nfor ($i = 0; $i < $totalAudited; $i += 12) {\n    $batchIds = array_slice(array_column($allArticles, 'id'), $i, 12);\n    $resp = $tools->call('cms_get_articles', ['ids' => $batchIds]);\n    if (!isset($resp->items) || !is_array($resp->items)) continue;\n    foreach ($resp->items as $art) {\n        $articleData[$art->id] = [\n            'id' => $art->id,\n            'title' => $art->title,\n            'meta_description' => $art->meta_description ?? '',\n            'image_id' => $art->image_id ?? null,\n        ];\n        if (!empty($art->image_id)) {\n            $imageIds[$art->image_id] = true;\n        }\n    }\n}\n\n// Fetch media metadata for image ids\n$mediaMap = [];\n$imageIdList = array_keys($imageIds);\nfor ($i = 0; $i < count($imageIdList); $i += 12) {\n    $batch = array_slice($imageIdList, $i, 12);\n    $resp = $tools->call('cms_get_media', ['ids' => $batch]);\n    if (!isset($resp->items) || !is_array($resp->items)) continue;\n    foreach ($resp->items as $media) {\n        $mediaMap[$media->id] = $media->alt ?? '';\n    }\n}\n\n$findings = [];\nforeach ($articleData as $aid => $ad) {\n    $issues = [];\n    if (trim($ad['meta_description']) === '') {\n        $issues['missing_description'] = true;\n    }\n    $imgId = $ad['image_id'];\n    if ($imgId !== null) {\n        $alt = $mediaMap[$imgId] ?? null;\n        if ($alt === null || trim($alt) === '') {\n            $issues['missing_alt'] = true;\n        }\n    }\n    if (!empty($issues)) {\n        $findings[] = [\n            'id' => $ad['id'],\n            'title' => $ad['title'],\n            'issues' => $issues,\n        ];\n    }\n}\n\nusort($findings, function($a, $b) { return $a['id'] <=> $b['id']; });\n\nreturn ['audited' => $totalAudited, 'findings' => $findings];"
+                        },
+                        "result": "{\"result\":{\"audited\":48,\"findings\":[{\"id\":7,\"title\":\"Repairing the things we keep \\u00b7 1\",\"issues\":{\"missing_alt\":true}},{\"id\":11,\"title\":\"Making room for slower travel \\u00b7 2\",\"issues\":{\"missing_description\":true}},{\"id\":14,\"title\":\"What a library can become \\u00b7 2\",\"issues\":{\"missing_alt\":true}},{\"id\":21,\"title\":\"A practical guide to local energy \\u00b7 3\",\"issues\":{\"missing_alt\":true}},{\"id\":22,\"title\":\"What a library can become \\u00b7 3\",\"issues\":{\"missing_description\":true}},{\"id\":31,\"title\":\"Repairing the things we keep \\u00b7 4\",\"issues\":{\"missing_alt\":true}},{\"id\":33,\"title\":\"Designing accessible navigation \\u00b7 5\",\"issues\":{\"missing_description\":true}},{\"id\":38,\"title\":\"What a library can become \\u00b7 5\",\"issues\":{\"missing_alt\":true}},{\"id\":44,\"title\":\"The people behind the workshop \\u00b7 6\",\"issues\":{\"missing_description\":true}},{\"id\":45,\"title\":\"A practical guide to local energy \\u00b7 6\",\"issues\":{\"missing_alt\":true}}]},\"toolCalls\":10}",
+                        "bytesToModel": 971
+                    }
+                ],
+                "report": {
+                    "audited": 48,
+                    "findings": [
+                        {
+                            "id": 7,
+                            "title": "Repairing the things we keep · 1",
+                            "issues": {
+                                "missing_alt": true
+                            }
+                        },
+                        {
+                            "id": 11,
+                            "title": "Making room for slower travel · 2",
+                            "issues": {
+                                "missing_description": true
+                            }
+                        },
+                        {
+                            "id": 14,
+                            "title": "What a library can become · 2",
+                            "issues": {
+                                "missing_alt": true
+                            }
+                        },
+                        {
+                            "id": 21,
+                            "title": "A practical guide to local energy · 3",
+                            "issues": {
+                                "missing_alt": true
+                            }
+                        },
+                        {
+                            "id": 22,
+                            "title": "What a library can become · 3",
+                            "issues": {
+                                "missing_description": true
+                            }
+                        },
+                        {
+                            "id": 31,
+                            "title": "Repairing the things we keep · 4",
+                            "issues": {
+                                "missing_alt": true
+                            }
+                        },
+                        {
+                            "id": 33,
+                            "title": "Designing accessible navigation · 5",
+                            "issues": {
+                                "missing_description": true
+                            }
+                        },
+                        {
+                            "id": 38,
+                            "title": "What a library can become · 5",
+                            "issues": {
+                                "missing_alt": true
+                            }
+                        },
+                        {
+                            "id": 44,
+                            "title": "The people behind the workshop · 6",
+                            "issues": {
+                                "missing_description": true
+                            }
+                        },
+                        {
+                            "id": 45,
+                            "title": "A practical guide to local energy · 6",
+                            "issues": {
+                                "missing_alt": true
+                            }
+                        }
+                    ]
+                },
+                "verification": {
+                    "passed": false,
+                    "message": "The findings contain an invalid or repeated item."
+                },
+                "events": [
+                    {
+                        "stage": "model_request",
+                        "label": "Hugging Face inference request 1",
+                        "details": []
+                    },
+                    {
+                        "stage": "tool_result",
+                        "label": "tools_search",
+                        "details": {
+                            "bytesToModel": 737
+                        }
+                    },
+                    {
+                        "stage": "model_request",
+                        "label": "Hugging Face inference request 2",
+                        "details": []
+                    },
+                    {
+                        "stage": "tool_result",
+                        "label": "tools_describe",
+                        "details": {
+                            "bytesToModel": 1356
+                        }
+                    },
+                    {
+                        "stage": "model_request",
+                        "label": "Hugging Face inference request 3",
+                        "details": []
+                    },
+                    {
+                        "stage": "execution",
+                        "label": "PHP submitted to the isolated runner",
+                        "details": []
+                    },
+                    {
+                        "stage": "tool_result",
+                        "label": "php_execute",
+                        "details": {
+                            "bytesToModel": 971
+                        }
+                    },
+                    {
+                        "stage": "model_request",
+                        "label": "Hugging Face inference request 4",
+                        "details": []
+                    }
+                ],
+                "answer": "{\"audited\":48,\"findings\":[{\"id\":7,\"title\":\"Repairing the things we keep \\u00b7 1\",\"issues\":{\"missing_alt\":true}},{\"id\":11,\"title\":\"Making room for slower travel \\u00b7 2\",\"issues\":{\"missing_description\":true}},{\"id\":14,\"title\":\"What a library can become \\u00b7 2\",\"issues\":{\"missing_alt\":true}},{\"id\":21,\"title\":\"A practical guide to local energy \\u00b7 3\",\"issues\":{\"missing_alt\":true}},{\"id\":22,\"title\":\"What a library can become \\u00b7 3\",\"issues\":{\"missing_description\":true}},{\"id\":31,\"title\":\"Repairing the things we keep \\u00b7 4\",\"issues\":{\"missing_alt\":true}},{\"id\":33,\"title\":\"Designing accessible navigation \\u00b7 5\",\"issues\":{\"missing_description\":true}},{\"id\":38,\"title\":\"What a library can become \\u00b7 5\",\"issues\":{\"missing_alt\":true}},{\"id\":44,\"title\":\"The people behind the workshop \\u00b7 6\",\"issues\":{\"missing_description\":true}},{\"id\":45,\"title\":\"A practical guide to local energy \\u00b7 6\",\"issues\":{\"missing_alt\":true}}]}"
+            },
+            "verification": {
+                "passed": false,
+                "checks": {
+                    "phpResultMatchesFixture": false,
+                    "finalAnswerMatchesFixture": false,
+                    "submittedPhpAndHostLedgerLinked": true,
+                    "containersRemoved": true,
+                    "payloadBytesRecounted": true,
+                    "modelRequestsObserved": true
+                },
+                "message": "One or more required execution observations did not pass. Inspect the retained attempt."
+            },
+            "elapsedMs": 4017.347625,
+            "completedAt": "2026-11-02T09:49:55+00:00"
+        }
+    ],
+    "sourceCommit": "3e4a0b1f1a9d49be20e88457e32a98b12367751b",
+    "sourceNote": "Captured with the then-uncommitted live-proof instrumentation on sourceCommit. Exact model-supplied PHP and tool results are retained."
+}

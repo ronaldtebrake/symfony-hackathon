@@ -105,6 +105,7 @@ final class CodeModeAgentTest extends KernelTestCase
         });
         self::getContainer()->set('http_client', $http);
         $context = (new DemoFactory(dirname(__DIR__, 2)))->create(sandbox: $sandbox);
+        $context->trace->captureDetails = true;
         $runner = self::getContainer()->get(DemoRunner::class);
         $result = $runner->run('live', 'code', context: $context, question: $question);
         self::assertSame($generated, $sandbox->source, 'The PHP source must come from the provider response.');
@@ -114,6 +115,11 @@ final class CodeModeAgentTest extends KernelTestCase
         self::assertSame(500, $result['providerTokens']['total']);
         self::assertSame('custom' === $scenario ? null : true, $result['verification']['passed']);
         self::assertSame($question->text, $result['task']);
+        self::assertCount(3, $result['agentCalls']);
+        self::assertSame($generated, $result['agentCalls'][2]['arguments']['code']);
+        self::assertSame($result['toolPayloadBytes'], array_sum(array_column($result['agentCalls'], 'bytesToModel')));
+        self::assertSame($result['brokerCalls'], $result['executions'][0]['toolCalls']);
+        self::assertSame('unit-only', $result['executions'][0]['runId']);
     }
 
     public static function questions(): iterable
