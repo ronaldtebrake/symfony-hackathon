@@ -64,6 +64,7 @@ final class AuditToolbox implements ToolboxInterface
         ++$this->trace->agentToolCalls;
         $name = $this->aliases[$toolCall->getName()] ?? '';
         $arguments = $toolCall->getArguments();
+        $brokerCallCount = count($this->trace->brokerCalls);
         try {
             if ('' === $name || $this->trace->agentToolCalls > 60) {
                 throw new SandboxException('tool_call_limit', 'Unknown tool or session call limit exceeded.');
@@ -92,6 +93,13 @@ final class AuditToolbox implements ToolboxInterface
             $reason = $error instanceof SandboxException ? $error->reason : 'tool_failed';
             $this->trace->record('rejected', $name, ['reason' => $reason]);
             $encoded = json_encode(['error' => ['reason' => $reason, 'message' => 'The host rejected or could not complete this tool call. Check the described schema and available execution budget.']], JSON_THROW_ON_ERROR);
+            if ('direct' === $this->approach && count($this->trace->brokerCalls) === $brokerCallCount + 1) {
+                $last = array_key_last($this->trace->brokerCalls);
+                if ('incomplete' === $this->trace->brokerCalls[$last]['status']) {
+                    $this->trace->brokerCalls[$last]['reason'] = $reason;
+                    $this->trace->brokerCalls[$last]['resultBytes'] = strlen($encoded);
+                }
+            }
             $this->trace->toolPayloadBytes += strlen($encoded);
             $this->trace->captureCall($toolCall->getName(), $arguments, $encoded);
             return new ToolResult($toolCall, $encoded);

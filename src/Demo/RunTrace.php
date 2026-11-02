@@ -11,6 +11,9 @@ final class RunTrace
     public array $programs = [];
     public array $executions = [];
     public array $agentCalls = [];
+    public array $requestEvidence = [];
+    public array $providerResponses = [];
+    public ?array $review = null;
     public bool $captureDetails = false;
     public int $toolPayloadBytes = 0;
     public int $modelRequests = 0;

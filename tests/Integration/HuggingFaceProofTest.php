@@ -56,6 +56,31 @@ final class HuggingFaceProofTest extends WebTestCase
         self::assertTrue((new HuggingFaceProofVerifier())->verify(self::completeResult())['passed']);
     }
 
+    public function testOnlyTheLinkedDiscoveryRejectionCanSkipContainerCleanup(): void
+    {
+        $result = self::completeResult();
+        $error = json_encode(['error' => ['reason' => 'discovery_required']]);
+        array_unshift($result['programs'], 'return 1;');
+        array_unshift($result['agentCalls'], ['name' => 'php_execute', 'arguments' => ['code' => 'return 1;'], 'result' => $error, 'bytesToModel' => strlen($error)]);
+        $result['executions'][0]['programIndex'] = 1;
+        array_unshift($result['executions'], ['programIndex' => 0, 'runId' => null, 'status' => 'failed', 'reason' => 'discovery_required', 'toolCalls' => [], 'containerRemoved' => null]);
+        ++$result['agentToolCalls'];
+        $result['toolPayloadBytes'] += strlen($error);
+        $verifier = new HuggingFaceProofVerifier();
+        self::assertTrue($verifier->verify($result)['passed']);
+        foreach (['runId', 'reason', 'toolCalls'] as $field) {
+            $mutated = $result;
+            $mutated['executions'][0][$field] = match ($field) {
+                'runId' => 'code-mode-'.str_repeat('b', 32),
+                'reason' => 'execution_failed',
+                'toolCalls' => [['name' => 'cms_list_articles', 'status' => 'incomplete']],
+            };
+            self::assertFalse($verifier->verify($mutated)['passed']);
+        }
+        $result['executions'][1]['containerRemoved'] = false;
+        self::assertFalse($verifier->verify($result)['passed'], 'Allocated runs still require positive cleanup evidence.');
+    }
+
     #[DataProvider('missingEvidence')]
     public function testPlausibleAnswerWithoutRequiredEvidenceCannotPass(string $field): void
     {

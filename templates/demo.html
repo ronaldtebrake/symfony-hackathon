@@ -41,16 +41,18 @@
           <p id="live-verdict" class="live-verdict"></p>
           <p id="live-attempt-totals" class="measurement-note"></p>
           <details class="proof-details"><summary>Inspect the direct baseline · actual calls and answer</summary><p id="live-direct-provenance" class="codex-provenance"></p><div class="table-scroll"><table><caption class="sr-only">Actual direct baseline calls</caption><thead><tr><th>#</th><th>Tool</th><th>Status</th><th>Result</th><th>Time</th></tr></thead><tbody id="live-direct-calls"></tbody></table></div><h3>Final model answer · verbatim</h3><pre id="live-direct-answer" tabindex="0"></pre><div id="live-direct-checks" class="hf-checks"></div><h3>Exact tool requests and responses</h3><div id="live-direct-requests"></div></details>
+          <details class="proof-details"><summary>Matched protocol and per-request usage</summary><div id="live-protocol"></div></details>
           <details class="proof-details"><summary>Earlier attempts and comparison checks</summary><div id="live-earlier-attempts"></div><pre id="live-pair-checks" tabindex="0"></pre></details>
         </div>
-        <p class="measurement-note">Same model ID, question, synthetic Symfony fixture and approved read tools. Temperature 0; maximum 8,192 output tokens per request. Hugging Face routes automatically; the serving provider is not identified. Direct request ceiling: 12; Code Mode: 8. These are individual runs, not a repeated benchmark or a billing comparison. <a href="/demo/huggingface-comparison">Raw paired evidence (JSON) ↗</a></p>
-        <div class="proof-run"><code>php bin/console code-mode:huggingface-proof --approach=direct --no-debug</code><span>Operator CLI only · uses inference credits</span></div>
+        <p class="measurement-note" id="live-settings">Same model, question, Symfony fixture and approved read tools. Exact settings accompany each captured pair.</p>
+        <p class="measurement-note"><a href="/demo/huggingface-comparison">Raw paired evidence (JSON) ↗</a></p>
+        <div class="proof-run"><code>php bin/console code-mode:huggingface-compare --no-debug</code><span>Operator CLI only · uses inference credits</span></div>
       </section>
 
       <section id="huggingface-proof" class="hf-proof" aria-labelledby="hf-heading">
         <div class="section-top"><div><span class="eyebrow">Symfony AI → Hugging Face → Code Mode</span><h2 id="hf-heading">The model writes PHP. The host checks the work.</h2></div><span class="run-state" id="hf-state" role="status">Loading evidence</span></div>
         <p id="hf-note" class="codex-intro">A separate provider-backed execution using the same PHP runner, broker and Symfony MCP fixture.</p>
-        <div class="proof-run"><code>php bin/console code-mode:huggingface-proof --no-debug</code><span>Operator CLI only · uses inference credits</span></div>
+        <div class="proof-run"><code>php bin/console code-mode:huggingface-compare --no-debug</code><span>Operator CLI only · uses inference credits</span></div>
         <div id="hf-evidence" hidden>
           <p id="hf-provenance" class="codex-provenance"></p>
           <div class="hf-metrics" aria-label="Measured live execution"><div><span>Model requests</span><strong id="hf-model-requests">—</strong></div><div><span>PHP attempts / MCP calls</span><strong id="hf-call-counts">—</strong></div><div><span>Tool-result payload</span><strong id="hf-payload">—</strong></div><div><span>Provider tokens</span><strong id="hf-tokens">—</strong></div></div>
@@ -64,7 +66,7 @@
           <p id="hf-timing" class="measurement-note"></p>
           <div id="hf-history"></div>
         </div>
-        <p class="measurement-note">Tool-result payload counts exact serialized toolbox results in this invocation, including discovery and any failed PHP attempts. Earlier operator-started runs have separate totals. Payload excludes prompts, initial schemas and generated PHP. Provider tokens are shown only when reported by Hugging Face. No token-savings comparison is implied. <a href="/demo/huggingface-report">Raw execution evidence (JSON) ↗</a></p>
+        <p class="measurement-note">Tool-result payload counts exact serialized toolbox results in this invocation, including discovery and any failed PHP attempts. Earlier operator-started runs have separate totals. Payload excludes prompts, initial schemas and generated PHP. Provider tokens are shown only when reported by Hugging Face. The separate Live comparison section checks equivalence before showing token differences. <a href="/demo/huggingface-report">Raw execution evidence (JSON) ↗</a></p>
       </section>
 
       <section id="codex-run" class="codex-run" aria-labelledby="codex-heading">

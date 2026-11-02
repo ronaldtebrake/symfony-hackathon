@@ -27,7 +27,21 @@ final readonly class ReportStore
 
     public function readHuggingFaceProof(): ?string
     {
+        if (null !== $pair = $this->readHuggingFacePair()) {
+            return null === ($pair['code'] ?? null) ? json_encode(['status' => $pair['status'], 'result' => null], JSON_THROW_ON_ERROR) : HuggingFaceComparison::encodeCapture($pair['code']);
+        }
         return $this->readFile('huggingface.json') ?? $this->readPath($this->projectDir.'/docs/evidence/huggingface-proof.json');
+    }
+
+    public function saveHuggingFacePair(array $pair): void
+    {
+        $this->saveFile('huggingface-pair.json', $pair);
+    }
+
+    public function readHuggingFacePair(): ?array
+    {
+        $bytes = $this->readFile('huggingface-pair.json') ?? $this->readPath($this->projectDir.'/docs/evidence/huggingface-pair.json');
+        return null === $bytes ? null : json_decode($bytes, true, flags: JSON_THROW_ON_ERROR);
     }
 
     public function saveHuggingFaceBaseline(array $report): void
@@ -42,6 +56,12 @@ final readonly class ReportStore
 
     public function readHuggingFaceComparison(): string
     {
+        if (null !== $pair = $this->readHuggingFacePair()) {
+            if (null === ($pair['code'] ?? null) || null === ($pair['direct'] ?? null)) {
+                return json_encode(['status' => $pair['status'], 'verifiedComparison' => false], JSON_THROW_ON_ERROR);
+            }
+            return json_encode((new HuggingFaceComparison())->build(HuggingFaceComparison::encodeCapture($pair['code']), $pair['direct']), JSON_THROW_ON_ERROR);
+        }
         $code = $this->readPath($this->projectDir.'/docs/evidence/huggingface-proof.json');
         $direct = $this->readHuggingFaceBaseline();
         if (null === $code || null === $direct) {

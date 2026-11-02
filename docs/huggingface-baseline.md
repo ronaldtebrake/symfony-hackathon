@@ -1,5 +1,7 @@
 # Live Hugging Face baseline without Code Mode
 
+> Historical capture. The [new matched comparison](huggingface-comparison.md) has correct answers on both sides and retains all attempts below. The workbench now shows that pair by default.
+
 Two direct-tool invocations were captured on **2 November 2026, at 11:38 and 11:40 CET**, using the same `openai/gpt-oss-120b` model ID, audit question, Symfony fixture and approved read permissions as the [verified Code Mode run](huggingface-proof.md). **Both direct answers failed validation.** Their actual usage and errors remain in the [baseline evidence](evidence/huggingface-baseline.json).
 
 Open [Live comparison](http://127.0.0.1:8000/demo#live-comparison) to inspect the latest direct invocation alongside the exact reviewed Code Mode capture. Expand the requests, responses, host calls and earlier attempts. The workbench remains read-only.

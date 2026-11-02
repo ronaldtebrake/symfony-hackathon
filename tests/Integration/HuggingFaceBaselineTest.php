@@ -37,8 +37,8 @@ final class HuggingFaceBaselineTest extends WebTestCase
         foreach (['codeCaptureBound', 'sameModel', 'sameQuestion', 'sameEndpoint', 'sameComponents', 'baselineGenerationSettings', 'approvedReadIdentity', 'sameToolSchemas', 'sameFixture', 'codeResultVerified', 'providerUsageReported'] as $check) {
             self::assertTrue($pair['checks'][$check], $check);
         }
-        self::assertSame(['attempts' => 2, 'modelRequests' => 24, 'providerTokens' => 85873], $pair['observedTotals']['direct']);
-        self::assertSame(['attempts' => 2, 'modelRequests' => 8, 'providerTokens' => 13337], $pair['observedTotals']['code']);
+        self::assertSame(['attempts' => 2, 'modelRequests' => 24, 'providerTokens' => 85873, 'knownProviderTokens' => 85873, 'unreportedTokenAttempts' => 0], $pair['observedTotals']['direct']);
+        self::assertSame(['attempts' => 2, 'modelRequests' => 8, 'providerTokens' => 13337, 'knownProviderTokens' => 13337, 'unreportedTokenAttempts' => 0], $pair['observedTotals']['code']);
     }
 
     public function testSyntheticCorrectDirectResultCanBeComparedWithoutExecutingPhp(): void

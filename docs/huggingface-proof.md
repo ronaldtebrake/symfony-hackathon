@@ -1,5 +1,7 @@
 # Real Symfony AI + Hugging Face execution
 
+> Historical capture. The [new matched comparison](huggingface-comparison.md) has correct answers on both sides and retains all attempts below. The workbench now shows that pair by default.
+
 On **2 November 2026 at 10:52 CET**, Symfony AI called `openai/gpt-oss-120b` through Hugging Face Inference Providers. The model discovered approved tools, generated PHP, executed it through the same `ronaldtebrake/php-code-mode` package used by Codex, and returned a verified editorial audit.
 
 Open **[Symfony AI run in the workbench](http://127.0.0.1:8000/demo#huggingface-proof)**. Its three tabs show the exact submitted PHP, actual calls, and returned results with independent checks. Viewing the [checked-in capture](evidence/huggingface-proof.json) needs no provider key or running sandbox.

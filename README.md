@@ -14,9 +14,7 @@ The editorial audit checks **48 articles** and returns the same **10 findings** 
 
 The animation illustrates those measured results. Reference mode uses checked-in PHP; MCP calls and sandbox execution are real. Payload excludes prompts, initial schemas and generated code. **This is not a model-token savings claim.** [Verification record](packages/php-code-mode/docs/verification.md).
 
-**Real Symfony AI + Hugging Face generation is now verified.** The [live capture](docs/huggingface-proof.md) shows model-generated PHP auditing all 48 articles through 10 authorized MCP calls: **4 model requests, 3,014 tool-result bytes and 6,826 provider-reported tokens**. Inspect its exact source, calls, findings and cleanup checks in the workbench’s **Symfony AI run** section. The rejected first attempt is retained too.
-
-The [live direct-tool baseline](docs/huggingface-baseline.md) is captured too: its latest attempt used **12 requests and 42,942 tokens**, but missed four findings. **Live comparison** shows both measured results and all retained attempts; it makes no savings claim for unequal-quality answers.
+**Real Symfony AI + Hugging Face: both answers now verified.** The [matched live comparison](docs/huggingface-comparison.md) uses the same model, question, data and permissions. Direct tools used **11 requests / 43,979 tokens**; Code Mode used **5 requests / 12,597 tokens**, with **10 correct findings and 10 MCP reads each**. That is **71.4% fewer provider tokens in this pair**, not a repeated benchmark. The workbench shows generated PHP, actual calls, per-request usage and all retained attempts, including the original incomplete answers.
 
 ![Actual local Code Mode workbench showing matching findings, measured payloads and PHP executed in gVisor. No model was called.](docs/images/code-mode-proof.jpg)
 
@@ -61,7 +59,7 @@ composer start
 
 Open [the workbench](http://127.0.0.1:8000/demo) to inspect the recorded Codex conversation, separate comparison and security proof. Viewing the checked-in Codex capture needs no API key or sandbox run. The fixed comparison and security programs are labelled **no model called**. The security report records an authorized read, a denied tool call, and an infinite loop stopped by the watchdog, with host traces and a per-container cleanup check. `/health` returns JSON. Stop the preview with Ctrl+C.
 
-To capture fresh live generation, set `HUGGINGFACE_API_KEY` in ignored `.env.local`, then run `php bin/console code-mode:huggingface-proof --no-debug`. The default model is `openai/gpt-oss-120b`; calls consume inference credits. Reports include provider token usage only when supplied. The reviewed capture can be viewed without a key. See [live proof and reproduction](docs/huggingface-proof.md), [comparison setup](docs/demo.md) and the [90-second recording pack](docs/demo/README.md).
+To capture fresh live generation, set `HUGGINGFACE_API_KEY` in ignored `.env.local`, then run `php bin/console code-mode:huggingface-compare --no-debug`. The default model is `openai/gpt-oss-120b`; calls consume inference credits. Reports include provider token usage only when supplied. The reviewed capture can be viewed without a key. See [live comparison and reproduction](docs/huggingface-comparison.md), [comparison setup](docs/demo.md) and the [90-second recording pack](docs/demo/README.md).
 
 Connect `php bin/console code-mode:mcp` as a STDIO server in your agent. Ask follow-up questions and clarify scope in that conversation; the workbench is a read-only evidence viewer. The host retains all permissions and limits. See [Codex setup](docs/codex.md) and [the live two-turn conversation with generated PHP and actual calls](docs/codex-conversation.md).
 
