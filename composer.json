@@ -13,6 +13,7 @@
         "nyholm/psr7": "^1.8",
         "php": ">=8.2",
         "ronaldtebrake/php-code-mode": "^0.1",
+        "ronaldtebrake/symfony-code-mode": "^0.1",
         "symfony/ai-agent": "^1.0@beta",
         "symfony/ai-bundle": "^1.0@beta",
         "symfony/ai-hugging-face-platform": "^1.0@beta",
@@ -87,6 +88,7 @@
         "check": [
             "@composer validate --strict",
             "@composer validate --strict --working-dir=packages/php-code-mode",
+            "@composer validate --strict --working-dir=packages/symfony-code-mode",
             "@php bin/console lint:yaml config --parse-tags",
             "@php bin/console lint:container --resolve-env-vars",
             "@test",
@@ -114,6 +116,15 @@
             "options": {
                 "versions": {
                     "ronaldtebrake/php-code-mode": "0.1.0"
+                }
+            }
+        },
+        {
+            "type": "path",
+            "url": "packages/symfony-code-mode",
+            "options": {
+                "versions": {
+                    "ronaldtebrake/symfony-code-mode": "0.1.0"
                 }
             }
         }

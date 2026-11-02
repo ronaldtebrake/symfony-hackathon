@@ -1,0 +1,25 @@
+{
+    "name": "ronaldtebrake/symfony-code-mode",
+    "description": "Explicitly approved Symfony services, exposed through isolated PHP Code Mode.",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "require": {
+        "mcp/sdk": "^0.9",
+        "opis/json-schema": "^2.6",
+        "php": ">=8.2",
+        "ronaldtebrake/php-code-mode": "^0.1",
+        "symfony/config": "^7.4",
+        "symfony/console": "^7.4",
+        "symfony/dependency-injection": "^7.4",
+        "symfony/http-kernel": "^7.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "CodeMode\\Symfony\\": "src/"
+        }
+    },
+    "suggest": {
+        "symfony/ai-agent": "Install ^1.0@beta to use the optional CodeModeToolbox bridge.",
+        "symfony/ai-platform": "Install ^1.0@beta to use the optional CodeModeToolbox bridge."
+    }
+}
