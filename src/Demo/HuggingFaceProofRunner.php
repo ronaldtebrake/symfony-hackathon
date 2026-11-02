@@ -18,17 +18,38 @@ final readonly class HuggingFaceProofRunner
 {
     public function __construct(private DemoFactory $factory, private HttpClientInterface $httpClient, #[Autowire('%kernel.project_dir%')] private string $projectDir) {}
 
-    public function run(?\Closure $progress = null): array
+    public function run(?\Closure $progress = null, string $approach = 'code'): array
     {
+        if (!in_array($approach, ['code', 'direct'], true)) {
+            throw new \InvalidArgumentException('Choose code or direct.');
+        }
         if ('' === trim(BackendFactory::env('HUGGINGFACE_API_KEY'))) {
             throw new \LogicException('Set HUGGINGFACE_API_KEY in ignored .env.local before running the live capture.');
         }
-        $report = ['version' => 1, 'kind' => 'huggingface-proof', 'mode' => 'live', 'status' => 'running', 'createdAt' => gmdate(DATE_ATOM),
+        $maxRequests = 'direct' === $approach ? 12 : 8;
+        $report = ['version' => 1, 'kind' => 'direct' === $approach ? 'huggingface-baseline' : 'huggingface-proof', 'mode' => 'live', 'status' => 'running', 'createdAt' => gmdate(DATE_ATOM),
             'provider' => 'Hugging Face Inference Providers', 'endpoint' => 'https://router.huggingface.co/v1/chat/completions',
             'backend' => 'Symfony MCP fixture', 'model' => BackendFactory::env('HUGGINGFACE_MODEL', 'openai/gpt-oss-120b'),
             'task' => AuditDataset::TASK, 'runtime' => 'runsc', 'image' => BackendFactory::env('CODE_MODE_IMAGE'),
-            'limits' => ['wallTimeMs' => 15000, 'toolTimeMs' => 3000, 'memoryMiB' => 128, 'maxToolCalls' => 30, 'executionAttempts' => 2, 'maxModelRequests' => 8],
+            'limits' => 'code' === $approach
+                ? ['wallTimeMs' => 15000, 'toolTimeMs' => 3000, 'memoryMiB' => 128, 'maxToolCalls' => 30, 'executionAttempts' => 2, 'maxModelRequests' => $maxRequests]
+                : ['toolTimeMs' => 3000, 'maxToolRounds' => 20, 'maxAdmittedToolCalls' => 60, 'executionAttempts' => 0, 'maxModelRequests' => $maxRequests],
             'components' => [], 'result' => null];
+        if ('direct' === $approach) {
+            $codeBytes = file_get_contents($this->projectDir.'/docs/evidence/huggingface-proof.json');
+            $code = json_decode($codeBytes, true, flags: JSON_THROW_ON_ERROR);
+            if ('complete' !== $code['status'] || !(new HuggingFaceProofVerifier())->verify($code['result'])['passed']
+                || $code['model'] !== $report['model'] || $code['task'] !== $report['task']) {
+                throw new \LogicException('The baseline must match the reviewed Code Mode model and question.');
+            }
+            $report['codeCaptureSha256'] = hash('sha256', $codeBytes);
+            $report['runtime'] = null;
+            $report['image'] = null;
+            $report['generationSettings'] = ['temperature' => 0, 'max_tokens' => 8192, 'providerRouting' => 'auto'];
+            $report['identity'] = ['subject' => 'demo-editor', 'capabilities' => ['content.audit']];
+            $dataset = new AuditDataset();
+            $report['datasetSha256'] = hash('sha256', json_encode([$dataset->articles(), $dataset->media()], JSON_THROW_ON_ERROR));
+        }
         foreach (['symfony/ai-agent', 'symfony/ai-hugging-face-platform', 'mcp/sdk', 'ronaldtebrake/php-code-mode'] as $package) {
             $report['components'][$package] = InstalledVersions::getPrettyVersion($package);
         }
@@ -37,11 +58,18 @@ final readonly class HuggingFaceProofRunner
         $started = hrtime(true);
         try {
             // Require gVisor and the pinned image before constructing/invoking the provider.
-            $context = $this->factory->create('code', 'fixture');
+            $context = $this->factory->create($approach, 'fixture');
             $context->trace->captureDetails = true;
+            if ('direct' === $approach) {
+                $report['approvedTools'] = array_values($context->catalog->all());
+                $report['toolAliases'] = [];
+                foreach ($context->catalog->all() as $definition) {
+                    $report['toolAliases'][$context->toolbox->aliasFor($definition->name)] = $definition->name;
+                }
+            }
             $platform = Factory::createPlatform(BackendFactory::env('HUGGINGFACE_API_KEY'), httpClient: $this->httpClient->withOptions(['timeout' => 45, 'max_duration' => 60, 'max_redirects' => 0]));
             $runner = new DemoRunner($this->factory, $platform, $this->projectDir);
-            $report['result'] = $runner->run('live', 'code', context: $context, maxModelRequests: 8);
+            $report['result'] = $runner->run('live', $approach, context: $context, maxModelRequests: $maxRequests);
         } catch (\Throwable $error) {
             // Never persist provider exception messages, HTTP headers or transport diagnostics.
             $report['error'] = match (true) {
@@ -52,12 +80,12 @@ final readonly class HuggingFaceProofRunner
             };
             if (null !== $context) {
                 $trace = $context->trace;
-                $report['result'] = ['approach' => 'code', 'mode' => 'live', 'modelRequests' => $trace->modelRequests, 'agentToolCalls' => $trace->agentToolCalls,
+                $report['result'] = ['approach' => $approach, 'mode' => 'live', 'modelRequests' => $trace->modelRequests, 'agentToolCalls' => $trace->agentToolCalls,
                     'toolPayloadBytes' => $trace->toolPayloadBytes, 'providerTokens' => null, 'brokerCalls' => $trace->brokerCalls, 'programs' => $trace->programs,
                     'executions' => $trace->executions, 'agentCalls' => $trace->agentCalls, 'report' => $trace->report, 'answer' => '', 'events' => $trace->events];
             }
         }
-        if (null !== $report['result']) {
+        if ('code' === $approach && null !== $report['result']) {
             $docker = new DockerEngine(json_decode(BackendFactory::env('CODE_MODE_DOCKER_COMMAND', '["docker"]'), true, flags: JSON_THROW_ON_ERROR));
             foreach ($report['result']['executions'] as &$execution) {
                 $execution['containerRemoved'] = null;
@@ -72,7 +100,7 @@ final readonly class HuggingFaceProofRunner
             }
             unset($execution);
         }
-        $report['verification'] = (new HuggingFaceProofVerifier())->verify($report['result'] ?? []);
+        $report['verification'] = 'code' === $approach ? (new HuggingFaceProofVerifier())->verify($report['result'] ?? []) : (new HuggingFaceBaselineVerifier())->verify($report);
         $report['status'] = !isset($report['error']) && $report['verification']['passed'] ? 'complete' : 'failed';
         $report['elapsedMs'] = (hrtime(true) - $started) / 1_000_000;
         $report['completedAt'] = gmdate(DATE_ATOM);

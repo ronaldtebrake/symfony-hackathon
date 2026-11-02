@@ -8,6 +8,8 @@ There is now an optional [boundary-recovery opening](../boundary-recovery.md): a
 
 The [real Symfony AI + Hugging Face run](../huggingface-proof.md) is also ready for a workbench insert at `/demo#huggingface-proof`. For the submission cut, use the first eight seconds of the comparison slot below for its metrics and generated PHP, then four seconds for the reference payload comparison. Label them as separate runs. Suggested narration: “Symfony AI also generated and ran PHP through Hugging Face. Here are the measured calls and tokens. The separate reference comparison measures payload reduction.” Record **Actual tool calls** and **Results & checks** as optional close-ups. Update the draft voice track and captions after choosing this cut; the total remains 90 seconds.
 
+The [live direct-tool baseline](../huggingface-baseline.md) now adds an optional insert at `/demo#live-comparison`. Its latest invocation used 12 requests and 42,942 tokens but returned six of ten expected findings; the Code Mode invocation used four requests and 6,826 tokens with all ten findings verified. Keep the failure label and retained-attempt totals visible. Describe these as observed runs; do not narrate an equivalent-result token-savings percentage. Both direct attempts are retained, including the failed extra media request.
+
 ## 1. Prepare the take
 
 - Use the synthetic Symfony fixture and the existing [Codex MCP connection](../codex.md). Check registration with `codex mcp get symfony_code_mode` from this project. The configured gVisor host and runner image must be available. Codex uses its own model access; this conversation needs no Hugging Face key.

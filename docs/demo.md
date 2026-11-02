@@ -51,7 +51,7 @@ composer demo -- --mode=live --question='Count published articles by language. R
 
 These changed questions use the read-only Symfony fixture and require live inference. Reference mode supports only the original checked-in audit. The impact scenario has an independent oracle for 48 articles, two groups of article IDs and three shared images without alt text. Custom JSON answers require supporting MCP reads but are marked **review required**, with no correctness or payload-savings badge.
 
-Custom CLI input is limited to 2000 UTF-8 bytes, with terminal controls and invisible formatting rejected. Questions cannot change host identity, endpoints, policies or execution limits. Live questions go to the configured provider and the local report. Local tests mock provider responses while executing alternate programs through real MCP/gVisor. Real Hugging Face generation is verified for the fixed editorial audit; custom questions and a live direct-tool comparison have not been captured.
+Custom CLI input is limited to 2000 UTF-8 bytes, with terminal controls and invisible formatting rejected. Questions cannot change host identity, endpoints, policies or execution limits. Live questions go to the configured provider and the local report. Local tests mock provider responses while executing alternate programs through real MCP/gVisor. Real Hugging Face generation is verified for the fixed editorial audit; custom questions have not been captured. The separate [live direct-tool baseline](huggingface-baseline.md) records actual requests/tokens, but its two answers failed the independent checks.
 
 ## Visible security proof
 

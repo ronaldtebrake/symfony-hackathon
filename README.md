@@ -16,6 +16,8 @@ The animation illustrates those measured results. Reference mode uses checked-in
 
 **Real Symfony AI + Hugging Face generation is now verified.** The [live capture](docs/huggingface-proof.md) shows model-generated PHP auditing all 48 articles through 10 authorized MCP calls: **4 model requests, 3,014 tool-result bytes and 6,826 provider-reported tokens**. Inspect its exact source, calls, findings and cleanup checks in the workbench’s **Symfony AI run** section. The rejected first attempt is retained too.
 
+The [live direct-tool baseline](docs/huggingface-baseline.md) is captured too: its latest attempt used **12 requests and 42,942 tokens**, but missed four findings. **Live comparison** shows both measured results and all retained attempts; it makes no savings claim for unequal-quality answers.
+
 ![Actual local Code Mode workbench showing matching findings, measured payloads and PHP executed in gVisor. No model was called.](docs/images/code-mode-proof.jpg)
 
 *Screenshot refreshed on 1 November 2026; reference execution recorded on 31 October. This is a tested development proof, not an audited public execution service.*

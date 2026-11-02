@@ -29,6 +29,7 @@ final class CodeModeAgentTest extends KernelTestCase
             }
         };
         $context = (new DemoFactory(dirname(__DIR__, 2)))->create('direct', sandbox: $sandbox);
+        $context->trace->captureDetails = true;
         $round = 0;
         $http = new MockHttpClient(static function (string $method, string $url, array $options) use (&$round, $context, $question, $expected): JsonMockResponse {
             ++$round;
@@ -59,6 +60,12 @@ final class CodeModeAgentTest extends KernelTestCase
         self::assertSame(4, $result['modelRequests']);
         self::assertNull($result['providerTokens']);
         self::assertSame([], $result['programs']);
+        if ('audit' === $scenario) {
+            $aliases = [];
+            foreach (BackendFactory::FIXTURE_TOOLS as $name) { $aliases[$context->toolbox->aliasFor($name)] = $name; }
+            self::assertTrue((new \App\Demo\HuggingFaceBaselineVerifier())->verify(['result' => $result, 'toolAliases' => $aliases])['passed']);
+            self::assertCount(10, $result['agentCalls']);
+        }
     }
 
     #[DataProvider('questions')]

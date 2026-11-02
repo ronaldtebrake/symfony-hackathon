@@ -1433,3 +1433,13 @@ footer {
 #hf-panel-results > .proof-details { margin:0 24px 20px; }
 #hf-answer { max-height:420px; overflow:auto; }
 @media (max-width:760px) { .hf-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } .hf-metrics > div { padding:14px; } .hf-metrics strong { font-size:22px; } }
+.live-table { width:100%; table-layout:fixed; }
+.live-table th:first-child { width:40%; }
+.live-table td { padding:12px 20px; font-size:14px; line-height:1.4; font-family:inherit; }
+.live-table td:first-child { color:var(--muted); }
+.live-table tr.live-primary td { font-weight:700; color:var(--brand); font-size:20px; }
+.live-table tr.live-primary td:first-child { font-size:14px; font-weight:500; }
+.live-table .live-failed { color:#9a3412; font-weight:700; }
+.live-verdict { padding:14px 18px; border-left:3px solid var(--accent); background:var(--surface); font-size:14px; }
+#live-comparison .proof-details pre { max-height:380px; overflow:auto; }
+@media (max-width:760px) { .live-table td { padding:10px; font-size:12px; } .live-table tr.live-primary td { font-size:17px; } }

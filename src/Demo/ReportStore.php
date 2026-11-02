@@ -30,6 +30,26 @@ final readonly class ReportStore
         return $this->readFile('huggingface.json') ?? $this->readPath($this->projectDir.'/docs/evidence/huggingface-proof.json');
     }
 
+    public function saveHuggingFaceBaseline(array $report): void
+    {
+        $this->saveFile('huggingface-baseline.json', $report);
+    }
+
+    public function readHuggingFaceBaseline(): ?string
+    {
+        return $this->readFile('huggingface-baseline.json') ?? $this->readPath($this->projectDir.'/docs/evidence/huggingface-baseline.json');
+    }
+
+    public function readHuggingFaceComparison(): string
+    {
+        $code = $this->readPath($this->projectDir.'/docs/evidence/huggingface-proof.json');
+        $direct = $this->readHuggingFaceBaseline();
+        if (null === $code || null === $direct) {
+            return '{"status":"empty","verifiedComparison":false}';
+        }
+        return json_encode((new HuggingFaceComparison())->build($code, json_decode($direct, true, flags: JSON_THROW_ON_ERROR)), JSON_THROW_ON_ERROR);
+    }
+
     private function saveFile(string $filename, array $report): void
     {
         $directory = $this->projectDir.'/var/demo';

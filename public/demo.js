@@ -468,3 +468,75 @@ async function refreshHuggingFaceProof() {
   } finally { setTimeout(refreshHuggingFaceProof, 2500); }
 }
 refreshHuggingFaceProof();
+
+function renderLiveComparison(report) {
+  byId('live-evidence').hidden = true;
+  byId('live-state').textContent = report.status === 'empty' ? 'BASELINE NOT CAPTURED' : report.status === 'running' ? 'BASELINE RUNNING' : report.verifiedComparison === true ? 'BOTH RESULTS VERIFIED' : 'BASELINE CHECK FAILED';
+  byId('live-note').textContent = report.verifiedComparison === true
+    ? 'Both answers match the independent fixture. Measurements below belong to these two recorded invocations.'
+    : report.status === 'empty' || report.status === 'running' ? 'A completed direct baseline is needed before comparing results.'
+    : 'The direct answer failed the independent fixture check. Its actual usage is shown alongside the verified Code Mode run.';
+  if (!report.direct?.result || !report.code?.result) return;
+  const direct = report.direct.result;
+  const code = report.code.result;
+  const comparisonChecks = ['codeCaptureBound', 'sameModel', 'sameQuestion', 'sameEndpoint', 'sameComponents', 'baselineGenerationSettings', 'approvedReadIdentity', 'sameToolSchemas', 'sameFixture', 'codeResultVerified', 'directResultVerified', 'providerUsageReported'];
+  if (report.verifiedComparison === true && comparisonChecks.some((name) => report.checks?.[name] !== true)) throw new Error('Unverified comparison');
+  byId('live-provenance').textContent = `${report.direct.model} · Symfony AI + Hugging Face · Direct: ${new Date(report.direct.createdAt).toLocaleString()} · Code Mode: ${new Date(report.code.createdAt).toLocaleString()}`;
+  const rows = byId('live-metrics'); rows.replaceChildren();
+  const findingCount = (run) => Array.isArray(run.report?.findings) ? run.report.findings.length : '—';
+  const observations = [
+    ['Answer check', report.checks.directResultVerified ? `${findingCount(direct)} findings · verified` : `${findingCount(direct)} findings · failed`, report.checks.codeResultVerified ? `${findingCount(code)} findings · verified` : 'Failed', 'answer'],
+    ['Model requests', number(direct.modelRequests), number(code.modelRequests), 'primary'],
+    ['Provider tokens · total', number(direct.providerTokens?.total), number(code.providerTokens?.total), 'primary'],
+    ['Input / output tokens', `${number(direct.providerTokens?.prompt)} / ${number(direct.providerTokens?.completion)}`, `${number(code.providerTokens?.prompt)} / ${number(code.providerTokens?.completion)}`],
+    ['Actual MCP calls', number(direct.brokerCalls.length), number(code.brokerCalls.length)],
+    ['Tool-result payload', `${number(direct.toolPayloadBytes)} B`, `${number(code.toolPayloadBytes)} B`],
+  ];
+  for (const [label, without, withCode, type] of observations) {
+    const row = node('tr', undefined, type === 'primary' ? 'live-primary' : '');
+    row.append(node('td', label), node('td', without, type === 'answer' && !report.checks.directResultVerified ? 'live-failed' : ''), node('td', withCode));
+    rows.append(row);
+  }
+  byId('live-verdict').textContent = report.verifiedComparison === true
+    ? `Observed token difference: ${number(report.difference.tokens)}. Model-request difference: ${number(report.difference.modelRequests)}. One verified run per path; repeated measurements are needed to generalize.`
+    : 'The results are not equivalent: no verified token-savings percentage is claimed. Inspect the direct answer and host-recorded tool error below.';
+  const dt = report.observedTotals.direct; const ct = report.observedTotals.code;
+  byId('live-attempt-totals').textContent = `Including all retained attempts: direct ${dt.attempts} runs / ${number(dt.modelRequests)} requests / ${number(dt.providerTokens)} tokens; Code Mode ${ct.attempts} runs / ${number(ct.modelRequests)} requests / ${number(ct.providerTokens)} tokens. The table shows the latest direct attempt and the verified Code Mode invocation. Earlier failures are not erased.`;
+  byId('live-direct-provenance').textContent = report.direct.verification?.message ?? 'Checks pending.';
+  renderCallRows(byId('live-direct-calls'), direct.brokerCalls);
+  byId('live-direct-answer').textContent = direct.answer ?? '';
+  const checks = byId('live-direct-checks'); checks.replaceChildren();
+  const directCheckLabels = {directOnly:'Direct tools only; no generated PHP', finalAnswerMatchesFixture:'Answer matches all expected findings', allPublishedArticlesAndMediaRead:'All published articles and media read', toolResultsLinkedToHostLedger:'All calls succeeded and matched the host ledger', payloadBytesRecounted:'Payload bytes recounted', modelRequestsObserved:'Model requests observed'};
+  for (const [key, passed] of Object.entries(report.direct.verification?.checks ?? {})) checks.append(node('p', `${passed ? '✓' : '×'} ${directCheckLabels[key] ?? key}`));
+  const requests = byId('live-direct-requests'); requests.replaceChildren();
+  for (const [index, call] of direct.agentCalls.entries()) {
+    const detail = node('details', undefined, 'proof-details');
+    detail.append(node('summary', `${index + 1}. ${report.direct.toolAliases[call.name] ?? call.name} · ${number(call.bytesToModel)} bytes`));
+    const pre = node('pre', JSON.stringify(call, null, 2)); pre.tabIndex = 0; detail.append(pre); requests.append(detail);
+  }
+  const history = byId('live-earlier-attempts'); history.replaceChildren();
+  for (const [label, capture] of [['Without Code Mode', report.direct], ['With Code Mode', report.code]]) {
+    for (const [index, attempt] of (capture.previousAttempts ?? []).entries()) {
+      const detail = node('details', undefined, 'proof-details');
+      detail.append(node('summary', `${label} · earlier attempt ${index + 1} · ${attempt.status} · ${number(attempt.result?.providerTokens?.total)} tokens`));
+      const pre = node('pre', JSON.stringify(attempt, null, 2)); pre.tabIndex = 0; detail.append(pre); history.append(detail);
+    }
+  }
+  byId('live-pair-checks').textContent = JSON.stringify(report.checks, null, 2);
+  byId('live-evidence').hidden = false;
+}
+let lastLiveComparisonBody = '';
+async function refreshLiveComparison() {
+  try {
+    const response = await fetch('/demo/huggingface-comparison', {cache:'no-store', credentials:'same-origin'});
+    if (!response.ok) throw new Error('Comparison unavailable');
+    const body = await response.text();
+    if (body !== lastLiveComparisonBody) { renderLiveComparison(JSON.parse(body)); lastLiveComparisonBody = body; }
+  } catch {
+    lastLiveComparisonBody = '';
+    byId('live-evidence').hidden = true;
+    byId('live-state').textContent = 'COMPARISON UNAVAILABLE';
+    byId('live-note').textContent = 'The paired evidence could not be loaded or checked. No comparison is verified.';
+  } finally { setTimeout(refreshLiveComparison, 2500); }
+}
+refreshLiveComparison();
