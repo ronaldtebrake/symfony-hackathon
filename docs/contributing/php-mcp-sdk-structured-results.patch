@@ -1,0 +1,23 @@
+--- a/src/Schema/Result/CallToolResult.php
++++ b/src/Schema/Result/CallToolResult.php
+@@ -82,6 +82,20 @@
+     }
+ 
+     /**
++     * Create a structured result with equivalent JSON text for clients that only read content.
++     *
++     * @param mixed                     $value   JSON-serializable result or sanitized error data
++     * @param bool                      $isError Whether the tool execution failed
++     * @param array<string, mixed>|null $meta    Optional metadata
++     *
++     * @throws \JsonException When the value cannot be encoded as JSON
++     */
++    public static function structured(mixed $value, bool $isError = false, ?array $meta = null): self
++    {
++        return new self([new TextContent(json_encode($value, \JSON_THROW_ON_ERROR))], $isError, $value, $meta);
++    }
++
++    /**
+      * @param array{
+      *     content: array<mixed>,
+      *     isError?: bool,
