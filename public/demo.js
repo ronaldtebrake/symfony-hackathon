@@ -336,3 +336,63 @@ async function loadCodexCapture() {
   }
 }
 loadCodexCapture();
+
+async function loadBoundaryRecovery() {
+  const target = byId('recovery-turns');
+  try {
+    const response = await fetch('/demo/boundary-report', {cache: 'no-store', credentials: 'same-origin'});
+    if (!response.ok) throw new Error('Capture unavailable');
+    const report = await response.json();
+    if (report.turns?.length !== 2) throw new Error('Incomplete conversation');
+    const executions = report.turns.map((turn) => {
+      const runs = turn.items.filter((item) => item.type === 'mcpToolCall' && item.tool === 'php_execute');
+      if (runs.length !== 1 || typeof runs[0].arguments?.code !== 'string') throw new Error('Incomplete execution');
+      return runs[0];
+    });
+    const denied = executions[0].result?.structuredContent;
+    const allowed = executions[1].result?.structuredContent;
+    if (executions[0].status !== 'failed' || denied?.error?.reason !== 'tool_denied' || 'value' in denied || denied.toolCalls?.length !== 1 || denied.toolCalls[0].status !== 'denied'
+      || executions[1].status !== 'completed' || allowed?.value?.complete !== true || allowed.value.checked !== 48 || JSON.stringify(allowed.value.matches?.map((item) => item.id)) !== '[11,22,33,44]'
+      || allowed.toolCalls?.length !== 4 || allowed.toolCalls.some((call) => call.status !== 'succeeded')
+      || report.verification?.publishedAuditMatchesIndependentOracle !== true
+      || report.verification.cleanup?.length !== 2 || report.verification.cleanup.some((check, index) => check.containerAbsent !== true || check.runId !== executions[index].result.structuredContent.runId)) {
+      throw new Error('Expected proof is incomplete');
+    }
+    target.replaceChildren();
+    report.turns.forEach((turn, index) => {
+      const execution = executions[index];
+      const result = execution.result.structuredContent;
+      const card = node('article', undefined, `recovery-card ${index === 0 ? 'recovery-denied' : 'recovery-allowed'}`);
+      card.append(node('span', index === 0 ? '01 · Restricted request' : '02 · User-approved alternative', 'eyebrow'));
+      card.append(node('h3', index === 0 ? 'The draft stays private.' : '48 articles. Four useful findings.'));
+      card.append(node('blockquote', turn.prompt));
+      card.append(node('p', index === 0 ? 'Host decision: tool_denied · no content returned' : '4 published-content calls succeeded · IDs 11, 22, 33, 44', 'recovery-outcome'));
+      if (index === 0) {
+        const answer = turn.items.filter((item) => item.type === 'agentMessage' && item.phase === 'final_answer').map((item) => item.text).join('\n\n');
+        card.append(node('p', answer, 'recovery-proposal'));
+      }
+      const calls = node('ul', undefined, 'proof-calls');
+      result.toolCalls.forEach((call) => calls.append(node('li', `${call.name} · ${call.status} · ${call.durationMs.toFixed(1)} ms`)));
+      card.append(calls);
+      const appendDetail = (label, text, open = false) => {
+        const detail = node('details', undefined, 'proof-details');
+        detail.open = open;
+        detail.append(node('summary', label));
+        const pre = node('pre', text); pre.tabIndex = 0;
+        detail.append(pre); card.append(detail);
+      };
+      appendDetail('Exact generated PHP', execution.arguments.code, index === 0);
+      appendDetail('Actual MCP requests and responses', JSON.stringify(turn.items.filter((item) => item.type === 'mcpToolCall'), null, 2));
+      appendDetail('Codex response · verbatim', turn.items.filter((item) => item.type === 'agentMessage').map((item) => item.text).join('\n\n'));
+      card.append(node('p', `${result.runId} · removal checked`, 'recovery-run-id'));
+      target.append(card);
+    });
+    byId('recovery-state').textContent = 'DENIED → RECOVERED';
+    byId('recovery-provenance').textContent = `${report.client} · ${report.model} · ${new Date(report.recordedAt).toLocaleString('en-GB', {timeZone: 'Europe/Amsterdam'})} CET · Real generation and gVisor execution. CLI rehearsal, not desktop footage. The successful answer matched the independent fixture; both containers were confirmed absent.`;
+  } catch {
+    target.replaceChildren();
+    byId('recovery-state').textContent = 'CAPTURE UNAVAILABLE';
+    byId('recovery-note').textContent = 'No complete, verified recovery capture could be loaded. No successful execution is implied.';
+  }
+}
+loadBoundaryRecovery();

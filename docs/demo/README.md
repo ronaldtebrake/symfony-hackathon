@@ -4,6 +4,8 @@
 
 The previous rendered video and its slideshow renderer have been removed. The replacement will open with your actual Codex recording. Record the interaction at its natural pace; we will cut the finished footage to 90 seconds. Keep this Symfony-only.
 
+There is now an optional [boundary-recovery opening](../boundary-recovery.md): a denied draft read, Codex’s proposed alternative, and a permitted published-content audit. It has real CLI-generated evidence in `/demo#recovery` and copy-ready prompts for a desktop take. Use matching manual footage before substituting it for the audit opening below; do not present the CLI rehearsal as desktop footage. The small bundle and `code-mode:doctor` also give the closing adoption shot a concrete command and configuration.
+
 ## 1. Prepare the take
 
 - Use the synthetic Symfony fixture and the existing [Codex MCP connection](../codex.md). Check registration with `codex mcp get symfony_code_mode` from this project. The configured gVisor host and runner image must be available. Codex uses its own model access; this conversation needs no Hugging Face key.

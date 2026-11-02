@@ -67,3 +67,18 @@ GitHub Actions defines an Ubuntu amd64 standalone-package job that installs the 
 Live Hugging Face inference remains unverified because no API key is configured. The Drupal HTTP adapter is tested against a local MCP server, not a Drupal installation. The previous rendered walkthrough was removed at the author's request. The [replacement recording guide](../../../docs/demo/README.md) calls for manually recorded Codex footage and matching PHP/tool evidence; that video is pending. These gates remain separate from the recorded local checks.
 
 See [setup and commands](../README.md) and [the threat model and deployment limits](security.md) before rerunning or embedding the package.
+
+## 2 November 2026 — Symfony adoption and boundary recovery
+
+Added the separate `ronaldtebrake/symfony-code-mode` Composer path package. It registers an explicit list of read services, obtains identity from trusted host code, creates conversation-scoped sessions, and exposes a STDIO command. `code-mode:doctor` passed all six configuration/prerequisite checks on the existing dedicated gVisor endpoint; it executes no application tools or models.
+
+A real Codex app-server rehearsal asked for draft article 49, received the host's `tool_denied`, proposed a published-content alternative, then executed the user-selected audit. Its second program checked 48 published articles with four successful paginated calls and returned IDs 11, 22, 33, 44 with their expected titles. The independent fixture matched, no denied value was returned, and both exact container names were confirmed absent. The [capture](../../../docs/evidence/boundary-recovery-2026-11-02.json) retains actual messages, PHP and MCP responses; this was an ephemeral CLI rehearsal, not desktop footage. It used the same live conversation without resuming or restarting; MCP PID is not in the export.
+
+Validation on PHP 8.3.19:
+
+- `composer check`: all three Composer manifests and Symfony configuration valid; **47 application tests / 410 assertions**, **29 core unit tests / 44 assertions**. The existing HTTP MCP test requires permission to bind a loopback socket.
+- Full real demo suite: **8 tests / 99 assertions** through MCP and gVisor, including the original reference comparison/security probes and the new denied-read → allowed-read → execution-budget exhaustion sequence.
+- SDK helper proposal verification: temporary copy only; seven JSON shapes, structured error round-trip, invalid JSON rejection and unchanged existing factories.
+- Actual browser: original Codex proof, comparison and security reports still render; the new recovery capture loads, exact PHP expands, and no browser warnings/errors were observed.
+
+`APP_ENV=test` does not load `.env.local`. For these local sandbox tests the trusted image ID and Docker argv were passed explicitly from the development environment; no secrets were printed. Runtime settings remain the existing pinned image and required runsc profile. No Drupal production code or dataset was changed. Live Symfony AI + Hugging Face generation remains unverified and deferred.

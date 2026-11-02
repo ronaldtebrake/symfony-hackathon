@@ -12,7 +12,7 @@
   <div class="shell">
     <header class="masthead">
       <a class="brand" href="/demo" aria-label="Symfony Code Mode home"><span class="brand-mark">{ }</span><span>Symfony Code Mode</span></a>
-      <nav aria-label="Main navigation"><a class="active" href="#codex-run">Codex run</a><a href="#workbench">Comparison</a><a href="#security-proof">Security proof</a></nav>
+      <nav aria-label="Main navigation"><a class="active" href="#codex-run">Codex run</a><a href="#recovery">Boundary recovery</a><a href="#workbench">Comparison</a><a href="#security-proof">Security proof</a></nav>
       <span class="local-badge"><span class="dot"></span> Local workbench</span>
     </header>
 
@@ -100,6 +100,15 @@
             <div class="source-note"><span class="small-dot"></span><p id="source-note">The fixture is a real PHP MCP server. It is separate from the runner and contains no live site data.</p></div>
           </aside>
         </div>
+      </section>
+
+      <section id="recovery" class="recovery" aria-labelledby="recovery-heading">
+        <div class="section-top"><div><span class="eyebrow">Recorded Codex conversation · Symfony bundle</span><h2 id="recovery-heading">A boundary. Then a useful way forward.</h2></div><span class="run-state" id="recovery-state" role="status">Loading capture</span></div>
+        <p id="recovery-note" class="codex-intro">Two turns, one host-owned session. The agent proposes a permitted alternative; the user chooses the new scope.</p>
+        <div id="recovery-turns" class="recovery-turns"></div>
+        <p id="recovery-provenance" class="measurement-note"></p>
+        <div class="proof-run"><code>php bin/console code-mode:doctor</code><span>Check local prerequisites · then connect code-mode:serve in your agent</span></div>
+        <p class="measurement-note">The bundle approves two Symfony services through explicit configuration. Its limits are 5 seconds, 128 MiB and 10 broker calls per execution, with two attempts including failures. These differ from the original audit demo’s limits below. <a href="/demo/boundary-report">Exact capture and verification (JSON) ↗</a></p>
       </section>
 
       <section id="security-proof" class="security-proof" aria-labelledby="security-heading">

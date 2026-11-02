@@ -76,4 +76,40 @@ final class DemoPageTest extends WebTestCase
         $client->request('GET', '/demo/codex-report', server: ['HTTP_HOST' => 'attacker.example']);
         self::assertResponseStatusCodeSame(403);
     }
+
+    public function testBoundaryRecoveryCaptureIsReadOnlyAndCannotSelectFiles(): void
+    {
+        $client = self::createClient();
+        $client->request('GET', '/demo/boundary-report?file=../../.env.local');
+        self::assertResponseIsSuccessful();
+        $capture = file_get_contents(dirname(__DIR__, 2).'/docs/evidence/boundary-recovery-2026-11-02.json');
+        self::assertSame($capture, $client->getResponse()->getContent());
+        self::assertStringContainsString('no-store', $client->getResponse()->headers->get('cache-control'));
+        $report = json_decode($capture, true, flags: JSON_THROW_ON_ERROR);
+        $runs = [];
+        foreach ($report['turns'] as $turn) {
+            $executions = array_values(array_filter($turn['items'], static fn ($i) => 'mcpToolCall' === $i['type'] && 'php_execute' === $i['tool']));
+            self::assertCount(1, $executions);
+            $runs[] = $executions[0];
+        }
+        self::assertSame('failed', $runs[0]['status']);
+        self::assertSame('tool_denied', $runs[0]['result']['structuredContent']['error']['reason']);
+        self::assertArrayNotHasKey('value', $runs[0]['result']['structuredContent']);
+        self::assertSame('denied', $runs[0]['result']['structuredContent']['toolCalls'][0]['status']);
+        self::assertSame(48, $runs[1]['result']['structuredContent']['value']['checked']);
+        $articles = (new \App\Demo\AuditDataset())->articles();
+        $expected = array_values(array_map(static fn ($a) => ['id' => $a['id'], 'title' => $a['title']], array_filter($articles, static fn ($a) => 'published' === $a['status'] && '' === trim($a['meta_description']))));
+        self::assertSame($expected, $runs[1]['result']['structuredContent']['value']['matches']);
+        self::assertSame(array_fill(0, 4, 'succeeded'), array_column($runs[1]['result']['structuredContent']['toolCalls'], 'status'));
+        foreach ($runs as $index => $run) {
+            self::assertSame($run['result']['structuredContent']['runId'], $report['verification']['cleanup'][$index]['runId']);
+            self::assertTrue($report['verification']['cleanup'][$index]['containerAbsent']);
+        }
+        $client->request('POST', '/demo/boundary-report');
+        self::assertResponseStatusCodeSame(405);
+        $client->request('GET', '/demo/boundary-report', server: ['REMOTE_ADDR' => '203.0.113.1']);
+        self::assertResponseStatusCodeSame(403);
+        $client->request('GET', '/demo/boundary-report', server: ['HTTP_HOST' => 'attacker.example']);
+        self::assertResponseStatusCodeSame(403);
+    }
 }

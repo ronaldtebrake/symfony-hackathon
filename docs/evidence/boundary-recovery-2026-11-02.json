@@ -1,0 +1,381 @@
+{
+    "recordedAt": "2026-11-02T09:17:20Z",
+    "client": "Codex app-server · ephemeral CLI rehearsal",
+    "threadId": "01a19b8a-e9ed-7a42-b956-72e703392e12",
+    "model": "gpt-6-astra",
+    "backend": "Symfony services via CodeModeBundle",
+    "transport": "STDIO",
+    "serverCommand": "php bin/console code-mode:serve --no-debug",
+    "sourceCommit": "f51b98ac41500254322d4bf28a269c262440e90c",
+    "sourceNote": "Recorded with the then-uncommitted Symfony integration on sourceCommit. The runner-facing implementation was subsequently committed as implementationCommit. MCP items and generated PHP are unchanged.",
+    "turns": [
+        {
+            "id": "01a19b8a-ea99-73b1-99be-5c007c5c9620",
+            "status": "completed",
+            "prompt": "Please read article 49 and summarize it. Use Symfony Code Mode and show the PHP you execute.",
+            "items": [
+                {
+                    "type": "userMessage",
+                    "id": "01a19b8a-f009-7510-bc8c-1ff8621e4c5d",
+                    "clientId": null,
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Please read article 49 and summarize it. Use Symfony Code Mode and show the PHP you execute.",
+                            "text_elements": []
+                        }
+                    ]
+                },
+                {
+                    "type": "agentMessage",
+                    "id": "msg_005faea88fbde6c9016ae854bb100081919485fc8517304e13",
+                    "text": "I’ll discover the Symfony Code Mode tools, then show the PHP before executing it to read article 49.\n",
+                    "phase": "commentary",
+                    "memoryCitation": null,
+                    "delivery": null,
+                    "questions": null
+                },
+                {
+                    "type": "mcpToolCall",
+                    "id": "exec-a3d3a1ba-af55-4170-903a-84d9b94a88d5",
+                    "server": "symfony_boundary",
+                    "tool": "tools_search",
+                    "status": "completed",
+                    "arguments": {
+                        "query": "read article by id"
+                    },
+                    "appContext": null,
+                    "mcpAppUi": null,
+                    "pluginId": null,
+                    "readOnlyHint": true,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "[{\"name\":\"articles_read\",\"description\":\"Read an article by ID. Resource access is checked by the host; an ID does not grant permission. No writes.\"},{\"name\":\"articles_list_published\",\"description\":\"List published articles with title and meta_description, twelve per page. Start at page 1 and follow nextPage until null. Drafts and other private fields are excluded on the host.\"}]"
+                            }
+                        ],
+                        "structuredContent": [
+                            {
+                                "name": "articles_read",
+                                "description": "Read an article by ID. Resource access is checked by the host; an ID does not grant permission. No writes."
+                            },
+                            {
+                                "name": "articles_list_published",
+                                "description": "List published articles with title and meta_description, twelve per page. Start at page 1 and follow nextPage until null. Drafts and other private fields are excluded on the host."
+                            }
+                        ],
+                        "_meta": null
+                    },
+                    "error": null,
+                    "durationMs": 13
+                },
+                {
+                    "type": "mcpToolCall",
+                    "id": "exec-ddb1c29d-89d3-43be-bdec-e406f7b64fda",
+                    "server": "symfony_boundary",
+                    "tool": "tools_describe",
+                    "status": "completed",
+                    "arguments": {
+                        "names": [
+                            "articles_read"
+                        ]
+                    },
+                    "appContext": null,
+                    "mcpAppUi": null,
+                    "pluginId": null,
+                    "readOnlyHint": true,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "[{\"name\":\"articles_read\",\"description\":\"Read an article by ID. Resource access is checked by the host; an ID does not grant permission. No writes.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":2147483647}},\"required\":[\"id\"],\"additionalProperties\":false}}]"
+                            }
+                        ],
+                        "structuredContent": [
+                            {
+                                "name": "articles_read",
+                                "description": "Read an article by ID. Resource access is checked by the host; an ID does not grant permission. No writes.",
+                                "inputSchema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 2147483647
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        ],
+                        "_meta": null
+                    },
+                    "error": null,
+                    "durationMs": 1
+                },
+                {
+                    "type": "agentMessage",
+                    "id": "msg_005faea88fbde6c9016ae854c445e4819185ada180025d493b",
+                    "text": "`articles_read` reads an article using a required integer `id`; the host checks access. I’ll execute:\n\n```php\nreturn $tools->call(\"articles_read\", [\"id\" => 49]);\n```\n",
+                    "phase": "commentary",
+                    "memoryCitation": null,
+                    "delivery": null,
+                    "questions": null
+                },
+                {
+                    "type": "mcpToolCall",
+                    "id": "exec-d94a6668-cc52-4446-b903-82b665a69e6e",
+                    "server": "symfony_boundary",
+                    "tool": "php_execute",
+                    "status": "failed",
+                    "arguments": {
+                        "code": "return $tools->call(\"articles_read\", [\"id\" => 49]);"
+                    },
+                    "appContext": null,
+                    "mcpAppUi": null,
+                    "pluginId": null,
+                    "readOnlyHint": true,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\"error\":{\"reason\":\"tool_denied\"},\"toolCalls\":[{\"name\":\"articles_read\",\"status\":\"denied\",\"reason\":\"tool_denied\",\"durationMs\":2.7523750031832606}],\"runId\":\"code-mode-6ebc93ad40f62bd76e6568696f705db3\"}"
+                            }
+                        ],
+                        "structuredContent": {
+                            "error": {
+                                "reason": "tool_denied"
+                            },
+                            "toolCalls": [
+                                {
+                                    "name": "articles_read",
+                                    "status": "denied",
+                                    "reason": "tool_denied",
+                                    "durationMs": 2.7523750031832606
+                                }
+                            ],
+                            "runId": "code-mode-6ebc93ad40f62bd76e6568696f705db3"
+                        },
+                        "_meta": null
+                    },
+                    "error": null,
+                    "durationMs": 472
+                },
+                {
+                    "type": "agentMessage",
+                    "id": "msg_005faea88fbde6c9016ae854c801f8819198191ce2fd022450",
+                    "text": "The host denied access to article 49 (`tool_denied`), so no permitted article content was returned and I can’t summarize it.\n\nWould you like me to list published articles and summarize their available titles and descriptions instead?",
+                    "phase": "final_answer",
+                    "memoryCitation": null,
+                    "delivery": null,
+                    "questions": null
+                }
+            ]
+        },
+        {
+            "id": "01a19b8b-31d3-76b1-a9c5-01a2da326571",
+            "status": "completed",
+            "prompt": "Please audit the published articles instead. Find those with an empty meta description, return their IDs and titles plus the number checked, and keep drafts excluded. Show the PHP and actual tool-call counts.",
+            "items": [
+                {
+                    "type": "userMessage",
+                    "id": "01a19b8b-31e5-73f1-9e75-6a286b1338f6",
+                    "clientId": null,
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Please audit the published articles instead. Find those with an empty meta description, return their IDs and titles plus the number checked, and keep drafts excluded. Show the PHP and actual tool-call counts.",
+                            "text_elements": []
+                        }
+                    ]
+                },
+                {
+                    "type": "agentMessage",
+                    "id": "msg_005faea88fbde6c9016ae854cc019c8191ae07ff62832ba3f7",
+                    "text": "I’ll use the published-article listing, follow every page, and report empty meta descriptions with IDs, titles, the number checked, and actual tool-call counts. I’ll keep the existing Symfony session and show the PHP before execution.\n",
+                    "phase": "commentary",
+                    "memoryCitation": null,
+                    "delivery": null,
+                    "questions": null
+                },
+                {
+                    "type": "mcpToolCall",
+                    "id": "exec-6d97dc50-ade5-4631-a5d3-17d33f5de94a",
+                    "server": "symfony_boundary",
+                    "tool": "tools_describe",
+                    "status": "completed",
+                    "arguments": {
+                        "names": [
+                            "articles_list_published"
+                        ]
+                    },
+                    "appContext": null,
+                    "mcpAppUi": null,
+                    "pluginId": null,
+                    "readOnlyHint": true,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "[{\"name\":\"articles_list_published\",\"description\":\"List published articles with title and meta_description, twelve per page. Start at page 1 and follow nextPage until null. Drafts and other private fields are excluded on the host.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"page\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":100}},\"required\":[\"page\"],\"additionalProperties\":false}}]"
+                            }
+                        ],
+                        "structuredContent": [
+                            {
+                                "name": "articles_list_published",
+                                "description": "List published articles with title and meta_description, twelve per page. Start at page 1 and follow nextPage until null. Drafts and other private fields are excluded on the host.",
+                                "inputSchema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "page": {
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 100
+                                        }
+                                    },
+                                    "required": [
+                                        "page"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        ],
+                        "_meta": null
+                    },
+                    "error": null,
+                    "durationMs": 1
+                },
+                {
+                    "type": "agentMessage",
+                    "id": "msg_005faea88fbde6c9016ae854fbadfc8191b233d570663cf93b",
+                    "text": "`articles_list_published` accepts a required integer `page` (1–100), returns 12 articles per page, and excludes drafts on the host. I’ll count null, empty, or whitespace-only descriptions as empty and follow `nextPage` until null.\n\n```php\n$page = 1;\n$checked = 0;\n$listCalls = 0;\n$matches = [];\n$seenPages = [];\n\ndo {\n    if (isset($seenPages[$page])) {\n        throw new RuntimeException(\"Repeated pagination page\");\n    }\n    $seenPages[$page] = true;\n\n    $result = $tools->call(\"articles_list_published\", [\"page\" => $page]);\n    $listCalls++;\n\n    $articles = $result->articles ?? $result->items ?? $result->data ?? null;\n    if (!is_array($articles) || !property_exists($result, \"nextPage\")) {\n        return [\n            \"complete\" => false,\n            \"reason\" => \"Unexpected response structure\",\n            \"checked\" => $checked,\n            \"matches\" => $matches,\n            \"list_calls\" => $listCalls,\n            \"response\" => $result,\n        ];\n    }\n\n    foreach ($articles as $article) {\n        if (!property_exists($article, \"id\")\n            || !property_exists($article, \"title\")\n            || !property_exists($article, \"meta_description\")) {\n            throw new RuntimeException(\"Missing article fields\");\n        }\n\n        $checked++;\n        $description = $article->meta_description;\n        if ($description === null || trim($description) === \"\") {\n            $matches[] = [\n                \"id\" => $article->id,\n                \"title\" => $article->title,\n            ];\n        }\n    }\n\n    $page = $result->nextPage;\n} while ($page !== null);\n\nreturn [\n    \"complete\" => true,\n    \"checked\" => $checked,\n    \"matches\" => $matches,\n    \"list_calls\" => $listCalls,\n];\n```\n",
+                    "phase": "commentary",
+                    "memoryCitation": null,
+                    "delivery": null,
+                    "questions": null
+                },
+                {
+                    "type": "mcpToolCall",
+                    "id": "exec-670f8f4e-72da-4640-8aa0-aeb4b67d0fbe",
+                    "server": "symfony_boundary",
+                    "tool": "php_execute",
+                    "status": "completed",
+                    "arguments": {
+                        "code": "$page = 1;\n$checked = 0;\n$listCalls = 0;\n$matches = [];\n$seenPages = [];\n\ndo {\n    if (isset($seenPages[$page])) {\n        throw new RuntimeException(\"Repeated pagination page\");\n    }\n    $seenPages[$page] = true;\n\n    $result = $tools->call(\"articles_list_published\", [\"page\" => $page]);\n    $listCalls++;\n\n    $articles = $result->articles ?? $result->items ?? $result->data ?? null;\n    if (!is_array($articles) || !property_exists($result, \"nextPage\")) {\n        return [\n            \"complete\" => false,\n            \"reason\" => \"Unexpected response structure\",\n            \"checked\" => $checked,\n            \"matches\" => $matches,\n            \"list_calls\" => $listCalls,\n            \"response\" => $result,\n        ];\n    }\n\n    foreach ($articles as $article) {\n        if (!property_exists($article, \"id\")\n            || !property_exists($article, \"title\")\n            || !property_exists($article, \"meta_description\")) {\n            throw new RuntimeException(\"Missing article fields\");\n        }\n\n        $checked++;\n        $description = $article->meta_description;\n        if ($description === null || trim($description) === \"\") {\n            $matches[] = [\n                \"id\" => $article->id,\n                \"title\" => $article->title,\n            ];\n        }\n    }\n\n    $page = $result->nextPage;\n} while ($page !== null);\n\nreturn [\n    \"complete\" => true,\n    \"checked\" => $checked,\n    \"matches\" => $matches,\n    \"list_calls\" => $listCalls,\n];"
+                    },
+                    "appContext": null,
+                    "mcpAppUi": null,
+                    "pluginId": null,
+                    "readOnlyHint": true,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\"value\":{\"complete\":true,\"checked\":48,\"matches\":[{\"id\":11,\"title\":\"Making room for slower travel \\u00b7 2\"},{\"id\":22,\"title\":\"What a library can become \\u00b7 3\"},{\"id\":33,\"title\":\"Designing accessible navigation \\u00b7 5\"},{\"id\":44,\"title\":\"The people behind the workshop \\u00b7 6\"}],\"list_calls\":4},\"toolCalls\":[{\"name\":\"articles_list_published\",\"status\":\"succeeded\",\"durationMs\":2.5549999991199,\"resultBytes\":2352},{\"name\":\"articles_list_published\",\"status\":\"succeeded\",\"durationMs\":1.2838339898735285,\"resultBytes\":2353},{\"name\":\"articles_list_published\",\"status\":\"succeeded\",\"durationMs\":1.2747090077027678,\"resultBytes\":2359},{\"name\":\"articles_list_published\",\"status\":\"succeeded\",\"durationMs\":1.356249995296821,\"resultBytes\":2351}],\"durationMs\":184.96199999935925,\"runId\":\"code-mode-d3cee66dc9f5cc42e680adc9a5e2f91a\"}"
+                            }
+                        ],
+                        "structuredContent": {
+                            "value": {
+                                "complete": true,
+                                "checked": 48,
+                                "matches": [
+                                    {
+                                        "id": 11,
+                                        "title": "Making room for slower travel · 2"
+                                    },
+                                    {
+                                        "id": 22,
+                                        "title": "What a library can become · 3"
+                                    },
+                                    {
+                                        "id": 33,
+                                        "title": "Designing accessible navigation · 5"
+                                    },
+                                    {
+                                        "id": 44,
+                                        "title": "The people behind the workshop · 6"
+                                    }
+                                ],
+                                "list_calls": 4
+                            },
+                            "toolCalls": [
+                                {
+                                    "name": "articles_list_published",
+                                    "status": "succeeded",
+                                    "durationMs": 2.5549999991199,
+                                    "resultBytes": 2352
+                                },
+                                {
+                                    "name": "articles_list_published",
+                                    "status": "succeeded",
+                                    "durationMs": 1.2838339898735285,
+                                    "resultBytes": 2353
+                                },
+                                {
+                                    "name": "articles_list_published",
+                                    "status": "succeeded",
+                                    "durationMs": 1.2747090077027678,
+                                    "resultBytes": 2359
+                                },
+                                {
+                                    "name": "articles_list_published",
+                                    "status": "succeeded",
+                                    "durationMs": 1.356249995296821,
+                                    "resultBytes": 2351
+                                }
+                            ],
+                            "durationMs": 184.96199999935925,
+                            "runId": "code-mode-d3cee66dc9f5cc42e680adc9a5e2f91a"
+                        },
+                        "_meta": null
+                    },
+                    "error": null,
+                    "durationMs": 476
+                },
+                {
+                    "type": "agentMessage",
+                    "id": "msg_005faea88fbde6c9016ae85519ad1081919e6ebf46b16abf3f",
+                    "text": "Checked **48 published articles** across 4 pages. Drafts were excluded by the host. **4 articles had empty meta descriptions:**\n\n| ID | Title |\n|---|---|\n| 11 | Making room for slower travel · 2 |\n| 22 | What a library can become · 3 |\n| 33 | Designing accessible navigation · 5 |\n| 44 | The people behind the workshop · 6 |\n\nActual audit calls: **1 `tools_describe` + 1 `php_execute`**, which made **4 `articles_list_published` calls**, all successful.\n\nAcross both turns: 1 search, 2 descriptions, 2 PHP executions; 4 successful upstream listings and the earlier denied article read.\n\n<details>\n<summary>Exact PHP executed</summary>\n\n```php\n$page = 1;\n$checked = 0;\n$listCalls = 0;\n$matches = [];\n$seenPages = [];\n\ndo {\n    if (isset($seenPages[$page])) {\n        throw new RuntimeException(\"Repeated pagination page\");\n    }\n    $seenPages[$page] = true;\n\n    $result = $tools->call(\"articles_list_published\", [\"page\" => $page]);\n    $listCalls++;\n\n    $articles = $result->articles ?? $result->items ?? $result->data ?? null;\n    if (!is_array($articles) || !property_exists($result, \"nextPage\")) {\n        return [\n            \"complete\" => false,\n            \"reason\" => \"Unexpected response structure\",\n            \"checked\" => $checked,\n            \"matches\" => $matches,\n            \"list_calls\" => $listCalls,\n            \"response\" => $result,\n        ];\n    }\n\n    foreach ($articles as $article) {\n        if (!property_exists($article, \"id\")\n            || !property_exists($article, \"title\")\n            || !property_exists($article, \"meta_description\")) {\n            throw new RuntimeException(\"Missing article fields\");\n        }\n\n        $checked++;\n        $description = $article->meta_description;\n        if ($description === null || trim($description) === \"\") {\n            $matches[] = [\n                \"id\" => $article->id,\n                \"title\" => $article->title,\n            ];\n        }\n    }\n\n    $page = $result->nextPage;\n} while ($page !== null);\n\nreturn [\n    \"complete\" => true,\n    \"checked\" => $checked,\n    \"matches\" => $matches,\n    \"list_calls\" => $listCalls,\n];\n```\n\n</details>",
+                    "phase": "final_answer",
+                    "memoryCitation": null,
+                    "delivery": null,
+                    "questions": null
+                }
+            ]
+        }
+    ],
+    "exportNote": "Retains user messages, agent messages and complete MCP items from app-server item/completed events; reasoning items omitted. App-server represents MCP isError as status=failed; the structured result is unchanged. This was an ephemeral CLI rehearsal, not recorded desktop footage.",
+    "runtime": {
+        "required": "runsc",
+        "image": "sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b",
+        "limits": {
+            "wallTimeMs": 5000,
+            "toolTimeMs": 1000,
+            "memoryMiB": 128,
+            "maxToolCalls": 10,
+            "executionAttempts": 2
+        }
+    },
+    "verification": {
+        "verifiedAt": "2026-11-02T09:18:51+00:00",
+        "restrictedFixtureIsDraft": true,
+        "denialHasNoValue": true,
+        "publishedAuditMatchesIndependentOracle": true,
+        "cleanup": [
+            {
+                "runId": "code-mode-6ebc93ad40f62bd76e6568696f705db3",
+                "containerAbsent": true
+            },
+            {
+                "runId": "code-mode-d3cee66dc9f5cc42e680adc9a5e2f91a",
+                "containerAbsent": true
+            }
+        ],
+        "sameSession": "Both turns used one live ephemeral app-server conversation; no resume or restart between turns. MCP process PID is not included in the export. The separate real integration test verifies two-attempt exhaustion."
+    },
+    "implementationCommit": "58884af410e3f150cd6a66d3714fae740906fa1f"
+}

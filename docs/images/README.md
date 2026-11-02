@@ -23,3 +23,5 @@ Start `composer start` and open `/demo#codex-run`, `/demo#workbench` or `/demo#s
 Use the synthetic Symfony fixture for Symfony proof screenshots. Preserve the recorded/reference labels and payload-versus-token distinction. Capture the actual browser; do not alter execution outcomes or substitute illustrative results.
 
 `drupal-journal.jpg` is an unretouched browser capture from **2 November 2026** of the separate local Drupal site. It shows core Olivero with the Symfony AI purple accent and synthetic journal content. It illustrates the content source, not an agent conversation or execution result. The journal links back to the Symfony workbench.
+
+`boundary-recovery.jpg` is an unretouched browser capture from **2 November 2026** of `/demo#recovery`. It shows a real Codex app-server CLI rehearsal: a denied draft read, the agent’s proposed alternative, and a published-content audit. This is evidence viewed in the workbench, not a screenshot of the Codex desktop conversation. The [capture and provenance](../boundary-recovery.md) include exact generated PHP, actual MCP responses, independent result checks and container-removal checks.

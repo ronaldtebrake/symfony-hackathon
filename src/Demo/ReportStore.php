@@ -59,6 +59,11 @@ final readonly class ReportStore
         return $this->readPath($this->projectDir.'/docs/evidence/codex-conversation-2026-11-01.json');
     }
 
+    public function readBoundaryRecovery(): ?string
+    {
+        return $this->readPath($this->projectDir.'/docs/evidence/boundary-recovery-2026-11-02.json');
+    }
+
     private function readFile(string $filename): ?string
     {
         return $this->readPath($this->projectDir.'/var/demo/'.$filename);

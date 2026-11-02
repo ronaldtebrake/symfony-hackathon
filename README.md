@@ -20,7 +20,23 @@ The animation illustrates those measured results. Reference mode uses checked-in
 
 The workbench also shows a [real two-turn Codex conversation](docs/codex-conversation.md): an audit, then a follow-up that recomputes shared-image repair priorities. Select either turn to inspect its exact generated PHP, returned answer and actual MCP requests, with **20 host-recorded upstream calls** across both executions. [View the captured follow-up](docs/images/codex-proof.jpg).
 
+A second [real Codex conversation](docs/boundary-recovery.md) makes security useful: a draft read is denied, the agent proposes a permitted alternative, and the follow-up audits **48 published articles in four calls**. Inspect the exact PHP, host denial and successful calls in the workbench’s **Boundary recovery** section. This capture is a CLI rehearsal; manual desktop footage remains pending.
+
 [Record the 90-second judge demo](docs/demo/README.md): actual Codex footage, readable PHP, recorded calls and security proofs. In the workbench, choose **Generated PHP → Present PHP** for the large source view.
+
+## Add it to Symfony
+
+The [small Symfony bundle](packages/symfony-code-mode/README.md) registers explicitly approved read services:
+
+```yaml
+code_mode:
+    identity_provider: App\CodeMode\DemoIdentityProvider
+    tools:
+        - App\CodeMode\ReadArticle
+        - App\CodeMode\ListPublishedArticles
+```
+
+Run `php bin/console code-mode:doctor` to check local prerequisites, then connect `php bin/console code-mode:serve --no-debug` to your agent. The host supplies identity and permissions; each conversation retains its own two-attempt budget. The core and integration packages are Composer path dependencies here, not yet published to Packagist. An optional Symfony AI toolbox uses the same session. [Upstream contribution proposals and executable checks](docs/contributing/README.md).
 
 ## Run locally
 
@@ -33,6 +49,7 @@ composer install
 # Use the Docker context connected to your dedicated sandbox host:
 docker build -t php-code-mode-runner:proof packages/php-code-mode/runner
 export CODE_MODE_IMAGE="$(docker image inspect --format '{{.Id}}' php-code-mode-runner:proof)"
+php bin/console code-mode:doctor
 composer demo
 composer demo:security
 composer start
@@ -54,4 +71,4 @@ composer test:demo     # Real MCP + gVisor comparison and external MCP client
 
 Run the sandbox suites sequentially on a dedicated test Docker endpoint. The demo also exposes `tools_search`, `tools_describe` and `php_execute` over STDIO: `php bin/console code-mode:mcp`. [Verification record](packages/php-code-mode/docs/verification.md).
 
-The Symfony reference audit, mocked-provider AI pipeline, live two-turn Codex conversation and local Drupal STDIO authorization proof are verified. Live Hugging Face inference and Drupal HTTP authentication remain unverified. Submission needs a public runnable repository and a 90-second video by **22 November 2026, 18:00 CET**.
+The Symfony reference audit, mocked-provider AI pipeline, live Codex audit and boundary-recovery conversations, Symfony bundle execution, and local Drupal STDIO authorization proof are verified. Live Hugging Face inference and Drupal HTTP authentication remain unverified. Submission needs a public runnable repository and a 90-second video by **22 November 2026, 18:00 CET**.
