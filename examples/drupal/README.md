@@ -16,9 +16,19 @@ bash examples/drupal/scripts/setup.sh
 php examples/drupal/proof.php
 ```
 
-The setup installs the committed Composer lockfile, creates Drupal only if the dedicated database has **no tables**, enables the custom read tool and seeds two nodes. Re-running it preserves existing nodes, permissions and accounts. The proof fails if their access policy has drifted. It never reinstalls a populated database.
+The setup installs the committed Composer lockfile, creates Drupal only if the dedicated database has **no tables**, enables the custom read tool and seeds two authorization nodes. It also configures the journal described below. Re-running it preserves existing node content, permissions and accounts. The proof fails if their access policy has drifted. It never reinstalls a populated database.
 
 The local Drupal site is [symfony-code-mode-drupal.ddev.site](https://symfony-code-mode-drupal.ddev.site). Run `ddev drush uli` from this directory if you need local administrator access. Administrator and reader passwords are random and uncommitted. The MCP process always runs as `code_mode_reader`, never as that administrator. No role is granted `access mcp server`, so the HTTP MCP endpoint remains inaccessible to ordinary users.
+
+## Demo journal
+
+The public homepage uses Drupal core's **Olivero** theme with the Symfony AI purple accent; administration uses **Claro**. The journal has **12 published articles and three unpublished drafts**, in addition to the two authorization fixtures. Each article has a body, summary, topic and a readable URL. Four published articles deliberately have an empty `field_meta_description`, ready for a later metadata-audit tool. All content is synthetic demo material.
+
+The journal's two listing pages use Drupal's published-content query and entity access checks. The original authorization nodes are kept out of that listing. The “Symfony proof” navigation link returns to the existing Symfony workbench; Drupal is a sample content source for the reusable package.
+
+[`content/journal.json`](content/journal.json) defines the seed content. [`scripts/present.php`](scripts/present.php) adds missing articles by deterministic UUID and applies the theme, field displays, navigation and journal view. Rerunning it reapplies presentation configuration but preserves edits to existing articles and their publication status. The current MCP read tool still returns only ID/title; it does not yet expose the new body, topic or description fields.
+
+![Drupal's Olivero journal with Symfony Code Mode branding](../../docs/images/drupal-journal.jpg)
 
 ## What must pass
 

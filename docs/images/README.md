@@ -20,4 +20,6 @@ All three Codex screenshots now match chat `01a196eb-12bd-7412-9fad-4d279e2cbcf8
 
 Start `composer start` and open `/demo#codex-run`, `/demo#workbench` or `/demo#security-proof`. The Codex section reads the reviewed [capture](../evidence/codex-conversation-2026-11-01.json); it does not import current conversations. The other sections read ignored `var/demo/latest.json` and `var/demo/security.json`. If those reports are missing, generate them with `composer demo` and `composer demo:security` against the configured gVisor host before capturing. Styling-only refreshes can reuse existing reports; record the screenshot date separately from the execution date.
 
-Use the synthetic Symfony fixture for repository screenshots. Preserve the recorded/reference labels and payload-versus-token distinction. Capture the actual browser; do not alter execution outcomes or substitute illustrative results.
+Use the synthetic Symfony fixture for Symfony proof screenshots. Preserve the recorded/reference labels and payload-versus-token distinction. Capture the actual browser; do not alter execution outcomes or substitute illustrative results.
+
+`drupal-journal.jpg` is an unretouched browser capture from **2 November 2026** of the separate local Drupal site. It shows core Olivero with the Symfony AI purple accent and synthetic journal content. It illustrates the content source, not an agent conversation or execution result. The journal links back to the Symfony workbench.

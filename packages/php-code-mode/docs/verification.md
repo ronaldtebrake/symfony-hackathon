@@ -23,6 +23,8 @@ The documented DDEV setup was rerun successfully without reinstalling the databa
 
 See the [repeatable Drupal setup](../../../examples/drupal/README.md). A Drupal Codex conversation, HTTP authentication and the full editorial audit remain outside this milestone.
 
+The Drupal site subsequently gained core Olivero/Claro themes and a synthetic journal with 12 published articles and three drafts, retaining the two authorization nodes. Rerunning the presentation seed created zero duplicates and preserved the journal content hash. All 12 public article URLs returned 200; the three draft URLs were denied and their titles were absent from both listing pages. Drupal's reader access checks agreed for every article. The real Code Mode authorized/restricted probes passed again with unchanged permissions, no content mutation during execution and both containers removed; the checked-in proof was refreshed with that run. The targeted verifier suite passed **3 tests / 20 assertions**. Browser checks covered the themed homepage, article, pagination and return link to the unchanged Symfony proof viewer; no browser warnings/errors were observed.
+
 ## Prior checks — 1 November 2026
 
 - `composer check`: valid Composer manifests, YAML and Symfony container; **34 application tests / 239 assertions** and **29 package unit tests / 44 assertions** passed. Coverage includes real STDIO/HTTP MCP transport, policy filtering, bounded discovery, question propagation through the CLI comparison harness, read-only report access and rejection before execution/report replacement.

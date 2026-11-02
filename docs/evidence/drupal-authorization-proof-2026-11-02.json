@@ -1,7 +1,7 @@
 {
     "version": 1,
     "kind": "drupal-authorization-proof",
-    "createdAt": "2026-11-02T08:19:04+00:00",
+    "createdAt": "2026-11-02T08:54:46+00:00",
     "status": "complete",
     "transport": "local DDEV STDIO",
     "modelCalled": false,
@@ -12,73 +12,73 @@
         {
             "id": "authorized_read",
             "code": "return $tools->call(\"tool_api__code_mode_read_article\", [\"id\" => 1]);",
-            "startedAt": "2026-11-02T08:19:07+00:00",
+            "startedAt": "2026-11-02T08:54:48+00:00",
             "value": {
                 "id": 1,
                 "title": "Published article for the Code Mode proof"
             },
             "reason": null,
-            "runId": "code-mode-367a993410b9209ef8703f279e5bd66e",
+            "runId": "code-mode-33988d561fe176070aa2eed64714ee87",
             "toolCalls": [
                 {
                     "name": "tool_api__code_mode_read_article",
                     "status": "succeeded",
-                    "durationMs": 2118.47050000506,
+                    "durationMs": 2106.0514580021845,
                     "resultBytes": 60
                 }
             ],
             "containerRemoved": true,
-            "durationMs": 2649.798542,
+            "durationMs": 2547.234666,
             "drupalEvents": [
                 {
-                    "id": 51,
+                    "id": 117,
                     "event": "article_access",
                     "account": 2,
                     "node": 1,
                     "decision": "allowed",
-                    "timestamp": 1793607550
+                    "timestamp": 1793609691
                 },
                 {
-                    "id": 52,
+                    "id": 118,
                     "event": "article_read",
                     "account": 2,
                     "node": 1,
                     "decision": null,
-                    "timestamp": 1793607550
+                    "timestamp": 1793609691
                 }
             ],
             "passed": true,
-            "completedAt": "2026-11-02T08:19:10+00:00"
+            "completedAt": "2026-11-02T08:54:51+00:00"
         },
         {
             "id": "restricted_read",
             "code": "return $tools->call(\"tool_api__code_mode_read_article\", [\"id\" => 2]);",
-            "startedAt": "2026-11-02T08:19:10+00:00",
+            "startedAt": "2026-11-02T08:54:51+00:00",
             "value": null,
             "reason": "tool_failed",
-            "runId": "code-mode-4dea22f3e3cbefe7d349849ee1e3ae47",
+            "runId": "code-mode-e0e385a7ec63fdb082a47b5aa9d85a29",
             "toolCalls": [
                 {
                     "name": "tool_api__code_mode_read_article",
                     "status": "incomplete",
                     "reason": "tool_failed",
-                    "durationMs": 2082.0093329966767
+                    "durationMs": 2081.192541998462
                 }
             ],
             "containerRemoved": true,
-            "durationMs": 2397.6055,
+            "durationMs": 2411.894417,
             "drupalEvents": [
                 {
-                    "id": 72,
+                    "id": 138,
                     "event": "article_access",
                     "account": 2,
                     "node": 2,
                     "decision": "denied",
-                    "timestamp": 1793607553
+                    "timestamp": 1793609694
                 }
             ],
             "passed": true,
-            "completedAt": "2026-11-02T08:19:13+00:00"
+            "completedAt": "2026-11-02T08:54:54+00:00"
         }
     ],
     "fixture": {
@@ -110,8 +110,8 @@
             "ownedByReader": false
         },
         "anonymousMcpAllowed": false,
-        "contentHash": "4ca33a039a68c2cce028fe486e54b7503e1a38e3c3acabe15ec70af7644ff773",
-        "auditCursor": 18
+        "contentHash": "6380a3b1645ca945d87f6f9afc86f6a3357d70f708ef1b14efadd44478766827",
+        "auditCursor": 84
     },
     "versions": {
         "drupal/core": "11.4.11",
@@ -166,5 +166,5 @@
     ],
     "contentUnchanged": true,
     "accountStillRestricted": true,
-    "completedAt": "2026-11-02T08:19:13+00:00"
+    "completedAt": "2026-11-02T08:54:54+00:00"
 }
