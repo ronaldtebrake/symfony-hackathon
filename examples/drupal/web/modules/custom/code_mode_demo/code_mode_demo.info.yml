@@ -1,0 +1,10 @@
+name: Code Mode authorization demo
+type: module
+description: One read-only Tool API plugin with Drupal entity and field access checks.
+package: Code Mode
+core_version_requirement: ^11
+dependencies:
+  - drupal:node
+  - drupal:dblog
+  - tool:tool
+  - mcp_server_tool_bridge:mcp_server_tool_bridge

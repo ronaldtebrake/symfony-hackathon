@@ -1,0 +1,170 @@
+{
+    "version": 1,
+    "kind": "drupal-authorization-proof",
+    "createdAt": "2026-11-02T08:19:04+00:00",
+    "status": "complete",
+    "transport": "local DDEV STDIO",
+    "modelCalled": false,
+    "programOrigin": "Fixed operator-written probes",
+    "runtime": "runsc",
+    "image": "sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b",
+    "cases": [
+        {
+            "id": "authorized_read",
+            "code": "return $tools->call(\"tool_api__code_mode_read_article\", [\"id\" => 1]);",
+            "startedAt": "2026-11-02T08:19:07+00:00",
+            "value": {
+                "id": 1,
+                "title": "Published article for the Code Mode proof"
+            },
+            "reason": null,
+            "runId": "code-mode-367a993410b9209ef8703f279e5bd66e",
+            "toolCalls": [
+                {
+                    "name": "tool_api__code_mode_read_article",
+                    "status": "succeeded",
+                    "durationMs": 2118.47050000506,
+                    "resultBytes": 60
+                }
+            ],
+            "containerRemoved": true,
+            "durationMs": 2649.798542,
+            "drupalEvents": [
+                {
+                    "id": 51,
+                    "event": "article_access",
+                    "account": 2,
+                    "node": 1,
+                    "decision": "allowed",
+                    "timestamp": 1793607550
+                },
+                {
+                    "id": 52,
+                    "event": "article_read",
+                    "account": 2,
+                    "node": 1,
+                    "decision": null,
+                    "timestamp": 1793607550
+                }
+            ],
+            "passed": true,
+            "completedAt": "2026-11-02T08:19:10+00:00"
+        },
+        {
+            "id": "restricted_read",
+            "code": "return $tools->call(\"tool_api__code_mode_read_article\", [\"id\" => 2]);",
+            "startedAt": "2026-11-02T08:19:10+00:00",
+            "value": null,
+            "reason": "tool_failed",
+            "runId": "code-mode-4dea22f3e3cbefe7d349849ee1e3ae47",
+            "toolCalls": [
+                {
+                    "name": "tool_api__code_mode_read_article",
+                    "status": "incomplete",
+                    "reason": "tool_failed",
+                    "durationMs": 2082.0093329966767
+                }
+            ],
+            "containerRemoved": true,
+            "durationMs": 2397.6055,
+            "drupalEvents": [
+                {
+                    "id": 72,
+                    "event": "article_access",
+                    "account": 2,
+                    "node": 2,
+                    "decision": "denied",
+                    "timestamp": 1793607553
+                }
+            ],
+            "passed": true,
+            "completedAt": "2026-11-02T08:19:13+00:00"
+        }
+    ],
+    "fixture": {
+        "drupalVersion": "11.4.11",
+        "account": {
+            "id": 2,
+            "name": "code_mode_reader",
+            "active": true,
+            "roles": [
+                "authenticated",
+                "code_mode_reader"
+            ],
+            "permissions": [
+                "access content",
+                "read code mode articles"
+            ]
+        },
+        "published": {
+            "id": 1,
+            "title": "Published article for the Code Mode proof",
+            "published": true,
+            "viewAllowed": true
+        },
+        "restricted": {
+            "id": 2,
+            "exists": true,
+            "published": false,
+            "viewAllowed": false,
+            "ownedByReader": false
+        },
+        "anonymousMcpAllowed": false,
+        "contentHash": "4ca33a039a68c2cce028fe486e54b7503e1a38e3c3acabe15ec70af7644ff773",
+        "auditCursor": 18
+    },
+    "versions": {
+        "drupal/core": "11.4.11",
+        "drupal/mcp_server": "2.0.0-beta7",
+        "drupal/mcp_server_tool_bridge": "1.0.0-beta5",
+        "drupal/tool": "1.0.0-beta12",
+        "mcp/sdk": "v0.9.0"
+    },
+    "limits": {
+        "wallTimeMs": 15000,
+        "toolTimeMs": 3000,
+        "memoryMiB": 128,
+        "maxToolCalls": 1,
+        "executions": 2
+    },
+    "discovery": [
+        {
+            "name": "tool_api__code_mode_read_article",
+            "description": "Read the ID and title of one demo article. Drupal checks the acting account, node view access and title-field access. Missing and inaccessible articles are both denied. No writes.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 2147483647,
+                        "description": "The numeric node ID.",
+                        "title": "Article ID"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id"
+                ]
+            },
+            "outputSchema": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Article ID.",
+                        "title": "ID"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "Article title.",
+                        "title": "Title"
+                    }
+                }
+            }
+        }
+    ],
+    "contentUnchanged": true,
+    "accountStillRestricted": true,
+    "completedAt": "2026-11-02T08:19:13+00:00"
+}

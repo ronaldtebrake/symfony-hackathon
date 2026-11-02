@@ -86,7 +86,7 @@ The host ledger includes calls completed before failed attempts, so retries do n
 
 ## Drupal Tool API adapter
 
-This is a later integration; the first demo and its reference dataset run without Drupal.
+The Symfony judge demo and its reference dataset run without Drupal. A separate [DDEV milestone](../examples/drupal/README.md) now proves an authorized node read and an unpublished-node denial through real Drupal Tool API, MCP Server and gVisor over local STDIO. Its operator-written programs and evidence do not replace the Symfony workbench reports.
 
 The integration uses [Tool API](https://www.drupal.org/project/tool), [MCP Server Tool Bridge](https://www.drupal.org/project/mcp_server_tool_bridge) and [Drupal MCP Server](https://www.drupal.org/project/mcp_server). The bridge exposes configured Tool API plugins and checks access against the MCP account. It does not itself provide the editorial audit tools: install or write read tools for published article metadata and media, with bounded pagination/batching and object access checks.
 
@@ -100,7 +100,7 @@ DRUPAL_MCP_ALLOWED_TOOLS='["actual_list_tool","actual_article_tool","actual_medi
 
 Run `composer demo -- --mode=live --backend=drupal`, or add `--backend=drupal` to the STDIO server command. Redirects are disabled. HTTPS is required except for loopback development. Tokens and transport configuration stay in the host broker. Do not register broad admin, SQL, filesystem or arbitrary URL-fetching tools for this audit.
 
-The gateway preserves structured results, including Tool API envelopes such as `success`, `message`, `data`; generated PHP must interpret the discovered schema and check success. The fixture oracle never marks Drupal findings correct: the UI asks for review against the site. The HTTP adapter has been tested against a real local MCP server, **not yet against an installed Drupal site**.
+The gateway preserves structured results; generated PHP must interpret the installed server's discovered schema. Tool Bridge beta5 returns outputs directly in structured content and failures as MCP errors; older versions used `success`, `message`, `data` envelopes. The fixture oracle never marks Drupal findings correct: the UI asks for review against the site. The HTTP adapter has been tested against a real local MCP server, **not yet against an installed Drupal site**. The DDEV proof uses its own fixed STDIO connection and requires no changes to these HTTP settings.
 
 ## 90-second recording plan
 

@@ -1,0 +1,11 @@
+/vendor/
+/web/*
+!/web/modules/
+/web/modules/*
+!/web/modules/custom/
+/recipes/
+/drush/
+/.editorconfig
+/.gitattributes
+/.phpcs.xml.dist
+/var/

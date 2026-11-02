@@ -6,7 +6,7 @@ Give an MCP-capable agent a PHP runtime for composing approved tools. The human 
 
 The reusable [Composer package](packages/php-code-mode/README.md) exposes `tools_search`, `tools_describe` and `php_execute`. Agents can compose workflows without a custom orchestration tool for every question. The host authorizes every tool call; generated PHP runs in gVisor with no network, host mounts or credentials. [Security model and runtime choice](packages/php-code-mode/docs/security.md).
 
-Built for the [Symfony AI & MCP Hackathon](https://symfony.com/hackathon) with Symfony 7.4, Symfony AI 1.0 beta and the PHP MCP SDK 0.9. The first demo is **Symfony-only**; Drupal's Tool API is a later integration.
+Built for the [Symfony AI & MCP Hackathon](https://symfony.com/hackathon) with Symfony 7.4, Symfony AI 1.0 beta and the PHP MCP SDK 0.9. The judge demo is **Symfony-only**. A separate [Drupal DDEV proof](examples/drupal/README.md) verifies an authorized read and a restricted-content denial through Tool API and the same isolated runner.
 
 ## The proof
 
@@ -54,4 +54,4 @@ composer test:demo     # Real MCP + gVisor comparison and external MCP client
 
 Run the sandbox suites sequentially on a dedicated test Docker endpoint. The demo also exposes `tools_search`, `tools_describe` and `php_execute` over STDIO: `php bin/console code-mode:mcp`. [Verification record](packages/php-code-mode/docs/verification.md).
 
-The Symfony reference audit, mocked-provider AI pipeline and a live two-turn Codex conversation are verified locally. Live Hugging Face inference remains unverified. Drupal is optional follow-on work. Submission needs a public runnable repository and a 90-second video by **22 November 2026, 18:00 CET**.
+The Symfony reference audit, mocked-provider AI pipeline, live two-turn Codex conversation and local Drupal STDIO authorization proof are verified. Live Hugging Face inference and Drupal HTTP authentication remain unverified. Submission needs a public runnable repository and a 90-second video by **22 November 2026, 18:00 CET**.

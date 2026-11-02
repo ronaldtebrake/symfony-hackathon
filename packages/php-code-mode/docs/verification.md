@@ -1,6 +1,6 @@
 # Proof verification
 
-Latest verification: 1 November 2026. The initial reference measurements below were recorded on 31 October. This records observed behavior, not an external security audit.
+Latest verification: 2 November 2026. The initial reference measurements below were recorded on 31 October. This records observed behavior, not an external security audit.
 
 | Component | Tested version/environment |
 | --- | --- |
@@ -11,7 +11,19 @@ Latest verification: 1 November 2026. The initial reference measurements below w
 | Guest PHP | 8.4.27 CLI, official Alpine image pinned in the Dockerfile |
 | Built runner image | `sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b` |
 
-## Current checks — 1 November 2026
+## Drupal authorization milestone — 2 November 2026
+
+A separate DDEV 1.24.4 project installed Drupal 11.4.11, Tool API 1.0.0-beta12, MCP Server 2.0.0-beta7 and Tool Bridge 1.0.0-beta5. Its dedicated reader account has exactly `access content` and `read code mode articles`. Local STDIO runs as that account; this is operator-selected execution identity, not remote client authentication.
+
+The [recorded proof](../../../docs/evidence/drupal-authorization-proof-2026-11-02.json) ran two fixed PHP bodies through the unchanged package and gVisor runtime. Both called `tool_api__code_mode_read_article`: published node 1 returned its ID/title; unpublished node 2 returned no content. Drupal independently recorded an allowed check/read for node 1 and a denied check with no read for node 2. The generic gateway reports the MCP error as `tool_failed` / `incomplete`; only the paired Drupal evidence establishes that this was an access denial. Both exact sandbox containers were confirmed absent, and both nodes' content hash remained unchanged. No model was called.
+
+The documented DDEV setup was rerun successfully without reinstalling the database or replacing the fixtures. Drupal's Composer validation and advisory audit passed; its initial Symfony Mime advisory was resolved by updating to 7.4.22. The HTTP MCP endpoint rejected an anonymous request with 401. No Drupal MCP subprocesses remained after execution.
+
+`composer check` passed **40 application tests / 311 assertions** and **29 package tests / 44 assertions**. The new verifier tests reject failures without Drupal evidence, wrong identities, leaked values, missing cleanup, nonexistent restricted nodes and elevated permissions. The real Symfony reference comparison also passed **1 test / 9 assertions**, with the existing pinned runtime exported explicitly into PHPUnit's test environment. The Symfony workbench continued to return HTTP 200; its source, connection configuration and saved reports were not replaced.
+
+See the [repeatable Drupal setup](../../../examples/drupal/README.md). A Drupal Codex conversation, HTTP authentication and the full editorial audit remain outside this milestone.
+
+## Prior checks — 1 November 2026
 
 - `composer check`: valid Composer manifests, YAML and Symfony container; **34 application tests / 239 assertions** and **29 package unit tests / 44 assertions** passed. Coverage includes real STDIO/HTTP MCP transport, policy filtering, bounded discovery, question propagation through the CLI comparison harness, read-only report access and rejection before execution/report replacement.
 - `composer test:sandbox`, with the dedicated runtime configuration exported: **28 real gVisor tests / 124 assertions passed**. These include both hard-crash scenarios (guest sleeping and broker handler blocked), retention of completed calls after timeout, and host-recorded denial and run IDs. No managed containers remained.

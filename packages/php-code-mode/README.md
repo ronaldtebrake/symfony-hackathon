@@ -91,4 +91,4 @@ Discovery permits 128 upstream tools, 8 continuation cursors, a 64 KiB result an
 
 ## Demo for judges
 
-The root Symfony app supplies an editorial audit, batched direct-call baseline, inspectable PHP/MCP trace, and separate reference/live modes. It also exposes Code Mode to external MCP clients over STDIO. See [the walkthrough](../../docs/demo.md). The Drupal backend targets **Tool API → MCP Server Tool Bridge → MCP Server**; an actual Drupal deployment still needs end-to-end verification. No token-saving claim is inferred from the reference run.
+The root Symfony app supplies an editorial audit, batched direct-call baseline, inspectable PHP/MCP trace, and separate reference/live modes. It also exposes Code Mode to external MCP clients over STDIO. See [the walkthrough](../../docs/demo.md). A separate [Drupal DDEV proof](../../examples/drupal/README.md) verifies real published/restricted node reads through **Tool API → MCP Server Tool Bridge → MCP Server**, using local STDIO and this package. Drupal HTTP authentication remains unverified. No token-saving claim is inferred from the reference run.

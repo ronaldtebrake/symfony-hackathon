@@ -1,0 +1,19 @@
+name: symfony-code-mode-drupal
+type: drupal11
+docroot: web
+php_version: "8.3"
+webserver_type: nginx-fpm
+xdebug_enabled: false
+additional_hostnames: []
+additional_fqdns: []
+database:
+    type: mariadb
+    version: "10.11"
+performance_mode: none
+use_dns_when_possible: true
+composer_version: "2"
+web_environment: []
+corepack_enable: true
+disable_upload_dirs_warning: true
+
+bind_all_interfaces: false
