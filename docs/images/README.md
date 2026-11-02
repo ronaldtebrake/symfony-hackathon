@@ -18,7 +18,7 @@ The proof screenshots are actual browser captures refreshed on **1 November 2026
 
 All three Codex screenshots now match chat `01a196eb-12bd-7412-9fad-4d279e2cbcf8`, replacing the earlier 10:31 CET rehearsal.
 
-Start `composer start` and open `/demo#codex-run`, `/demo#workbench` or `/demo#security-proof`. The Codex section reads the reviewed [capture](../evidence/codex-conversation-2026-11-01.json); it does not import current conversations. The other sections read ignored `var/demo/latest.json` and `var/demo/security.json`. If those reports are missing, generate them with `composer demo` and `composer demo:security` against the configured gVisor host before capturing. Styling-only refreshes can reuse existing reports; record the screenshot date separately from the execution date.
+Start `composer start` and open `/demo#codex-run`, `/demo#workbench` or `/demo#security-proof`. The Codex section reads the reviewed [capture](../evidence/codex-conversation-2026-11-01.json); it does not import current conversations. The comparison prefers ignored `var/demo/latest.json` and falls back to the [committed reference baseline](../reference-baseline.md) when it is absent. Security reads `var/demo/security.json`; generate it with `composer demo:security` against the configured gVisor host if missing. Run `composer demo` only when a fresh reference execution is needed. Styling-only refreshes can reuse existing reports; record the screenshot date separately from the execution date.
 
 Use the synthetic Symfony fixture for Symfony proof screenshots. Preserve the recorded/reference labels and payload-versus-token distinction. Capture the actual browser; do not alter execution outcomes or substitute illustrative results.
 

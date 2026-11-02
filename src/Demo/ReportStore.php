@@ -55,7 +55,8 @@ final readonly class ReportStore
 
     public function read(): ?string
     {
-        return $this->readFile('latest.json');
+        // Preserve local failures/running reports; use reviewed evidence only when the file is absent.
+        return $this->readFile('latest.json') ?? $this->readPath($this->projectDir.'/docs/evidence/reference-comparison-2026-10-31.json');
     }
 
     public function readSecurityProof(): ?string

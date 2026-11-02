@@ -1,0 +1,428 @@
+{
+    "version": 1,
+    "createdAt": "2026-10-31T11:58:01+00:00",
+    "status": "complete",
+    "mode": "reference",
+    "backend": "fixture",
+    "task": "Audit every published article for an empty meta_description and an empty alt text on its hero image. Use the available batched tools. Return JSON with audited (the number of published articles checked) and findings (sorted by article id). Each finding has id, title, and issues containing missing_description and\/or missing_alt. Exclude drafts. Do not change any content.",
+    "results": [
+        {
+            "approach": "direct",
+            "mode": "reference",
+            "model": null,
+            "durationMs": 575.612292,
+            "modelRequests": 0,
+            "agentToolCalls": 10,
+            "toolPayloadBytes": 20154,
+            "providerTokens": null,
+            "brokerCalls": [
+                {
+                    "name": "cms_list_articles",
+                    "status": "succeeded",
+                    "durationMs": 56.373958999756724,
+                    "resultBytes": 744
+                },
+                {
+                    "name": "cms_get_articles",
+                    "status": "succeeded",
+                    "durationMs": 57.976541997049935,
+                    "resultBytes": 3485
+                },
+                {
+                    "name": "cms_list_articles",
+                    "status": "succeeded",
+                    "durationMs": 56.29370799579192,
+                    "resultBytes": 747
+                },
+                {
+                    "name": "cms_get_articles",
+                    "status": "succeeded",
+                    "durationMs": 56.55358300282387,
+                    "resultBytes": 3504
+                },
+                {
+                    "name": "cms_list_articles",
+                    "status": "succeeded",
+                    "durationMs": 55.277291998208966,
+                    "resultBytes": 753
+                },
+                {
+                    "name": "cms_get_articles",
+                    "status": "succeeded",
+                    "durationMs": 55.363708997901995,
+                    "resultBytes": 3501
+                },
+                {
+                    "name": "cms_list_articles",
+                    "status": "succeeded",
+                    "durationMs": 55.09670899482444,
+                    "resultBytes": 749
+                },
+                {
+                    "name": "cms_get_articles",
+                    "status": "succeeded",
+                    "durationMs": 56.300791999092326,
+                    "resultBytes": 3499
+                },
+                {
+                    "name": "cms_get_media",
+                    "status": "succeeded",
+                    "durationMs": 56.251832997077145,
+                    "resultBytes": 1609
+                },
+                {
+                    "name": "cms_get_media",
+                    "status": "succeeded",
+                    "durationMs": 56.30475000361912,
+                    "resultBytes": 1563
+                }
+            ],
+            "programs": [],
+            "report": {
+                "audited": 48,
+                "findings": [
+                    {
+                        "id": 7,
+                        "title": "Repairing the things we keep \u00b7 1",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    },
+                    {
+                        "id": 11,
+                        "title": "Making room for slower travel \u00b7 2",
+                        "issues": [
+                            "missing_description"
+                        ]
+                    },
+                    {
+                        "id": 14,
+                        "title": "What a library can become \u00b7 2",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    },
+                    {
+                        "id": 21,
+                        "title": "A practical guide to local energy \u00b7 3",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    },
+                    {
+                        "id": 22,
+                        "title": "What a library can become \u00b7 3",
+                        "issues": [
+                            "missing_description"
+                        ]
+                    },
+                    {
+                        "id": 31,
+                        "title": "Repairing the things we keep \u00b7 4",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    },
+                    {
+                        "id": 33,
+                        "title": "Designing accessible navigation \u00b7 5",
+                        "issues": [
+                            "missing_description"
+                        ]
+                    },
+                    {
+                        "id": 38,
+                        "title": "What a library can become \u00b7 5",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    },
+                    {
+                        "id": 44,
+                        "title": "The people behind the workshop \u00b7 6",
+                        "issues": [
+                            "missing_description"
+                        ]
+                    },
+                    {
+                        "id": 45,
+                        "title": "A practical guide to local energy \u00b7 6",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    }
+                ]
+            },
+            "verification": {
+                "passed": true,
+                "message": "All 48 published articles checked; all 10 expected findings match."
+            },
+            "events": [
+                {
+                    "stage": "reference",
+                    "label": "Reference program; no model request",
+                    "details": []
+                },
+                {
+                    "stage": "tool_result",
+                    "label": "cms_list_articles",
+                    "details": {
+                        "bytesToModel": 744
+                    }
+                },
+                {
+                    "stage": "tool_result",
+                    "label": "cms_get_articles",
+                    "details": {
+                        "bytesToModel": 3485
+                    }
+                },
+                {
+                    "stage": "tool_result",
+                    "label": "cms_list_articles",
+                    "details": {
+                        "bytesToModel": 747
+                    }
+                },
+                {
+                    "stage": "tool_result",
+                    "label": "cms_get_articles",
+                    "details": {
+                        "bytesToModel": 3504
+                    }
+                },
+                {
+                    "stage": "tool_result",
+                    "label": "cms_list_articles",
+                    "details": {
+                        "bytesToModel": 753
+                    }
+                },
+                {
+                    "stage": "tool_result",
+                    "label": "cms_get_articles",
+                    "details": {
+                        "bytesToModel": 3501
+                    }
+                },
+                {
+                    "stage": "tool_result",
+                    "label": "cms_list_articles",
+                    "details": {
+                        "bytesToModel": 749
+                    }
+                },
+                {
+                    "stage": "tool_result",
+                    "label": "cms_get_articles",
+                    "details": {
+                        "bytesToModel": 3499
+                    }
+                },
+                {
+                    "stage": "tool_result",
+                    "label": "cms_get_media",
+                    "details": {
+                        "bytesToModel": 1609
+                    }
+                },
+                {
+                    "stage": "tool_result",
+                    "label": "cms_get_media",
+                    "details": {
+                        "bytesToModel": 1563
+                    }
+                }
+            ],
+            "answer": "Reference program completed. No AI inference or provider tokens were used."
+        },
+        {
+            "approach": "code",
+            "mode": "reference",
+            "model": null,
+            "durationMs": 937.344541,
+            "modelRequests": 0,
+            "agentToolCalls": 3,
+            "toolPayloadBytes": 3014,
+            "providerTokens": null,
+            "brokerCalls": [
+                {
+                    "name": "cms_list_articles",
+                    "status": "succeeded",
+                    "durationMs": 68.92770899867173,
+                    "resultBytes": 744
+                },
+                {
+                    "name": "cms_get_articles",
+                    "status": "succeeded",
+                    "durationMs": 51.40070900233695,
+                    "resultBytes": 3485
+                },
+                {
+                    "name": "cms_list_articles",
+                    "status": "succeeded",
+                    "durationMs": 47.65179099922534,
+                    "resultBytes": 747
+                },
+                {
+                    "name": "cms_get_articles",
+                    "status": "succeeded",
+                    "durationMs": 47.834708995651454,
+                    "resultBytes": 3504
+                },
+                {
+                    "name": "cms_list_articles",
+                    "status": "succeeded",
+                    "durationMs": 50.15116700087674,
+                    "resultBytes": 753
+                },
+                {
+                    "name": "cms_get_articles",
+                    "status": "succeeded",
+                    "durationMs": 51.38145799719496,
+                    "resultBytes": 3501
+                },
+                {
+                    "name": "cms_list_articles",
+                    "status": "succeeded",
+                    "durationMs": 48.593375002383254,
+                    "resultBytes": 749
+                },
+                {
+                    "name": "cms_get_articles",
+                    "status": "succeeded",
+                    "durationMs": 48.810916996444575,
+                    "resultBytes": 3499
+                },
+                {
+                    "name": "cms_get_media",
+                    "status": "succeeded",
+                    "durationMs": 50.3538330012816,
+                    "resultBytes": 1609
+                },
+                {
+                    "name": "cms_get_media",
+                    "status": "succeeded",
+                    "durationMs": 48.79495799832512,
+                    "resultBytes": 1563
+                }
+            ],
+            "programs": [
+                "$articles = [];\n$offset = 0;\ndo {\n    $page = $tools->call('cms_list_articles', ['offset' => $offset, 'limit' => 12]);\n    $ids = array_map(static fn ($item) => $item->id, $page->items);\n    if ($ids !== []) {\n        $details = $tools->call('cms_get_articles', ['ids' => $ids]);\n        array_push($articles, ...$details->items);\n    }\n    $offset = $page->next_offset;\n} while ($offset !== null);\n\n$imageIds = array_values(array_unique(array_map(static fn ($article) => $article->image_id, $articles)));\n$media = [];\nforeach (array_chunk($imageIds, 12) as $batch) {\n    $images = $tools->call('cms_get_media', ['ids' => $batch]);\n    foreach ($images->items as $image) {\n        $media[$image->id] = $image;\n    }\n}\n\n$findings = [];\nforeach ($articles as $article) {\n    $issues = [];\n    if (trim($article->meta_description) === '') {\n        $issues[] = 'missing_description';\n    }\n    if (trim($media[$article->image_id]->alt) === '') {\n        $issues[] = 'missing_alt';\n    }\n    if ($issues !== []) {\n        $findings[] = ['id' => $article->id, 'title' => $article->title, 'issues' => $issues];\n    }\n}\nusort($findings, static fn ($a, $b) => $a['id'] <=> $b['id']);\nreturn ['audited' => count($articles), 'findings' => $findings];\n"
+            ],
+            "report": {
+                "audited": 48,
+                "findings": [
+                    {
+                        "id": 7,
+                        "title": "Repairing the things we keep \u00b7 1",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    },
+                    {
+                        "id": 11,
+                        "title": "Making room for slower travel \u00b7 2",
+                        "issues": [
+                            "missing_description"
+                        ]
+                    },
+                    {
+                        "id": 14,
+                        "title": "What a library can become \u00b7 2",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    },
+                    {
+                        "id": 21,
+                        "title": "A practical guide to local energy \u00b7 3",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    },
+                    {
+                        "id": 22,
+                        "title": "What a library can become \u00b7 3",
+                        "issues": [
+                            "missing_description"
+                        ]
+                    },
+                    {
+                        "id": 31,
+                        "title": "Repairing the things we keep \u00b7 4",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    },
+                    {
+                        "id": 33,
+                        "title": "Designing accessible navigation \u00b7 5",
+                        "issues": [
+                            "missing_description"
+                        ]
+                    },
+                    {
+                        "id": 38,
+                        "title": "What a library can become \u00b7 5",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    },
+                    {
+                        "id": 44,
+                        "title": "The people behind the workshop \u00b7 6",
+                        "issues": [
+                            "missing_description"
+                        ]
+                    },
+                    {
+                        "id": 45,
+                        "title": "A practical guide to local energy \u00b7 6",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    }
+                ]
+            },
+            "verification": {
+                "passed": true,
+                "message": "All 48 published articles checked; all 10 expected findings match."
+            },
+            "events": [
+                {
+                    "stage": "reference",
+                    "label": "Reference program; no model request",
+                    "details": []
+                },
+                {
+                    "stage": "tool_result",
+                    "label": "tools_search",
+                    "details": {
+                        "bytesToModel": 737
+                    }
+                },
+                {
+                    "stage": "tool_result",
+                    "label": "tools_describe",
+                    "details": {
+                        "bytesToModel": 1356
+                    }
+                },
+                {
+                    "stage": "execution",
+                    "label": "PHP submitted to the isolated runner",
+                    "details": []
+                },
+                {
+                    "stage": "tool_result",
+                    "label": "php_execute",
+                    "details": {
+                        "bytesToModel": 921
+                    }
+                }
+            ],
+            "answer": "Reference program completed. No AI inference or provider tokens were used."
+        }
+    ]
+}

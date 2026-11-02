@@ -19,7 +19,7 @@ Open **[Symfony AI run in the workbench](http://127.0.0.1:8000/demo#huggingface-
 | Total capture time | **3.53 seconds**, including generation, setup and cleanup |
 | Successful runner time | **787 ms**, excluding container creation and final cleanup |
 
-These are observations from one run, not a performance benchmark. Tool-result bytes exclude prompts, initial schemas, generated PHP and protocol framing. The **85% payload reduction** elsewhere in the workbench belongs to the separate reference comparison. We have not run a live direct-tool baseline, so this capture makes no token-savings claim.
+These are observations from one run, not a performance benchmark. Tool-result bytes exclude prompts, initial schemas, generated PHP and protocol framing. The **85% payload reduction** elsewhere in the workbench belongs to the separate [committed with/without reference baseline](reference-baseline.md). We have not run a live direct-tool baseline, so this capture makes no token-savings claim.
 
 The capture retains outer tool names, exact arguments and serialized results. The host ledger records each upstream tool's name, outcome, result size and duration. Upstream arguments are visible in the PHP; they are not separately logged. Hugging Face selected the serving provider automatically; the capture does not identify that provider.
 

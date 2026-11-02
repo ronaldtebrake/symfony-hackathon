@@ -10,7 +10,7 @@ Built for the [Symfony AI & MCP Hackathon](https://symfony.com/hackathon) with S
 
 ## The proof
 
-The editorial audit checks **48 articles** and returns the same **10 findings** through both paths, using **10 batched MCP calls each**. The reference run measures **20,154 bytes** of tool-result payload for direct calls and **3,014 bytes** for Code Mode, including discovery: **85% less**.
+The editorial audit checks **48 articles** and returns the same **10 findings** through both paths, using **10 batched MCP calls each**. The [committed with/without baseline](docs/reference-baseline.md) measures **20,154 bytes** of tool-result payload for direct calls and **3,014 bytes** for Code Mode, including discovery: **85% less**. Both sides are available in the workbench on a fresh checkout.
 
 The animation illustrates those measured results. Reference mode uses checked-in PHP; MCP calls and sandbox execution are real. Payload excludes prompts, initial schemas and generated code. **This is not a model-token savings claim.** [Verification record](packages/php-code-mode/docs/verification.md).
 
