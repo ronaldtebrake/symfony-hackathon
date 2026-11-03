@@ -12,7 +12,7 @@
   <div class="shell">
     <header class="masthead">
       <a class="brand" href="/demo" aria-label="Symfony Code Mode home"><span class="brand-mark">{ }</span><span>Symfony Code Mode</span></a>
-      <nav aria-label="Main navigation"><a href="#live-comparison">Live comparison</a><a href="#huggingface-proof">Symfony AI run</a><a class="active" href="#codex-run">Codex run</a><a href="#recovery">Recovery</a><a href="#workbench">Reference</a><a href="#security-proof">Security</a></nav>
+      <nav aria-label="Main navigation"><a href="#live-comparison">Live comparison</a><a href="#huggingface-proof">Symfony AI run</a><a href="#adoption-proof">Adoption</a><a class="active" href="#codex-run">Codex run</a><a href="#recovery">Recovery</a><a href="#workbench">Reference</a><a href="#security-proof">Security</a></nav>
       <span class="local-badge"><span class="dot"></span> Local workbench</span>
     </header>
 
@@ -67,6 +67,22 @@
           <div id="hf-history"></div>
         </div>
         <p class="measurement-note">Tool-result payload counts exact serialized toolbox results in this invocation, including discovery and any failed PHP attempts. Earlier operator-started runs have separate totals. Payload excludes prompts, initial schemas and generated PHP. Provider tokens are shown only when reported by Hugging Face. The separate Live comparison section checks equivalence before showing token differences. <a href="/demo/huggingface-report">Raw execution evidence (JSON) ↗</a></p>
+      </section>
+
+      <section id="adoption-proof" class="hf-proof" aria-labelledby="adoption-heading">
+        <div class="section-top"><div><span class="eyebrow">Existing Symfony AI tools → Code Mode</span><h2 id="adoption-heading">Your tools. Composed in PHP.</h2></div><span class="run-state" id="adoption-state" role="status">Loading evidence</span></div>
+        <p class="codex-intro">Ordinary <code>#[AsTool]</code> services, an explicit allowlist and a host authorization policy. The agent reads an article containing a malicious instruction, then answers a follow-up about published content.</p>
+        <div class="proof-run"><code>php bin/console code-mode:adoption-proof --live --no-debug</code><span>Operator CLI · omit --live for fixed probes without inference</span></div>
+        <p id="adoption-note" class="mode-note" role="status"></p>
+        <div id="adoption-evidence" hidden>
+          <div class="hf-metrics"><div><span>Model requests</span><strong id="adoption-requests">—</strong></div><div><span>Provider tokens</span><strong id="adoption-tokens">—</strong></div><div><span>Live tool-result payload</span><strong id="adoption-bytes">—</strong></div><div><span>Live underlying calls</span><strong id="adoption-calls">—</strong></div></div>
+          <details class="proof-details"><summary>The injected article text · untrusted tool data</summary><blockquote id="adoption-poison"></blockquote></details>
+          <div id="adoption-turns" class="recovery-turns"></div>
+          <details class="proof-details"><summary>PHP guidance supplied during discovery</summary><pre id="adoption-guide" tabindex="0"></pre></details>
+          <details class="proof-details"><summary>Fixed adversarial probe · denial, recovery and exhausted budget</summary><p>No model chooses these programs. They deliberately attempt the instruction in the article and verify the host boundary, separately from the live conversation.</p><div id="adoption-probes"></div></details>
+          <details class="proof-details"><summary>Exact calls, measurements and earlier attempts</summary><div id="adoption-checks" class="hf-checks"></div><pre id="adoption-details" tabindex="0"></pre></details>
+        </div>
+        <p class="measurement-note">The live conversation and fixed probe each keep one session across their follow-up, with two execution attempts including failures. No permission comes from article text. These observations do not establish general prompt-injection resistance or a new token-savings comparison. <a href="/demo/adoption-report">Raw adoption evidence (JSON) ↗</a></p>
       </section>
 
       <section id="codex-run" class="codex-run" aria-labelledby="codex-heading">

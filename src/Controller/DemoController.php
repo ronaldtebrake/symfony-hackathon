@@ -65,6 +65,13 @@ final readonly class DemoController
         return $this->response($this->store->readHuggingFaceComparison(), 'application/json');
     }
 
+    #[Route('/demo/adoption-report', name: 'app_demo_adoption_report', methods: ['GET'])]
+    public function adoptionReport(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+        return $this->response($this->store->readAdoptionProof() ?? '{"status":"empty"}', 'application/json');
+    }
+
     private function requireLocalRequest(Request $request): void
     {
         if (!in_array($request->getClientIp(), ['127.0.0.1', '::1'], true) || !in_array($request->getHost(), ['127.0.0.1', 'localhost', '[::1]'], true)) {

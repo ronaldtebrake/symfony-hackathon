@@ -2,6 +2,8 @@
 
 The judge story: ask an agent to audit content, reshape the question, inspect the PHP and authorized MCP calls, then show measured Symfony AI inference and enforced security boundaries. Keep the recording Symfony-only.
 
+The [Adoption section](http://127.0.0.1:8000/demo#adoption-proof) adds a second recording option: existing Symfony AI tools, a live Hugging Face article read and follow-up, and a separate fixed probe that attempts an injected instruction and is denied. Generate it with `php bin/console code-mode:adoption-proof --live --no-debug`; omit `--live` for fixed probes only. The exact captured questions and answers are in the viewer. Label the fixed probe separately from model-generated PHP. The new capture is not the matched token comparison below.
+
 ## Prepare
 
 1. Run `composer install` and `composer start`. The [workbench](http://127.0.0.1:8000/demo) displays committed evidence without inference or a running sandbox. New local reports take precedence, including failures.

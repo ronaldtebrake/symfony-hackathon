@@ -1,8 +1,8 @@
 # Draft Symfony AI recipe: a toolbox that keeps its execution boundary
 
-Status: local documentation proposal backed by the tested `CodeModeToolbox` adapter. The paid model invocation below has not been run. Use a dedicated PHP CLI worker; the runner rejects other host SAPIs.
+Status: local documentation proposal. The reusable `CodeModeToolbox` and native Symfony tool adapter now have a [real two-turn Hugging Face capture](../evidence/adoption-proof.json). Use a dedicated PHP CLI worker; the runner rejects other host SAPIs.
 
-The separate [real Hugging Face audit](../huggingface-comparison.md) verifies Symfony AI generation through the original audit toolbox and the same core package. It does not substitute for a live execution of this bundle recipe.
+The capture reads a published article containing an injected instruction, then audits published descriptions in the same session. The explicit denied-read conversation below remains a recipe: its denial/recovery behavior is covered by fixed gVisor probes, mocked-provider tests and the separate Codex capture, not by that Hugging Face conversation. The [original matched audit](../huggingface-comparison.md) remains a separate measurement.
 
 The host authenticates a person, constructs one Code Mode session, and gives Symfony AI a toolbox for that conversation:
 
@@ -50,6 +50,6 @@ php bin/phpunit --filter CodeModeToolboxTest
 composer test:demo -- --filter SymfonyCodeModeTest
 ```
 
-The first uses a deterministic executor to test adapter behavior. The second uses real gVisor execution and no model. Live Hugging Face generation, provider token usage and payload comparison must be captured separately before making a provider-backed claim.
+The first uses a deterministic executor to test adapter behavior. The second uses real gVisor execution and no model. Run `php bin/console code-mode:adoption-proof --live --no-debug` for the native-tool Hugging Face conversation. It preserves the same session across both turns and records exact PHP, host calls, usage and failed attempts. Its measurements are not a new direct-versus-Code-Mode comparison.
 
 This uses existing [Symfony AI custom-toolbox and conversation APIs](https://symfony.com/doc/current/ai/components/agent.html); it proposes documentation and tests, not a new permission system in Symfony.

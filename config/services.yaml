@@ -25,6 +25,7 @@ services:
     App\Demo\ReportStore: ~
     App\Demo\SecurityProofRunner: ~
     App\Demo\HuggingFaceProofRunner: ~
+    App\Demo\AdoptionProofRunner: ~
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

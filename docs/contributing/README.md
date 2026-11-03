@@ -1,40 +1,71 @@
-# Contributions grounded in this demo
+# Upstream contributions to make after the hackathon work
 
-These are **local, reviewable proposals**, not submitted or accepted upstream changes. The [hackathon brief](https://symfony.com/hackathon) explicitly values useful feedback from real projects. The generic isolation layer remains our package; Symfony and the PHP MCP SDK supply the application/agent integration and protocol.
+These are prepared proposals, **not submitted issues or pull requests**. No upstream acceptance or Packagist publication is implied. The existing Symfony demo and its matched Hugging Face comparison remain unchanged.
 
-## PHP MCP SDK: a structured-result factory
+## 1. Symfony AI: bring a working Code Mode example to #2508
 
-**Problem:** our successful executions and denied reads both carry structured JSON. We also supply equivalent `TextContent` for clients that only read `content`. The SDK's constructor supports this already, but `success()` and `error()` do not carry structured data; every integration writes the same assembly code. This is an ergonomics proposal, not a protocol defect or an assertion that structured errors are unsupported.
+[Code Mode discussion #2508](https://github.com/symfony/ai/issues/2508) is open, checked on 3 November 2026. Contributors ask how to sandbox execution, discover tools, preserve structured results and establish a useful problem space. Our publishing audit supplies a concrete example for that discussion.
 
-The [additive patch](php-mcp-sdk-structured-results.patch) proposes:
+**Suggested comment:**
+
+> We built Symfony Code Mode for the hackathon: a reusable Composer integration that lets an agent compose explicitly approved Symfony AI tools in isolated PHP. Existing `#[AsTool]` services are adapted through their original toolbox, retaining argument resolution and lifecycle hooks. A separate host policy authorizes each call; the runner requires gVisor and bounded execution. The publishing audit has real Hugging Face and Codex traces, including failed attempts and a matched direct-tool baseline. We would like feedback on an external integration recipe before proposing a framework API.
+
+Attach these reviewable pieces:
+
+- [Native-tool adapter](../../packages/symfony-code-mode/src/Ai/ApprovedToolbox.php), [minimal configuration](../../packages/symfony-code-mode/README.md#reuse-existing-symfony-ai-tools) and [conversation recipe](symfony-ai-recipe.md).
+- [Adoption capture](../evidence/adoption-proof.json): real Symfony AI + Hugging Face through the reusable adapter; generated PHP, underlying Symfony calls, two user turns, measured usage and cleanup checks. This capture invokes native Symfony services; the earlier audit supplies the separate MCP evidence.
+- [Original matched comparison](../huggingface-comparison.md): the same model, question, data and permissions, both answers correct, all 21 earlier development invocations retained. A single successful pair is not a benchmark.
+- `ApprovedToolboxTest`, `CodeModeToolboxTest` and `tests/Sandbox/AdoptionProofTest.php`: authorization, validation, lifecycle hooks, conversation limits and real sandbox execution.
+
+The new live conversation uses `openai/gpt-oss-120b` via Hugging Face auto-routing: **7 requests, 8,614 reported tokens, 3,685 tool-result bytes, two PHP executions and five underlying calls**. It sees the injected article text and performs the permitted follow-up, checking 48 articles and finding IDs 11, 22, 33 and 44. The independent fixed probe attempts the restricted read, records `tool_denied`, recovers, and cannot make a third execution attempt.
+
+The first live attempt is also retained: 7 requests and 8,763 tokens. Its PHP filtered the malicious paragraph out before the model saw it. The audit was correct, but the exposure check correctly failed. The next attempt explicitly requested the complete body; this is a changed question, not a comparable performance rerun. Together the two live attempts used 14 requests and 17,377 reported tokens.
+
+**Proposed first contribution:** an executable cookbook example of a conversation-scoped custom toolbox. Keep the gVisor runner and deployment requirements in the external package. Discuss framework integration with maintainers before adding core abstractions.
+
+**A concrete API limitation to discuss:** the installed Symfony AI prerelease returns a denied `ToolCallRequested` as an ordinary string-valued `ToolResult`, without a typed denial flag. A wrapper cannot reliably distinguish that from a valid string response. Our object output schemas reject such strings and the broker returns sanitized `tool_failed`; our own authorization policy produces `tool_denied`. Consider preserving a typed outcome for decorators. Reproduce against current upstream before proposing a change. This is separate from MCP error propagation issue #2534, already fixed through #2535.
+
+## 2. Symfony AI: contribute discovery evidence to #2623
+
+[Dynamic tool discovery #2623](https://github.com/symfony/ai/issues/2623) already links a searchable-toolbox/BM25 prototype. Join that discussion instead of opening a duplicate or building a competing search API.
+
+Our selected-tool descriptions now include a bounded [PHP usage guide](../../packages/php-code-mode/src/PhpToolGuide.php): an invocation example, argument/result shapes and explicit `stdClass` versus list guidance. Undeclared and referenced output shapes remain `mixed`. Guides are data, never evaluated or used as authorization. The original schemas remain available.
+
+**Suggested contribution:** offer this PHP-specific experience and a focused discovery evaluation. Use a clearly labelled synthetic catalog of 16, 64 and 128 approved tools; compare initial schema bytes, discovery bytes, retrieval accuracy, complete-answer accuracy and request counts. Include ambiguous names and unrelated tools. Keep the model, task, relevant data and permissions fixed. Compare our simple keyword search with the existing prototype before proposing ranking changes. This larger-catalog experiment is a contribution follow-up, not evidence already captured here.
+
+[Cloudflare's typed Code Mode interfaces](https://developers.cloudflare.com/agents/model-context-protocol/guides/build-codemode-mcp-server/) informed the guide. The PHP guide has not yet been evaluated in a controlled with/without experiment; do not claim it reduces model errors or tokens.
+
+## 3. PHP MCP SDK: a structured-result convenience factory
+
+**Suggested PR title:** Add a structured tool-result factory with equivalent text content.
+
+Our successful results and sanitized denials carry JSON for programs plus text for clients that only consume `content`. The SDK constructor already supports this. Its current `success()` and `error()` factories do not take structured content; this is an ergonomics proposal, not missing protocol support.
+
+The [prepared patch](php-mcp-sdk-structured-results.patch) proposes:
 
 ```php
 CallToolResult::structured(['value' => $answer]);
 CallToolResult::structured(['error' => ['reason' => 'tool_denied']], isError: true);
 ```
 
-It creates equivalent JSON text and `structuredContent`, preserves metadata and `isError`, and throws on values that cannot be encoded. It leaves the existing constructor and factory signatures unchanged. The caller remains responsible for sanitizing error data and checking authorization. The helper does not establish that a generic upstream failure was an access denial.
+It creates equivalent JSON text and `structuredContent`, preserves metadata and `isError`, rejects non-encodable values, and leaves existing signatures unchanged. The caller must sanitize errors and enforce authorization. It does not negotiate protocol versions: use object-shaped structured values for older clients.
 
-Run the proposal against a temporary copy of the installed SDK:
-
-```bash
+```sh
 php docs/contributing/verify-sdk-proposal.php
 ```
 
-Verified: seven JSON shapes (including false, zero, empty object and null), structured denial round-trip, invalid JSON rejection, and existing factories. Vendor files are never patched. This project's production adapter continues to use the supported constructor. The [current upstream class](https://github.com/modelcontextprotocol/php-sdk/blob/main/src/Schema/Result/CallToolResult.php) was checked on 2 November 2026.
+This checks seven JSON shapes, structured denial round-tripping, invalid JSON rejection and unchanged existing factories in a **temporary copy**. It does not patch vendor code or substitute for upstream CI. Structured-only responses are already documented by [#605](https://github.com/modelcontextprotocol/php-sdk/pull/605), which closed [#521](https://github.com/modelcontextprotocol/php-sdk/issues/521). The current class and related issue search were checked on 3 November 2026; no equivalent factory was found.
 
-Related upstream work: [#521 / #605](https://github.com/modelcontextprotocol/php-sdk/issues/521) already documents returning structured-only results through the constructor, and #93 introduced structured results/errors. This proposal is only a convenience factory with a text fallback. It does not negotiate protocol versions; list/scalar structured values still require a compatible protocol revision. For older clients, use object-shaped data. A GitHub search found these related items; checking the exact current main commit was rate-limited, so refresh that check before submission.
+Before submitting, recheck current main and open PRs, agree the helper's scope/name with maintainers, port the cases into SDK tests and run its `make ci` and applicable conformance checks. Follow the [contribution and licensing guide](https://github.com/modelcontextprotocol/php-sdk/blob/main/CONTRIBUTING.md). The production adapter continues to use supported SDK APIs.
 
-Suggested PR title: **Add a structured tool-result factory with equivalent text content**. Before submission, agree the public method name with maintainers, recheck overlapping work, port these cases into the SDK's unit/inspector suites, and run its full `make ci` and applicable conformance checks. Those upstream suites have not been run here. Follow the [SDK contribution guide](https://github.com/modelcontextprotocol/php-sdk/blob/main/CONTRIBUTING.md), including its licensing requirements.
+## Reproduce and share
 
-## Symfony: a working integration and an AI recipe
+```sh
+composer check
+php bin/console code-mode:doctor
+php bin/console code-mode:adoption-proof --no-debug
+# Optional paid capture; reads the token from ignored .env.local:
+php bin/console code-mode:adoption-proof --live --no-debug
+```
 
-The new [Composer bundle](../../packages/symfony-code-mode/README.md) is the concrete contribution candidate: explicit service registration, host-owned identity, fresh conversation sessions, a doctor command, and STDIO exposure. No framework change is required to adopt it. The package is currently a repository path dependency, not published to Packagist or shipped by Symfony.
-
-An optional [CodeModeToolbox](../../packages/symfony-code-mode/src/Ai/CodeModeToolbox.php) implements Symfony AI's existing `ToolboxInterface`. It uses the same three canonical schemas and `CodeModeSession`, validates arguments, returns sanitized model-visible failures, and retains host traces. It does not require an MCP subprocess for Symfony-owned tool services. Install `symfony/ai-agent` and `symfony/ai-platform` at the compatible `^1.0@beta` versions to use it; this repository already has both.
-
-The proposed [Symfony AI recipe](symfony-ai-recipe.md) explains a security-sensitive detail absent from a simple chatbot example: the toolbox and session must live for the authenticated conversation, including its follow-up and failed attempts. Recreating a session on every model call would reset its budget. Sharing one across users would mix identity and discovery state.
-
-`CodeModeToolboxTest` verifies model-visible denial, recovery, argument rejection and retained attempt limits with a test executor; it does **not** claim model generation or gVisor execution. The separate `tests/Sandbox/SymfonyCodeModeTest.php` runs real PHP through the new bundle's MCP server and gVisor. The Codex capture supplies actual generation and recovery. The [real Symfony AI + Hugging Face capture](../huggingface-comparison.md) now verifies generation through the original audit toolbox and the same core Code Mode package; it does not yet exercise this optional bundle adapter with a paid provider.
-
-Suggested Symfony contribution: **Document a conversation-scoped custom toolbox with authorized code execution**. Offer the recipe and executable regression cases first; discuss whether an external bridge belongs in Symfony before proposing any core API. Symfony's [MCP error propagation issue #2534](https://github.com/symfony/ai/issues/2534) was already fixed through #2535 in September 2026. We should use our denial/recovery scenario as additional coverage, not file that known issue again.
+Keep the same session for follow-ups. Treat tool metadata and returned article text as untrusted data. Never substitute annotations, generated PHP or successful model behaviour for host authorization. See the [security model](../../packages/php-code-mode/docs/security.md) for deployment limits. Share sanitized reviewed evidence, not credentials, local logs or private content. The [hackathon brief](https://symfony.com/hackathon) values concrete prerelease feedback; none of these proposals has been sent on your behalf.

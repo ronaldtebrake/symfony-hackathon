@@ -39,10 +39,11 @@ Configure the [dedicated gVisor runtime and pinned runner image](packages/php-co
 - **Codex:** connect `php bin/console code-mode:mcp --no-debug` using the [connection guide](docs/codex.md), then ask and refine the task in your chat.
 - **Symfony AI + Hugging Face:** set `HUGGINGFACE_API_KEY` in ignored `.env.local`, then run `php bin/console code-mode:huggingface-compare --no-debug`. This consumes inference credits and retains earlier attempts.
 - **Local proofs without inference:** run `composer demo`, then `composer demo:security`.
+- **Existing Symfony AI tools:** run `php bin/console code-mode:adoption-proof --no-debug`, or add `--live` for a real Hugging Face article read and follow-up. Inspect [Adoption](http://127.0.0.1:8000/demo#adoption-proof) for PHP guides, generated code and the separate injected-content denial probe.
 
 ## Adopt and contribute
 
-The [core Composer package](packages/php-code-mode/README.md) exposes `tools_search`, `tools_describe` and `php_execute`. The [Symfony bundle](packages/symfony-code-mode/README.md) registers approved services with a small configuration and supplies `code-mode:serve` and `code-mode:doctor`. Both are repository path packages, not yet published to Packagist.
+The [core Composer package](packages/php-code-mode/README.md) exposes `tools_search`, `tools_describe` and `php_execute`. The [Symfony bundle](packages/symfony-code-mode/README.md) adapts existing `#[AsTool]` services through an explicit allowlist and host policy, and supplies `code-mode:serve` and `code-mode:doctor`. Both are repository path packages, not yet published to Packagist.
 
 [PHP MCP SDK and Symfony contribution proposals](docs/contributing/README.md) include executable checks. The optional [Drupal DDEV example](examples/drupal/README.md) demonstrates reuse with Tool API; the judge demo stays Symfony-only.
 

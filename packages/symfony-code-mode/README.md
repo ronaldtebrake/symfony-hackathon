@@ -54,4 +54,35 @@ Each `SessionFactory::create($hostIdentity)` returns fresh conversation state. K
 
 [The recorded conversation](../../docs/demo.md#optional-boundary-recovery-opening) asks for article 49, receives `tool_denied`, then audits published articles after the user changes scope. The server returns `isError: true` with a sanitized reason, host ledger and run ID. Private content and exception messages never become the explanation. The permitted response is a separate successful execution under the same identity and attempt budget.
 
-For Symfony AI, the same `CodeModeSession` can back `ToolboxInterface`; see the [tested contribution example](../../docs/contributing/README.md). The separate [real Hugging Face capture](../../docs/huggingface-comparison.md) uses the original audit toolbox and the same core Code Mode package. This optional bundle adapter remains tested with a mocked provider.
+For Symfony AI, the same `CodeModeSession` backs `CodeModeToolbox`, a `ToolboxInterface` implementation. Keep one session across user turns; see the [conversation recipe](../../docs/contributing/symfony-ai-recipe.md).
+
+## Reuse existing Symfony AI tools
+
+Install compatible `symfony/ai-agent` and `symfony/ai-platform` packages (`^1.0@beta`). Existing `#[AsTool]` handlers can participate without implementing `ReadToolInterface`:
+
+```yaml
+code_mode:
+    identity_provider: App\CodeMode\DemoIdentityProvider
+    ai_toolbox: app.publishing_toolbox
+    ai_tools: [publishing_read, publishing_list]
+    ai_authorization: App\CodeMode\PublishingAuthorization
+```
+
+The toolbox is an ordinary Symfony AI service. See the executable [tool services](../../src/CodeMode/PublishingTools.php), [authorization policy](../../src/CodeMode/PublishingAuthorization.php) and [demo wiring](../../config/packages/code_mode_adoption.yaml). The demo wires a separate session factory to keep the original MCP conversation unchanged; applications can use the minimal bundle configuration above. Existing `tools` services can also be combined with `ai_tools`.
+
+Only named tools with an explicit read-only hint enter the catalog. Missing names, duplicates and absent policy configuration fail closed. The hint is a prerequisite, not proof that a handler is read-only: approve reviewed handlers. `ToolAuthorizationInterface::isGranted()` receives the host identity, tool name and arguments before schema validation and immediately before invocation. It must reject malformed or unauthorized requests. Handlers must retain resource/field checks at the actual read.
+
+Calls go through the original Symfony AI toolbox, preserving its argument resolver and lifecycle events. Results must be safe JSON data. Optional tool metadata `code_mode.output_schema` supplies an output contract, validated before returning data to the sandbox. The publishing example declares object schemas. The installed Symfony AI version represents lifecycle denials as ordinary string results; an object schema rejects these with sanitized `tool_failed`. Do not infer denial by matching text, or use a toolbox that converts private exception diagnostics into public result strings. See the [upstream contribution note](../../docs/contributing/README.md).
+
+`tools_describe` adds a bounded PHP invocation example and input/output shapes for only the selected tools. JSON objects are `stdClass`, lists are arrays, and unknown/referenced schemas remain `mixed`. These guides are documentation; the broker still checks schemas and authorization for every call.
+
+## Run the adoption proof
+
+```sh
+# Real gVisor execution, no provider:
+php bin/console code-mode:adoption-proof --no-debug
+# Also capture two real Symfony AI + Hugging Face turns; consumes inference credits:
+php bin/console code-mode:adoption-proof --live --no-debug
+```
+
+The read-only [Adoption viewer](http://127.0.0.1:8000/demo#adoption-proof) shows the actual generated PHP, follow-up, tool calls, usage and PHP discovery guides. The [reviewed evidence](../../docs/evidence/adoption-proof.json) includes the first live attempt, which filtered the injected paragraph before it reached the model, and the next attempt, which requested the full body and passed the exposure check. A separate fixed probe attempts the restricted read, recovers under the same identity, and proves the two-attempt budget cannot be reset. This is a specific execution proof, not general prompt-injection protection.

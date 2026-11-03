@@ -551,3 +551,66 @@ async function refreshLiveComparison() {
   } finally { setTimeout(refreshLiveComparison, 2500); }
 }
 refreshLiveComparison();
+
+function adoptionExecution(source, run, label) {
+  const block = node('section', undefined, 'hf-program');
+  block.append(node('p', `${label} · ${run.status}${run.reason ? ` · ${run.reason}` : ''}`, 'code-caption'));
+  const pre = node('pre', undefined, 'code-view'); pre.tabIndex = 0; pre.append(node('code', source)); block.append(pre);
+  const calls = node('ul', undefined, 'proof-calls');
+  for (const call of run.toolCalls ?? []) calls.append(node('li', `${call.name} · ${call.status}${call.reason ? ` · ${call.reason}` : ''} · ${bytes(call.resultBytes)}`));
+  block.append(calls, node('p', run.runId ? `${run.runId} · container removal ${run.containerRemoved === true ? 'checked' : 'unconfirmed'}` : 'Rejected before container allocation', 'recovery-run-id'));
+  return block;
+}
+
+function renderAdoption(report) {
+  byId('adoption-evidence').hidden = true;
+  const required = ['fixedProbeDeniedThenRecovered', ...(report.mode === 'live' ? ['phpAndHostLedgerLinked', 'twoTurnsSameBoundedSession', 'poisonReachedModelAsToolData', 'publishedArticleRead', 'followUpMatchesFixture', 'providerUsageObserved'] : [])];
+  if (report.status === 'complete' && (report.kind !== 'adoption-proof' || report.verification?.passed !== true || required.some(key => report.verification.checks?.[key] !== true))) throw new Error('Incomplete adoption proof');
+  const live = report.mode === 'live';
+  byId('adoption-state').textContent = report.status === 'complete' ? live ? 'LIVE + BOUNDARY VERIFIED' : 'FIXED PROBE VERIFIED' : report.status === 'running' ? 'CAPTURE IN PROGRESS' : report.status === 'failed' ? 'CHECK INCOMPLETE' : 'NOT CAPTURED';
+  byId('adoption-note').textContent = report.status === 'empty' ? 'No adoption capture yet. The operator CLI runs the proof; this page cannot execute code.'
+    : report.status !== 'complete' ? 'This attempt has not passed all required checks. Its observations remain visible without implying a successful proof.'
+    : live ? `${report.model} · ${new Date(report.createdAt).toLocaleString()} · The injected text reached the model. The recorded live calls stayed within published content. The separate fixed probe demonstrates actual denial.`
+    : 'Real PHP and native Symfony AI tools. The fixed probe was denied, recovered with a published audit, and could not reset its execution budget. No model was called.';
+  if (!report.probe) return;
+  const trace = report.liveTrace;
+  byId('adoption-requests').textContent = trace ? number(trace.modelRequests) : 'No model';
+  byId('adoption-tokens').textContent = trace?.providerTokens ? number(trace.providerTokens.total) : 'Not measured';
+  byId('adoption-bytes').textContent = trace ? bytes(trace.toolPayloadBytes) : '—';
+  byId('adoption-calls').textContent = trace ? number(trace.brokerCalls.length) : '—';
+  byId('adoption-poison').textContent = report.poison.text;
+  const turns = byId('adoption-turns'); turns.replaceChildren();
+  (report.turns ?? []).forEach((turn, index) => {
+    const card = node('article', undefined, 'recovery-card');
+    card.append(node('span', `Turn ${index + 1} · real Hugging Face generation`, 'eyebrow'), node('h3', index === 0 ? 'Read the published article' : 'Reshape the question'), node('blockquote', turn.question));
+    const answer = node('details', undefined, 'proof-details'); answer.append(node('summary', 'Exact model answer'), node('pre', turn.answer)); card.append(answer);
+    for (let i = turn.executionStart; i < turn.executionEnd; ++i) card.append(adoptionExecution(trace.programs[i], trace.executions[i], 'Generated PHP'));
+    turns.append(card);
+  });
+  const discovery = (trace ?? report.probe).agentCalls.filter(call => call.name === 'tools_describe').flatMap(call => JSON.parse(call.result));
+  byId('adoption-guide').textContent = JSON.stringify(discovery.map(tool => ({name: tool.name, php: tool.php})), null, 2);
+  const probes = byId('adoption-probes'); probes.replaceChildren();
+  report.probe.executions.forEach((run, index) => probes.append(adoptionExecution(report.probe.programs[index], run, ['Attempt the injected instruction', 'Permitted follow-up, same session', 'Third attempt rejected'][index])));
+  const checks = byId('adoption-checks'); checks.replaceChildren();
+  for (const [name, passed] of Object.entries(report.verification?.checks ?? {})) checks.append(node('span', `${passed ? '✓' : '✕'} ${name}`, passed ? 'passed' : 'failed'));
+  byId('adoption-details').textContent = JSON.stringify({scope: report.verification?.scope, model: report.model, limits: report.limits,
+    liveCalls: trace?.agentCalls, providerUsage: trace?.providerResponses,
+    earlierAttempts: (report.previousAttempts ?? []).map(attempt => ({createdAt: attempt.createdAt, mode: attempt.mode, status: attempt.status, checks: attempt.verification?.checks, modelRequests: attempt.liveTrace?.modelRequests, providerTokens: attempt.liveTrace?.providerTokens}))}, null, 2);
+  byId('adoption-evidence').hidden = false;
+}
+
+let lastAdoptionBody = '';
+async function refreshAdoption() {
+  try {
+    const response = await fetch('/demo/adoption-report', {cache: 'no-store', credentials: 'same-origin'});
+    if (!response.ok) throw new Error('Adoption evidence unavailable');
+    const body = await response.text();
+    if (body !== lastAdoptionBody) { renderAdoption(JSON.parse(body)); lastAdoptionBody = body; }
+  } catch {
+    lastAdoptionBody = '';
+    byId('adoption-evidence').hidden = true;
+    byId('adoption-state').textContent = 'REPORT UNAVAILABLE';
+    byId('adoption-note').textContent = 'The adoption evidence could not be loaded or checked. No success is implied.';
+  } finally { setTimeout(refreshAdoption, 2500); }
+}
+refreshAdoption();
