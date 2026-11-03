@@ -2,7 +2,7 @@
 
 Status: local documentation proposal backed by the tested `CodeModeToolbox` adapter. The paid model invocation below has not been run. Use a dedicated PHP CLI worker; the runner rejects other host SAPIs.
 
-The separate [real Hugging Face audit](../huggingface-proof.md) verifies Symfony AI generation through the original audit toolbox and the same core package. It does not substitute for a live execution of this bundle recipe.
+The separate [real Hugging Face audit](../huggingface-comparison.md) verifies Symfony AI generation through the original audit toolbox and the same core package. It does not substitute for a live execution of this bundle recipe.
 
 The host authenticates a person, constructs one Code Mode session, and gives Symfony AI a toolbox for that conversation:
 

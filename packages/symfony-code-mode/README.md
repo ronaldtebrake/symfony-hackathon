@@ -52,6 +52,6 @@ Each `SessionFactory::create($hostIdentity)` returns fresh conversation state. K
 
 ## Boundary recovery
 
-[The recorded conversation](../../docs/boundary-recovery.md) asks for article 49, receives `tool_denied`, then audits published articles after the user changes scope. The server returns `isError: true` with a sanitized reason, host ledger and run ID. Private content and exception messages never become the explanation. The permitted response is a separate successful execution under the same identity and attempt budget.
+[The recorded conversation](../../docs/demo.md#optional-boundary-recovery-opening) asks for article 49, receives `tool_denied`, then audits published articles after the user changes scope. The server returns `isError: true` with a sanitized reason, host ledger and run ID. Private content and exception messages never become the explanation. The permitted response is a separate successful execution under the same identity and attempt budget.
 
-For Symfony AI, the same `CodeModeSession` can back `ToolboxInterface`; see the [tested contribution example](../../docs/contributing/README.md). The separate [real Hugging Face capture](../../docs/huggingface-proof.md) uses the original audit toolbox and the same core Code Mode package. This optional bundle adapter remains tested with a mocked provider.
+For Symfony AI, the same `CodeModeSession` can back `ToolboxInterface`; see the [tested contribution example](../../docs/contributing/README.md). The separate [real Hugging Face capture](../../docs/huggingface-comparison.md) uses the original audit toolbox and the same core Code Mode package. This optional bundle adapter remains tested with a mocked provider.

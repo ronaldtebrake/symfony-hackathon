@@ -101,7 +101,7 @@ final readonly class ReportStore
 
     public function readSecurityProof(): ?string
     {
-        return $this->readFile('security.json');
+        return $this->readFile('security.json') ?? $this->readPath($this->projectDir.'/docs/evidence/security-proof-2026-11-01.json');
     }
 
     public function readCodexProof(): ?string

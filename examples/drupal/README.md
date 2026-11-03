@@ -28,8 +28,6 @@ The journal's two listing pages use Drupal's published-content query and entity 
 
 [`content/journal.json`](content/journal.json) defines the seed content. [`scripts/present.php`](scripts/present.php) adds missing articles by deterministic UUID and applies the theme, field displays, navigation and journal view. Rerunning it reapplies presentation configuration but preserves edits to existing articles and their publication status. The current MCP read tool still returns only ID/title; it does not yet expose the new body, topic or description fields.
 
-![Drupal's Olivero journal with Symfony Code Mode branding](../../docs/images/drupal-journal.jpg)
-
 ## What must pass
 
 | Probe | Required evidence |

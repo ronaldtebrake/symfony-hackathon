@@ -40,8 +40,6 @@ The old shared output instructions also mentioned PHP on the direct path. The ne
 
 Code Mode's PHP repeatedly produced correct findings while its final model response abbreviated the JSON. Its final instruction now explicitly copies the entire PHP result into the answer. Both the executed result **and** final response must pass verification.
 
-![Actual Symfony AI execution: provider usage and host-recorded authorized MCP reads.](images/huggingface-matched-proof.jpg)
-
 ## Matched protocol: `coverage-v9`
 
 Both paths use `openai/gpt-oss-120b`, the exact original question, the unchanged synthetic Symfony fixture, the same three batch-capable MCP tools and `demo-editor` with only `content.audit`. They share safety, coverage, pagination and page-wise joining instructions. The necessary approach-specific instructions differ: direct calls use MCP aliases; Code Mode discovers schemas and submits PHP.
@@ -54,7 +52,7 @@ Security controls are unchanged: gVisor is mandatory, no guest network or host c
 
 ## Retained development history
 
-The original [Code Mode proof](huggingface-proof.md) and [failed direct baseline](huggingface-baseline.md), including their JSON and screenshots, remain unchanged as historical evidence. The new pair embeds all earlier invocations with their original verdicts.
+The original [Code Mode capture](evidence/huggingface-proof.json) and [failed direct baseline](evidence/huggingface-baseline.json) remain unchanged as historical evidence. The new pair embeds all earlier invocations with their original verdicts.
 
 | Protocol | Code Mode outcome | Direct outcome |
 | --- | --- | --- |
