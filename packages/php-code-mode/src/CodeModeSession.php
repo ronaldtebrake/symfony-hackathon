@@ -32,10 +32,11 @@ final class CodeModeSession
     public function describe(array $names): array
     {
         $definitions = $this->catalog->describe($names);
+        $descriptions = array_map(static fn (ToolDefinition $tool) => $tool->jsonSerialize() + ['php' => (new PhpToolGuide())->describe($tool)], $definitions);
         foreach ($definitions as $definition) {
             $this->described[$definition->name] = true;
         }
-        return $definitions;
+        return $descriptions;
     }
 
     public function execute(string $code): ExecutionResult

@@ -1,0 +1,21 @@
+# Optional proof integration: ordinary Symfony AI tools, separate from the existing MCP demo.
+services:
+    app.publishing_toolbox:
+        class: Symfony\AI\Agent\Toolbox\Toolbox
+        arguments:
+            $tools: ['@App\CodeMode\PublishingTools']
+            $eventDispatcher: '@event_dispatcher'
+    app.publishing_approved_toolbox:
+        class: CodeMode\Symfony\Ai\ApprovedToolbox
+        arguments:
+            $toolbox: '@app.publishing_toolbox'
+            $names: ['publishing_read', 'publishing_list']
+            $authorization: '@App\CodeMode\PublishingAuthorization'
+    app.publishing_sessions:
+        class: CodeMode\Symfony\SessionFactory
+        arguments:
+            $tools: []
+            $image: '%env(CODE_MODE_IMAGE)%'
+            $docker: '@code_mode.docker'
+            $limits: '@code_mode.limits'
+            $aiToolbox: '@app.publishing_approved_toolbox'

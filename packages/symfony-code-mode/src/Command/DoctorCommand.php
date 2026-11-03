@@ -33,7 +33,7 @@ final class DoctorCommand extends Command
         };
         $check('PHP CLI', static fn () => 'cli' === PHP_SAPI && PHP_VERSION_ID >= 80200, 'PHP '.PHP_VERSION.' CLI', 'Use PHP CLI 8.2 or newer.');
         $check('Host extensions', static fn () => extension_loaded('json') && extension_loaded('pcntl') && extension_loaded('posix'), 'json, pcntl and posix loaded', 'Install json, pcntl and posix on a Unix CLI host.');
-        $check('Approved tools', fn () => count($this->sessions->catalog()->all()) > 0, 'Explicit tool services form a valid, bounded catalog', 'Configure nonempty, unique approved ReadToolInterface services.');
+        $check('Approved tools', fn () => count($this->sessions->catalog()->all()) > 0, 'Explicit tool services form a valid, bounded catalog', 'Configure approved read services or a Symfony AI toolbox with explicit names and authorization.');
         $pinned = $check('Runner image pin', function (): bool { new GvisorSandbox($this->image, $this->docker); return true; }, 'Immutable sha256 image ID configured', 'Set CODE_MODE_IMAGE to the sha256 ID built on the gVisor Docker endpoint.');
         $check('gVisor runtime', function (): bool { $this->docker->requireGvisor(); return true; }, 'Docker endpoint supplies the required runsc profile', 'Start the dedicated Linux Docker endpoint with runsc; check CODE_MODE_DOCKER_COMMAND. No fallback.');
         $check('Runner image available', fn () => $pinned && $this->image === $this->docker->control(['image', 'inspect', '--format', '{{.Id}}', $this->image]), 'Pinned image exists on that Docker endpoint', 'Build the runner on the configured Docker endpoint and pin its image ID.');

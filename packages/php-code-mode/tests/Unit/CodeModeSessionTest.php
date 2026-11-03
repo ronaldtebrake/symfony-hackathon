@@ -46,6 +46,21 @@ final class CodeModeSessionTest extends TestCase
         (new ToolCatalog([]))->describe(['admin.delete']);
     }
 
+    public function testFailedGuideDoesNotActivateAnyToolInTheBatch(): void
+    {
+        $sandbox = $this->createMock(SandboxExecutor::class);
+        $sandbox->expects(self::never())->method('execute');
+        $catalog = new ToolCatalog([
+            new ToolDefinition('valid', 'Read', (object) ['type' => 'object']),
+            new ToolDefinition('malformed', 'Read', (object) ['type' => 'object', 'required' => 'invalid schema']),
+        ]);
+        $session = new CodeModeSession($catalog, new ToolBroker([]), $sandbox, new ExecutionIdentity('reader'));
+        try { $session->describe(['valid', 'malformed']); self::fail('Invalid metadata was accepted.'); }
+        catch (\TypeError) {}
+        try { $session->execute('return 1;'); self::fail('Failed discovery activated a tool.'); }
+        catch (SandboxException $e) { self::assertSame('discovery_required', $e->reason); }
+    }
+
     public function testInvalidNameTypesAreRejectedWithoutCoercion(): void
     {
         $this->expectException(SandboxException::class);
