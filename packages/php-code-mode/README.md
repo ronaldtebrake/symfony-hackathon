@@ -66,6 +66,8 @@ The PHP body has no `<?php` tag. `ExecutionResult::value` is untrusted guest out
 
 Handlers run in a supervised fork of the CLI host. Open database/MCP/HTTP connections **inside the handler**; do not capture already-open connections or use parent-memory mutation for state. Check object/tenant access in the authorization callback and again at the upstream service. Timeouts do not undo completed side effects. Start with read-only tools.
 
+For opt-in host timing, pass an `ExecutionTimeline` as the third `GvisorSandbox` constructor argument and read `snapshot()` after execution, including after a caught failure. It records container setup, PHP execution, broker calls and cleanup on a monotonic clock, capped at 512 spans. Broker spans include **tool arguments**, result byte counts and result digests, so treat the trace as application data and review it before sharing. No tool-result bodies, credentials or exception messages are added by this observer. It grants no capabilities and is not sent to the guest. Spans nest; broker time is already included in execution time. Tracing is disabled by default.
+
 ## MCP and progressive discovery
 
 `McpGateway` accepts a factory that opens a **fresh connected** `Mcp\Client`, plus explicit authorization callbacks keyed by approved upstream tool name. It filters discovery by this local configuration, retains input/output schemas, and creates broker handlers. Upstream annotations never grant access. Both discovery and invocation run in supervised CLI child processes; the factory must set transport byte/time limits too.

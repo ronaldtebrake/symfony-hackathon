@@ -6,7 +6,7 @@ namespace CodeMode;
 
 final readonly class GvisorSandbox implements SandboxExecutor
 {
-    public function __construct(private string $image, private DockerEngine $docker = new DockerEngine())
+    public function __construct(private string $image, private DockerEngine $docker = new DockerEngine(), private ?ExecutionTimeline $timeline = null)
     {
         if (!preg_match('/\Asha256:[a-f0-9]{64}\z/D', $image)) {
             throw new \InvalidArgumentException('Pin the locally built runner by its immutable sha256 image ID. Tags are not accepted.');
@@ -28,7 +28,9 @@ final readonly class GvisorSandbox implements SandboxExecutor
         $process = null;
         $creationAttempted = false;
         $calls = [];
+        $setupSpan = $executionSpan = null;
         try {
+            $setupSpan = $this->timeline?->begin('sandbox_setup', 'Create and inspect isolated container', ['runId' => $name]);
             // No source mounts, credentials, published ports, devices, or environment passthrough.
             $creationAttempted = true;
             $this->docker->control([
@@ -51,8 +53,10 @@ final readonly class GvisorSandbox implements SandboxExecutor
             ]);
             $inspection = json_decode($this->docker->control(['inspect', $name]), true, 64, JSON_THROW_ON_ERROR)[0];
             $this->verifyContainer($inspection, $limits);
+            $this->timeline?->end($setupSpan);
 
             $started = BrokerWorker::now();
+            $executionSpan = $this->timeline?->begin('execution', 'PHP execution, including broker waits', ['runId' => $name]);
             $deadline = $started + $limits->wallTimeMs / 1000;
             $process = $this->docker->attach($name);
             $process->write(json_encode(['code' => $code], JSON_THROW_ON_ERROR)."\n");
@@ -60,7 +64,7 @@ final readonly class GvisorSandbox implements SandboxExecutor
             $buffer = '';
             $finished = false;
             $value = null;
-            $receive = function (string $type, string $chunk) use ($process, $worker, $limits, $deadline, &$outputBytes, &$buffer, &$calls, &$finished, &$value): void {
+            $receive = function (string $type, string $chunk) use ($name, $process, $worker, $limits, $deadline, &$outputBytes, &$buffer, &$calls, &$finished, &$value): void {
                 $outputBytes += strlen($chunk);
                 if ($outputBytes > $limits->maxOutputBytes) {
                     throw new SandboxException('output_limit', 'Guest output exceeded its byte limit.');
@@ -93,9 +97,11 @@ final readonly class GvisorSandbox implements SandboxExecutor
                     $calls[] = ['name' => $frame->name, 'status' => 'pending'];
                     // Authorization and validation run before invocation, for every call.
                     $callStarted = BrokerWorker::now();
+                    $span = $this->timeline?->begin('broker', $frame->name, ['runId' => $name, 'callIndex' => count($calls) - 1, 'arguments' => $frame->arguments]);
                     try {
                         $result = $worker->call($frame->name, $frame->arguments, $deadline);
                     } catch (SandboxException $error) {
+                        $this->timeline?->end($span, 'tool_denied' === $error->reason ? 'denied' : 'failed', ['reason' => $error->reason]);
                         $calls[array_key_last($calls)]['status'] = 'tool_denied' === $error->reason ? 'denied' : 'incomplete';
                         $calls[array_key_last($calls)]['reason'] = $error->reason;
                         $calls[array_key_last($calls)]['durationMs'] = (BrokerWorker::now() - $callStarted) * 1000;
@@ -104,6 +110,7 @@ final readonly class GvisorSandbox implements SandboxExecutor
                     $calls[array_key_last($calls)]['status'] = 'succeeded';
                     $calls[array_key_last($calls)]['durationMs'] = (BrokerWorker::now() - $callStarted) * 1000;
                     $calls[array_key_last($calls)]['resultBytes'] = strlen(json_encode($result, JSON_THROW_ON_ERROR, 32));
+                    $this->timeline?->end($span, 'succeeded', ['resultBytes' => $calls[array_key_last($calls)]['resultBytes'], 'resultSha256' => hash('sha256', json_encode($result, JSON_THROW_ON_ERROR, 32))]);
                     $process->write(json_encode(['id' => $frame->id, 'value' => $result], JSON_THROW_ON_ERROR, 32)."\n");
                 }
                 if (strlen($buffer) > $limits->maxFrameBytes) {
@@ -122,8 +129,11 @@ final readonly class GvisorSandbox implements SandboxExecutor
             if (!$process->succeeded() || !$finished || '' !== $buffer) {
                 throw new SandboxException('guest_failed', 'The PHP program exited without a complete successful result.');
             }
+            $this->timeline?->end($executionSpan);
             return new ExecutionResult($value, $calls, (BrokerWorker::now() - $started) * 1000, $outputBytes, $name);
         } catch (\Throwable $error) {
+            $this->timeline?->end($setupSpan, 'failed');
+            $this->timeline?->end($executionSpan, 'failed', ['reason' => $error instanceof SandboxException ? $error->reason : 'execution_failed']);
             foreach ($calls as &$call) {
                 if ('pending' === $call['status']) {
                     $call['status'] = 'incomplete';
@@ -132,12 +142,19 @@ final readonly class GvisorSandbox implements SandboxExecutor
             unset($call);
             throw new SandboxException($error instanceof SandboxException ? $error->reason : 'execution_failed', 'Sandbox execution failed.', $calls, $error, runId: $name);
         } finally {
-            $worker->close();
-            $process?->close();
-            if ($creationAttempted) {
+            $cleanupSpan = $this->timeline?->begin('cleanup', 'Close worker and remove container', ['runId' => $name]);
+            try {
+                $worker->close();
+                $process?->close();
+                if ($creationAttempted) {
                 // Stop the container itself, not just the attached Docker client.
                 // Cleanup failure is an error, never reported as successful execution.
-                $this->docker->remove($name);
+                    $this->docker->remove($name);
+                }
+                $this->timeline?->end($cleanupSpan);
+            } catch (\Throwable $error) {
+                $this->timeline?->end($cleanupSpan, 'failed');
+                throw $error;
             }
         }
     }
