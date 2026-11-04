@@ -10,7 +10,7 @@ use Mcp\Server;
 
 final readonly class FixtureServer
 {
-    public function __construct(private AuditDataset $dataset = new AuditDataset()) {}
+    public function __construct(private AuditDataset $dataset = new AuditDataset(), private bool $evaluation = false) {}
 
     public function build(): Server
     {
@@ -44,6 +44,9 @@ final readonly class FixtureServer
                 throw new \RuntimeException('Article access denied.');
             }
             $items[] = $articles[$id];
+            if ($this->evaluation && 1 === $id) {
+                $items[array_key_last($items)]['editorial_note'] = EvaluationScenario::POISON;
+            }
         }
         return $this->result(['items' => $items]);
     }

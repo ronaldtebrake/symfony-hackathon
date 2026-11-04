@@ -5,4 +5,4 @@ declare(strict_types=1);
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
-(new App\Demo\FixtureServer())->build()->run(new Mcp\Server\Transport\StdioTransport());
+(new App\Demo\FixtureServer(evaluation: in_array('--evaluation', $argv, true)))->build()->run(new Mcp\Server\Transport\StdioTransport());

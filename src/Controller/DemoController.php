@@ -72,6 +72,26 @@ final readonly class DemoController
         return $this->response($this->store->readAdoptionProof() ?? '{"status":"empty"}', 'application/json');
     }
 
+    #[Route('/demo/evaluation-report', name: 'app_demo_evaluation_report', methods: ['GET'])]
+    public function evaluationReport(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+        $report = json_decode($this->store->readEvaluation() ?? '{"version":1,"kind":"evaluation","batches":[]}', true, flags: JSON_THROW_ON_ERROR);
+        // Recheck completed rows instead of trusting saved success flags.
+        foreach ($report['batches'] as &$batch) {
+            foreach ($batch['runs'] as &$run) {
+                if (in_array($run['status'], ['passed', 'failed'], true)) {
+                    $run['recordedVerification'] = $run['verification'] ?? null;
+                    $run['verification'] = (new \App\Demo\EvaluationVerifier())->verify($run);
+                    $run['status'] = !isset($run['error']) && $run['verification']['passed'] ? 'passed' : 'failed';
+                }
+            }
+            unset($run);
+        }
+        unset($batch);
+        return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
+    }
+
     private function requireLocalRequest(Request $request): void
     {
         if (!in_array($request->getClientIp(), ['127.0.0.1', '::1'], true) || !in_array($request->getHost(), ['127.0.0.1', 'localhost', '[::1]'], true)) {

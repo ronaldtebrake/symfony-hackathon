@@ -63,6 +63,32 @@ Wait for the denial and proposed alternative, then ask:
 
 Use matching manual footage before replacing the first 20 seconds of the main edit. The [Recovery viewer](http://127.0.0.1:8000/demo#recovery) preserves the denied result with no content, the subsequent permitted result, both PHP bodies and cleanup checks. User agreement cannot expand the tool permissions or reset the attempt budget.
 
+## Repeatable evaluation
+
+```sh
+php bin/console code-mode:evaluate --no-debug
+# Real inference credits, same suite and two predeclared repetitions:
+php bin/console code-mode:evaluate --live --no-debug
+# Smaller operator-selected capture; each selected scenario still runs both paths:
+php bin/console code-mode:evaluate --live --scenario=boundary --repetitions=1 --no-debug
+```
+
+The five scenarios cover pagination, article/media joins, a reshaped follow-up, denied draft access followed by an approved audit, and an editorial instruction embedded in published content. This is a separate synthetic Symfony MCP fixture variant; the original demo data and captures remain unchanged. The injection case explicitly requests the full record, so filtering the malicious text out before it reaches the model does not pass the exposure check. It tests that specific interaction, not general injection resistance.
+
+Each arm gets fresh state. Both use the same model ID, generation settings, questions, read tools, resource authorization and request ceiling. Only the instructions for invoking direct tools versus PHP differ. Follow-ups retain one conversation and its two PHP attempts; a denied execution consumes an attempt. Repetition two reverses arm order. There are at most 16 model requests per conversation, 1–3 repetitions, and 60 agent calls; the full default live batch schedules 20 conversations and at most 320 provider requests. Automatic Hugging Face routing does not identify the serving provider.
+
+The command declares the schedule before starting, checkpoints results and appends batches to ignored `var/demo/evaluation.json`. It uses an exclusive local lock and stops at four retained batches or an 8 MiB report limit. Archive that local file deliberately before further captures; there is no automatic deletion or retry-until-success. Interrupted rows remain pending/running, and failures retain source, answers, calls and any reported usage. The reviewed [evaluation capture](evidence/evaluation.json) is the fresh-checkout fallback. No headers, credentials or provider reasoning are captured. Only synthetic tool arguments are included.
+
+Protocol **v1** exposed ambiguous answer shapes: both models used boolean issue objects, and article reads omitted the requested wrapper. These attempts and their original verdicts remain in the report. **v2** states the exact JSON shapes for both paths. Compare within a batch; do not pool versions or select only successful runs. The verifier permits an observed failed tool call followed by recovery, while independently checking complete successful read coverage and the final answer. The viewer recomputes verification; the JSON preserves the recorded verdict as well.
+
+The 4 November capture contains **20/20 passing local reference conversations**, then two live batches of 20 conversations each. In v2, direct tools and Code Mode each pass **8/10**, with **6/10 pairs passing on both paths**. Direct tools omit article 44 from the joined findings; Code Mode's final full-article reply is malformed even though its PHP result is correct. Both paths complete boundary recovery without returning restricted content. Across all v2 attempts, direct tools use **100 requests / 285,722 tokens** and Code Mode **60 requests / 93,824 tokens**. Those totals include failures on different tasks and are not an equal-correctness savings claim. Both live batches together use 316 requests and 740,226 reported tokens. The temperature-zero repetitions produced identical per-task token counts; they are a small repeatability check, not statistically independent performance estimates.
+
+Open [Evaluation](http://127.0.0.1:8000/demo#evaluation). Its table includes every planned attempt and failed-run usage. Reference algorithms make no model requests, so their times are not model-performance measurements. Live timings describe these small local runs, not a general speed guarantee or a bill. Select a conversation, then a timeline bar to inspect the model request, exact generated PHP, actual broker arguments, result digest, or cleanup. Follow-up questions and exact answers appear below.
+
+The monotonic timeline measures runtime/catalog preflight, model invocation through deferred result conversion, container creation/inspection, attached PHP execution, broker calls, and cleanup. Broker spans nest inside PHP execution. Do not sum overlapping stages. Model time includes transport and SDK conversion; it does not isolate provider inference. Gaps and incomplete spans are left explicit, and historical captures receive no invented timing data. Successful cleanup means the runner's exact-container removal operation completed; the older security proof separately records a post-run absence check.
+
+For the recording, the evaluation can replace the 12-second matched-comparison insert: show the live batch's verified/planned counts, select the Code Mode join or boundary conversation, and click its execution bar. Keep the Codex opening and security probes; these remain separate executions.
+
 ## Refresh the other proofs
 
 | Command | What it runs |

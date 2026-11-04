@@ -40,6 +40,7 @@ Configure the [dedicated gVisor runtime and pinned runner image](packages/php-co
 - **Symfony AI + Hugging Face:** set `HUGGINGFACE_API_KEY` in ignored `.env.local`, then run `php bin/console code-mode:huggingface-compare --no-debug`. This consumes inference credits and retains earlier attempts.
 - **Local proofs without inference:** run `composer demo`, then `composer demo:security`.
 - **Existing Symfony AI tools:** run `php bin/console code-mode:adoption-proof --no-debug`, or add `--live` for a real Hugging Face article read and follow-up. Inspect [Adoption](http://127.0.0.1:8000/demo#adoption-proof) for PHP guides, generated code and the separate injected-content denial probe.
+- **Repeatable evaluation:** run `php bin/console code-mode:evaluate --no-debug`, or add `--live` for Hugging Face. Five fixed tasks, two repetitions per approach, retained failures and an [interactive execution timeline](http://127.0.0.1:8000/demo#evaluation). [Protocol and commands](docs/demo.md#repeatable-evaluation).
 
 ## Adopt and contribute
 

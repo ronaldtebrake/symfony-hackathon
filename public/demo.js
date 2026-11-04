@@ -614,3 +614,109 @@ async function refreshAdoption() {
   } finally { setTimeout(refreshAdoption, 2500); }
 }
 refreshAdoption();
+
+let evaluationReport = null;
+function evaluationBatch() { return evaluationReport?.batches?.[Number(byId('evaluation-batch').value)]; }
+function evaluationRun() { return evaluationBatch()?.runs?.[Number(byId('evaluation-run').value)]; }
+function evaluationNumber(value) { return typeof value === 'number' ? number(value) : 'Unknown'; }
+function evaluationMedian(values) {
+  if (!values.length || values.some(v => typeof v !== 'number')) return null;
+  const sorted = [...values].sort((a, b) => a - b); const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+}
+function renderEvaluationBatch() {
+  const batch = evaluationBatch(); if (!batch) return;
+  const live = batch.mode === 'live';
+  byId('evaluation-scope').textContent = `${live ? 'REAL HUGGING FACE' : 'REFERENCE ALGORITHMS · NO MODEL'} · ${batch.repetitions} predeclared repetition(s) · ${batch.scenarios.join(', ')}. ${live ? `Model: ${batch.manifest.model}. Automatic provider routing; this small synthetic suite is not a general benchmark.` : 'These runs check actual execution and verification. Their timings and payloads do not measure model performance.'} Every scheduled row is retained, including failures and unfinished runs. Order reverses on the second repetition.`;
+  const metrics = byId('evaluation-metrics'); metrics.replaceChildren();
+  const arms = ['direct', 'code'].map(approach => batch.runs.filter(r => r.approach === approach));
+  const sum = (runs, read) => {
+    const values = runs.filter(r => r.trace).map(read);
+    return values.length && values.every(v => typeof v === 'number') ? values.reduce((a, b) => a + b, 0) : null;
+  };
+  const rows = [
+    ['Verified / planned', runs => `${runs.filter(r => r.status === 'passed').length} / ${runs.length}`],
+    ['Failed / unfinished', runs => `${runs.filter(r => r.status === 'failed').length} / ${runs.filter(r => !['passed', 'failed'].includes(r.status)).length}`],
+    ['Model requests · all observed', runs => live ? evaluationNumber(sum(runs, r => r.trace.modelRequests)) : 'No model'],
+    ['Provider tokens · all observed', runs => live ? evaluationNumber(sum(runs, r => r.trace.providerTokens?.total)) : 'Not measured'],
+    ['Median conversation time', runs => { const ms = evaluationMedian(runs.map(r => r.elapsedMs)); return ms == null ? 'Awaiting complete batch' : `${(ms / 1000).toFixed(2)} s`; }],
+    ['Tool-result bytes · all observed', runs => bytes(sum(runs, r => r.trace.toolPayloadBytes))],
+  ];
+  for (const [label, read] of rows) { const row = node('tr'); row.append(node('td', label), ...arms.map(runs => node('td', read(runs)))); metrics.append(row); }
+  const pairKeys = [...new Set(batch.runs.map(r => `${r.scenario}:${r.repeat}`))];
+  const correctPairs = pairKeys.filter(key => ['direct', 'code'].every(approach => batch.runs.some(r => `${r.scenario}:${r.repeat}` === key && r.approach === approach && r.status === 'passed'))).length;
+  const failedTasks = ['direct', 'code'].map(approach => `${approach === 'code' ? 'Code Mode' : 'Direct tools'}: ${[...new Set(batch.runs.filter(r => r.approach === approach && r.status === 'failed').map(r => r.scenario))].join(', ') || 'none'}`).join('; ');
+  byId('evaluation-pairs').textContent = `${correctPairs} / ${pairKeys.length} pairs have verified answers on both paths. Failed scenarios — ${failedTasks}. Usage totals above include failed runs; equal pass counts need not mean the same tasks passed.`;
+  const select = byId('evaluation-run'); const previous = select.value; select.replaceChildren();
+  batch.runs.forEach((run, index) => { const option = node('option', `${run.scenario.replaceAll('_', ' ')} · ${run.approach === 'code' ? 'Code Mode' : 'Direct tools'} · repetition ${run.repeat} · ${run.status}`); option.value = String(index); select.append(option); });
+  const preferred = batch.runs.findIndex(run => run.scenario === 'join' && run.approach === 'code');
+  select.value = previous !== '' && Number(previous) < batch.runs.length ? previous : String(Math.max(0, preferred));
+  byId('evaluation-protocol').textContent = JSON.stringify({mode: batch.mode, manifest: batch.manifest, runs: batch.runs.map(r => ({scenario:r.scenario, approach:r.approach, repeat:r.repeat, status:r.status, checks:r.verification?.checks, requests:r.trace?.modelRequests, tokens:r.trace?.providerTokens}))}, null, 2);
+  renderEvaluationRun();
+}
+function renderEvaluationRun() {
+  const run = evaluationRun(); if (!run) return;
+  const checks = run.verification?.checks ?? {};
+  const outcome = run.verification?.passed === true ? 'Answer, complete read coverage, host calls and timing verified.'
+    : `${checks.answersCorrect === false ? 'Final answer does not match the required JSON. ' : 'Required evidence is incomplete. '}${checks.boundaryEnforced === true ? 'Access boundary verified. ' : ''}${run.scenario === 'injection' && checks.injectionExposureObserved === true ? 'Injected content reached the model.' : ''}`;
+  byId('evaluation-outcome').textContent = `${run.status.toUpperCase()} · ${run.scenario.replaceAll('_', ' ')} · ${run.approach === 'code' ? 'Isolated PHP' : 'Direct tools'}${run.error ? ` · ${run.error}` : ''}. ${outcome}`;
+  byId('evaluation-span').open = false;
+  byId('evaluation-span-details').textContent = '';
+  const timeline = byId('evaluation-timeline'); timeline.replaceChildren();
+  if (run.trace) {
+    const spans = run.trace.timeline.filter(s => s.stage !== 'agent_tool');
+    const width = 1000, left = 260, plot = 620;
+    const duration = Math.max(run.elapsedMs ?? 0, ...spans.map(s => s.endMs ?? s.startMs), 1);
+    const svgNode = (tag, attrs) => { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const [k,v] of Object.entries(attrs)) e.setAttribute(k, String(v)); return e; };
+    const svg = svgNode('svg', {viewBox:`0 0 ${width} ${spans.length * 28 + 42}`, role:'group', 'aria-label':'Execution timeline; select a stage to inspect evidence'});
+    const start = svgNode('text', {x:left, y:18}); start.textContent = '0 s'; svg.append(start);
+    const end = svgNode('text', {x:left + plot, y:18, 'text-anchor':'end'}); end.textContent = `${(duration / 1000).toFixed(2)} s`; svg.append(end);
+    spans.forEach((span, i) => {
+      const y = 35 + i * 28;
+      const g = svgNode('g', {class:`stage-${span.stage} span-${span.status}`, role:'button', tabindex:0, 'aria-label':`${span.label}, ${span.status}, ${span.durationMs == null ? 'duration unknown' : span.durationMs.toFixed(1) + ' milliseconds'}`});
+      const label = svgNode('text', {x:12, y:y + 12}); label.textContent = span.stage === 'execution' ? 'PHP + broker waits' : span.stage === 'sandbox_setup' ? 'Sandbox setup' : span.stage === 'cleanup' ? 'Cleanup' : span.stage === 'preflight' ? 'Runtime + MCP discovery' : span.label;
+      const rail = svgNode('line', {x1:left, x2:left + plot, y1:y + 7, y2:y + 7, class:'timeline-rail'});
+      const bar = svgNode('rect', {x:left + plot * span.startMs / duration, y, width:Math.max(3, plot * (span.durationMs ?? 0) / duration), height:16, rx:3, class:'timeline-bar'});
+      const time = svgNode('text', {x:width - 12, y:y + 12, 'text-anchor':'end'}); time.textContent = span.durationMs == null ? 'Unknown' : `${span.durationMs.toFixed(0)} ms`;
+      const inspect = () => {
+        const execution = run.trace.executions.find(e => e.runId === span.evidence.runId);
+        byId('evaluation-span-details').textContent = JSON.stringify({span, ...(execution ? {execution, php:run.trace.programs[execution.programIndex]} : {}), ...(span.stage === 'model' ? {response:run.trace.providerResponses.find(r => r.request === span.evidence.request)} : {})}, null, 2);
+        byId('evaluation-span').open = true;
+      };
+      g.addEventListener('click', inspect); g.addEventListener('keydown', event => { if (['Enter', ' '].includes(event.key)) { event.preventDefault(); inspect(); } });
+      const hit = svgNode('rect', {x:0, y:y - 4, width, height:24, class:'timeline-hit'});
+      g.append(hit, label, rail, bar, time); svg.append(g);
+    });
+    timeline.append(svg);
+  }
+  const turns = byId('evaluation-turns'); turns.replaceChildren();
+  (run.turns ?? []).forEach((turn, i) => { const card = node('article'); const detail = node('details', undefined, 'proof-details'); detail.append(node('summary', 'Exact answer'), node('pre', turn.answer)); card.append(node('span', `Turn ${i + 1}`, 'eyebrow'), node('blockquote', turn.question), detail); turns.append(card); });
+  const programs = byId('evaluation-programs'); programs.replaceChildren();
+  (run.trace?.programs ?? []).forEach((source, i) => { programs.append(node('p', `${run.mode === 'live' ? 'Model-generated' : 'Fixed reference'} PHP · attempt ${i + 1}`, 'code-caption'), node('pre', source)); });
+  byId('evaluation-checks').textContent = JSON.stringify({verification:run.verification, recordedVerification:run.recordedVerification, brokerCalls:run.trace?.brokerCalls, agentCalls:run.trace?.agentCalls}, null, 2);
+}
+function renderEvaluation(report) {
+  if (report.kind !== 'evaluation' || report.version !== 1 || !Array.isArray(report.batches)) throw new Error('Unknown evaluation report');
+  evaluationReport = report;
+  byId('evaluation-state').textContent = report.batches.length ? 'RECORDED EVALUATION' : 'NOT RUN';
+  byId('evaluation-evidence').hidden = report.batches.length === 0;
+  if (!report.batches.length) { byId('evaluation-note').textContent = 'Run the operator command to record the suite. No model performance or execution result is implied before capture.'; return; }
+  const select = byId('evaluation-batch'); const previous = select.value; select.replaceChildren();
+  report.batches.forEach((batch, index) => { const option = node('option', `${batch.mode === 'live' ? 'Hugging Face' : 'Local reference'} · ${batch.manifest.protocol} · ${new Date(batch.createdAt).toLocaleString()} · ${batch.status}`); option.value = String(index); select.append(option); });
+  select.value = previous !== '' && Number(previous) < report.batches.length ? previous : String(report.batches.length - 1);
+  renderEvaluationBatch();
+}
+byId('evaluation-batch').addEventListener('change', () => { byId('evaluation-run').replaceChildren(); renderEvaluationBatch(); });
+byId('evaluation-run').addEventListener('change', renderEvaluationRun);
+let lastEvaluationBody = '';
+async function refreshEvaluation() {
+  try {
+    const response = await fetch('/demo/evaluation-report', {cache:'no-store', credentials:'same-origin'});
+    if (!response.ok) throw new Error('Evaluation unavailable');
+    const body = await response.text();
+    if (body !== lastEvaluationBody) { renderEvaluation(JSON.parse(body)); lastEvaluationBody = body; }
+  } catch {
+    lastEvaluationBody = ''; byId('evaluation-evidence').hidden = true; byId('evaluation-state').textContent = 'REPORT UNAVAILABLE';
+  } finally { setTimeout(refreshEvaluation, 5000); }
+}
+refreshEvaluation();

@@ -4,6 +4,7 @@ These are reviewed execution captures, not generated example outputs. The read-o
 
 | Capture | What it establishes | Viewer |
 | --- | --- | --- |
+| [Repeated Symfony evaluation](evaluation.json) | Five scenarios, direct tools and Code Mode, predeclared repetitions, reference and real Hugging Face batches, retained failures, source and host-measured timelines. Protocol versions remain separate; results are independently rechecked. | Evaluation |
 | [Hugging Face matched pair](huggingface-pair.json) | Real Symfony AI generation, identical model/question/data/permissions, both answers correct, measured usage, generated PHP and host calls. Includes all 21 development invocations and their original verdicts. | Live comparison / Symfony AI run |
 | [Native Symfony AI adoption](adoption-proof.json) | Existing `#[AsTool]` services through the reusable adapter: live article read and follow-up, PHP discovery guides, source and calls. The model receives the injected text and stays within scope. A separate fixed PHP probe proves denial, recovery and attempt exhaustion. The first live attempt and local setup history are retained. | Adoption |
 | [Codex conversation](codex-conversation-2026-11-01.json) | Desktop chat, 1 November at 12:42 CET: audit and recomputed repair plan, two generated programs, twenty successful calls. Both results matched the fixture. Model and MCP process identity were not in the export. | Codex run |

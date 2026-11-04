@@ -6,6 +6,7 @@ namespace App\Demo;
 
 final class RunTrace
 {
+    public function __construct(public readonly ?\CodeMode\ExecutionTimeline $timeline = null) {}
     public array $events = [];
     public array $brokerCalls = [];
     public array $programs = [];

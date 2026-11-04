@@ -65,6 +65,8 @@ final class AuditToolbox implements ToolboxInterface
         $name = $this->aliases[$toolCall->getName()] ?? '';
         $arguments = $toolCall->getArguments();
         $brokerCallCount = count($this->trace->brokerCalls);
+        $span = $this->trace->timeline?->begin('agent_tool', $toolCall->getName(), ['agentCallIndex' => count($this->trace->agentCalls)]);
+        $status = 'succeeded';
         try {
             if ('' === $name || $this->trace->agentToolCalls > 60) {
                 throw new SandboxException('tool_call_limit', 'Unknown tool or session call limit exceeded.');
@@ -90,6 +92,7 @@ final class AuditToolbox implements ToolboxInterface
             $this->trace->record('tool_result', $name, ['bytesToModel' => strlen($encoded)]);
             return new ToolResult($toolCall, $encoded);
         } catch (\Throwable $error) {
+            $status = 'failed';
             $reason = $error instanceof SandboxException ? $error->reason : 'tool_failed';
             $this->trace->record('rejected', $name, ['reason' => $reason]);
             $encoded = json_encode(['error' => ['reason' => $reason, 'message' => 'The host rejected or could not complete this tool call. Check the described schema and available execution budget.']], JSON_THROW_ON_ERROR);
@@ -103,6 +106,8 @@ final class AuditToolbox implements ToolboxInterface
             $this->trace->toolPayloadBytes += strlen($encoded);
             $this->trace->captureCall($toolCall->getName(), $arguments, $encoded);
             return new ToolResult($toolCall, $encoded);
+        } finally {
+            $this->trace->timeline?->end($span, $status);
         }
     }
 
@@ -129,12 +134,16 @@ final class AuditToolbox implements ToolboxInterface
         $limits = new ExecutionLimits(wallTimeMs: 15000, toolTimeMs: 3000, maxToolCalls: 30);
         $worker = new BrokerWorker($this->broker, new ExecutionIdentity('demo-editor', ['content.audit']), array_keys($this->definitions), $limits);
         $started = BrokerWorker::now();
+        $span = $this->trace->timeline?->begin('broker', $name, ['callIndex' => count($this->trace->brokerCalls), 'arguments' => (object) $arguments]);
         try {
             $value = $worker->call($name, (object) $arguments, $started + 3);
             $this->trace->brokerCalls[] = ['name' => $name, 'status' => 'succeeded', 'durationMs' => (BrokerWorker::now() - $started) * 1000, 'resultBytes' => strlen(json_encode($value, JSON_THROW_ON_ERROR, 32))];
+            $this->trace->timeline?->end($span, 'succeeded', ['resultBytes' => strlen(json_encode($value, JSON_THROW_ON_ERROR, 32)), 'resultSha256' => hash('sha256', json_encode($value, JSON_THROW_ON_ERROR, 32))]);
             return $value;
         } catch (\Throwable $error) {
-            $this->trace->brokerCalls[] = ['name' => $name, 'status' => 'incomplete', 'durationMs' => (BrokerWorker::now() - $started) * 1000];
+            $denied = $error instanceof SandboxException && 'tool_denied' === $error->reason;
+            $this->trace->brokerCalls[] = ['name' => $name, 'status' => $denied ? 'denied' : 'incomplete', 'reason' => $error instanceof SandboxException ? $error->reason : 'tool_failed', 'durationMs' => (BrokerWorker::now() - $started) * 1000];
+            $this->trace->timeline?->end($span, $denied ? 'denied' : 'failed', ['reason' => $error instanceof SandboxException ? $error->reason : 'tool_failed']);
             throw $error;
         } finally {
             $worker->close();

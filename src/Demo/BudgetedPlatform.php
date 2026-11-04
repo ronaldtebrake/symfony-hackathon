@@ -38,7 +38,17 @@ final readonly class BudgetedPlatform implements PlatformInterface
             // Only tool-message digests; no headers, credentials, assistant reasoning or transport debug.
             $this->trace->requestEvidence[] = ['request' => $index, 'toolMessages' => $tools];
         }
-        $deferred = $this->inner->invoke($model, $input, $options);
+        $span = $this->trace->timeline?->begin('model', 'Model request '.$index, ['request' => $index]);
+        try {
+            $deferred = $this->inner->invoke($model, $input, $options);
+        } catch (\Throwable $error) {
+            $this->trace->timeline?->end($span, 'failed');
+            throw $error;
+        }
+        $deferred->onConvert(function (ResultInterface $result) use ($span): ResultInterface {
+            $this->trace->timeline?->end($span);
+            return $result;
+        });
         if ($this->trace->captureDetails) {
             $deferred->onConvert(function (ResultInterface $result) use ($index): ResultInterface {
                 $usage = $result->getMetadata()->get('token_usage');

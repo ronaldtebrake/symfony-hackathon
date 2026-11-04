@@ -25,6 +25,17 @@ final readonly class ReportStore
         $this->saveFile('adoption.json', $report);
     }
 
+    public function saveEvaluation(array $report): void
+    {
+        $this->saveFile('evaluation.json', $report, 8 * 1048576);
+    }
+
+    public function readEvaluation(): ?string
+    {
+        $local = $this->projectDir.'/var/demo/evaluation.json';
+        return $this->readPath(is_file($local) ? $local : $this->projectDir.'/docs/evidence/evaluation.json', 8 * 1048576);
+    }
+
     public function readAdoptionProof(): ?string
     {
         return $this->readFile('adoption.json') ?? $this->readPath($this->projectDir.'/docs/evidence/adoption-proof.json');
@@ -80,14 +91,14 @@ final readonly class ReportStore
         return json_encode((new HuggingFaceComparison())->build($code, json_decode($direct, true, flags: JSON_THROW_ON_ERROR)), JSON_THROW_ON_ERROR);
     }
 
-    private function saveFile(string $filename, array $report): void
+    private function saveFile(string $filename, array $report, int $maxBytes = 1048576): void
     {
         $directory = $this->projectDir.'/var/demo';
         if (!is_dir($directory) && !mkdir($directory, 0700, true) && !is_dir($directory)) {
             throw new \RuntimeException('Cannot create the local report directory.');
         }
         $data = json_encode($report, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR, 40);
-        if (strlen($data) > 1048576) {
+        if (strlen($data) > $maxBytes) {
             throw new \RuntimeException('The demo report exceeds its size limit.');
         }
         $temporary = tempnam($directory, 'report-');
@@ -130,16 +141,16 @@ final readonly class ReportStore
         return $this->readPath($this->projectDir.'/var/demo/'.$filename);
     }
 
-    private function readPath(string $path): ?string
+    private function readPath(string $path, int $maxBytes = 1048576): ?string
     {
         if (!is_file($path)) {
             return null;
         }
-        $data = file_get_contents($path, false, null, 0, 1048577);
+        $data = file_get_contents($path, false, null, 0, $maxBytes + 1);
         if (false === $data) {
             throw new \RuntimeException('Cannot read the local report.');
         }
-        if (strlen($data) > 1048576) {
+        if (strlen($data) > $maxBytes) {
             throw new \RuntimeException('The local report exceeds its size limit.');
         }
         return $data;
