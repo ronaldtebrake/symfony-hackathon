@@ -43,7 +43,7 @@ final class EvaluateCommand extends Command
         }
         try {
             $report = json_decode($this->store->readEvaluation() ?? '{"version":1,"kind":"evaluation","batches":[]}', true, flags: JSON_THROW_ON_ERROR);
-            if (count($report['batches']) >= 4) { $io->error('Four batches are retained. Review and archive the local report before further captures.'); return self::INVALID; }
+            if (count($report['batches']) >= 8) { $io->error('Eight batches are retained. Review and archive the local report before further captures.'); return self::INVALID; }
             $scenarios = 'all' === $scenario ? EvaluationScenario::IDS : [$scenario];
             $batch = count($report['batches']);
             $report['batches'][] = ['id' => bin2hex(random_bytes(8)), 'createdAt' => gmdate(DATE_ATOM), 'status' => 'running',

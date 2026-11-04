@@ -9,7 +9,7 @@ use Symfony\AI\Agent\Agent;
 use Symfony\AI\Platform\Bridge\HuggingFace\Factory;
 use Symfony\AI\Platform\Message\{Message, MessageBag};
 use Symfony\AI\Platform\PlatformInterface;
-use Symfony\AI\Platform\Result\ToolCall;
+use Symfony\AI\Platform\Result\{TextResult, ToolCall};
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /** Operator-only evaluation. Each arm gets fresh state; follow-ups retain that state. */
@@ -31,7 +31,11 @@ final readonly class EvaluationRunner
             $trace->timeline->end($setup);
             if ($live) {
                 $platform = $testPlatform ?? Factory::createPlatform(BackendFactory::env('HUGGINGFACE_API_KEY'), httpClient: $this->httpClient->withOptions(['timeout' => 45, 'max_duration' => 60, 'max_redirects' => 0]));
-                $agent = new Agent(new BudgetedPlatform($platform, $trace, EvaluationScenario::REQUEST_LIMIT), BackendFactory::env('HUGGINGFACE_MODEL', 'openai/gpt-oss-120b'), name: 'evaluation-'.$approach, toolbox: $context->toolbox, maxToolCalls: 60);
+                $budget = new BudgetedPlatform($platform, $trace, EvaluationScenario::REQUEST_LIMIT);
+                $model = BackendFactory::env('HUGGINGFACE_MODEL', 'openai/gpt-oss-120b');
+                $agent = new Agent($budget, $model, name: 'evaluation-'.$approach, toolbox: $context->toolbox, maxToolCalls: 60);
+                // Same model, settings and request budget. No tool executor in the review phase.
+                $reviewer = new Agent($budget, $model, name: 'evaluation-review');
                 $messages = new MessageBag(Message::forSystem($prompt));
             } elseif ('code' === $approach) {
                 $this->call($context, 'tools_search', ['query' => 'article metadata media']);
@@ -43,6 +47,25 @@ final readonly class EvaluationRunner
                     $execution = $agent->call($messages->with(Message::ofUser($question)), EvaluationScenario::SETTINGS);
                     $answer = (string) $execution->getContent();
                     $messages = $execution->getMessages();
+                    $turn['draft'] = ['answer' => $answer, 'endMs' => $trace->timeline->now(), 'modelRequest' => $trace->modelRequests];
+                    $turn['review'] = ['instruction' => EvaluationScenario::REVIEW_PROMPT, 'modelRequest' => $trace->modelRequests + 1,
+                        'agentCallStart' => count($trace->agentCalls), 'executionStart' => count($trace->executions), 'status' => 'running'];
+                    // Checkpoint before the paid review, including a malformed draft or interrupted review.
+                    $report['turns'][$index] = $turn + ['answer' => $answer, 'endMs' => $trace->timeline->now(), 'agentCallEnd' => count($trace->agentCalls), 'executionEnd' => count($trace->executions)];
+                    $report['trace'] = $this->snapshot($trace);
+                    $progress?->__invoke($report);
+                    $review = $reviewer->call($messages->withSystemMessage(Message::forSystem($prompt.' '.EvaluationScenario::REVIEW_PROMPT)), EvaluationScenario::SETTINGS);
+                    $result = $review->getResult();
+                    if (!$result instanceof TextResult) { throw new \UnexpectedValueException('Review must return text without tool execution.'); }
+                    $turn['review']['answer'] = $result->getContent();
+                    $turn['review']['status'] = 'complete';
+                    $turn['answerSource'] = EvaluationScenario::selectAnswer($answer, $result->getContent());
+                    // Keep accepted history and restore the original prompt for the follow-up.
+                    // Invalid reviews remain in the report without replacing a valid draft in history.
+                    if ('review' === $turn['answerSource']) {
+                        $answer = $result->getContent();
+                        $messages = $review->getMessages()->withSystemMessage(Message::forSystem($prompt));
+                    }
                 } else {
                     if ('code' === $approach) {
                         $value = $this->call($context, 'php_execute', ['code' => EvaluationScenario::program($scenario, $index)]);
@@ -53,7 +76,7 @@ final readonly class EvaluationRunner
                     }
                     $answer = json_encode($value, JSON_THROW_ON_ERROR);
                 }
-                $report['turns'][] = $turn + ['answer' => $answer, 'endMs' => $trace->timeline->now(), 'agentCallEnd' => count($trace->agentCalls), 'executionEnd' => count($trace->executions)];
+                $report['turns'][$index] = $turn + ['answer' => $answer, 'endMs' => $trace->timeline->now(), 'agentCallEnd' => count($trace->agentCalls), 'executionEnd' => count($trace->executions)];
                 $report['trace'] = $this->snapshot($trace);
                 $progress?->__invoke($report);
             }
@@ -98,6 +121,7 @@ final readonly class EvaluationRunner
             'limits' => ['modelRequestsPerConversation' => EvaluationScenario::REQUEST_LIMIT, 'agentCallsPerConversation' => 60, 'phpAttemptsPerConversation' => 2, 'wallTimeMsPerExecution' => 15000, 'toolTimeMs' => 3000, 'toolCallsPerExecution' => 30],
             'runtime' => 'runsc', 'image' => BackendFactory::env('CODE_MODE_IMAGE'),
             'questions' => array_combine(EvaluationScenario::IDS, array_map(EvaluationScenario::questions(...), EvaluationScenario::IDS)),
+            'review' => ['perTurn' => 1, 'instruction' => EvaluationScenario::REVIEW_PROMPT, 'answerSelection' => EvaluationScenario::ANSWER_SELECTION, 'toolsAvailable' => false, 'oracleFeedback' => false, 'costIncluded' => true, 'questionsUnchangedFrom' => 'symfony-evaluation-v2'],
             'scope' => 'Synthetic Symfony MCP fixture. Reference runs check execution only, with no model. Live comparisons include all planned repetitions and failures. Provider routing is automatic; no billing claim. Follow-ups keep one bounded session. Timeline spans nest and must not be summed across stages.'];
     }
 }

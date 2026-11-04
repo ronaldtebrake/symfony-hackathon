@@ -6,9 +6,10 @@ namespace App\Demo;
 
 use Symfony\AI\Platform\Model;
 use Symfony\AI\Platform\Message\MessageBag;
-use Symfony\AI\Platform\Message\ToolCallMessage;
+use Symfony\AI\Platform\Message\{AssistantMessage, ToolCallMessage, UserMessage};
 use Symfony\AI\Platform\FinishReason\FinishReason;
 use Symfony\AI\Platform\Result\ResultInterface;
+use Symfony\AI\Platform\Result\TextResult;
 use Symfony\AI\Platform\TokenUsage\TokenUsageInterface;
 use Symfony\AI\Platform\ModelCatalog\ModelCatalogInterface;
 use Symfony\AI\Platform\PlatformInterface;
@@ -28,15 +29,19 @@ final readonly class BudgetedPlatform implements PlatformInterface
         $this->trace->record('model_request', 'Hugging Face inference request '.$this->trace->modelRequests);
         $index = $this->trace->modelRequests;
         if ($this->trace->captureDetails && $input instanceof MessageBag) {
-            $tools = [];
+            $tools = $users = $assistants = [];
             foreach ($input as $message) {
                 if ($message instanceof ToolCallMessage) {
                     $text = $message->asText() ?? '';
                     $tools[] = ['bytes' => strlen($text), 'sha256' => hash('sha256', $text)];
                 }
+                if ($message instanceof UserMessage) { $users[] = hash('sha256', $message->asText() ?? ''); }
+                if ($message instanceof AssistantMessage && null !== $message->asText()) { $assistants[] = hash('sha256', $message->asText()); }
             }
-            // Only tool-message digests; no headers, credentials, assistant reasoning or transport debug.
-            $this->trace->requestEvidence[] = ['request' => $index, 'toolMessages' => $tools];
+            // Digests bind questions, draft and tool evidence without persisting provider reasoning or credentials.
+            $this->trace->requestEvidence[] = ['request' => $index, 'toolMessages' => $tools,
+                'systemPromptSha256' => hash('sha256', (string) $input->getSystemMessage()?->getContent()),
+                'userMessageSha256' => $users, 'assistantMessageSha256' => $assistants, 'toolsAvailable' => [] !== ($options['tools'] ?? [])];
         }
         $span = $this->trace->timeline?->begin('model', 'Model request '.$index, ['request' => $index]);
         try {
@@ -54,6 +59,7 @@ final readonly class BudgetedPlatform implements PlatformInterface
                 $usage = $result->getMetadata()->get('token_usage');
                 $finish = $result->getMetadata()->get('finish_reason');
                 $this->trace->providerResponses[] = ['request' => $index,
+                    'answerSha256' => $result instanceof TextResult ? hash('sha256', $result->getContent()) : null,
                     'finishReason' => $finish instanceof FinishReason ? $finish->getCase()->value : null,
                     'tokens' => $usage instanceof TokenUsageInterface ? ['prompt' => $usage->getPromptTokens(), 'completion' => $usage->getCompletionTokens(), 'total' => $usage->getTotalTokens()] : null];
                 return $result;
