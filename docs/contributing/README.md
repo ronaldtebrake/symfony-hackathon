@@ -1,4 +1,4 @@
-# Upstream contributions to make after the hackathon work
+# Upstream contributions
 
 These are prepared proposals, **not submitted issues or pull requests**. No upstream acceptance or Packagist publication is implied. The existing Symfony demo and its matched Hugging Face comparison remain unchanged.
 
@@ -61,6 +61,35 @@ php docs/contributing/verify-sdk-proposal.php
 This checks seven JSON shapes, structured denial round-tripping, invalid JSON rejection and unchanged existing factories in a **temporary copy**. It does not patch vendor code or substitute for upstream CI. Structured-only responses are already documented by [#605](https://github.com/modelcontextprotocol/php-sdk/pull/605), which closed [#521](https://github.com/modelcontextprotocol/php-sdk/issues/521). The current class and related issue search were checked on 3 November 2026; no equivalent factory was found.
 
 Before submitting, recheck current main and open PRs, agree the helper's scope/name with maintainers, port the cases into SDK tests and run its `make ci` and applicable conformance checks. Follow the [contribution and licensing guide](https://github.com/modelcontextprotocol/php-sdk/blob/main/CONTRIBUTING.md). The production adapter continues to use supported SDK APIs.
+
+## Research follow-up — 4 November 2026
+
+The [hackathon brief](https://symfony.com/hackathon) explicitly values runnable clones, a short real demo and feedback before 1.0. The strongest next steps are a fresh-application installation proof and small, reviewable upstream contributions. The 90-second manual recording and formal submission remain pending. Research is not submission; nothing below has been posted upstream.
+
+| Opportunity | Concrete contribution or acceptance check |
+| --- | --- |
+| [Symfony AI Code Mode #2508](https://github.com/symfony/ai/issues/2508) | Offer the existing native-tool recipe and the complete v4 evaluation: all five tasks twice, correct answers on both paths, review costs and failed predecessors retained. Ask for feedback on the extension boundary, not adoption of the entire runner into core. |
+| [Symfony AI execution traces #2342](https://github.com/symfony/ai/issues/2342) | A new fit for our timeline: contribute regression cases for deferred model completion, failed calls, review costs, nested broker time and cleanup. Align with the existing RFC instead of proposing another trace API. The current evaluation is non-streaming; it does not prove streamed completion handling. |
+| [PHP MCP SDK library listing](https://github.com/modelcontextprotocol/php-sdk#php-libraries-using-the-mcp-sdk) | The SDK explicitly invites library entries. First make the core and bundle independently installable from tagged packages, then propose an entry. The structured-result factory above remains a small separate proposal; the fetched [upstream class](https://github.com/modelcontextprotocol/php-sdk/blob/main/src/Schema/Result/CallToolResult.php) still has only `success()` and `error()` convenience factories. Recheck open PRs before submitting. |
+| [Tool API schema/validation matrix #3583061](https://git.drupalcode.org/project/tool/-/work_items/3583061) | Supply MCP-invoker cases for nested arrays/maps, nullable outputs, invalid values and advertised-schema agreement, using real discovery and invocation. The issue specifically asks for invoker and output dimensions. |
+
+For adoption, prove a clean Symfony application can require the packages, register its own `#[AsTool]` service and policy, run `code-mode:doctor`, and complete an authorized/denied pair using the documented dedicated gVisor engine. Today's repository path packages and five-minute evidence viewer do not establish that installation experience. Keep the runtime requirement explicit; do not substitute ordinary Docker to shorten setup.
+
+One optional Symfony-native use case is a read-only request-performance investigation: compose approved, redacted profiler/log readers to identify a slow route, then reshape the result to explain repeated queries. [Mate's current documentation](https://symfony.com/doc/current/ai/components/mate.html) exposes profiler, container and log tools through a CLI and Composer extensions. Its landing page still describes an MCP server, so verify the installed version's extension contract before integrating. Tool response shapes are outside Mate's compatibility promise; use a bounded adapter and synthetic local traffic, never arbitrary shell or unrestricted log access.
+
+Keep any new evaluation separate from v4. A seeded holdout dataset and catalog sizes of 16/64/128 would test generalization and discovery; the existing five scenarios use one small fixture and do not establish either. [Cloudflare's guidance](https://developers.cloudflare.com/agents/tools/codemode/) also recommends direct calls for simple tasks, so include a single-read case rather than claiming Code Mode always wins.
+
+### Drupal checks and contribution targets
+
+Read-only checks on 4 November found Drupal **11.4.11 / PHP 8.3.19** bootstrapping successfully, a connected database, the reader limited to `access content` and `read code mode articles`, the published fixture allowed, the unpublished fixture denied, and anonymous MCP permission absent. `ddev composer audit --locked --format=json` reported no known advisories or abandoned packages. This does not establish security coverage for prereleases; no new guest execution or HTTP authentication test was performed in this research pass.
+
+- Keep **Tool beta12 + Tool Bridge beta5** paired. The [bridge release notes](https://www.drupal.org/project/mcp_server_tool_bridge/releases/1.0.0-beta5) explain the ToolRunner change and why beta4 loses input names with beta12. Pin actual `tools/list` names and result shapes in tests; project-page examples are not a substitute for wire captures.
+- Add two-user isolation, permission revocation between calls, field access, translation and unpublished-revision cases before expanding beyond scalar reads. [MCP Server beta7](https://www.drupal.org/project/mcp_server) includes a fix for cross-user resource-cache leakage; our lockfile already includes it. The current title-read proof does not exercise resources, handles or cross-account reuse.
+- **Concrete error-contract proposal:** installed Tool Bridge beta5 has `FailureCategory` internally, but its `failure()` method returns text with MCP `isError` and does not transmit the category. Our gateway safely collapses it to `tool_failed`. Propose documented, machine-readable input/access/runtime classification with sanitized values, plus tests that preserve the distinction through adapters. Never parse denial prose or use upstream metadata to grant access.
+- [Tool beta12](https://www.drupal.org/project/tool/releases/1.0.0-beta12) supports `#[ToolMethod]` on ordinary service methods with explicit access checks. This offers a smaller future Drupal adoption example, parallel to Symfony's `#[AsTool]`, without changing the generic Code Mode runner.
+- Evaluate [Agent Access](https://www.drupal.org/project/agent_access) for a later authenticated HTTP integration instead of implementing OAuth ourselves. It is an experimental recipe, not covered by Drupal's security advisory policy. Keep the current local STDIO proof until per-user identity, scopes, denial and revocation are tested. Drupal remains a portability example; the main judge demonstration stays Symfony-focused.
+
+Some GitHub issue/PR pages could not be refreshed and the authenticated API was rate-limited. Existing notes about #2623 and #605 retain their earlier check date; their current status and duplicate PRs need rechecking before submission. The public hackathon project gallery required SymfonyConnect, so no competitive ranking was established.
 
 ## Reproduce and share
 
