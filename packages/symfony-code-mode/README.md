@@ -2,6 +2,8 @@
 
 Approve existing Symfony read services, then give an MCP client three tools: discover, describe, execute PHP. The generic runner and broker remain in `ronaldtebrake/php-code-mode`. This bundle supplies the Symfony container integration and a STDIO entry point.
 
+For a consumer with its own dependencies, native `#[AsTool]` service and authorization policy, use the [separate Symfony app](../../examples/symfony/README.md). Its recorded allowed/denied proof runs through this bundle's normal MCP server without the main demo autoloader.
+
 These packages are currently installed through this repository's Composer path repositories; they are not published to Packagist. To try the integration here:
 
 ```bash

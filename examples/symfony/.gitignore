@@ -1,0 +1,5 @@
+/vendor/
+/var/
+/.phpunit.cache/
+/.phpunit.result.cache
+/.env.local

@@ -1,0 +1,198 @@
+{
+    "format": "fresh-symfony-adoption/v1",
+    "capturedAt": "2026-11-04T11:59:04+00:00",
+    "status": "passed",
+    "scope": "Independent Symfony app, mirrored local Composer packages, real MCP STDIO and gVisor. Operator-written PHP; no model call. Not a Packagist or remote-authentication proof.",
+    "installation": {
+        "versions": {
+            "ronaldtebrake/php-code-mode": "0.1.0",
+            "ronaldtebrake/symfony-code-mode": "0.1.0",
+            "symfony/framework-bundle": "v7.4.23",
+            "symfony/ai-agent": "v1.0.0-BETA1",
+            "mcp/sdk": "v0.9.0"
+        },
+        "composerLockSha256": "cd2e61ddbb8d70bff5df0916fed14997ba4cc72bf122e785adc5cd7c3e4711e7",
+        "symlink": false,
+        "pathRepositorySourcesPresent": false,
+        "rootAutoloaderPresent": false
+    },
+    "runtime": {
+        "image": "sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b",
+        "hostPhp": "8.3.19",
+        "prerequisites": {
+            "ready": true,
+            "checks": [
+                {
+                    "name": "PHP CLI",
+                    "passed": true,
+                    "detail": "PHP 8.3.19 CLI"
+                },
+                {
+                    "name": "Host extensions",
+                    "passed": true,
+                    "detail": "json, pcntl and posix loaded"
+                },
+                {
+                    "name": "Approved tools",
+                    "passed": true,
+                    "detail": "Explicit tool services form a valid, bounded catalog"
+                },
+                {
+                    "name": "Runner image pin",
+                    "passed": true,
+                    "detail": "Immutable sha256 image ID configured"
+                },
+                {
+                    "name": "gVisor runtime",
+                    "passed": true,
+                    "detail": "Docker endpoint supplies the required runsc profile"
+                },
+                {
+                    "name": "Runner image available",
+                    "passed": true,
+                    "detail": "Pinned image exists on that Docker endpoint"
+                }
+            ],
+            "limits": {
+                "wallTimeMs": 5000,
+                "toolTimeMs": 1000,
+                "memoryMiB": 128,
+                "maxToolCalls": 10,
+                "executionAttempts": 2
+            },
+            "scope": "Configuration checks only; no guest execution, application tool invocation or model request. Run the execution proofs separately."
+        }
+    },
+    "discovery": {
+        "search": [
+            {
+                "name": "publication_read",
+                "description": "Read the ID and title of a published article by integer ID."
+            }
+        ],
+        "describe": [
+            {
+                "name": "publication_read",
+                "description": "Read the ID and title of a published article by integer ID.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "id"
+                    ],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "required": [
+                        "id",
+                        "title"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "id": {
+                            "type": "integer"
+                        },
+                        "title": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "php": {
+                    "example": "$result = $tools->call('publication_read', ['id' => 1]);",
+                    "arguments": "array{\"id\": int}",
+                    "returns": "stdClass{\"id\": int, \"title\": string}",
+                    "notes": "Illustrative placeholders; pass arguments as an associative PHP array and obey inputSchema. Tool-result JSON objects become stdClass (->field); JSON lists become PHP arrays. Shapes are documentation, not PHP declarations or permission grants. Unknown/referenced schemas remain mixed; no external references are fetched."
+                }
+            }
+        ],
+        "unapproved": {
+            "error": {
+                "reason": "tool_denied"
+            },
+            "toolCalls": [],
+            "runId": null
+        }
+    },
+    "cases": [
+        {
+            "case": "authorized",
+            "php": "return $tools->call(\"publication_read\", [\"id\" => 101]);",
+            "isError": false,
+            "trace": {
+                "value": {
+                    "id": 101,
+                    "title": "A Symfony application owns its tools"
+                },
+                "toolCalls": [
+                    {
+                        "name": "publication_read",
+                        "status": "succeeded",
+                        "durationMs": 3.804500011028722,
+                        "resultBytes": 57
+                    }
+                ],
+                "durationMs": 238.90891601331532,
+                "runId": "code-mode-f2ce8dc0f779b6f6ecbc72a3a1f68ebb"
+            },
+            "containerRemoved": true
+        },
+        {
+            "case": "restricted",
+            "php": "return $tools->call(\"publication_read\", [\"id\" => 202]);",
+            "isError": true,
+            "trace": {
+                "error": {
+                    "reason": "tool_denied"
+                },
+                "toolCalls": [
+                    {
+                        "name": "publication_read",
+                        "status": "denied",
+                        "reason": "tool_denied",
+                        "durationMs": 1.3762500020675361
+                    }
+                ],
+                "runId": "code-mode-58406558720a548a530d31aaf9c4f1fb"
+            },
+            "containerRemoved": true
+        }
+    ],
+    "thirdAttempt": {
+        "error": {
+            "reason": "execution_limit"
+        },
+        "toolCalls": [],
+        "runId": null
+    },
+    "checks": {
+        "own_vendor:CodeMode\\CodeModeSession": true,
+        "own_vendor:CodeMode\\Symfony\\SessionFactory": true,
+        "no_demo_autoloader": true,
+        "copied_package:php-code-mode": true,
+        "copied_package:symfony-code-mode": true,
+        "prerequisites_ready": true,
+        "bounded_defaults": true,
+        "three_code_mode_tools": true,
+        "only_explicitly_approved_tool_discovered": true,
+        "unapproved_tool_hidden": true,
+        "approved_schema_described": true,
+        "authorized:real_execution": true,
+        "authorized:container_removed": true,
+        "authorized:one_host_observed_call": true,
+        "authorized:value": true,
+        "authorized:host_status": true,
+        "restricted:real_execution": true,
+        "restricted:container_removed": true,
+        "restricted:one_host_observed_call": true,
+        "restricted:denied": true,
+        "restricted:no_value": true,
+        "separate_containers_same_session": true,
+        "failure_consumes_attempt": true,
+        "restricted_fixture_not_returned": true
+    }
+}

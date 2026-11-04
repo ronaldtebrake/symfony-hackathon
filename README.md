@@ -46,6 +46,8 @@ Configure the [dedicated gVisor runtime and pinned runner image](packages/php-co
 
 The [core Composer package](packages/php-code-mode/README.md) exposes `tools_search`, `tools_describe` and `php_execute`. The [Symfony bundle](packages/symfony-code-mode/README.md) adapts existing `#[AsTool]` services through an explicit allowlist and host policy, and supplies `code-mode:serve` and `code-mode:doctor`. Both are repository path packages, not yet published to Packagist.
 
+Try the [independent Symfony app](examples/symfony/README.md): its own Composer install, approved native tool and policy. The [fresh-install capture](docs/evidence/fresh-symfony-app.json) proves an authorized read, a denied private read, container cleanup and attempt exhaustion through real MCP and gVisor, without the main demo's autoloader or package source directories.
+
 [PHP MCP SDK and Symfony contribution proposals](docs/contributing/README.md) include executable checks. The optional [Drupal DDEV example](examples/drupal/README.md) demonstrates reuse with Tool API; the judge demo stays Symfony-only.
 
 Run `composer check` for application and package checks. With the dedicated runtime configured, run `composer test:sandbox` and `composer test:demo` sequentially. [Verification scope](packages/php-code-mode/docs/verification.md).
