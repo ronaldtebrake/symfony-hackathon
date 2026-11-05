@@ -12,7 +12,7 @@
   <div class="shell">
     <header class="masthead">
       <a class="brand" href="/demo" aria-label="Symfony Code Mode home"><span class="brand-mark">{ }</span><span>Symfony Code Mode</span></a>
-      <nav aria-label="Main navigation"><a href="#evaluation">Evaluation</a><a href="#live-comparison">Comparison</a><a href="#huggingface-proof">Symfony AI</a><a href="#adoption-proof">Adoption</a><a class="active" href="#codex-run">Codex</a><a href="#recovery">Recovery</a><a href="#workbench">Reference</a><a href="#security-proof">Security</a></nav>
+      <nav aria-label="Main navigation"><a href="#performance">Performance</a><a href="#evaluation">Evaluation</a><a href="#live-comparison">Comparison</a><a href="#huggingface-proof">Symfony AI</a><a href="#adoption-proof">Adoption</a><a class="active" href="#codex-run">Codex</a><a href="#recovery">Recovery</a><a href="#workbench">Reference</a><a href="#security-proof">Security</a></nav>
       <span class="local-badge"><span class="dot"></span> Local workbench</span>
     </header>
 
@@ -30,6 +30,29 @@
           <p class="run-help">Connect this STDIO MCP server to Codex with the project as its working directory. Ask follow-up questions in that conversation.</p>
           <p class="run-help">The recorded Codex conversation is ready to inspect below. Generate the separate comparison with <code>composer demo</code> and the security proof with <code>composer demo:security</code>.</p>
         </div>
+      </section>
+
+      <section id="performance" class="hf-proof" aria-labelledby="performance-heading">
+        <div class="section-top"><div><span class="eyebrow">Symfony Profiler + redacted logs → isolated PHP</span><h2 id="performance-heading">Find the repeated work.</h2></div><span id="performance-state" class="run-state" role="status">Loading performance proof</span></div>
+        <p id="performance-note" class="codex-intro">A reference investigation and follow-up over real synthetic Symfony requests. Operator-written PHP; no model called. Conversations stay in the agent.</p>
+        <div class="proof-run"><code>php bin/console code-mode:performance-mcp --no-debug</code><span>Separate STDIO server for your agent · approved reads only</span></div>
+        <div id="performance-evidence" hidden>
+          <div class="hf-metrics"><div><span>SQL executions · before → after</span><strong id="performance-counts">—</strong></div><div><span>Repeated author lookups</span><strong id="performance-repeats">—</strong></div><div><span>Response content</span><strong id="performance-output">—</strong></div><div><span>Restricted profile + logs</span><strong id="performance-denials">—</strong></div></div>
+          <p id="performance-finding" class="live-verdict"></p>
+          <p class="measurement-note">Measured locally using PDO SQLite and a custom Symfony Profiler collector. Each query includes 2 ms of deliberately simulated latency. These timings illustrate the fixture, not production speed or model-token savings. The joined implementation is prepared by the operator; Code Mode only reads and compares.</p>
+          <div class="inspector"><div class="table-scroll"><table><caption class="sr-only">Actual before and after request measurements</caption><thead><tr><th>Implementation</th><th>Route</th><th>Queries</th><th>Request time</th><th>Query spans, including simulated waits</th></tr></thead><tbody id="performance-measurements"></tbody></table></div></div>
+          <div class="evaluation-controls"><label for="performance-turn">Inspect the reference sequence</label><select id="performance-turn"><option value="0">1 · Investigate the slow request</option><option value="1">2 · Compare the joined implementation</option></select></div>
+          <blockquote id="performance-question"></blockquote>
+          <div class="inspector"><div class="inspector-heading"><div class="tabs" role="tablist" aria-label="Inspect performance evidence"><button role="tab" id="performance-tab-php" aria-selected="true" aria-controls="performance-panel-php">Executed PHP</button><button role="tab" id="performance-tab-calls" aria-selected="false" aria-controls="performance-panel-calls" tabindex="-1">Actual tool calls</button><button role="tab" id="performance-tab-result" aria-selected="false" aria-controls="performance-panel-result" tabindex="-1">Returned evidence</button></div></div>
+            <div role="tabpanel" id="performance-panel-php" aria-labelledby="performance-tab-php"><p class="code-caption">Exact reference PHP executed in gVisor · not model-generated</p><pre id="performance-php" tabindex="0"></pre></div>
+            <div role="tabpanel" id="performance-panel-calls" aria-labelledby="performance-tab-calls" hidden><div class="table-scroll"><table><caption class="sr-only">Host-observed approved reader calls</caption><thead><tr><th>#</th><th>Tool</th><th>Status</th><th>Result</th><th>Time</th></tr></thead><tbody id="performance-calls"></tbody></table></div><p id="performance-run" class="measurement-note"></p></div>
+            <div role="tabpanel" id="performance-panel-result" aria-labelledby="performance-tab-result" hidden><pre id="performance-result" tabindex="0"></pre></div>
+          </div>
+          <details class="proof-details"><summary>Restricted reads, attempt limit and verification</summary><pre id="performance-boundaries" tabindex="0"></pre></details>
+          <div id="performance-history"></div>
+          <p id="performance-date" class="measurement-note"></p>
+        </div>
+        <div class="proof-run"><code>php bin/console code-mode:performance-proof --no-debug</code><span>Capture fresh local evidence · needs pdo_sqlite + gVisor · no inference credits</span></div>
       </section>
 
       <section id="evaluation" class="hf-proof" aria-labelledby="evaluation-heading">

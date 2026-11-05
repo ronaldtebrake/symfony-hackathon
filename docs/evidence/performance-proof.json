@@ -1,0 +1,1208 @@
+{
+    "version": 1,
+    "kind": "performance-proof",
+    "mode": "reference",
+    "status": "complete",
+    "createdAt": "2026-11-05T09:01:36+00:00",
+    "runtime": "runsc",
+    "image": "sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b",
+    "source": "Synthetic Symfony HttpKernel requests, persisted\/reloaded Symfony Profiler custom collector, real PDO SQLite queries and PSR-3 log events. Raw profiles are deleted before tools are exposed.",
+    "projection": "Public fields only before the broker starts; explicit bounded output schemas on all three readers.",
+    "simulatedLatencyPerQueryMs": 2,
+    "modelRequests": 0,
+    "limits": {
+        "wallTimeMs": 5000,
+        "memoryMiB": 128,
+        "maxToolCalls": 10,
+        "attemptsPerSession": 2
+    },
+    "discovery": {
+        "search": [
+            {
+                "name": "perf_requests",
+                "description": "List approved synthetic Symfony requests in items. Compare baseline (before\/control) durations, then select a requestId for the other readers."
+            },
+            {
+                "name": "perf_profile",
+                "description": "Read an approved request by requestId from perf_requests. Returns query fingerprint counts and timings, never SQL or parameters. Timings include 2 ms simulated latency per query."
+            },
+            {
+                "name": "perf_logs",
+                "description": "Read allowlisted log events correlated by an approved requestId. Raw messages, headers and log context are unavailable."
+            }
+        ],
+        "describe": [
+            {
+                "name": "perf_requests",
+                "description": "List approved synthetic Symfony requests in items. Compare baseline (before\/control) durations, then select a requestId for the other readers.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": [],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "items"
+                    ],
+                    "properties": {
+                        "items": {
+                            "type": "array",
+                            "maxItems": 8,
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                    "requestId",
+                                    "route",
+                                    "variant",
+                                    "durationMs",
+                                    "queryCount"
+                                ],
+                                "properties": {
+                                    "requestId": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9-]{0,31}$"
+                                    },
+                                    "route": {
+                                        "enum": [
+                                            "catalog_naive",
+                                            "catalog_joined",
+                                            "health"
+                                        ]
+                                    },
+                                    "variant": {
+                                        "enum": [
+                                            "before",
+                                            "after",
+                                            "control"
+                                        ]
+                                    },
+                                    "durationMs": {
+                                        "type": "number",
+                                        "minimum": 0
+                                    },
+                                    "queryCount": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 32
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "php": {
+                    "example": "$result = $tools->call('perf_requests', []);",
+                    "arguments": "array{}",
+                    "returns": "stdClass{\"items\": list<stdClass{\"requestId\": string, \"route\": mixed, \"variant\": mixed, \"durationMs\": int|float, \"queryCount\": int}>}",
+                    "notes": "Illustrative placeholders; pass arguments as an associative PHP array and obey inputSchema. Tool-result JSON objects become stdClass (->field); JSON lists become PHP arrays. Shapes are documentation, not PHP declarations or permission grants. Unknown\/referenced schemas remain mixed; no external references are fetched."
+                }
+            },
+            {
+                "name": "perf_profile",
+                "description": "Read an approved request by requestId from perf_requests. Returns query fingerprint counts and timings, never SQL or parameters. Timings include 2 ms simulated latency per query.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "requestId": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "requestId"
+                    ],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "requestId",
+                        "route",
+                        "variant",
+                        "durationMs",
+                        "queryCount",
+                        "queryTimeMs",
+                        "queries",
+                        "outputSha256"
+                    ],
+                    "properties": {
+                        "requestId": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9-]{0,31}$"
+                        },
+                        "route": {
+                            "enum": [
+                                "catalog_naive",
+                                "catalog_joined",
+                                "health"
+                            ]
+                        },
+                        "variant": {
+                            "enum": [
+                                "before",
+                                "after",
+                                "control"
+                            ]
+                        },
+                        "durationMs": {
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "queryCount": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 32
+                        },
+                        "queryTimeMs": {
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "outputSha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "queries": {
+                            "type": "array",
+                            "maxItems": 32,
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                    "fingerprint",
+                                    "count",
+                                    "durationMs"
+                                ],
+                                "properties": {
+                                    "fingerprint": {
+                                        "enum": [
+                                            "catalog_list",
+                                            "author_by_id",
+                                            "catalog_join"
+                                        ]
+                                    },
+                                    "count": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 32
+                                    },
+                                    "durationMs": {
+                                        "type": "number",
+                                        "minimum": 0
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "php": {
+                    "example": "$result = $tools->call('perf_profile', ['requestId' => 'replace_me']);",
+                    "arguments": "array{\"requestId\": string}",
+                    "returns": "stdClass{\"requestId\": string, \"route\": mixed, \"variant\": mixed, \"durationMs\": int|float, \"queryCount\": int, \"queryTimeMs\": int|float, \"outputSha256\": string, \"queries\": list<stdClass{\"fingerprint\": mixed, \"count\": int, \"durationMs\": int|float}>}",
+                    "notes": "Illustrative placeholders; pass arguments as an associative PHP array and obey inputSchema. Tool-result JSON objects become stdClass (->field); JSON lists become PHP arrays. Shapes are documentation, not PHP declarations or permission grants. Unknown\/referenced schemas remain mixed; no external references are fetched."
+                }
+            },
+            {
+                "name": "perf_logs",
+                "description": "Read allowlisted log events correlated by an approved requestId. Raw messages, headers and log context are unavailable.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "requestId": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "requestId"
+                    ],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "requestId",
+                        "events"
+                    ],
+                    "properties": {
+                        "requestId": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9-]{0,31}$"
+                        },
+                        "events": {
+                            "type": "array",
+                            "maxItems": 16,
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                    "event",
+                                    "level",
+                                    "count"
+                                ],
+                                "properties": {
+                                    "event": {
+                                        "enum": [
+                                            "authors.loaded_individually",
+                                            "catalog.rendered",
+                                            "health.ok"
+                                        ]
+                                    },
+                                    "level": {
+                                        "enum": [
+                                            "info",
+                                            "warning"
+                                        ]
+                                    },
+                                    "count": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 100
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "php": {
+                    "example": "$result = $tools->call('perf_logs', ['requestId' => 'replace_me']);",
+                    "arguments": "array{\"requestId\": string}",
+                    "returns": "stdClass{\"requestId\": string, \"events\": list<stdClass{\"event\": mixed, \"level\": mixed, \"count\": int}>}",
+                    "notes": "Illustrative placeholders; pass arguments as an associative PHP array and obey inputSchema. Tool-result JSON objects become stdClass (->field); JSON lists become PHP arrays. Shapes are documentation, not PHP declarations or permission grants. Unknown\/referenced schemas remain mixed; no external references are fetched."
+                }
+            }
+        ]
+    },
+    "turns": [
+        {
+            "question": "Investigate the slowest approved baseline request. Correlate its query fingerprints with its logs and identify repeated work. Do not change code or data.",
+            "php": "$requests = $tools->call(\"perf_requests\", []);\n$baseline = array_values(array_filter($requests->items, fn($r) => $r->variant !== \"after\"));\nusort($baseline, fn($a, $b) => $b->durationMs <=> $a->durationMs);\n$slow = $baseline[0];\n$profile = $tools->call(\"perf_profile\", [\"requestId\" => $slow->requestId]);\n$logs = $tools->call(\"perf_logs\", [\"requestId\" => $slow->requestId]);\nreturn [\"profile\" => $profile,\n    \"repeatedQueries\" => array_values(array_filter($profile->queries, fn($q) => $q->count > 1)),\n    \"events\" => $logs->events];",
+            "isError": false,
+            "trace": {
+                "value": {
+                    "profile": {
+                        "requestId": "profile-01",
+                        "route": "catalog_naive",
+                        "variant": "before",
+                        "durationMs": 35.00875,
+                        "queryCount": 13,
+                        "queryTimeMs": 32.463542,
+                        "queries": [
+                            {
+                                "fingerprint": "catalog_list",
+                                "count": 1,
+                                "durationMs": 2.534208
+                            },
+                            {
+                                "fingerprint": "author_by_id",
+                                "count": 12,
+                                "durationMs": 29.929333999999997
+                            }
+                        ],
+                        "outputSha256": "6ca49f711036be971f8fc1c93f8d3c7a3cd993721197ead387b79ffacb6c2504"
+                    },
+                    "repeatedQueries": [
+                        {
+                            "fingerprint": "author_by_id",
+                            "count": 12,
+                            "durationMs": 29.929333999999997
+                        }
+                    ],
+                    "events": [
+                        {
+                            "event": "authors.loaded_individually",
+                            "level": "warning",
+                            "count": 12
+                        },
+                        {
+                            "event": "catalog.rendered",
+                            "level": "info",
+                            "count": 12
+                        }
+                    ]
+                },
+                "toolCalls": [
+                    {
+                        "name": "perf_requests",
+                        "status": "succeeded",
+                        "durationMs": 4.87279100343585,
+                        "resultBytes": 326
+                    },
+                    {
+                        "name": "perf_profile",
+                        "status": "succeeded",
+                        "durationMs": 1.2731669994536787,
+                        "resultBytes": 362
+                    },
+                    {
+                        "name": "perf_logs",
+                        "status": "succeeded",
+                        "durationMs": 1.2898329878225923,
+                        "resultBytes": 161
+                    }
+                ],
+                "durationMs": 257.7934169967193,
+                "runId": "code-mode-1e4e4aea95e824286cc6f7e678a7d0a0"
+            },
+            "containerRemoved": true
+        },
+        {
+            "question": "Now compare the before and after catalogue implementations. Did the joined version return identical content with fewer queries? Keep the same read permissions.",
+            "php": "$requests = $tools->call(\"perf_requests\", []);\n$comparison = [];\nforeach ($requests->items as $request) {\n    if (!in_array($request->variant, [\"before\", \"after\"], true)) { continue; }\n    $profile = $tools->call(\"perf_profile\", [\"requestId\" => $request->requestId]);\n    $logs = $tools->call(\"perf_logs\", [\"requestId\" => $request->requestId]);\n    $comparison[$request->variant] = [\"profile\" => $profile, \"events\" => $logs->events];\n}\n$before = $comparison[\"before\"][\"profile\"];\n$after = $comparison[\"after\"][\"profile\"];\nreturn $comparison + [\"sameOutput\" => $before->outputSha256 === $after->outputSha256,\n    \"queriesSaved\" => $before->queryCount - $after->queryCount];",
+            "isError": false,
+            "trace": {
+                "value": {
+                    "before": {
+                        "profile": {
+                            "requestId": "profile-01",
+                            "route": "catalog_naive",
+                            "variant": "before",
+                            "durationMs": 35.00875,
+                            "queryCount": 13,
+                            "queryTimeMs": 32.463542,
+                            "queries": [
+                                {
+                                    "fingerprint": "catalog_list",
+                                    "count": 1,
+                                    "durationMs": 2.534208
+                                },
+                                {
+                                    "fingerprint": "author_by_id",
+                                    "count": 12,
+                                    "durationMs": 29.929333999999997
+                                }
+                            ],
+                            "outputSha256": "6ca49f711036be971f8fc1c93f8d3c7a3cd993721197ead387b79ffacb6c2504"
+                        },
+                        "events": [
+                            {
+                                "event": "authors.loaded_individually",
+                                "level": "warning",
+                                "count": 12
+                            },
+                            {
+                                "event": "catalog.rendered",
+                                "level": "info",
+                                "count": 12
+                            }
+                        ]
+                    },
+                    "after": {
+                        "profile": {
+                            "requestId": "profile-02",
+                            "route": "catalog_joined",
+                            "variant": "after",
+                            "durationMs": 2.845541,
+                            "queryCount": 1,
+                            "queryTimeMs": 2.638708,
+                            "queries": [
+                                {
+                                    "fingerprint": "catalog_join",
+                                    "count": 1,
+                                    "durationMs": 2.638708
+                                }
+                            ],
+                            "outputSha256": "6ca49f711036be971f8fc1c93f8d3c7a3cd993721197ead387b79ffacb6c2504"
+                        },
+                        "events": [
+                            {
+                                "event": "catalog.rendered",
+                                "level": "info",
+                                "count": 12
+                            }
+                        ]
+                    },
+                    "sameOutput": true,
+                    "queriesSaved": 12
+                },
+                "toolCalls": [
+                    {
+                        "name": "perf_requests",
+                        "status": "succeeded",
+                        "durationMs": 3.8248329947236925,
+                        "resultBytes": 326
+                    },
+                    {
+                        "name": "perf_profile",
+                        "status": "succeeded",
+                        "durationMs": 1.2699999788310379,
+                        "resultBytes": 362
+                    },
+                    {
+                        "name": "perf_logs",
+                        "status": "succeeded",
+                        "durationMs": 1.2745829881168902,
+                        "resultBytes": 161
+                    },
+                    {
+                        "name": "perf_profile",
+                        "status": "succeeded",
+                        "durationMs": 1.2747920118272305,
+                        "resultBytes": 286
+                    },
+                    {
+                        "name": "perf_logs",
+                        "status": "succeeded",
+                        "durationMs": 1.2369579926598817,
+                        "resultBytes": 92
+                    }
+                ],
+                "durationMs": 214.8757499817293,
+                "runId": "code-mode-be2ec9bfd89f75ebaabc4b2b33926ad1"
+            },
+            "containerRemoved": true
+        }
+    ],
+    "denials": [
+        {
+            "php": "return $tools->call(\"perf_profile\", [\"requestId\" => \"profile-04\"]);",
+            "isError": true,
+            "trace": {
+                "error": {
+                    "reason": "tool_denied"
+                },
+                "toolCalls": [
+                    {
+                        "name": "perf_profile",
+                        "status": "denied",
+                        "reason": "tool_denied",
+                        "durationMs": 1.530749985249713
+                    }
+                ],
+                "runId": "code-mode-f44f0484e05300e4961c7d1eb34872a5"
+            },
+            "containerRemoved": true
+        },
+        {
+            "php": "return $tools->call(\"perf_logs\", [\"requestId\" => \"profile-04\"]);",
+            "isError": true,
+            "trace": {
+                "error": {
+                    "reason": "tool_denied"
+                },
+                "toolCalls": [
+                    {
+                        "name": "perf_logs",
+                        "status": "denied",
+                        "reason": "tool_denied",
+                        "durationMs": 1.3961670047137886
+                    }
+                ],
+                "runId": "code-mode-a8658b946d05463dab1e2174d99fb872"
+            },
+            "containerRemoved": true
+        }
+    ],
+    "exhausted": {
+        "error": {
+            "reason": "execution_limit"
+        },
+        "toolCalls": [],
+        "runId": null
+    },
+    "verification": {
+        "passed": true,
+        "checks": {
+            "referenceProvenance": true,
+            "sandboxConfiguration": true,
+            "approvedDiscovery": true,
+            "exactPrograms": true,
+            "slowRouteIdentified": true,
+            "repeatedQueryCorrelated": true,
+            "comparisonMatchesInvestigation": true,
+            "sameActualOutput": true,
+            "thirteenQueriesBecomeOne": true,
+            "followUpCorrelated": true,
+            "measuredTimesConsistent": true,
+            "hostCallsMatch": true,
+            "successfulExecutions": true,
+            "restrictedProfileAndLogsDenied": true,
+            "cleanup": true,
+            "distinctRealExecutions": true,
+            "attemptBudgetEnforced": true,
+            "noPrivateCanary": true
+        }
+    },
+    "completedAt": "2026-11-05T09:01:39+00:00",
+    "previousAttempts": [
+        {
+            "version": 1,
+            "kind": "performance-proof",
+            "mode": "reference",
+            "status": "failed",
+            "createdAt": "2026-11-04T19:01:03+00:00",
+            "runtime": "runsc",
+            "image": "sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b",
+            "source": "Synthetic Symfony HttpKernel requests, persisted\/reloaded Symfony Profiler custom collector, real PDO SQLite queries and PSR-3 log events. Raw profiles are deleted before tools are exposed.",
+            "simulatedLatencyPerQueryMs": 2,
+            "modelRequests": 0,
+            "limits": {
+                "wallTimeMs": 5000,
+                "memoryMiB": 128,
+                "maxToolCalls": 10,
+                "attemptsPerSession": 2
+            },
+            "discovery": {
+                "search": [
+                    {
+                        "name": "perf_requests",
+                        "description": "List approved synthetic Symfony requests with bounded timings and query counts. No filters or filesystem paths."
+                    },
+                    {
+                        "name": "perf_profile",
+                        "description": "Read an approved request by requestId from perf_requests. Returns query fingerprint counts and timings, never SQL or parameters. Timings include 2 ms simulated latency per query."
+                    },
+                    {
+                        "name": "perf_logs",
+                        "description": "Read allowlisted log events correlated by an approved requestId. Raw messages, headers and log context are unavailable."
+                    }
+                ],
+                "describe": [
+                    {
+                        "name": "perf_requests",
+                        "description": "List approved synthetic Symfony requests with bounded timings and query counts. No filters or filesystem paths.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": [],
+                            "additionalProperties": false
+                        },
+                        "php": {
+                            "example": "$result = $tools->call('perf_requests', []);",
+                            "arguments": "array{}",
+                            "returns": "mixed (no output schema declared)",
+                            "notes": "Illustrative placeholders; pass arguments as an associative PHP array and obey inputSchema. Tool-result JSON objects become stdClass (->field); JSON lists become PHP arrays. Shapes are documentation, not PHP declarations or permission grants. Unknown\/referenced schemas remain mixed; no external references are fetched."
+                        }
+                    },
+                    {
+                        "name": "perf_profile",
+                        "description": "Read an approved request by requestId from perf_requests. Returns query fingerprint counts and timings, never SQL or parameters. Timings include 2 ms simulated latency per query.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "requestId": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "requestId"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "php": {
+                            "example": "$result = $tools->call('perf_profile', ['requestId' => 'replace_me']);",
+                            "arguments": "array{\"requestId\": string}",
+                            "returns": "mixed (no output schema declared)",
+                            "notes": "Illustrative placeholders; pass arguments as an associative PHP array and obey inputSchema. Tool-result JSON objects become stdClass (->field); JSON lists become PHP arrays. Shapes are documentation, not PHP declarations or permission grants. Unknown\/referenced schemas remain mixed; no external references are fetched."
+                        }
+                    },
+                    {
+                        "name": "perf_logs",
+                        "description": "Read allowlisted log events correlated by an approved requestId. Raw messages, headers and log context are unavailable.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "requestId": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "requestId"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "php": {
+                            "example": "$result = $tools->call('perf_logs', ['requestId' => 'replace_me']);",
+                            "arguments": "array{\"requestId\": string}",
+                            "returns": "mixed (no output schema declared)",
+                            "notes": "Illustrative placeholders; pass arguments as an associative PHP array and obey inputSchema. Tool-result JSON objects become stdClass (->field); JSON lists become PHP arrays. Shapes are documentation, not PHP declarations or permission grants. Unknown\/referenced schemas remain mixed; no external references are fetched."
+                        }
+                    }
+                ]
+            },
+            "turns": [
+                {
+                    "question": "Investigate the slowest approved baseline request. Correlate its query fingerprints with its logs and identify repeated work. Do not change code or data.",
+                    "php": "$requests = $tools->call(\"perf_requests\", []);\n$baseline = array_values(array_filter($requests->items, fn($r) => $r->variant !== \"after\"));\nusort($baseline, fn($a, $b) => $b->durationMs <=> $a->durationMs);\n$slow = $baseline[0];\n$profile = $tools->call(\"perf_profile\", [\"requestId\" => $slow->requestId]);\n$logs = $tools->call(\"perf_logs\", [\"requestId\" => $slow->requestId]);\nreturn [\"profile\" => $profile,\n    \"repeatedQueries\" => array_values(array_filter($profile->queries, fn($q) => $q->count > 1)),\n    \"events\" => $logs->events];",
+                    "isError": false,
+                    "trace": {
+                        "value": {
+                            "profile": {
+                                "requestId": "profile-01",
+                                "route": "catalog_naive",
+                                "variant": "before",
+                                "durationMs": 39.774916,
+                                "queryCount": 13,
+                                "queryTimeMs": 38.174416,
+                                "queries": [
+                                    {
+                                        "fingerprint": "catalog_list",
+                                        "count": 1,
+                                        "durationMs": 3.013875
+                                    },
+                                    {
+                                        "fingerprint": "author_by_id",
+                                        "count": 12,
+                                        "durationMs": 35.160541
+                                    }
+                                ],
+                                "outputSha256": "6ca49f711036be971f8fc1c93f8d3c7a3cd993721197ead387b79ffacb6c2504"
+                            },
+                            "repeatedQueries": [
+                                {
+                                    "fingerprint": "author_by_id",
+                                    "count": 12,
+                                    "durationMs": 35.160541
+                                }
+                            ],
+                            "events": [
+                                {
+                                    "event": "authors.loaded_individually",
+                                    "level": "warning",
+                                    "count": 12
+                                },
+                                {
+                                    "event": "catalog.rendered",
+                                    "level": "info",
+                                    "count": 12
+                                }
+                            ]
+                        },
+                        "toolCalls": [
+                            {
+                                "name": "perf_requests",
+                                "status": "succeeded",
+                                "durationMs": 3.043292002985254,
+                                "resultBytes": 328
+                            },
+                            {
+                                "name": "perf_profile",
+                                "status": "succeeded",
+                                "durationMs": 1.5169589896686375,
+                                "resultBytes": 354
+                            },
+                            {
+                                "name": "perf_logs",
+                                "status": "succeeded",
+                                "durationMs": 1.1250830139033496,
+                                "resultBytes": 161
+                            }
+                        ],
+                        "durationMs": 226.01179202320054,
+                        "runId": "code-mode-d601b1f892aafa50d28a38b5daddf57d"
+                    },
+                    "containerRemoved": true
+                },
+                {
+                    "question": "Now compare the before and after catalogue implementations. Did the joined version return identical content with fewer queries? Keep the same read permissions.",
+                    "php": "$requests = $tools->call(\"perf_requests\", []);\n$comparison = [];\nforeach ($requests->items as $request) {\n    if (!in_array($request->variant, [\"before\", \"after\"], true)) { continue; }\n    $profile = $tools->call(\"perf_profile\", [\"requestId\" => $request->requestId]);\n    $logs = $tools->call(\"perf_logs\", [\"requestId\" => $request->requestId]);\n    $comparison[$request->variant] = [\"profile\" => $profile, \"events\" => $logs->events];\n}\n$before = $comparison[\"before\"][\"profile\"];\n$after = $comparison[\"after\"][\"profile\"];\nreturn $comparison + [\"sameOutput\" => $before->outputSha256 === $after->outputSha256,\n    \"queriesSaved\" => $before->queryCount - $after->queryCount];",
+                    "isError": false,
+                    "trace": {
+                        "value": {
+                            "before": {
+                                "profile": {
+                                    "requestId": "profile-01",
+                                    "route": "catalog_naive",
+                                    "variant": "before",
+                                    "durationMs": 39.774916,
+                                    "queryCount": 13,
+                                    "queryTimeMs": 38.174416,
+                                    "queries": [
+                                        {
+                                            "fingerprint": "catalog_list",
+                                            "count": 1,
+                                            "durationMs": 3.013875
+                                        },
+                                        {
+                                            "fingerprint": "author_by_id",
+                                            "count": 12,
+                                            "durationMs": 35.160541
+                                        }
+                                    ],
+                                    "outputSha256": "6ca49f711036be971f8fc1c93f8d3c7a3cd993721197ead387b79ffacb6c2504"
+                                },
+                                "events": [
+                                    {
+                                        "event": "authors.loaded_individually",
+                                        "level": "warning",
+                                        "count": 12
+                                    },
+                                    {
+                                        "event": "catalog.rendered",
+                                        "level": "info",
+                                        "count": 12
+                                    }
+                                ]
+                            },
+                            "after": {
+                                "profile": {
+                                    "requestId": "profile-02",
+                                    "route": "catalog_joined",
+                                    "variant": "after",
+                                    "durationMs": 2.745542,
+                                    "queryCount": 1,
+                                    "queryTimeMs": 2.65825,
+                                    "queries": [
+                                        {
+                                            "fingerprint": "catalog_join",
+                                            "count": 1,
+                                            "durationMs": 2.65825
+                                        }
+                                    ],
+                                    "outputSha256": "6ca49f711036be971f8fc1c93f8d3c7a3cd993721197ead387b79ffacb6c2504"
+                                },
+                                "events": [
+                                    {
+                                        "event": "catalog.rendered",
+                                        "level": "info",
+                                        "count": 12
+                                    }
+                                ]
+                            },
+                            "sameOutput": true,
+                            "queriesSaved": 12
+                        },
+                        "toolCalls": [
+                            {
+                                "name": "perf_requests",
+                                "status": "succeeded",
+                                "durationMs": 1.5418329858221114,
+                                "resultBytes": 328
+                            },
+                            {
+                                "name": "perf_profile",
+                                "status": "succeeded",
+                                "durationMs": 1.5230420103762299,
+                                "resultBytes": 354
+                            },
+                            {
+                                "name": "perf_logs",
+                                "status": "succeeded",
+                                "durationMs": 1.5287499991245568,
+                                "resultBytes": 161
+                            },
+                            {
+                                "name": "perf_profile",
+                                "status": "succeeded",
+                                "durationMs": 1.5203749935608357,
+                                "resultBytes": 284
+                            },
+                            {
+                                "name": "perf_logs",
+                                "status": "succeeded",
+                                "durationMs": 1.0860839975066483,
+                                "resultBytes": 92
+                            }
+                        ],
+                        "durationMs": 181.530332978582,
+                        "runId": "code-mode-bbfa2328b612b533af83d587077b4c1f"
+                    },
+                    "containerRemoved": true
+                }
+            ],
+            "denials": [
+                {
+                    "php": "return $tools->call(\"perf_profile\", [\"requestId\" => \"profile-04\"]);",
+                    "isError": true,
+                    "trace": {
+                        "error": {
+                            "reason": "tool_failed"
+                        }
+                    },
+                    "containerRemoved": false
+                },
+                {
+                    "php": "return $tools->call(\"perf_logs\", [\"requestId\" => \"profile-04\"]);",
+                    "isError": true,
+                    "trace": {
+                        "error": {
+                            "reason": "tool_denied"
+                        },
+                        "toolCalls": [
+                            {
+                                "name": "perf_logs",
+                                "status": "denied",
+                                "reason": "tool_denied",
+                                "durationMs": 1.645167008973658
+                            }
+                        ],
+                        "runId": "code-mode-9429fa234c1013c2a087f3038f0afad6"
+                    },
+                    "containerRemoved": true
+                }
+            ],
+            "exhausted": {
+                "error": {
+                    "reason": "execution_limit"
+                },
+                "toolCalls": [],
+                "runId": null
+            },
+            "verification": {
+                "passed": false,
+                "checks": {
+                    "referenceProvenance": true,
+                    "approvedDiscovery": true,
+                    "exactPrograms": true,
+                    "slowRouteIdentified": true,
+                    "repeatedQueryCorrelated": true,
+                    "comparisonMatchesInvestigation": true,
+                    "sameActualOutput": true,
+                    "thirteenQueriesBecomeOne": true,
+                    "hostCallsMatch": true,
+                    "successfulExecutions": true,
+                    "restrictedProfileAndLogsDenied": false,
+                    "cleanup": false,
+                    "distinctRealExecutions": false,
+                    "attemptBudgetEnforced": true,
+                    "noPrivateCanary": true
+                }
+            },
+            "completedAt": "2026-11-04T19:01:05+00:00"
+        },
+        {
+            "version": 1,
+            "kind": "performance-proof",
+            "mode": "reference",
+            "status": "complete",
+            "createdAt": "2026-11-04T19:03:42+00:00",
+            "runtime": "runsc",
+            "image": "sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b",
+            "source": "Synthetic Symfony HttpKernel requests, persisted\/reloaded Symfony Profiler custom collector, real PDO SQLite queries and PSR-3 log events. Raw profiles are deleted before tools are exposed.",
+            "simulatedLatencyPerQueryMs": 2,
+            "modelRequests": 0,
+            "limits": {
+                "wallTimeMs": 5000,
+                "memoryMiB": 128,
+                "maxToolCalls": 10,
+                "attemptsPerSession": 2
+            },
+            "discovery": {
+                "search": [
+                    {
+                        "name": "perf_requests",
+                        "description": "List approved synthetic Symfony requests with bounded timings and query counts. No filters or filesystem paths."
+                    },
+                    {
+                        "name": "perf_profile",
+                        "description": "Read an approved request by requestId from perf_requests. Returns query fingerprint counts and timings, never SQL or parameters. Timings include 2 ms simulated latency per query."
+                    },
+                    {
+                        "name": "perf_logs",
+                        "description": "Read allowlisted log events correlated by an approved requestId. Raw messages, headers and log context are unavailable."
+                    }
+                ],
+                "describe": [
+                    {
+                        "name": "perf_requests",
+                        "description": "List approved synthetic Symfony requests with bounded timings and query counts. No filters or filesystem paths.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": [],
+                            "additionalProperties": false
+                        },
+                        "php": {
+                            "example": "$result = $tools->call('perf_requests', []);",
+                            "arguments": "array{}",
+                            "returns": "mixed (no output schema declared)",
+                            "notes": "Illustrative placeholders; pass arguments as an associative PHP array and obey inputSchema. Tool-result JSON objects become stdClass (->field); JSON lists become PHP arrays. Shapes are documentation, not PHP declarations or permission grants. Unknown\/referenced schemas remain mixed; no external references are fetched."
+                        }
+                    },
+                    {
+                        "name": "perf_profile",
+                        "description": "Read an approved request by requestId from perf_requests. Returns query fingerprint counts and timings, never SQL or parameters. Timings include 2 ms simulated latency per query.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "requestId": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "requestId"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "php": {
+                            "example": "$result = $tools->call('perf_profile', ['requestId' => 'replace_me']);",
+                            "arguments": "array{\"requestId\": string}",
+                            "returns": "mixed (no output schema declared)",
+                            "notes": "Illustrative placeholders; pass arguments as an associative PHP array and obey inputSchema. Tool-result JSON objects become stdClass (->field); JSON lists become PHP arrays. Shapes are documentation, not PHP declarations or permission grants. Unknown\/referenced schemas remain mixed; no external references are fetched."
+                        }
+                    },
+                    {
+                        "name": "perf_logs",
+                        "description": "Read allowlisted log events correlated by an approved requestId. Raw messages, headers and log context are unavailable.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "requestId": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "requestId"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "php": {
+                            "example": "$result = $tools->call('perf_logs', ['requestId' => 'replace_me']);",
+                            "arguments": "array{\"requestId\": string}",
+                            "returns": "mixed (no output schema declared)",
+                            "notes": "Illustrative placeholders; pass arguments as an associative PHP array and obey inputSchema. Tool-result JSON objects become stdClass (->field); JSON lists become PHP arrays. Shapes are documentation, not PHP declarations or permission grants. Unknown\/referenced schemas remain mixed; no external references are fetched."
+                        }
+                    }
+                ]
+            },
+            "turns": [
+                {
+                    "question": "Investigate the slowest approved baseline request. Correlate its query fingerprints with its logs and identify repeated work. Do not change code or data.",
+                    "php": "$requests = $tools->call(\"perf_requests\", []);\n$baseline = array_values(array_filter($requests->items, fn($r) => $r->variant !== \"after\"));\nusort($baseline, fn($a, $b) => $b->durationMs <=> $a->durationMs);\n$slow = $baseline[0];\n$profile = $tools->call(\"perf_profile\", [\"requestId\" => $slow->requestId]);\n$logs = $tools->call(\"perf_logs\", [\"requestId\" => $slow->requestId]);\nreturn [\"profile\" => $profile,\n    \"repeatedQueries\" => array_values(array_filter($profile->queries, fn($q) => $q->count > 1)),\n    \"events\" => $logs->events];",
+                    "isError": false,
+                    "trace": {
+                        "value": {
+                            "profile": {
+                                "requestId": "profile-01",
+                                "route": "catalog_naive",
+                                "variant": "before",
+                                "durationMs": 33.84875,
+                                "queryCount": 13,
+                                "queryTimeMs": 32.525584,
+                                "queries": [
+                                    {
+                                        "fingerprint": "catalog_list",
+                                        "count": 1,
+                                        "durationMs": 2.252625
+                                    },
+                                    {
+                                        "fingerprint": "author_by_id",
+                                        "count": 12,
+                                        "durationMs": 30.272959
+                                    }
+                                ],
+                                "outputSha256": "6ca49f711036be971f8fc1c93f8d3c7a3cd993721197ead387b79ffacb6c2504"
+                            },
+                            "repeatedQueries": [
+                                {
+                                    "fingerprint": "author_by_id",
+                                    "count": 12,
+                                    "durationMs": 30.272959
+                                }
+                            ],
+                            "events": [
+                                {
+                                    "event": "authors.loaded_individually",
+                                    "level": "warning",
+                                    "count": 12
+                                },
+                                {
+                                    "event": "catalog.rendered",
+                                    "level": "info",
+                                    "count": 12
+                                }
+                            ]
+                        },
+                        "toolCalls": [
+                            {
+                                "name": "perf_requests",
+                                "status": "succeeded",
+                                "durationMs": 2.5386670022271574,
+                                "resultBytes": 326
+                            },
+                            {
+                                "name": "perf_profile",
+                                "status": "succeeded",
+                                "durationMs": 1.2732080067507923,
+                                "resultBytes": 353
+                            },
+                            {
+                                "name": "perf_logs",
+                                "status": "succeeded",
+                                "durationMs": 1.2597090099006891,
+                                "resultBytes": 161
+                            }
+                        ],
+                        "durationMs": 188.2499580096919,
+                        "runId": "code-mode-fe41edbab72526942fd42254cc31f693"
+                    },
+                    "containerRemoved": true
+                },
+                {
+                    "question": "Now compare the before and after catalogue implementations. Did the joined version return identical content with fewer queries? Keep the same read permissions.",
+                    "php": "$requests = $tools->call(\"perf_requests\", []);\n$comparison = [];\nforeach ($requests->items as $request) {\n    if (!in_array($request->variant, [\"before\", \"after\"], true)) { continue; }\n    $profile = $tools->call(\"perf_profile\", [\"requestId\" => $request->requestId]);\n    $logs = $tools->call(\"perf_logs\", [\"requestId\" => $request->requestId]);\n    $comparison[$request->variant] = [\"profile\" => $profile, \"events\" => $logs->events];\n}\n$before = $comparison[\"before\"][\"profile\"];\n$after = $comparison[\"after\"][\"profile\"];\nreturn $comparison + [\"sameOutput\" => $before->outputSha256 === $after->outputSha256,\n    \"queriesSaved\" => $before->queryCount - $after->queryCount];",
+                    "isError": false,
+                    "trace": {
+                        "value": {
+                            "before": {
+                                "profile": {
+                                    "requestId": "profile-01",
+                                    "route": "catalog_naive",
+                                    "variant": "before",
+                                    "durationMs": 33.84875,
+                                    "queryCount": 13,
+                                    "queryTimeMs": 32.525584,
+                                    "queries": [
+                                        {
+                                            "fingerprint": "catalog_list",
+                                            "count": 1,
+                                            "durationMs": 2.252625
+                                        },
+                                        {
+                                            "fingerprint": "author_by_id",
+                                            "count": 12,
+                                            "durationMs": 30.272959
+                                        }
+                                    ],
+                                    "outputSha256": "6ca49f711036be971f8fc1c93f8d3c7a3cd993721197ead387b79ffacb6c2504"
+                                },
+                                "events": [
+                                    {
+                                        "event": "authors.loaded_individually",
+                                        "level": "warning",
+                                        "count": 12
+                                    },
+                                    {
+                                        "event": "catalog.rendered",
+                                        "level": "info",
+                                        "count": 12
+                                    }
+                                ]
+                            },
+                            "after": {
+                                "profile": {
+                                    "requestId": "profile-02",
+                                    "route": "catalog_joined",
+                                    "variant": "after",
+                                    "durationMs": 2.618459,
+                                    "queryCount": 1,
+                                    "queryTimeMs": 2.526167,
+                                    "queries": [
+                                        {
+                                            "fingerprint": "catalog_join",
+                                            "count": 1,
+                                            "durationMs": 2.526167
+                                        }
+                                    ],
+                                    "outputSha256": "6ca49f711036be971f8fc1c93f8d3c7a3cd993721197ead387b79ffacb6c2504"
+                                },
+                                "events": [
+                                    {
+                                        "event": "catalog.rendered",
+                                        "level": "info",
+                                        "count": 12
+                                    }
+                                ]
+                            },
+                            "sameOutput": true,
+                            "queriesSaved": 12
+                        },
+                        "toolCalls": [
+                            {
+                                "name": "perf_requests",
+                                "status": "succeeded",
+                                "durationMs": 1.2760410027112812,
+                                "resultBytes": 326
+                            },
+                            {
+                                "name": "perf_profile",
+                                "status": "succeeded",
+                                "durationMs": 1.2915419938508421,
+                                "resultBytes": 353
+                            },
+                            {
+                                "name": "perf_logs",
+                                "status": "succeeded",
+                                "durationMs": 1.2666250113397837,
+                                "resultBytes": 161
+                            },
+                            {
+                                "name": "perf_profile",
+                                "status": "succeeded",
+                                "durationMs": 1.270749984541908,
+                                "resultBytes": 286
+                            },
+                            {
+                                "name": "perf_logs",
+                                "status": "succeeded",
+                                "durationMs": 1.283459016121924,
+                                "resultBytes": 92
+                            }
+                        ],
+                        "durationMs": 181.5409999981057,
+                        "runId": "code-mode-b41f2e8b977bfa9dbbd549b2f52e9816"
+                    },
+                    "containerRemoved": true
+                }
+            ],
+            "denials": [
+                {
+                    "php": "return $tools->call(\"perf_profile\", [\"requestId\" => \"profile-04\"]);",
+                    "isError": true,
+                    "trace": {
+                        "error": {
+                            "reason": "tool_denied"
+                        },
+                        "toolCalls": [
+                            {
+                                "name": "perf_profile",
+                                "status": "denied",
+                                "reason": "tool_denied",
+                                "durationMs": 1.4953750069253147
+                            }
+                        ],
+                        "runId": "code-mode-bdb335d5f00638b169dded008e1940a5"
+                    },
+                    "containerRemoved": true
+                },
+                {
+                    "php": "return $tools->call(\"perf_logs\", [\"requestId\" => \"profile-04\"]);",
+                    "isError": true,
+                    "trace": {
+                        "error": {
+                            "reason": "tool_denied"
+                        },
+                        "toolCalls": [
+                            {
+                                "name": "perf_logs",
+                                "status": "denied",
+                                "reason": "tool_denied",
+                                "durationMs": 1.3967919803690165
+                            }
+                        ],
+                        "runId": "code-mode-e9bc63bc36c5ba125a7efa4259ed21fc"
+                    },
+                    "containerRemoved": true
+                }
+            ],
+            "exhausted": {
+                "error": {
+                    "reason": "execution_limit"
+                },
+                "toolCalls": [],
+                "runId": null
+            },
+            "verification": {
+                "passed": true,
+                "checks": {
+                    "referenceProvenance": true,
+                    "approvedDiscovery": true,
+                    "exactPrograms": true,
+                    "slowRouteIdentified": true,
+                    "repeatedQueryCorrelated": true,
+                    "comparisonMatchesInvestigation": true,
+                    "sameActualOutput": true,
+                    "thirteenQueriesBecomeOne": true,
+                    "hostCallsMatch": true,
+                    "successfulExecutions": true,
+                    "restrictedProfileAndLogsDenied": true,
+                    "cleanup": true,
+                    "distinctRealExecutions": true,
+                    "attemptBudgetEnforced": true,
+                    "noPrivateCanary": true
+                }
+            },
+            "completedAt": "2026-11-04T19:03:44+00:00"
+        }
+    ]
+}

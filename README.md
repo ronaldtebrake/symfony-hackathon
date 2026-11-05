@@ -44,6 +44,8 @@ Configure the [dedicated gVisor runtime and pinned runner image](packages/php-co
 
 ## Adopt and contribute
 
+**Investigate Symfony performance:** the [profiler + log proof](docs/performance.md) uses real synthetic Symfony requests and SQL measurements. Code Mode correlates 12 repeated author lookups with logs, then verifies that a prepared join reduces 13 queries to one with identical output. Inspect the [performance viewer](http://127.0.0.1:8000/demo#performance), or connect its separate MCP server from your agent. Fixed PHP, no model called; simulated latency is disclosed.
+
 The [core Composer package](packages/php-code-mode/README.md) exposes `tools_search`, `tools_describe` and `php_execute`. The [Symfony bundle](packages/symfony-code-mode/README.md) adapts existing `#[AsTool]` services through an explicit allowlist and host policy, and supplies `code-mode:serve` and `code-mode:doctor`. Both are repository path packages, not yet published to Packagist.
 
 Try the [independent Symfony app](examples/symfony/README.md): its own Composer install, approved native tool and policy. The [fresh-install capture](docs/evidence/fresh-symfony-app.json) proves an authorized read, a denied private read, container cleanup and attempt exhaustion through real MCP and gVisor, without the main demo's autoloader or package source directories.

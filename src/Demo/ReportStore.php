@@ -30,6 +30,18 @@ final readonly class ReportStore
         $this->saveFile('evaluation.json', $report, 8 * 1048576);
     }
 
+    public function savePerformanceProof(array $report): void
+    {
+        $this->saveFile('performance.json', $report);
+    }
+
+    public function readPerformanceProof(): ?string
+    {
+        return $this->readLocalPerformanceProof() ?? $this->readPath($this->projectDir.'/docs/evidence/performance-proof.json');
+    }
+
+    public function readLocalPerformanceProof(): ?string { return $this->readFile('performance.json'); }
+
     public function readEvaluation(): ?string
     {
         $local = $this->projectDir.'/var/demo/evaluation.json';

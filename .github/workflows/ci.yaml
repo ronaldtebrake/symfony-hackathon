@@ -16,7 +16,7 @@ jobs:
             - uses: shivammathur/setup-php@v2
               with:
                   php-version: ${{ matrix.php }}
-                  extensions: ctype, curl, dom, fileinfo, iconv, mbstring, pcntl, posix, xml, xmlwriter
+                  extensions: ctype, curl, dom, fileinfo, iconv, mbstring, pcntl, pdo_sqlite, posix, xml, xmlwriter
                   tools: composer:v2
                   coverage: none
             # Install the consumer before the root app: it must own its dependencies.
@@ -36,7 +36,7 @@ jobs:
             - uses: shivammathur/setup-php@v2
               with:
                   php-version: '8.3'
-                  extensions: dom, mbstring, pcntl, posix, xml, xmlwriter
+                  extensions: dom, mbstring, pcntl, pdo_sqlite, posix, xml, xmlwriter
                   tools: composer:v2
                   coverage: none
             - run: composer install --no-interaction --prefer-dist --working-dir=examples/symfony

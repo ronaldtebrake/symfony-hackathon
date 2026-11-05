@@ -753,3 +753,57 @@ async function refreshEvaluation() {
   } finally { setTimeout(refreshEvaluation, 5000); }
 }
 refreshEvaluation();
+
+let performanceReport = null;
+function renderPerformanceTurn() {
+  const turn = performanceReport?.turns?.[Number(byId('performance-turn').value)];
+  byId('performance-question').textContent = turn?.question ?? '';
+  byId('performance-php').textContent = turn?.php ?? '';
+  byId('performance-result').textContent = JSON.stringify(turn?.trace?.value ?? null, null, 2);
+  renderCallRows(byId('performance-calls'), turn?.trace?.toolCalls ?? []);
+  byId('performance-run').textContent = `${turn?.trace?.runId ?? 'No execution'} · container removed: ${turn?.containerRemoved === true ? 'yes' : 'not verified'}`;
+}
+function renderPerformance(report) {
+  performanceReport = report;
+  const passed = report.kind === 'performance-proof' && report.status === 'complete' && report.verification?.passed === true;
+  byId('performance-state').textContent = passed ? 'VERIFIED LOCAL PROOF' : report.status === 'empty' ? 'NOT RUN' : 'CHECK FAILED';
+  byId('performance-evidence').hidden = !passed;
+  if (!passed) return;
+  const investigation = report.turns[0].trace.value;
+  const comparison = report.turns[1].trace.value;
+  byId('performance-counts').textContent = `${comparison.before.profile.queryCount} → ${comparison.after.profile.queryCount}`;
+  byId('performance-repeats').textContent = number(investigation.repeatedQueries[0].count);
+  byId('performance-output').textContent = comparison.sameOutput ? 'Identical' : 'Different';
+  byId('performance-denials').textContent = `${report.denials.length} / 2 denied`;
+  byId('performance-finding').textContent = 'The catalogue loads authors inside a product loop: 12 author_by_id executions match the authors.loaded_individually log event. The prepared join returns the same 12 items with one query.';
+  const rows = byId('performance-measurements'); rows.replaceChildren();
+  for (const key of ['before', 'after']) {
+    const p = comparison[key].profile;
+    const row = node('tr');
+    row.append(node('td', key === 'before' ? 'Individual lookups' : 'Prepared join'), node('td', p.route), node('td', p.queryCount), node('td', `${p.durationMs.toFixed(2)} ms`), node('td', `${p.queryTimeMs.toFixed(2)} ms`));
+    rows.append(row);
+  }
+  byId('performance-boundaries').textContent = JSON.stringify({denials:report.denials, thirdAttempt:report.exhausted, verification:report.verification}, null, 2);
+  const history = byId('performance-history'); history.replaceChildren();
+  (report.previousAttempts ?? []).forEach((attempt, i) => {
+    const details = node('details', undefined, 'proof-details');
+    const inconclusive = attempt.denials?.some(d => d.trace?.error?.reason === 'tool_failed' && !d.trace?.runId);
+    details.append(node('summary', `Earlier attempt ${i + 1} · ${attempt.status} · retained`), node('p', inconclusive ? 'A restricted-read probe returned a generic failure without an execution ID and remains inconclusive.' : 'This capture retains its original measurements and verdict.', 'measurement-note'), node('pre', JSON.stringify(attempt, null, 2)));
+    history.append(details);
+  });
+  byId('performance-date').textContent = `Captured ${new Date(report.createdAt).toLocaleString()} · one investigation session, separate operator-started denial probes · raw profiler files deleted.`;
+  renderPerformanceTurn();
+}
+byId('performance-turn').addEventListener('change', renderPerformanceTurn);
+let lastPerformanceBody = '';
+async function refreshPerformance() {
+  try {
+    const response = await fetch('/demo/performance-report', {cache:'no-store', credentials:'same-origin'});
+    if (!response.ok) throw new Error('Performance evidence unavailable');
+    const body = await response.text();
+    if (body !== lastPerformanceBody) { renderPerformance(JSON.parse(body)); lastPerformanceBody = body; }
+  } catch {
+    lastPerformanceBody = ''; byId('performance-evidence').hidden = true; byId('performance-state').textContent = 'REPORT UNAVAILABLE';
+  } finally { setTimeout(refreshPerformance, 5000); }
+}
+refreshPerformance();

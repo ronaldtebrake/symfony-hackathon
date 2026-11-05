@@ -27,6 +27,7 @@ services:
     App\Demo\HuggingFaceProofRunner: ~
     App\Demo\AdoptionProofRunner: ~
     App\Demo\EvaluationRunner: ~
+    App\Demo\Performance\ProofRunner: ~
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

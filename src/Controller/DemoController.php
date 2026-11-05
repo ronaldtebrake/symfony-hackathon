@@ -92,6 +92,18 @@ final readonly class DemoController
         return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
     }
 
+    #[Route('/demo/performance-report', name: 'app_demo_performance_report', methods: ['GET'])]
+    public function performanceReport(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+        $report = json_decode($this->store->readPerformanceProof() ?? '{"status":"empty"}', true, flags: JSON_THROW_ON_ERROR);
+        if ('empty' !== $report['status']) {
+            $report['verification'] = (new \App\Demo\Performance\ProofVerifier())->verify($report);
+            if (!$report['verification']['passed']) { $report['status'] = 'failed'; }
+        }
+        return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
+    }
+
     private function requireLocalRequest(Request $request): void
     {
         if (!in_array($request->getClientIp(), ['127.0.0.1', '::1'], true) || !in_array($request->getHost(), ['127.0.0.1', 'localhost', '[::1]'], true)) {
