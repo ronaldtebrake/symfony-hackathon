@@ -13,7 +13,10 @@ use PHPUnit\Framework\TestCase;
 
 final class SymfonyCodeModeTest extends TestCase
 {
-    public function testBundleDeniesDraftThenCompletesPublishedAlternativeInSameSession(): void
+    public static function discoveryModes(): iterable { yield ['full']; yield ['compact']; }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('discoveryModes')]
+    public function testBundleDeniesDraftThenCompletesPublishedAlternativeInSameSession(string $mode): void
     {
         $client = Client::builder()->setClientInfo('bundle-proof-test', '1')->setInitTimeout(10)->setRequestTimeout(30)->setMaxRetries(0)->build();
         $docker = new DockerEngine(json_decode(BackendFactory::env('CODE_MODE_DOCKER_COMMAND', '["docker"]'), true, flags: JSON_THROW_ON_ERROR));
@@ -21,9 +24,15 @@ final class SymfonyCodeModeTest extends TestCase
         mkdir($traceDir, 0700);
         $traceFile = $traceDir.'/trace.jsonl';
         try {
-            $client->connect(new StdioTransport(PHP_BINARY, ['bin/console', 'code-mode:serve', '--no-debug', '--trace-file='.$traceFile], dirname(__DIR__, 2), maxBufferSize: 65536));
+            $client->connect(new StdioTransport(PHP_BINARY, ['bin/console', 'code-mode:serve', '--no-debug', '--discovery='.$mode, '--trace-file='.$traceFile], dirname(__DIR__, 2), maxBufferSize: 65536));
             self::assertSame(['tools_search', 'tools_describe', 'php_execute'], array_column($client->listTools()->tools, 'name'));
-            $client->callTool('tools_describe', ['names' => ['articles_read', 'articles_list_published']]);
+            if ('compact' === $mode) {
+                $found = $client->callTool('tools_search', ['query' => 'articles']);
+                self::assertFalse($found->isError);
+                self::assertSame([false, false], array_column($found->structuredContent, 'requiresDescribe'));
+            } else {
+                $client->callTool('tools_describe', ['names' => ['articles_read', 'articles_list_published']]);
+            }
             $denied = $client->callTool('php_execute', ['code' => 'return $tools->call("articles_read", ["id" => 49]);']);
             self::assertTrue($denied->isError);
             self::assertSame('tool_denied', $denied->structuredContent['error']['reason']);

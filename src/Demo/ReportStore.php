@@ -25,6 +25,14 @@ final readonly class ReportStore
         $this->saveFile('adoption.json', $report);
     }
 
+    public function saveDiscoveryComparison(array $report): void { $this->saveFile('discovery.json', $report, 4 * 1048576); }
+
+    public function readDiscoveryComparison(): ?string
+    {
+        $local = $this->projectDir.'/var/demo/discovery.json';
+        return $this->readPath(is_file($local) ? $local : $this->projectDir.'/docs/evidence/compact-discovery.json', 4 * 1048576);
+    }
+
     public function saveEvaluation(array $report): void
     {
         $this->saveFile('evaluation.json', $report, 8 * 1048576);

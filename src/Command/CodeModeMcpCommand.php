@@ -6,6 +6,7 @@ namespace App\Command;
 
 use App\Demo\DemoFactory;
 use CodeMode\ExecutionTraceFile;
+use CodeMode\DiscoveryMode;
 use CodeMode\Symfony\McpServerFactory;
 use Mcp\Server\Transport\StdioTransport;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -23,11 +24,12 @@ final class CodeModeMcpCommand extends Command
     {
         $this->addOption('backend', null, InputOption::VALUE_REQUIRED, 'fixture or drupal', 'fixture');
         $this->addOption('trace-file', null, InputOption::VALUE_REQUIRED, 'Optional new host-only execution evidence file.');
+        $this->addOption('discovery', null, InputOption::VALUE_REQUIRED, 'Operator discovery mode: full or compact.', 'full');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $session = $this->factory->create(backend: $input->getOption('backend'))->session;
+        $session = $this->factory->create(backend: $input->getOption('backend'), discovery: DiscoveryMode::from($input->getOption('discovery')))->session;
         $record = null === $input->getOption('trace-file') ? null : new ExecutionTraceFile($input->getOption('trace-file'));
         // Preserve this endpoint's structured-only success results; do not add a duplicate text body.
         (new McpServerFactory())->create($session, null === $record ? null : $record(...), includeTextContent: false)->run(new StdioTransport());

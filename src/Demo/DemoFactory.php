@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Demo;
 
 use CodeMode\CodeModeSession;
+use CodeMode\DiscoveryMode;
 use CodeMode\DockerEngine;
 use CodeMode\ExecutionIdentity;
 use CodeMode\ExecutionLimits;
@@ -16,7 +17,7 @@ final readonly class DemoFactory
 {
     public function __construct(#[Autowire('%kernel.project_dir%')] private string $projectDir) {}
 
-    public function create(string $approach = 'code', string $backend = 'fixture', ?SandboxExecutor $sandbox = null, bool $evaluation = false, ?RunTrace $trace = null): DemoContext
+    public function create(string $approach = 'code', string $backend = 'fixture', ?SandboxExecutor $sandbox = null, bool $evaluation = false, ?RunTrace $trace = null, DiscoveryMode $discovery = DiscoveryMode::Full): DemoContext
     {
         $trace ??= new RunTrace();
         if (null === $sandbox) {
@@ -32,7 +33,7 @@ final readonly class DemoFactory
             throw new \RuntimeException('The configured MCP backend exposes no locally approved tools.');
         }
         $broker = $gateway->broker($catalog);
-        $session = new CodeModeSession($catalog, $broker, $sandbox, new ExecutionIdentity('demo-editor', ['content.audit']), new ExecutionLimits(wallTimeMs: 15000, toolTimeMs: 3000, maxToolCalls: 30));
+        $session = new CodeModeSession($catalog, $broker, $sandbox, new ExecutionIdentity('demo-editor', ['content.audit']), new ExecutionLimits(wallTimeMs: 15000, toolTimeMs: 3000, maxToolCalls: 30), discovery: $discovery);
         return new DemoContext(new AuditToolbox($approach, $catalog, $broker, $session, $trace), $session, $catalog, $trace);
     }
 }

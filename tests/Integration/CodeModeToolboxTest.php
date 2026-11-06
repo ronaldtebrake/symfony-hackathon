@@ -19,7 +19,10 @@ use Symfony\AI\Platform\Result\ToolCall;
 
 final class CodeModeToolboxTest extends TestCase
 {
-    public function testAiSeesDenialAndRecoveryWithoutResettingSessionBudget(): void
+    public static function discoveryModes(): iterable { foreach (\CodeMode\DiscoveryMode::cases() as $mode) { yield [$mode]; } }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('discoveryModes')]
+    public function testAiSeesDenialAndRecoveryWithoutResettingSessionBudget(\CodeMode\DiscoveryMode $mode): void
     {
         $sandbox = new class implements SandboxExecutor {
             public array $programs = [];
@@ -32,13 +35,15 @@ final class CodeModeToolboxTest extends TestCase
                 return new ExecutionResult(['id' => 1], [['name' => 'articles_read', 'status' => 'succeeded']], 1.0, 1, 'code-mode-'.str_repeat('b', 32));
             }
         };
-        $session = new CodeModeSession(new ToolCatalog([(new ReadArticle())->definition()]), new ToolBroker([]), $sandbox, new ExecutionIdentity('test'));
+        $session = new CodeModeSession(new ToolCatalog([(new ReadArticle())->definition()]), new ToolBroker([]), $sandbox, new ExecutionIdentity('test'), discovery: $mode);
         $toolbox = new CodeModeToolbox($session);
         self::assertCount(3, $toolbox->getTools());
         $call = static fn ($name, $args) => json_decode($toolbox->execute(new ToolCall('call', $name, $args))->getResult(), true, flags: JSON_THROW_ON_ERROR);
         self::assertSame('invalid_arguments', $call('php_execute', ['code' => 'return 1;', 'permissions' => ['admin']])['error']['reason']);
         self::assertSame('discovery_required', $call('php_execute', ['code' => 'return 1;'])['error']['reason']);
-        $call('tools_describe', ['names' => ['articles_read']]);
+        self::assertSame('invalid_arguments', $call('tools_search', ['query' => 'article', 'discovery' => 'compact'])['error']['reason']);
+        if (\CodeMode\DiscoveryMode::Compact === $mode) { $call('tools_search', ['query' => 'article']); }
+        else { $call('tools_describe', ['names' => ['articles_read']]); }
         $denial = $call('php_execute', ['code' => 'return $tools->call("articles_read", ["id" => 49]);']);
         self::assertSame('tool_denied', $denial['error']['reason']);
         self::assertStringNotContainsString('private exception', json_encode($denial));

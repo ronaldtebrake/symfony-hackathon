@@ -33,6 +33,24 @@ final class DrupalProofVerifierTest extends TestCase
         }
     }
 
+    public function testCompactAndFullDiscoveryUseTheSameRestrictedAccountAndData(): void
+    {
+        $compact = $this->recorded();
+        $full = $compact['fullDiscoveryProof'];
+        self::assertSame('compact', $compact['discoveryMode']);
+        self::assertSame('full', $full['discoveryMode']);
+        self::assertSame(1, $compact['discoveryRequests']);
+        self::assertSame(2, $full['discoveryRequests']);
+        self::assertSame($full['described'][0]['inputSchema'], $compact['discovery'][0]['inputSchema']);
+        self::assertSame($full['fixture']['account'], $compact['fixture']['account']);
+        self::assertSame($full['fixture']['contentHash'], $compact['fixture']['contentHash']);
+        self::assertSame($full['limits'], $compact['limits']);
+        self::assertSame($full['image'], $compact['image']);
+        self::assertTrue($full['contentUnchanged']);
+        self::assertTrue($full['accountStillRestricted']);
+        foreach ($full['cases'] as $case) { self::assertTrue(ProofVerifier::casePassed($case, $full['fixture'])); }
+    }
+
     public function testUpstreamFailureWithoutDrupalDenialCannotPass(): void
     {
         $report = $this->recorded();

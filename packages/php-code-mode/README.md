@@ -110,3 +110,11 @@ Use reviewed snippets in a disposable environment. The child has no inherited en
 ## Demo for judges
 
 The root Symfony app supplies an editorial audit, batched direct-call baseline, inspectable PHP/MCP trace, and separate reference/live modes. It also exposes Code Mode to external MCP clients over STDIO. See [the walkthrough](../../docs/demo.md). A separate [Drupal DDEV proof](../../examples/drupal/README.md) verifies real published/restricted node reads through **Tool API → MCP Server Tool Bridge → MCP Server**, using local STDIO and this package. Drupal HTTP authentication remains unverified. No token-saving claim is inferred from the reference run.
+
+## Compact discovery
+
+When creating `CodeModeSession`, the host can pass `discovery: \CodeMode\DiscoveryMode::Compact`. The default is `Full`. This works with the same `ToolCatalog` whether definitions came from Symfony AI, MCP discovery or local services; the core has no Symfony AI or Drupal dependency.
+
+Compact `search()` returns `name`, `description`, `requiresDescribe`, and, when ready, the **unchanged** `inputSchema` plus a PHP `returns` shape from `PhpToolGuide`. Only returned ready contracts enter the session's callable subset. Complex, referenced and oversized contracts return `requiresDescribe: true`; ordinary `describe()` remains available. Missing output schemas are explicitly marked as unknown. No schema reference is fetched and no signature is evaluated as code.
+
+Entries are bounded to 4 KiB, search returns at most eight matches, and the response is capped at 32 KiB. Failed response construction activates no additional tools. Input and output schemas remain host validation contracts; discovery presentation cannot relax broker authorization, resource checks, limits or sandbox isolation. A later search or describe never resets the attempt budget.

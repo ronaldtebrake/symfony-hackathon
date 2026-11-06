@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CodeMode\{AgentResponse, CodeModeSession, DockerEngine, ExecutionIdentity, ExecutionLimits, GvisorSandbox, SandboxException};
+use CodeMode\{AgentResponse, CodeModeSession, DiscoveryMode, DockerEngine, ExecutionIdentity, ExecutionLimits, GvisorSandbox, SandboxException};
 use CodeMode\Mcp\McpGateway;
 use CodeModeDemo\Drupal\ProofVerifier;
 use Mcp\Client;
@@ -36,7 +36,9 @@ $snapshot = static function () use ($ddev, $environment): array {
     $process->mustRun();
     return json_decode($process->getOutput(), true, 32, JSON_THROW_ON_ERROR);
 };
-$report = ['version' => 1, 'kind' => 'drupal-authorization-proof', 'createdAt' => gmdate(DATE_ATOM), 'status' => 'running',
+$options = getopt('', ['discovery:']);
+$discovery = DiscoveryMode::from($options['discovery'] ?? 'full');
+$report = ['discoveryMode' => $discovery->value, 'version' => 1, 'kind' => 'drupal-authorization-proof', 'createdAt' => gmdate(DATE_ATOM), 'status' => 'running',
     'transport' => 'local DDEV STDIO', 'modelCalled' => false, 'programOrigin' => 'Fixed operator-written probes',
     'runtime' => 'runsc', 'image' => $env('CODE_MODE_IMAGE'), 'cases' => []];
 try {
@@ -67,8 +69,13 @@ try {
     $sandbox = new GvisorSandbox($report['image'], $docker);
     $limits = new ExecutionLimits(wallTimeMs: 15000, toolTimeMs: 3000, maxToolCalls: 1);
     $report['limits'] = ['wallTimeMs' => $limits->wallTimeMs, 'toolTimeMs' => $limits->toolTimeMs, 'memoryMiB' => $limits->memoryMiB, 'maxToolCalls' => $limits->maxToolCalls, 'executions' => 2];
-    $session = new CodeModeSession($catalog, $gateway->broker($catalog), $sandbox, new ExecutionIdentity('drupal-proof-reader', ['content.audit']), $limits);
-    $report['discovery'] = $session->describe([ProofVerifier::TOOL]);
+    $session = new CodeModeSession($catalog, $gateway->broker($catalog), $sandbox, new ExecutionIdentity('drupal-proof-reader', ['content.audit']), $limits, discovery: $discovery);
+    $report['discovery'] = $session->search(ProofVerifier::TOOL);
+    $report['discoveryRequests'] = 1;
+    if (DiscoveryMode::Full === $discovery || in_array(true, array_column($report['discovery'], 'requiresDescribe'), true)) {
+        $report['described'] = $session->describe([ProofVerifier::TOOL]);
+        ++$report['discoveryRequests'];
+    }
     $cursor = $before['auditCursor'];
     foreach (['authorized_read' => 'published', 'restricted_read' => 'restricted'] as $id => $fixtureKey) {
         $code = 'return $tools->call("'.ProofVerifier::TOOL.'", ["id" => '.$before[$fixtureKey]['id'].']);';

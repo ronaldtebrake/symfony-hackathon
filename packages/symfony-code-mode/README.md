@@ -112,6 +112,18 @@ Calls go through the original Symfony AI toolbox, preserving its argument resolv
 
 `tools_describe` adds a bounded PHP invocation example and input/output shapes for only the selected tools. JSON objects are `stdClass`, lists are arrays, and unknown/referenced schemas remain `mixed`. These guides are documentation; the broker still checks schemas and authorization for every call.
 
+## Compact discovery
+
+Set `code_mode.discovery: compact` alongside the approved toolbox and authorization policy. `full` is the default. Alternatively, the operator can launch `code-mode:serve --discovery=compact --no-debug`; the agent cannot change this setting through a tool argument. Restart the MCP process after configuration changes.
+
+Search results include the original adapted Symfony AI `inputSchema` and a bounded `returns` PHP shape. `requiresDescribe: false` means the contract was disclosed and the tool may be called; `true` requires `tools_describe`. The exact input constraints remain visible. Output shapes are documentation only; the original output schema still validates results. Missing output schemas are explicitly marked `mixed (no output schema declared)`.
+
+The core formatter falls back for references, deep/wide output shapes, unsupported output compositions and entries larger than 4 KiB. Search retains its eight-result limit and a 32 KiB response cap. Contracts become callable only after the whole response is constructed. These discovery decisions do not change allowlists, identities, policies, broker schema validation, execution attempts or isolation.
+
+For a Symfony AI conversation, configure the session factory or pass the host-owned override `$sessions->create($identity, \CodeMode\DiscoveryMode::Compact)`. Keep that same session for follow-ups. Both the MCP server and `CodeModeToolbox` expose the appropriate discovery instructions.
+
+[The paired comparison](../../docs/demo.md#compact-discovery-comparison) reuses native `#[AsTool]` schemas, Symfony's toolbox lifecycle and the same gVisor package.
+
 ## Run the adoption proof
 
 ```sh

@@ -43,6 +43,20 @@
         <p class="measurement-note">Offline replay of retained executions, including failures. No new model call. These are response-payload savings, not total conversation or provider-billed savings. <a href="/demo/response-payloads">Measurement evidence (JSON) ↗</a></p>
       </section>
 
+      <section id="compact-discovery" class="hf-proof" aria-labelledby="discovery-heading">
+        <div class="section-top"><div><span class="eyebrow">Native Symfony AI schemas · fewer discovery steps</span><h2 id="discovery-heading">Find a tool. Start composing.</h2></div><span id="discovery-state" class="run-state" role="status">Loading comparison</span></div>
+        <p class="codex-intro">Compact search returns the original input schema and a PHP return shape. Simple contracts can go straight to execution. Complex contracts still use describe. Every call keeps the same broker checks.</p>
+        <div class="proof-run"><code>php bin/console code-mode:discovery-compare --live --no-debug</code><span>Two paired conversations · order reversed on repetition two</span></div>
+        <div id="discovery-evidence" hidden>
+          <p id="discovery-note" class="mode-note"></p>
+          <div class="inspector"><div class="table-scroll"><table><caption>All planned conversations, including failures</caption><thead><tr><th>Discovery</th><th>Correct / planned</th><th>Model requests</th><th>Provider tokens</th><th>Discovery calls</th><th>Discovery bytes</th></tr></thead><tbody id="discovery-rows"></tbody></table></div></div>
+          <p id="discovery-scope" class="measurement-note"></p>
+          <div id="discovery-attempts"></div>
+          <details class="proof-details"><summary>Earlier batches · retained without replacing failures</summary><pre id="discovery-history" tabindex="0"></pre></details>
+        </div>
+        <p class="measurement-note">Conversations stay in the agent. This page only reads recorded PHP, tool calls and measurements. <a href="/demo/discovery-report">Full comparison evidence (JSON) ↗</a></p>
+      </section>
+
       <section id="performance" class="hf-proof" aria-labelledby="performance-heading">
         <div class="section-top"><div><span class="eyebrow">Symfony Profiler + redacted logs → isolated PHP</span><h2 id="performance-heading">Find the repeated work.</h2></div><span id="performance-state" class="run-state" role="status">Loading performance proof</span></div>
         <p id="performance-note" class="codex-intro">A reference investigation and follow-up over real synthetic Symfony requests. Operator-written PHP; no model called. Conversations stay in the agent.</p>

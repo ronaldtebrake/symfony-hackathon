@@ -133,6 +133,32 @@ A follow-up uses the same conversation, identity and remaining execution budget.
 
 Code Mode is useful when a task needs pagination, branching or several related reads. A simple lookup may need less work as a direct tool call. Discovery and sandbox startup have costs too.
 
+## Compact discovery
+
+Add one setting alongside your approved tools and policy:
+
+```yaml
+code_mode:
+    discovery: compact
+```
+
+`tools_search` now returns each matching tool's **original input schema** and a short PHP return shape. A result with `requiresDescribe: false` is ready for `php_execute`; `requiresDescribe: true` tells the agent to call `tools_describe` first. Full discovery remains the default. For an operator-controlled trial, use `code-mode:serve --discovery=compact --no-debug` or `code-mode:mcp --discovery=compact --no-debug`.
+
+The Symfony adapter reuses the schemas from your existing AI toolbox. It does not generate another validator or infer permissions from tool descriptions. Compact entries are capped at 4 KiB, search at eight matches and 32 KiB; complex, referenced or oversized contracts fall back to describe. The broker retains the full schemas, per-call authorization and execution limits. Discovery never grants access to restricted content.
+
+In **two live conversations per mode**, using the same gpt-oss model, questions, data and permissions, both flows returned correct answers:
+
+| Measured across both conversations | Search + describe | Compact search |
+| --- | ---: | ---: |
+| Provider tokens, including completion | 16,330 | 10,854 |
+| Model requests | 14 | 10 |
+| Discovery tool calls | 6 | 2 |
+| Correct conversations | 2 / 2 | 2 / 2 |
+
+That is **33.5% fewer provider tokens** in this small sample. Both arms use lean execution responses; order was reversed for the second pair. Each capture also verifies a denied draft read, permitted recovery and an exhausted execution budget using fixed PHP. [Inspect generated PHP, calls and every attempt](http://127.0.0.1:8000/demo#compact-discovery), or [reproduce the comparison](docs/demo.md#compact-discovery-comparison).
+
+The shared PHP package also accepts MCP schemas from Drupal's Tool API. The [Drupal proof](examples/drupal/README.md#reuse-from-symfony-code-mode) checks both discovery modes with the same restricted Drupal account and real node-access decisions.
+
 ## Execution profiles
 
 Runtime selection belongs to the operator. An MCP argument cannot select an executor, grant permissions or increase limits.

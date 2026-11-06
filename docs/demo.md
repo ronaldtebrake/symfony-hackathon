@@ -143,3 +143,20 @@ Security probes use two seconds, 128 MiB and three calls each. Normal audit exec
 The CLI also supports `composer demo -- --mode=live --scenario=impact` and `--question='Count published articles by language. Return counts.'`. Custom answers are marked **review required**; they have no independent correctness badge. Runtime settings and permissions remain host-controlled. Custom-question live inference is outside the captured proof.
 
 The [hackathon brief](https://symfony.com/hackathon), checked **3 November 2026**, asks for a public runnable repository and a 90-second real demo by **22 November, 18:00 CET**. The [evidence index](evidence/README.md) identifies the sources for each claim. The optional [Drupal example](../examples/drupal/README.md) is separate from this recording.
+
+## Compact discovery comparison
+
+```sh
+# Fixed PHP: authorization, denied draft, recovery and exhausted budget, no model
+php bin/console code-mode:discovery-compare --no-debug
+# Same two-turn native Symfony AI task on both flows; uses inference credits
+php bin/console code-mode:discovery-compare --live --repetitions=2 --no-debug
+```
+
+Open `/demo#compact-discovery`. Full discovery is the current search → describe → execute flow. Compact search includes the existing Symfony AI input schemas and bounded PHP return shapes. Both use lean execution responses. Every execution still runs through gVisor and the same authorization policy.
+
+The command persists the schedule before calling the provider, reverses arm order on repetition two, and retains all runs and earlier batches in one report. Each conversation has two PHP attempts and at most twelve provider requests. It stops on a provider/runtime error, retaining pending rows rather than repeatedly spending credits. Correctness requires the full first article, including the injected text as data, and an exact follow-up audit of 48 published articles with missing IDs `[11,22,33,44]`. A separate fixed probe proves denial, recovery and budget exhaustion. The viewer rechecks execution/result/ledger links and matching comparison conditions.
+
+The [recorded comparison](evidence/compact-discovery.json) contains two correct conversations per arm: full uses 16,330 provider tokens / 14 model requests; compact uses 10,854 / 10. Totals include prompt and completion usage from all observed requests. Discovery response bytes are measured separately; they are not token estimates. The prompt, model, generation settings, native tool schemas, fixture, identity, image and limits match. Generated PHP and Hugging Face's automatic provider routing may vary. This small sample is evidence for this task, not a benchmark across models or catalogs.
+
+The workbench shows exact discovery responses, generated PHP, underlying calls, provider usage and earlier attempts. It cannot trigger execution or change a discovery mode. Only the single reviewed JSON report is committed; transient logs stay ignored. Historical baseline/evaluation failures are unchanged.

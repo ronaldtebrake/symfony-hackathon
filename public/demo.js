@@ -837,3 +837,47 @@ async function loadResponsePayloads() {
   }
 }
 loadResponsePayloads();
+
+let lastDiscoveryBody = '';
+async function refreshDiscovery() {
+  try {
+    const response = await fetch('/demo/discovery-report', {cache: 'no-store', credentials: 'same-origin'});
+    if (!response.ok) throw new Error('Discovery comparison unavailable');
+    const body = await response.text();
+    if (body === lastDiscoveryBody) return;
+    const report = JSON.parse(body);
+    const summary = report.summary;
+    byId('discovery-state').textContent = report.status === 'empty' ? 'NOT CAPTURED' : summary?.allCorrect ? 'MATCHED · ALL CORRECT' : report.status === 'running' ? 'CAPTURE IN PROGRESS' : 'CHECK INCOMPLETE';
+    byId('discovery-evidence').hidden = !summary;
+    if (!summary) return;
+    byId('discovery-note').textContent = `${report.mode === 'live' ? 'Real Hugging Face generation' : 'Fixed probes; no model called'} · ${summary.matchedConditions ? 'comparison conditions match' : 'comparison conditions not yet verified'} · ${new Date(report.createdAt).toLocaleString()}`;
+    byId('discovery-scope').textContent = summary.scope;
+    const rows = byId('discovery-rows'); rows.replaceChildren();
+    for (const [mode, totals] of Object.entries(summary.totals)) {
+      const row = node('tr');
+      row.append(node('td', mode === 'full' ? 'Search → describe → execute' : 'Compact search → execute'), node('td', `${totals.correct} / ${totals.planned}`), node('td', number(totals.modelRequests)), node('td', totals.providerTokens === null ? 'Not measured' : number(totals.providerTokens)), node('td', number(totals.discoveryRequests)), node('td', bytes(totals.discoveryBytes)));
+      rows.append(row);
+    }
+    const attempts = byId('discovery-attempts'); attempts.replaceChildren();
+    report.attempts.forEach((attempt, index) => {
+      const proof = attempt.proof;
+      const details = node('details', undefined, 'proof-details');
+      const result = summary.rows[index];
+      details.append(node('summary', `Repetition ${attempt.repetition} · ${attempt.discovery} · ${attempt.status} · ${result.correct ? 'correct' : 'not verified'} · ${result.modelRequests} model requests`));
+      if (proof) {
+        const trace = proof.liveTrace ?? proof.probe;
+        (proof.turns ?? []).forEach(turn => details.append(node('blockquote', turn.question), node('pre', turn.answer)));
+        (trace?.executions ?? []).forEach((run, i) => details.append(adoptionExecution(trace.programs[i], run, proof.mode === 'live' ? 'Generated PHP' : 'Fixed probe PHP')));
+        const discovery = node('details', undefined, 'proof-details');
+        discovery.append(node('summary', 'Exact discovery messages, provider usage and security probes'), node('pre', JSON.stringify({agentCalls: trace?.agentCalls, providerResponses: trace?.providerResponses, fixedProbe: proof.probe, verification: proof.verification}, null, 2)));
+        details.append(discovery);
+      }
+      attempts.append(details);
+    });
+    byId('discovery-history').textContent = JSON.stringify((report.previousAttempts ?? []).map(previous => ({createdAt: previous.createdAt, mode: previous.mode, status: previous.status, summary: previous.summary})), null, 2);
+    lastDiscoveryBody = body;
+  } catch {
+    lastDiscoveryBody = ''; byId('discovery-state').textContent = 'REPORT UNAVAILABLE'; byId('discovery-evidence').hidden = true;
+  } finally { setTimeout(refreshDiscovery, 5000); }
+}
+refreshDiscovery();
