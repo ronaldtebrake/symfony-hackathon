@@ -16,6 +16,7 @@ final readonly class ExecutionResult
         public float $durationMs,
         public int $outputBytes,
         public string $runId,
+        public ExecutionProfile $profile = ExecutionProfile::Unknown,
     ) {
     }
 }

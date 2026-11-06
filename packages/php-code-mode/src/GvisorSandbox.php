@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CodeMode;
 
-final readonly class GvisorSandbox implements SandboxExecutor
+final readonly class GvisorSandbox implements ProfiledExecutor
 {
     public function __construct(private string $image, private DockerEngine $docker = new DockerEngine(), private ?ExecutionTimeline $timeline = null)
     {
@@ -12,6 +12,8 @@ final readonly class GvisorSandbox implements SandboxExecutor
             throw new \InvalidArgumentException('Pin the locally built runner by its immutable sha256 image ID. Tags are not accepted.');
         }
     }
+
+    public function profile(): ExecutionProfile { return ExecutionProfile::Gvisor; }
 
     public function execute(string $code, ToolBroker $broker, ExecutionIdentity $identity, array $allowedTools = [], ?ExecutionLimits $limits = null): ExecutionResult
     {
@@ -30,7 +32,7 @@ final readonly class GvisorSandbox implements SandboxExecutor
         $calls = [];
         $setupSpan = $executionSpan = null;
         try {
-            $setupSpan = $this->timeline?->begin('sandbox_setup', 'Create and inspect isolated container', ['runId' => $name]);
+            $setupSpan = $this->timeline?->begin('sandbox_setup', 'Create and inspect isolated container', ['runId' => $name, 'runtime' => $this->profile()->metadata()]);
             // No source mounts, credentials, published ports, devices, or environment passthrough.
             $creationAttempted = true;
             $this->docker->control([
@@ -56,81 +58,11 @@ final readonly class GvisorSandbox implements SandboxExecutor
             $this->timeline?->end($setupSpan);
 
             $started = BrokerWorker::now();
-            $executionSpan = $this->timeline?->begin('execution', 'PHP execution, including broker waits', ['runId' => $name]);
-            $deadline = $started + $limits->wallTimeMs / 1000;
+            $executionSpan = $this->timeline?->begin('execution', 'PHP execution, including broker waits', ['runId' => $name, 'runtime' => $this->profile()->metadata()]);
             $process = $this->docker->attach($name);
-            $process->write(json_encode(['code' => $code], JSON_THROW_ON_ERROR)."\n");
-            $outputBytes = 0;
-            $buffer = '';
-            $finished = false;
-            $value = null;
-            $receive = function (string $type, string $chunk) use ($name, $process, $worker, $limits, $deadline, &$outputBytes, &$buffer, &$calls, &$finished, &$value): void {
-                $outputBytes += strlen($chunk);
-                if ($outputBytes > $limits->maxOutputBytes) {
-                    throw new SandboxException('output_limit', 'Guest output exceeded its byte limit.');
-                }
-                if ('err' === $type) {
-                    return; // Diagnostic bytes are counted but never reflected or persisted.
-                }
-                $buffer .= $chunk;
-                while (false !== ($newline = strpos($buffer, "\n"))) {
-                    if ($newline > $limits->maxFrameBytes) {
-                        throw new SandboxException('frame_limit', 'Guest frame exceeded its byte limit.');
-                    }
-                    if ($finished) {
-                        throw new SandboxException('invalid_protocol', 'Guest emitted data after its result.');
-                    }
-                    if (BrokerWorker::now() >= $deadline) {
-                        throw new SandboxException('wall_timeout', 'Execution exceeded its wall-clock deadline.');
-                    }
-                    $frame = Protocol::decode(substr($buffer, 0, $newline), count($calls) + 1);
-                    $buffer = substr($buffer, $newline + 1);
-                    if ('result' === $frame->type) {
-                        $finished = true;
-                        $value = $frame->value;
-                        $process->closeInput();
-                        continue;
-                    }
-                    if (count($calls) >= $limits->maxToolCalls) {
-                        throw new SandboxException('tool_call_limit', 'Execution exceeded its tool-call limit.');
-                    }
-                    $calls[] = ['name' => $frame->name, 'status' => 'pending'];
-                    // Authorization and validation run before invocation, for every call.
-                    $callStarted = BrokerWorker::now();
-                    $span = $this->timeline?->begin('broker', $frame->name, ['runId' => $name, 'callIndex' => count($calls) - 1, 'arguments' => $frame->arguments]);
-                    try {
-                        $result = $worker->call($frame->name, $frame->arguments, $deadline);
-                    } catch (SandboxException $error) {
-                        $this->timeline?->end($span, 'tool_denied' === $error->reason ? 'denied' : 'failed', ['reason' => $error->reason]);
-                        $calls[array_key_last($calls)]['status'] = 'tool_denied' === $error->reason ? 'denied' : 'incomplete';
-                        $calls[array_key_last($calls)]['reason'] = $error->reason;
-                        $calls[array_key_last($calls)]['durationMs'] = (BrokerWorker::now() - $callStarted) * 1000;
-                        throw $error;
-                    }
-                    $calls[array_key_last($calls)]['status'] = 'succeeded';
-                    $calls[array_key_last($calls)]['durationMs'] = (BrokerWorker::now() - $callStarted) * 1000;
-                    $calls[array_key_last($calls)]['resultBytes'] = strlen(json_encode($result, JSON_THROW_ON_ERROR, 32));
-                    $this->timeline?->end($span, 'succeeded', ['resultBytes' => $calls[array_key_last($calls)]['resultBytes'], 'resultSha256' => hash('sha256', json_encode($result, JSON_THROW_ON_ERROR, 32))]);
-                    $process->write(json_encode(['id' => $frame->id, 'value' => $result], JSON_THROW_ON_ERROR, 32)."\n");
-                }
-                if (strlen($buffer) > $limits->maxFrameBytes) {
-                    throw new SandboxException('frame_limit', 'Unterminated guest frame exceeded its byte limit.');
-                }
-            };
-            do {
-                if (BrokerWorker::now() >= $deadline) {
-                    throw new SandboxException('wall_timeout', 'Execution exceeded its wall-clock deadline.');
-                }
-                $running = $process->tick($receive);
-                if ($running) {
-                    usleep(1000);
-                }
-            } while ($running);
-            if (!$process->succeeded() || !$finished || '' !== $buffer) {
-                throw new SandboxException('guest_failed', 'The PHP program exited without a complete successful result.');
-            }
+            $result = GuestExecution::run($process, $worker, $code, $limits, $name, $started, $calls, $this->profile(), $this->timeline);
             $this->timeline?->end($executionSpan);
-            return new ExecutionResult($value, $calls, (BrokerWorker::now() - $started) * 1000, $outputBytes, $name);
+            return $result;
         } catch (\Throwable $error) {
             $this->timeline?->end($setupSpan, 'failed');
             $this->timeline?->end($executionSpan, 'failed', ['reason' => $error instanceof SandboxException ? $error->reason : 'execution_failed']);
@@ -140,9 +72,9 @@ final readonly class GvisorSandbox implements SandboxExecutor
                 }
             }
             unset($call);
-            throw new SandboxException($error instanceof SandboxException ? $error->reason : 'execution_failed', 'Sandbox execution failed.', $calls, $error, runId: $name);
+            throw new SandboxException($error instanceof SandboxException ? $error->reason : 'execution_failed', 'Sandbox execution failed.', $calls, $error, runId: $name, profile: $this->profile());
         } finally {
-            $cleanupSpan = $this->timeline?->begin('cleanup', 'Close worker and remove container', ['runId' => $name]);
+            $cleanupSpan = $this->timeline?->begin('cleanup', 'Close worker and remove container', ['runId' => $name, 'runtime' => $this->profile()->metadata()]);
             try {
                 $worker->close();
                 $process?->close();

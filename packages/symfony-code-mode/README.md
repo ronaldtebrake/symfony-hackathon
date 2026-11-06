@@ -48,9 +48,28 @@ CODE_MODE_DOCKER_COMMAND='["docker"]'
 
 `code-mode:doctor --json` returns an exit status and checks PHP CLI, extensions, catalog, immutable image pin, runsc profile and image availability. It does not install software, invoke application tools, execute a guest or call a model. It does not prove the runtime is safe; run the actual sandbox suites too. It never prints credentials or Docker endpoint arguments.
 
-Defaults: 5 seconds per execution, 1 second per tool, 128 MiB container memory, 10 broker calls, and **two attempts including failures**. Optional `wall_time_ms`, `tool_time_ms` and `max_tool_calls` settings remain bounded by the core package. The runner always requires gVisor, disables guest networking, mounts no host files and passes no host credentials.
+Defaults: 5 seconds per execution, 1 second per tool, 128 MiB container memory, 10 broker calls, and **two attempts including failures**. Optional `wall_time_ms`, `tool_time_ms` and `max_tool_calls` settings remain bounded by the core package. The default `executor: gvisor` requires gVisor, disables guest networking, mounts no host files and passes no host credentials. It never falls back to local execution.
 
 Each `SessionFactory::create($hostIdentity)` returns fresh conversation state. Keep that same session for follow-ups. Do not recreate it after a denial to reset its budget. `code-mode:serve` creates exactly one session per operator-started server process. STDIO access grants the configured local operator's capabilities; protect the host and command accordingly.
+
+### PHP-only development opt-in
+
+For reviewed snippets in a disposable environment, add this alongside the approved tools and identity provider:
+
+```yaml
+# config/packages/code_mode.yaml
+when@dev:
+    code_mode:
+        executor: local-unsafe
+```
+
+Run `php bin/console code-mode:doctor --env=dev`, then connect your agent to `php bin/console code-mode:serve --env=dev --no-debug` over STDIO. PHP 8.2+ CLI, Composer dependencies, `pcntl` and `posix` on Unix are required; Docker, gVisor, a runner image and a web server are not. Generated code uses the host PHP version. Remove the override to return to gVisor; restart the MCP process after configuration changes.
+
+**This is unsandboxed local execution.** PHP runs as your OS user and can access host files and network services. Broker policies still reject unauthorized calls, but cannot prevent direct access outside the broker. Use the isolated executor for untrusted agent-generated code. Timeouts, output bounds, a 32 MiB PHP heap limit and process-group cleanup are best effort; there is no OS memory, CPU, process-count or disk quota. [Exact limitations](../php-code-mode/docs/security.md#explicit-local-development-profile).
+
+The doctor prints a warning. MCP/Symfony AI results and failures carry host-supplied `runtime` metadata with `executor: local-unsafe`, `isolation: none` and the label **Unsandboxed local execution**. Its `php_execute` tool is not advertised as read-only. The only execution argument remains `code`; profile selection, identities and limits are operator configuration. These traces are not tamper-proof audit records on a host running unsandboxed code.
+
+This switch applies to the bundle's `code-mode:serve` and its session factory. The hackathon's audit, performance, evaluation and security-proof commands keep their explicit gVisor runners. Recorded workbench evidence is unchanged and does not become evidence for local mode.
 
 ## Boundary recovery
 

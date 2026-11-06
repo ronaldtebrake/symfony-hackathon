@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Demo\Performance;
 
+use CodeMode\ExecutionProfile;
+
 /** Pure replay checks: viewing evidence never launches PHP, traffic, models or tools. */
 final class ProofVerifier
 {
@@ -17,6 +19,10 @@ final class ProofVerifier
         $expected = [];
         for ($id = 1; $id <= 12; ++$id) { $expected[] = ['id' => $id, 'author' => 'Author '.(1 + ($id - 1) % 4)]; }
         $hash = hash('sha256', json_encode($expected, JSON_THROW_ON_ERROR));
+        $exhausted = $report['exhausted'] ?? [];
+        $expectedExhausted = ['error' => ['reason' => 'execution_limit'], 'toolCalls' => [], 'runId' => null];
+        // Retain historical evidence while requiring gVisor for newly labelled traces.
+        if (array_key_exists('runtime', $exhausted)) { $expectedExhausted['runtime'] = ExecutionProfile::Gvisor->metadata(); }
         $checks = [
             'referenceProvenance' => 'performance-proof' === ($report['kind'] ?? null) && 1 === ($report['version'] ?? null)
                 && 'reference' === ($report['mode'] ?? null) && 0 === ($report['modelRequests'] ?? null) && 2 === ($report['simulatedLatencyPerQueryMs'] ?? null),
@@ -43,7 +49,7 @@ final class ProofVerifier
             'restrictedProfileAndLogsDenied' => count($report['denials'] ?? []) === 2,
             'cleanup' => true,
             'distinctRealExecutions' => true,
-            'attemptBudgetEnforced' => ['error' => ['reason' => 'execution_limit'], 'toolCalls' => [], 'runId' => null] === ($report['exhausted'] ?? null),
+            'attemptBudgetEnforced' => $expectedExhausted === $exhausted,
             'noPrivateCanary' => !str_contains(json_encode($report, JSON_THROW_ON_ERROR), RequestCollector::CANARY),
         ];
         foreach ($turns as $turn) {
@@ -61,6 +67,9 @@ final class ProofVerifier
         }
         $runIds = [];
         foreach ([...$turns, ...($report['denials'] ?? [])] as $execution) {
+            if (array_key_exists('runtime', $execution['trace'] ?? [])) {
+                $checks['sandboxConfiguration'] = $checks['sandboxConfiguration'] && ExecutionProfile::Gvisor->metadata() === $execution['trace']['runtime'];
+            }
             $checks['cleanup'] = $checks['cleanup'] && true === ($execution['containerRemoved'] ?? null);
             $runId = $execution['trace']['runId'] ?? '';
             $checks['distinctRealExecutions'] = $checks['distinctRealExecutions'] && is_string($runId) && 1 === preg_match('/\Acode-mode-[a-f0-9]{32}\z/D', $runId);

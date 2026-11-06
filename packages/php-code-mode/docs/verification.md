@@ -29,6 +29,10 @@ Run from the repository root:
 
 Run sandbox suites sequentially against a dedicated Docker endpoint. `APP_ENV=test` skips `.env.local`; export the trusted `CODE_MODE_IMAGE` and `CODE_MODE_DOCKER_COMMAND` explicitly. Never print or pass model credentials to the guest. Mocked-provider tests verify orchestration, not live model generation.
 
+6 November local-executor regression pass: **157 application tests, 54 package tests, 28 core gVisor tests, 15 Symfony/gVisor tests and 11 independent-consumer tests passed**. The refreshed independent Composer app also passed 25 real MCP/gVisor proof checks. No model was called and no recorded judge evidence was replaced.
+
+The package suite now runs real local PHP against synthetic data: authorized reads, denied restricted reads, discovery/attempt/call budgets, bounded frames/output, heap exhaustion, loops and sleeping, process cleanup, and a coordinator-kill watchdog check with a live PID witness. It deliberately verifies that a host sentinel file **is readable** in local mode. Symfony integration tests verify explicit opt-in, Docker-free doctor/container configuration, truthful MCP/Symfony AI descriptions and results, rejected runtime arguments, and a denied-read → permitted-read conversation. These are behavior checks for `local-unsafe`, not isolation proofs. Process inspection must be available; its failure cannot count as evidence of termination.
+
 The security probes require an authorized read, an explicitly denied tool call, and an infinite loop terminated after its read witness. A startup timeout or generic upstream error is insufficient. Each host-generated container name must be confirmed absent. The separate crash test permits a terminated zombie while its parent finishes reaping, but rejects a live worker after the fallback deadline. Network testing proves the trusted control can reach the destination before checking that the isolated guest cannot.
 
 ## Live and recorded evidence

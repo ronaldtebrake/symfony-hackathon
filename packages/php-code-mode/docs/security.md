@@ -2,13 +2,15 @@
 
 Status: runner, broker and Code Mode demo proof, 31 October 2026. These tests demonstrate specific controls; they do not prove the absence of sandbox escapes or make this ready for anonymous multi-tenant hosting.
 
+6 November addition: an explicit `local-unsafe` development executor is available. The isolation guarantees and resource table below describe **gVisor only**. Existing hackathon proof commands continue to require gVisor.
+
 ## Decision: native PHP in gVisor, deployed through Docker
 
 We need real PHP with functions, loops, arrays, and tool composition. The generated program is fully hostile. It must never execute in the Symfony/Drupal process, receive credentials, or select its own execution profile.
 
 | Option | Boundary and adoption | Decision for this proof |
 | --- | --- | --- |
-| Local PHP process, `disable_functions`, AST filtering | Same host access; language restrictions are bypass-prone and do not contain native vulnerabilities | Rejected as an isolation boundary |
+| Local PHP process, `disable_functions`, AST filtering | Same host access; language restrictions are bypass-prone and do not contain native vulnerabilities | Rejected as an isolation boundary; explicit `local-unsafe` development opt-in only |
 | Hardened Docker/runc | Familiar tooling and native PHP, but containers share the host kernel | Insufficient alone for hostile generated code; no fallback |
 | Docker + gVisor | Standard OCI image; a userspace application kernel intercepts application syscalls; requires Linux and installation of `runsc` | Selected; native PHP works, resource controls are testable, and systrap works inside an ordinary VM |
 | Wasmtime / WASI PHP | Strong capability-oriented boundary with fuel/epoch interruption; requires a maintained compatible PHP build and host bindings | Worth revisiting; the archived VMware PHP WASI release and a custom runtime port are a maintenance burden for this proof |
@@ -19,7 +21,19 @@ Docker is the adoption interface, not the security argument. gVisor reduces the 
 
 The executor requires a configured `runsc` binary and rejects unreviewed runtime flags (only explicit `--platform=systrap` is allowed). It inspects each created container before starting it. This detects configuration errors; it cannot attest that a malicious administrator has installed genuine gVisor under that name. Rootless Docker is desirable additional hardening but has **not** been verified by this proof; no rootless compatibility claim is made.
 
-## Trust boundaries
+## Explicit local development profile
+
+The operator may select `local-unsafe` in the Symfony bundle or instantiate `LocalUnsafeExecutor` directly. No tool input can select a profile, and a missing/broken gVisor runtime never falls back. Use reviewed snippets in a disposable environment, not hostile generated PHP on a workstation with credentials.
+
+The trusted CLI host starts a PHP supervisor with an empty environment, disabled auto-prepend/append files and a fresh private working directory. The supervisor uses installed PHP extensions, establishes its own process group, and starts a second PHP process with `-n`, an empty environment, no application autoloader, a PHP heap limit and restricted functions. Source travels over bounded STDIO, never through shell interpolation or command-line arguments. A host watchdog enforces ordinary wall-clock timeouts; the supervisor also attempts to terminate its group after the deadline plus two seconds if the coordinator disappears. Startup has a separate two-second bound. The existing broker worker and exact protocol, source/frame/output/result/call limits are shared with gVisor.
+
+**There is no OS isolation.** Generated PHP retains the local user's filesystem and network access. It may bypass tools, obtain credentials from host files, tamper with application code or evidence, and interfere with same-user processes. PHP restrictions can be bypassed; timeout and process cleanup are best effort against malicious code. There are no cgroup memory/CPU limits, PID limits, bounded disk space, read-only root, separate user or network namespace. `memoryMiB` is not enforced in this profile; only `phpMemoryMiB` applies. A broker denial proves only that the requested broker call did not run, not that private data was inaccessible by another route.
+
+Cleanup stops the local process group and broker and removes the empty scratch directory. It never recursively walks a tree controlled by unsandboxed PHP. Leftover files cause `cleanup_failed`; inspect the temporary directory named by the run ID manually. A killed coordinator can leave the scratch directory behind. Same-user hostile code can escape or disable these measures.
+
+Successes and failures exposed through the bundle's MCP/Symfony AI adapters include `runtime.executor: local-unsafe`, `runtime.isolation: none` and a warning. The doctor distinguishes runtime readiness from security, and `php_execute` loses its read-only hint. The workbench retains the separate gVisor evidence; local runs do not inherit its badges or claims. Metadata is host-generated but is not tamper-proof on an unsandboxed host.
+
+## gVisor trust boundaries
 
 ```mermaid
 flowchart LR
@@ -36,9 +50,9 @@ Trusted: package code, pinned image, Docker endpoint/argv, host identity, local 
 
 The guest has no host mount, Docker socket, application/vendor directory, host environment forwarding, network interface with egress, published port, device passthrough, host PID namespace, or elevated Linux capability. Its root filesystem is read-only. It runs as UID/GID 65532 with `no-new-privileges`; only a private bounded `/tmp` is writable. `/tmp` is `noexec`, but PHP can still interpret PHP stored there: `noexec` is not a ban on interpreted code. The entire interpreter is already untrusted.
 
-`eval()` exists only in the isolated image bootstrap. PHP function restrictions, `-n`, and disabled URL wrappers are defense in depth. They are not the isolation boundary. The guest can forge the entire STDIO protocol and result. Every frame is parsed on the host with exact keys, depth/size limits, and sequential request IDs. Neither an identity nor a capability can be supplied in a frame. The host decides the tool allowlist for each execution, then checks permission and argument schema for every call. Tool-name lookup never resolves arbitrary PHP functions or shell commands.
+`eval()` exists only in the subprocess bootstrap (isolated by gVisor, or explicitly unsandboxed in local mode), never in the host application or broker. PHP function restrictions, `-n`, and disabled URL wrappers are defense in depth. They are not the isolation boundary. The guest can forge the entire STDIO protocol and result. Every frame is parsed on the host with exact keys, depth/size limits, and sequential request IDs. Neither an identity nor a capability can be supplied in a frame. The host decides the tool allowlist for each execution, then checks permission and argument schema for every call. Tool-name lookup never resolves arbitrary PHP functions or shell commands.
 
-## Enforced limits
+## gVisor enforced limits
 
 | Resource | Default | Enforcement |
 | --- | --- | --- |

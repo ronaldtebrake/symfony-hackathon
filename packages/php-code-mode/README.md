@@ -87,9 +87,23 @@ $schemas = $session->describe(['articles.list']);
 $result = $session->execute('return $tools->call("articles.list");');
 ```
 
-Adapt the example to the discovered tool's required arguments. Only described, locally approved tools can be called; describing a tool does not bypass its authorization callback. The default session allows two execution attempts, including failures. Create a new session for a new host-authorized task. `CodeModeSession::definitions()` supplies the three canonical schemas for MCP servers and model toolboxes.
+Adapt the example to the discovered tool's required arguments. Only described, locally approved tools can be called; describing a tool does not bypass its authorization callback. The default session allows two execution attempts, including failures. Create a new session for a new host-authorized task. `$session->toolDefinitions()` supplies the three canonical schemas and the selected runtime description for MCP servers and model toolboxes. The static `CodeModeSession::definitions()` retains gVisor descriptions for existing integrations.
 
 Discovery permits 128 upstream tools, 8 continuation cursors, a 64 KiB result and a 3-second worker deadline. Search returns at most 8 name/description matches; describe accepts at most 16 names. Large catalogs must be narrowed upstream. Tool results must be structured JSON or a single text item; media/resource results are rejected. The gateway preserves envelopes such as Drupal Tool API's `success`, `message`, `data`. Output schemas are metadata, not proof of valid or trusted output.
+
+## Explicit local development executor
+
+`LocalUnsafeExecutor` implements the same `SandboxExecutor` contract. It requires Unix PHP CLI with `pcntl`, `posix` and `proc_open`, but no Docker or runner image:
+
+```php
+$executor = new \CodeMode\LocalUnsafeExecutor(); // Deliberate operator opt-in; NOT a sandbox.
+$result = $executor->execute($reviewedPhp, $broker, $hostIdentity, $approvedNames);
+$runtime = $result->profile->metadata(); // executor: local-unsafe, isolation: none
+```
+
+Use reviewed snippets in a disposable environment. The child has no inherited environment or application bootstrap, but runs as the same OS user and **can read host files or contact network services directly**. Broker denials do not provide containment. PHP restrictions and heap limits are best effort. There are no OS memory, CPU, disk or process-count quotas. Cleanup never recursively deletes untrusted files; a nonempty scratch directory produces `cleanup_failed` and is left for operator inspection. See the [security model](docs/security.md#explicit-local-development-profile) and [Symfony configuration](../symfony-code-mode/README.md#php-only-development-opt-in).
+
+`ExecutionResult` and execution failures carry an `ExecutionProfile`; built-in timelines also label the runtime. Custom executors can implement `ProfiledExecutor`; otherwise sessions report `unknown`, without promising isolation. Host metadata describes configuration, not a security attestation. Neither profile is selectable through an MCP argument, and gVisor failures never trigger a local fallback.
 
 ## Demo for judges
 

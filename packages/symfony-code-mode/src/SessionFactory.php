@@ -8,7 +8,9 @@ use CodeMode\CodeModeSession;
 use CodeMode\DockerEngine;
 use CodeMode\ExecutionIdentity;
 use CodeMode\ExecutionLimits;
+use CodeMode\ExecutionProfile;
 use CodeMode\GvisorSandbox;
+use CodeMode\LocalUnsafeExecutor;
 use CodeMode\Tool;
 use CodeMode\ToolBroker;
 use CodeMode\ToolCatalog;
@@ -17,7 +19,14 @@ use CodeMode\Symfony\Ai\ApprovedToolbox;
 final readonly class SessionFactory
 {
     /** @param list<ReadToolInterface> $tools */
-    public function __construct(private array $tools, private string $image, private DockerEngine $docker, private ExecutionLimits $limits = new ExecutionLimits(), private ?ApprovedToolbox $aiToolbox = null) {}
+    public function __construct(private array $tools, private string $image = '', private DockerEngine $docker = new DockerEngine(), private ExecutionLimits $limits = new ExecutionLimits(), private ?ApprovedToolbox $aiToolbox = null, private ExecutionProfile $executor = ExecutionProfile::Gvisor)
+    {
+        if (ExecutionProfile::Unknown === $executor) {
+            throw new \InvalidArgumentException('Select gvisor or explicitly opt in to local-unsafe.');
+        }
+    }
+
+    public function profile(): ExecutionProfile { return $this->executor; }
 
     /** Each host-owned conversation gets its own discovery state and two-attempt budget. */
     public function create(ExecutionIdentity $identity): CodeModeSession
@@ -30,7 +39,11 @@ final readonly class SessionFactory
             $brokerTools[] = new Tool($definition->name, $definition->inputSchema, $tool->authorize(...), $tool->invoke(...));
         }
 
-        return new CodeModeSession($catalog, new ToolBroker($brokerTools), new GvisorSandbox($this->image, $this->docker), $identity, $this->limits);
+        $executor = match ($this->executor) {
+            ExecutionProfile::Gvisor => new GvisorSandbox($this->image, $this->docker),
+            ExecutionProfile::LocalUnsafe => new LocalUnsafeExecutor(),
+        };
+        return new CodeModeSession($catalog, new ToolBroker($brokerTools), $executor, $identity, $this->limits);
     }
 
     public function catalog(): ToolCatalog

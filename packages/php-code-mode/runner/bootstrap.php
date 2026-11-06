@@ -2,7 +2,8 @@
 
 declare(strict_types=1);
 
-// This file is shipped only in the isolated image. It must never be included by the host.
+// Subprocess entry point: isolated image, or explicitly unsandboxed local development.
+// Never include this file in the host application or broker process.
 final class Tools
 {
     private int $id = 0;

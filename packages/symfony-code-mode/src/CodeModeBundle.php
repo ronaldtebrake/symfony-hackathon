@@ -6,6 +6,7 @@ namespace CodeMode\Symfony;
 
 use CodeMode\DockerEngine;
 use CodeMode\ExecutionLimits;
+use CodeMode\ExecutionProfile;
 use CodeMode\Symfony\Command\DoctorCommand;
 use CodeMode\Symfony\Command\ServeCommand;
 use CodeMode\Symfony\Ai\ApprovedToolbox;
@@ -22,6 +23,7 @@ final class CodeModeBundle extends AbstractBundle
     public function configure(DefinitionConfigurator $definition): void
     {
         $definition->rootNode()->children()
+            ->enumNode('executor')->values(['gvisor', 'local-unsafe'])->defaultValue('gvisor')->end()
             ->scalarNode('image')->defaultValue('%env(CODE_MODE_IMAGE)%')->end()
             ->variableNode('docker_command')->defaultValue('%env(json:CODE_MODE_DOCKER_COMMAND)%')->end()
             ->scalarNode('identity_provider')->isRequired()->cannotBeEmpty()->end()
@@ -54,10 +56,13 @@ final class CodeModeBundle extends AbstractBundle
         if ([] === $config['tools'] && !$hasAi) {
             throw new \InvalidArgumentException('Configure at least one approved read tool.');
         }
-        $services->set('code_mode.docker', DockerEngine::class)->args([$config['docker_command']]);
+        $profile = ExecutionProfile::from($config['executor']);
+        // Local mode must not resolve image or Docker environment variables, or contact a daemon.
+        $image = ExecutionProfile::Gvisor === $profile ? $config['image'] : '';
+        $services->set('code_mode.docker', DockerEngine::class)->args([ExecutionProfile::Gvisor === $profile ? $config['docker_command'] : ['docker']]);
         $services->set('code_mode.limits', ExecutionLimits::class)->args(['$wallTimeMs' => $config['wall_time_ms'], '$toolTimeMs' => $config['tool_time_ms'], '$maxToolCalls' => $config['max_tool_calls']]);
-        $services->set(SessionFactory::class)->args([array_map(static fn (string $id) => new Reference($id), $config['tools']), $config['image'], new Reference('code_mode.docker'), new Reference('code_mode.limits'), $hasAi ? new Reference('code_mode.approved_ai_toolbox') : null]);
+        $services->set(SessionFactory::class)->args([array_map(static fn (string $id) => new Reference($id), $config['tools']), $image, new Reference('code_mode.docker'), new Reference('code_mode.limits'), $hasAi ? new Reference('code_mode.approved_ai_toolbox') : null, $profile]);
         $services->set(ServeCommand::class)->args([new Reference(SessionFactory::class), new Reference($config['identity_provider'])])->tag('console.command');
-        $services->set(DoctorCommand::class)->args([$config['image'], new Reference('code_mode.docker'), new Reference(SessionFactory::class), new Reference('code_mode.limits')])->tag('console.command');
+        $services->set(DoctorCommand::class)->args([$image, new Reference('code_mode.docker'), new Reference(SessionFactory::class), new Reference('code_mode.limits')])->tag('console.command');
     }
 }

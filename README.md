@@ -48,6 +48,8 @@ Configure the [dedicated gVisor runtime and pinned runner image](packages/php-co
 
 The [core Composer package](packages/php-code-mode/README.md) exposes `tools_search`, `tools_describe` and `php_execute`. The [Symfony bundle](packages/symfony-code-mode/README.md) adapts existing `#[AsTool]` services through an explicit allowlist and host policy, and supplies `code-mode:serve` and `code-mode:doctor`. Both are repository path packages, not yet published to Packagist.
 
+For PHP-only experimentation, the bundle offers an explicit [`local-unsafe` development profile](packages/symfony-code-mode/README.md#php-only-development-opt-in). It needs no Docker or image, but **does not isolate host files or network access**. The doctor and execution results label it unsandboxed. gVisor remains the default; the hackathon proof commands and recorded workbench evidence continue to use it.
+
 Try the [independent Symfony app](examples/symfony/README.md): its own Composer install, approved native tool and policy. The [fresh-install capture](docs/evidence/fresh-symfony-app.json) proves an authorized read, a denied private read, container cleanup and attempt exhaustion through real MCP and gVisor, without the main demo's autoloader or package source directories.
 
 [PHP MCP SDK and Symfony contribution proposals](docs/contributing/README.md) include executable checks. The optional [Drupal DDEV example](examples/drupal/README.md) demonstrates reuse with Tool API; the judge demo stays Symfony-only.

@@ -118,7 +118,7 @@ final class PerformanceProofTest extends WebTestCase
 
     public static function tampering(): iterable
     {
-        foreach (['source', 'ledger', 'cleanup', 'hash', 'count', 'denial', 'budget', 'redaction', 'timing'] as $case) { yield $case => [$case]; }
+        foreach (['source', 'ledger', 'cleanup', 'hash', 'count', 'denial', 'budget', 'redaction', 'timing', 'local_runtime', 'local_budget'] as $case) { yield $case => [$case]; }
     }
 
     #[DataProvider('tampering')]
@@ -133,6 +133,8 @@ final class PerformanceProofTest extends WebTestCase
             'count' => $report['turns'][1]['trace']['value']['after']['profile']['queryCount'] = 2,
             'denial' => $report['denials'][0]['trace']['value'] = 'private',
             'budget' => $report['exhausted']['error']['reason'] = 'tool_failed',
+            'local_runtime' => $report['turns'][0]['trace']['runtime'] = \CodeMode\ExecutionProfile::LocalUnsafe->metadata(),
+            'local_budget' => $report['exhausted']['runtime'] = \CodeMode\ExecutionProfile::LocalUnsafe->metadata(),
             'redaction' => $report['turns'][0]['trace']['value']['extra'] = RequestCollector::CANARY,
             'timing' => $report['turns'][1]['trace']['value']['after']['profile']['durationMs'] = -1,
         };

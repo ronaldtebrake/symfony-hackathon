@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CodeMode\Symfony\Ai;
 
 use CodeMode\CodeModeSession;
+use CodeMode\ExecutionProfile;
 use CodeMode\SandboxException;
 use Opis\JsonSchema\SchemaLoader;
 use Opis\JsonSchema\Validator;
@@ -24,7 +25,7 @@ final class CodeModeToolbox implements ToolboxInterface
 
     public function getTools(): array
     {
-        return array_map(static fn ($definition) => new Tool(new ExecutionReference(self::class), $definition->name, $definition->description, get_object_vars($definition->inputSchema), effectHints: new ToolEffectHints(readOnlyHint: true)), CodeModeSession::definitions());
+        return array_map(fn ($definition) => new Tool(new ExecutionReference(self::class), $definition->name, $definition->description, get_object_vars($definition->inputSchema), effectHints: new ToolEffectHints(readOnlyHint: 'php_execute' !== $definition->name || ExecutionProfile::Gvisor === $this->session->profile())), $this->session->toolDefinitions());
     }
 
     public function execute(ToolCall $toolCall): ToolResult
@@ -33,7 +34,7 @@ final class CodeModeToolbox implements ToolboxInterface
             if (++$this->calls > 60) {
                 throw new SandboxException('tool_call_limit', 'Conversation call budget exhausted.');
             }
-            $definitions = array_column(CodeModeSession::definitions(), null, 'name');
+            $definitions = array_column($this->session->toolDefinitions(), null, 'name');
             $name = $toolCall->getName();
             $arguments = $toolCall->getArguments();
             if (!isset($definitions[$name]) || !(new Validator(new SchemaLoader()))->validate((object) $arguments, $definitions[$name]->inputSchema)->isValid()) {
@@ -51,6 +52,7 @@ final class CodeModeToolbox implements ToolboxInterface
                 $value['toolCalls'] = $error->toolCalls;
                 $value['runId'] = $error->runId;
             }
+            $value['runtime'] = $this->session->profile()->metadata();
         }
         return new ToolResult($toolCall, json_encode($value, JSON_THROW_ON_ERROR));
     }
@@ -58,6 +60,6 @@ final class CodeModeToolbox implements ToolboxInterface
     private function executePhp(string $code): array
     {
         $result = $this->session->execute($code);
-        return ['value' => $result->value, 'toolCalls' => $result->toolCalls, 'durationMs' => $result->durationMs, 'runId' => $result->runId];
+        return ['value' => $result->value, 'toolCalls' => $result->toolCalls, 'durationMs' => $result->durationMs, 'runId' => $result->runId, 'runtime' => $result->profile->metadata()];
     }
 }
