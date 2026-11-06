@@ -80,14 +80,14 @@ final class SymfonyCodeModeTest extends KernelTestCase
         }
     }
 
-    public function testMcpDenialPreservesHostTraceWithoutExceptionSecrets(): void
+    public function testMcpDenialReturnsActionableReasonWithoutTraceOrExceptionSecrets(): void
     {
         $factory = new McpServerFactory();
         $calls = [['name' => 'articles_read', 'status' => 'denied', 'reason' => 'tool_denied']];
         $result = $factory->result(static fn () => throw new SandboxException('tool_denied', 'secret-path-and-token', $calls, runId: 'code-mode-'.str_repeat('a', 32)));
         self::assertTrue($result->isError);
         self::assertSame('tool_denied', $result->structuredContent['error']['reason']);
-        self::assertSame($calls, $result->structuredContent['toolCalls']);
+        self::assertSame(['error' => ['reason' => 'tool_denied', 'tool' => 'articles_read']], $result->structuredContent);
         self::assertSame($result->structuredContent, json_decode($result->content[0]->text, true));
         self::assertStringNotContainsString('secret-path-and-token', json_encode($result));
         $unexpected = $factory->result(static fn () => throw new \RuntimeException('private database error'));

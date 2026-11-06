@@ -6,6 +6,7 @@ namespace App\Demo\Performance;
 
 use App\Demo\BackendFactory;
 use CodeMode\DockerEngine;
+use CodeMode\ExecutionTraceFile;
 use Mcp\Client;
 use Mcp\Client\Transport\StdioTransport;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -56,18 +57,19 @@ PHP;
         try {
             $docker = new DockerEngine(json_decode(BackendFactory::env('CODE_MODE_DOCKER_COMMAND', '["docker"]'), true, flags: JSON_THROW_ON_ERROR));
             $docker->requireGvisor();
-            $this->session(function (Client $client) use (&$report, $docker): void {
+            $this->session(function (Client $client, string $traceFile) use (&$report, $docker): void {
                 $report['discovery'] = $this->discover($client);
                 foreach ([self::INVESTIGATE, self::COMPARE] as $index => $php) {
-                    $report['turns'][] = ['question' => self::QUESTIONS[$index]] + $this->execute($client, $docker, $php);
+                    $report['turns'][] = ['question' => self::QUESTIONS[$index]] + $this->execute($client, $docker, $traceFile, $php);
                 }
-                $report['exhausted'] = $client->callTool('php_execute', ['code' => 'return 1;'])->structuredContent;
+                $report['exhaustedAgentResponse'] = $client->callTool('php_execute', ['code' => 'return 1;'])->structuredContent;
+                $report['exhausted'] = ExecutionTraceFile::last($traceFile, 'return 1;');
             });
             // A separate operator-started security session; denials do not reset the investigation budget.
-            $this->session(function (Client $client) use (&$report, $docker): void {
+            $this->session(function (Client $client, string $traceFile) use (&$report, $docker): void {
                 $this->discover($client);
                 foreach (['perf_profile', 'perf_logs'] as $name) {
-                    $report['denials'][] = $this->execute($client, $docker, 'return $tools->call("'.$name.'", ["requestId" => "profile-04"]);');
+                    $report['denials'][] = $this->execute($client, $docker, $traceFile, 'return $tools->call("'.$name.'", ["requestId" => "profile-04"]);');
                 }
             });
         } catch (\Throwable $error) {
@@ -87,11 +89,14 @@ PHP;
             $value = $_SERVER[$key] ?? $_ENV[$key] ?? getenv($key);
             if (is_string($value)) { $env[$key] = $value; }
         }
+        $traceDir = sys_get_temp_dir().'/code-mode-proof-'.bin2hex(random_bytes(12));
+        mkdir($traceDir, 0700);
+        $traceFile = $traceDir.'/trace.jsonl';
         $client = Client::builder()->setClientInfo('performance-proof', '1')->setInitTimeout(10)->setRequestTimeout(30)->setMaxRetries(0)->build();
         try {
-            $client->connect(new StdioTransport(PHP_BINARY, ['bin/console', 'code-mode:performance-mcp', '--no-debug'], $this->projectDir, $env, maxBufferSize: 65536));
-            $run($client);
-        } finally { $client->disconnect(); }
+            $client->connect(new StdioTransport(PHP_BINARY, ['bin/console', 'code-mode:performance-mcp', '--no-debug', '--trace-file='.$traceFile], $this->projectDir, $env, maxBufferSize: 65536));
+            $run($client, $traceFile);
+        } finally { $client->disconnect(); if (is_file($traceFile)) { unlink($traceFile); } rmdir($traceDir); }
     }
 
     private function discover(Client $client): array
@@ -102,13 +107,13 @@ PHP;
         return ['search' => $search->structuredContent, 'describe' => $describe->structuredContent];
     }
 
-    private function execute(Client $client, DockerEngine $docker, string $php): array
+    private function execute(Client $client, DockerEngine $docker, string $traceFile, string $php): array
     {
         $result = $client->callTool('php_execute', ['code' => $php]);
-        $trace = $result->structuredContent;
+        $trace = ExecutionTraceFile::last($traceFile, $php);
         $runId = $trace['runId'] ?? null;
         $removed = is_string($runId) && 1 === preg_match('/\Acode-mode-[a-f0-9]{32}\z/D', $runId)
             && '' === $docker->control(['ps', '-aq', '--filter', 'name=^/'.$runId.'$']);
-        return ['php' => $php, 'isError' => $result->isError, 'trace' => $trace, 'containerRemoved' => $removed];
+        return ['php' => $php, 'isError' => $result->isError, 'trace' => $trace, 'agentResponse' => $result->structuredContent, 'containerRemoved' => $removed];
     }
 }

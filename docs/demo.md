@@ -11,11 +11,13 @@ The [Adoption section](http://127.0.0.1:8000/demo#adoption-proof) adds a second 
 3. Connect the fixture server using the [Codex setup](codex.md). Codex uses its own model access. Start a fresh operator-authorized MCP process and retain it for both turns; two sandbox attempts are available, including failed executions. A new chat alone does not prove the server restarted.
 4. Record at 1080p or higher, 30 fps. Leave a few seconds around actions and keep the full original take in ignored `var/demo-recording/`. Hide credentials and unrelated chats. Cut waiting time in the edit, not the underlying evidence.
 
-The workbench displays a reviewed capture; it does not synchronize fresh chats automatically. For a new take, retain the exact submitted `php_execute.code`, full tool results, prompts and final answers before updating the viewer. Never substitute an earlier program or model-written trace summary for that take's actual tool records.
+The workbench displays a reviewed capture; it does not synchronize fresh chats automatically. For a new take, enable [host trace recording](../packages/symfony-code-mode/README.md#agent-responses-and-host-evidence) and retain that file with the exact submitted `php_execute.code`, lean tool results, prompts and final answers before updating the viewer. Never substitute an earlier program or model-written trace summary for that take's actual tool records.
 
 ## Audit and follow-up
 
 These are the exact prompts from the [recorded desktop conversation](evidence/codex-conversation-2026-11-01.json), **1 November 2026, 12:42 CET**, chat `01a196eb-12bd-7412-9fad-4d279e2cbcf8`.
+
+These historical prompts asked Codex to show the full ledger, which the current lean responses no longer send. For a new take, ask it to show the submitted PHP and returned value; inspect actual tool calls using the separately recorded host trace.
 
 First message:
 
@@ -103,6 +105,30 @@ Open [Evaluation](http://127.0.0.1:8000/demo#evaluation). Its table includes eve
 The monotonic timeline measures runtime/catalog preflight, model invocation through deferred result conversion, container creation/inspection, attached PHP execution, broker calls, and cleanup. Broker spans nest inside PHP execution. Do not sum overlapping stages. Model time includes transport and SDK conversion; it does not isolate provider inference. Gaps and incomplete spans are left explicit, and historical captures receive no invented timing data. Successful cleanup means the runner's exact-container removal operation completed; the older security proof separately records a post-run absence check.
 
 For the recording, the evaluation can replace the 12-second matched-comparison insert: show the live batch's verified/planned counts, select the Code Mode join or boundary conversation, and click its execution bar. Keep the Codex opening and security probes; these remain separate executions.
+
+## Lean response measurement
+
+The [payload viewer](http://127.0.0.1:8000/demo#lean-responses) replays the current formatter over nine retained execution responses, including failures. It checks source and payload hashes before displaying counts. The original evidence, provider usage and failed attempts are unchanged.
+
+| Retained responses | Before tokens | Lean tokens | Reduction |
+| --- | ---: | ---: | ---: |
+| Symfony boundary recovery (3) | 285 | 42 | 85.3% |
+| Symfony AI adoption (2) | 314 | 95 | 69.7% |
+| Codex structured results (2) | 1,248 | 663 | 46.9% |
+| Hugging Face audit (2) | 304 | 275 | 9.5% |
+
+Counts use `tiktoken==0.12.0`, `o200k_harmony`, the [gpt-oss encoding](https://github.com/openai/gpt-oss/blob/main/gpt_oss/tokenizer.py). Symfony AI samples use exact retained result strings; Codex samples use one canonical JSON serialization of `structuredContent`. This excludes discovery, prompts, generated PHP, chat/protocol envelopes, duplicate serialization, repeated context and completions. It measures **response-body tokens**, not total conversation savings, Codex billing or a new Hugging Face run. The already compact audit path has a smaller gain.
+
+Reproduce with a temporary, optional measurement environment; Python is not a runtime dependency:
+
+```sh
+python3 -m venv /tmp/code-mode-tokenizer
+/tmp/code-mode-tokenizer/bin/pip install tiktoken==0.12.0
+/tmp/code-mode-tokenizer/bin/python bin/measure-response-tokens.py > /tmp/lean-responses.json
+diff docs/evidence/lean-responses.json /tmp/lean-responses.json
+```
+
+The tokenizer may download its public vocabulary on first use. No credentials, model inference or execution are involved. `php bin/response-payloads` alone exposes the exact old/new strings and byte counts. Security checks remain in the session, broker and executor; the formatter changes only presentation.
 
 ## Refresh the other proofs
 

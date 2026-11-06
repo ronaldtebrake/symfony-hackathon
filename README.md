@@ -127,7 +127,7 @@ Against the supplied fixture, the returned `value` is:
 {"audited":48,"missingDescriptions":[11,22,33,44]}
 ```
 
-That is one PHP execution with **four broker calls**. The execution response also contains a host-recorded `toolCalls` ledger, duration, run ID and runtime metadata. The PHP return value is untrusted program output; the ledger records which tools actually ran.
+That is one PHP execution with **four broker calls**. The agent receives `{"value": ...}`. The host retains the detailed call ledger, duration and run ID for optional diagnostics; they are not repeated in the model response. The PHP return value remains untrusted program output. [Capture host evidence](packages/symfony-code-mode/README.md#agent-responses-and-host-evidence).
 
 A follow-up uses the same conversation, identity and remaining execution budget. If the agent attempts a restricted read, the broker returns `tool_denied`. The agent can explain the boundary and propose a permitted alternative. [See the recorded denial and recovery](docs/demo.md#optional-boundary-recovery-opening).
 
@@ -172,6 +172,8 @@ Code Mode used **71.4% fewer provider tokens in this successful pair**. All 21 d
 ![Actual workbench showing both verified answers and measured provider usage.](docs/images/huggingface-matched-comparison.jpg)
 
 A separate evaluation repeats five scenarios twice per approach. Its latest live batch passes **10/10 conversations on both sides**, with **63.7% fewer reported tokens** for Code Mode, including shared answer-review costs. Earlier failed batches remain available. [Evaluation protocol and results](docs/demo.md#repeatable-evaluation).
+
+The current lean response format also reduces context overhead. Offline replay of retained responses measures **46.9% fewer response-body tokens for the Codex pair**, **69.7% for the Symfony AI adoption pair**, and **9.5% for the already compact Hugging Face audit**. All use the gpt-oss tokenizer; these are payload counts, not new provider usage or total conversation savings. Historical live captures remain unchanged. [Inspect and reproduce the measurement](docs/demo.md#lean-response-measurement).
 
 ## Run the demos
 

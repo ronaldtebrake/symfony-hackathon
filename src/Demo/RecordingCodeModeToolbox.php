@@ -19,17 +19,19 @@ final readonly class RecordingCodeModeToolbox implements ToolboxInterface
     {
         $result = $this->inner->execute($call);
         $encoded = $result->getResult();
-        $value = json_decode($encoded, true, 32, JSON_THROW_ON_ERROR);
+        $record = $this->inner->lastExecution();
         ++$this->trace->agentToolCalls;
         $this->trace->toolPayloadBytes += strlen($encoded);
         $this->trace->captureCall($call->getName(), $call->getArguments(), $encoded);
-        if ('php_execute' === $call->getName() && is_string($call->getArguments()['code'] ?? null)) {
-            $this->trace->programs[] = $call->getArguments()['code'];
+        if (null !== $record) {
+            $value = json_decode(json_encode($record['trace'], JSON_THROW_ON_ERROR), true, 32, JSON_THROW_ON_ERROR);
+            $this->trace->programs[] = $record['code'];
             $calls = $value['toolCalls'] ?? [];
             array_push($this->trace->brokerCalls, ...$calls);
             $this->trace->executions[] = ['programIndex' => count($this->trace->programs) - 1, 'runId' => $value['runId'] ?? null,
                 'status' => isset($value['error']) ? 'failed' : 'succeeded', 'reason' => $value['error']['reason'] ?? null,
-                'durationMs' => $value['durationMs'] ?? null, 'toolCalls' => $calls, 'value' => $value['value'] ?? null];
+                'durationMs' => $value['durationMs'] ?? null, 'toolCalls' => $calls, 'value' => $value['value'] ?? null,
+                'runtime' => $value['runtime'], 'agentResponseFormat' => 'lean-v1'];
             $this->trace->report = $value['value'] ?? null;
         }
         return $result;

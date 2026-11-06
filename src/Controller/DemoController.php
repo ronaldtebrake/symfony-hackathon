@@ -104,6 +104,13 @@ final readonly class DemoController
         return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
     }
 
+    #[Route('/demo/response-payloads', name: 'app_demo_response_payloads', methods: ['GET'])]
+    public function responsePayloads(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+        return $this->response(json_encode((new \App\Demo\ResponsePayloadComparison($this->projectDir))->report(), JSON_THROW_ON_ERROR), 'application/json');
+    }
+
     private function requireLocalRequest(Request $request): void
     {
         if (!in_array($request->getClientIp(), ['127.0.0.1', '::1'], true) || !in_array($request->getHost(), ['127.0.0.1', 'localhost', '[::1]'], true)) {

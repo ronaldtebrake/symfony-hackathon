@@ -1,7 +1,7 @@
 {
     "version": 1,
     "kind": "drupal-authorization-proof",
-    "createdAt": "2026-11-02T08:54:46+00:00",
+    "createdAt": "2026-11-06T11:47:42+00:00",
     "status": "complete",
     "transport": "local DDEV STDIO",
     "modelCalled": false,
@@ -12,73 +12,85 @@
         {
             "id": "authorized_read",
             "code": "return $tools->call(\"tool_api__code_mode_read_article\", [\"id\" => 1]);",
-            "startedAt": "2026-11-02T08:54:48+00:00",
+            "startedAt": "2026-11-06T11:47:46+00:00",
             "value": {
                 "id": 1,
                 "title": "Published article for the Code Mode proof"
             },
             "reason": null,
-            "runId": "code-mode-33988d561fe176070aa2eed64714ee87",
+            "runId": "code-mode-c40b6895735b49089479523e335fa276",
             "toolCalls": [
                 {
                     "name": "tool_api__code_mode_read_article",
                     "status": "succeeded",
-                    "durationMs": 2106.0514580021845,
+                    "durationMs": 2137.183291983092,
                     "resultBytes": 60
                 }
             ],
             "containerRemoved": true,
-            "durationMs": 2547.234666,
+            "agentResponse": {
+                "value": {
+                    "id": 1,
+                    "title": "Published article for the Code Mode proof"
+                }
+            },
+            "durationMs": 2706.455167,
             "drupalEvents": [
                 {
-                    "id": 117,
+                    "id": 178,
                     "event": "article_access",
                     "account": 2,
                     "node": 1,
                     "decision": "allowed",
-                    "timestamp": 1793609691
+                    "timestamp": 1793965669
                 },
                 {
-                    "id": 118,
+                    "id": 179,
                     "event": "article_read",
                     "account": 2,
                     "node": 1,
                     "decision": null,
-                    "timestamp": 1793609691
+                    "timestamp": 1793965669
                 }
             ],
             "passed": true,
-            "completedAt": "2026-11-02T08:54:51+00:00"
+            "completedAt": "2026-11-06T11:47:49+00:00"
         },
         {
             "id": "restricted_read",
             "code": "return $tools->call(\"tool_api__code_mode_read_article\", [\"id\" => 2]);",
-            "startedAt": "2026-11-02T08:54:51+00:00",
+            "startedAt": "2026-11-06T11:47:49+00:00",
             "value": null,
             "reason": "tool_failed",
-            "runId": "code-mode-e0e385a7ec63fdb082a47b5aa9d85a29",
+            "runId": "code-mode-91dd38fb197a11bfdaf9ac35f2e62e2d",
             "toolCalls": [
                 {
                     "name": "tool_api__code_mode_read_article",
                     "status": "incomplete",
                     "reason": "tool_failed",
-                    "durationMs": 2081.192541998462
+                    "durationMs": 2098.832167015644
                 }
             ],
             "containerRemoved": true,
-            "durationMs": 2411.894417,
+            "agentResponse": {
+                "error": {
+                    "reason": "tool_failed",
+                    "tool": "tool_api__code_mode_read_article"
+                }
+            },
+            "durationMs": 2459.870209,
             "drupalEvents": [
                 {
-                    "id": 138,
+                    "id": 199,
                     "event": "article_access",
                     "account": 2,
                     "node": 2,
                     "decision": "denied",
-                    "timestamp": 1793609694
+                    "timestamp": 1793965672
                 }
             ],
             "passed": true,
-            "completedAt": "2026-11-02T08:54:54+00:00"
+            "completedAt": "2026-11-06T11:47:52+00:00"
         }
     ],
     "fixture": {
@@ -111,7 +123,7 @@
         },
         "anonymousMcpAllowed": false,
         "contentHash": "6380a3b1645ca945d87f6f9afc86f6a3357d70f708ef1b14efadd44478766827",
-        "auditCursor": 84
+        "auditCursor": 145
     },
     "versions": {
         "drupal/core": "11.4.11",
@@ -161,10 +173,16 @@
                         "title": "Title"
                     }
                 }
+            },
+            "php": {
+                "example": "$result = $tools->call('tool_api__code_mode_read_article', ['id' => 1]);",
+                "arguments": "array{\"id\": int}",
+                "returns": "stdClass{\"id\"?: int, \"title\"?: string}",
+                "notes": "Illustrative placeholders; pass arguments as an associative PHP array and obey inputSchema. Tool-result JSON objects become stdClass (->field); JSON lists become PHP arrays. Shapes are documentation, not PHP declarations or permission grants. Unknown/referenced schemas remain mixed; no external references are fetched."
             }
         }
     ],
     "contentUnchanged": true,
     "accountStillRestricted": true,
-    "completedAt": "2026-11-02T08:54:54+00:00"
+    "completedAt": "2026-11-06T11:47:52+00:00"
 }

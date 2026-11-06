@@ -1,0 +1,120 @@
+{
+  "measurement": {
+    "kind": "offline-response-payload-replay",
+    "model": "openai/gpt-oss-120b",
+    "encoding": "o200k_harmony",
+    "library": "tiktoken==0.12.0",
+    "reference": "https://github.com/openai/gpt-oss/blob/main/gpt_oss/tokenizer.py",
+    "scope": "One copy of each serialized response body. Retained Symfony AI strings are exact; Codex structured results use canonical PHP JSON. Excludes discovery, prompts, PHP source, protocol envelopes, repeated context, chat formatting and completions. No inference call; not provider-billed savings or a new correctness benchmark."
+  },
+  "samples": [
+    {
+      "group": "Symfony boundary recovery",
+      "source": "docs/evidence/adoption-proof.json",
+      "pointer": "probe/agentCalls/2",
+      "sourceSha256": "941b8696aa32926fb61154ec7510fec0c89bae027c2bbcfd7ba987bad48047e4",
+      "beforeSha256": "2e82989fe5e9214954a0ab416bd115ad65d1a9340cf1b3926e8b6ed5dfd5df02",
+      "afterSha256": "4a5a1d992045a78cf6f0ee02d1c8c1a6336f4856864c43e797e6827ff813393c",
+      "beforeBytes": 298,
+      "afterBytes": 59,
+      "beforeTokens": 96,
+      "afterTokens": 15
+    },
+    {
+      "group": "Symfony boundary recovery",
+      "source": "docs/evidence/adoption-proof.json",
+      "pointer": "probe/agentCalls/3",
+      "sourceSha256": "941b8696aa32926fb61154ec7510fec0c89bae027c2bbcfd7ba987bad48047e4",
+      "beforeSha256": "41d051b6f6c2f4b027e1f173ab605698c94fb01aa5912ced999b78cf4618172e",
+      "afterSha256": "bead28c62895815d32718bd05563fd69b6ec7d2d5182bc78246dc56db1f40f54",
+      "beforeBytes": 541,
+      "afterBytes": 48,
+      "beforeTokens": 171,
+      "afterTokens": 19
+    },
+    {
+      "group": "Symfony boundary recovery",
+      "source": "docs/evidence/adoption-proof.json",
+      "pointer": "probe/agentCalls/4",
+      "sourceSha256": "941b8696aa32926fb61154ec7510fec0c89bae027c2bbcfd7ba987bad48047e4",
+      "beforeSha256": "059a345e379c7156b0361fcf954601e2e5117d163854d44a44337b4931da80d9",
+      "afterSha256": "b1dc4c1e5a69770dbbefa7ee230168e9e1a505c46ad6a7c678decbdc07a0cecb",
+      "beforeBytes": 66,
+      "afterBytes": 38,
+      "beforeTokens": 18,
+      "afterTokens": 8
+    },
+    {
+      "group": "Symfony AI adoption",
+      "source": "docs/evidence/adoption-proof.json",
+      "pointer": "liveTrace/agentCalls/2",
+      "sourceSha256": "941b8696aa32926fb61154ec7510fec0c89bae027c2bbcfd7ba987bad48047e4",
+      "beforeSha256": "e240337be3089a990e65302f23615f3beb90f5cc6a438aff607bb83316e053b5",
+      "afterSha256": "557a5e775f3a137307a5dd367f74d77d7e254b36428aed53fe386bed944bef3e",
+      "beforeBytes": 567,
+      "afterBytes": 371,
+      "beforeTokens": 143,
+      "afterTokens": 76
+    },
+    {
+      "group": "Symfony AI adoption",
+      "source": "docs/evidence/adoption-proof.json",
+      "pointer": "liveTrace/agentCalls/4",
+      "sourceSha256": "941b8696aa32926fb61154ec7510fec0c89bae027c2bbcfd7ba987bad48047e4",
+      "beforeSha256": "119c08c1ca5a4dfa92ee96edcec1a17a15d996ecc5feebd0892553871a7fa8c1",
+      "afterSha256": "bead28c62895815d32718bd05563fd69b6ec7d2d5182bc78246dc56db1f40f54",
+      "beforeBytes": 540,
+      "afterBytes": 48,
+      "beforeTokens": 171,
+      "afterTokens": 19
+    },
+    {
+      "group": "Codex MCP structured result",
+      "source": "docs/evidence/codex-conversation-2026-11-01.json",
+      "pointer": "turns/0/items/4",
+      "sourceSha256": "3dd8c1685f1c51afa642d96faf34ba2421bdfdf8afdffa14ac546b476670050a",
+      "beforeSha256": "d842ebaa678d4dea587c62209ac85f22e03ce563e31bbcf6002d6a4b2e492265",
+      "afterSha256": "5bb862ced32fd438b81f02d6ea7413558694fc7e551d61bff5c0efdc7425fbdf",
+      "beforeBytes": 2085,
+      "afterBytes": 1056,
+      "beforeTokens": 593,
+      "afterTokens": 301
+    },
+    {
+      "group": "Codex MCP structured result",
+      "source": "docs/evidence/codex-conversation-2026-11-01.json",
+      "pointer": "turns/1/items/1",
+      "sourceSha256": "3dd8c1685f1c51afa642d96faf34ba2421bdfdf8afdffa14ac546b476670050a",
+      "beforeSha256": "bbad90965e23d1be5be70e45ce28b7a99be2bdf00d00d5bb35854d2bfdd7a716",
+      "afterSha256": "946f0a3cf4b27f76349e32b05ad8900973530b82cc9a52387db109e240aa7145",
+      "beforeBytes": 2258,
+      "afterBytes": 1227,
+      "beforeTokens": 655,
+      "afterTokens": 362
+    },
+    {
+      "group": "Hugging Face audit",
+      "source": "docs/evidence/huggingface-pair.json",
+      "pointer": "code/result/agentCalls/1",
+      "sourceSha256": "b3e62d4a593ab35f1905f008fd90a6e11f69cce04cfcf7194b22abf9e60ff3a1",
+      "beforeSha256": "7d86b366f04663579f29bc8553249d655c586be4c1d4a7e08055d979d8db3af4",
+      "afterSha256": "6047503a7ae26d8c23b41f68fd3ada6aa1f03e1ca4d477668dd20d574911af41",
+      "beforeBytes": 168,
+      "afterBytes": 41,
+      "beforeTokens": 32,
+      "afterTokens": 9
+    },
+    {
+      "group": "Hugging Face audit",
+      "source": "docs/evidence/huggingface-pair.json",
+      "pointer": "code/result/agentCalls/3",
+      "sourceSha256": "b3e62d4a593ab35f1905f008fd90a6e11f69cce04cfcf7194b22abf9e60ff3a1",
+      "beforeSha256": "6b300938c81742df8f7886ad96936a0224195b634c03aaf6024bbd629f954641",
+      "afterSha256": "bbd94e1fa1542f0e523efb2bcdba04c0625237015c5c456fd33feb8b6f5ef822",
+      "beforeBytes": 921,
+      "afterBytes": 905,
+      "beforeTokens": 272,
+      "afterTokens": 266
+    }
+  ]
+}

@@ -42,9 +42,15 @@ The proof uses two executions, a 15-second wall limit per execution, a 3-second 
 
 The installed Tool Bridge beta5 returns successful outputs in `structuredContent`, and access denials as MCP `isError`. The generic gateway deliberately reports the latter as `tool_failed` / `incomplete`; it does not infer an authorization reason from upstream prose. **An upstream failure alone cannot pass this proof.** A separate, trusted Drush snapshot checks the real node, account and Drupal audit events around each execution. Those inspection scripts are never exposed as tools.
 
+## Reuse from Symfony Code Mode
+
+Lean responses now work here through the same PHP core package, with no Drupal module changes. The fresh proof checks the agent response as well as Drupal access, unchanged node data, the fixed reader account and gVisor cleanup. Full schema discovery and bounded PHP guides already come from `CodeModeSession`; local host traces remain available.
+
+The Symfony bundle's DI configuration and `#[AsTool]` adapter are Symfony integration points. Drupal continues to use Tool API and its MCP bridge. The new PHP-only development executor could technically be wired in, but this proof keeps gVisor: unsandboxed PHP could access local services outside Drupal's tool permissions. A real Drupal agent conversation and paginated journal audit remain separate milestones.
+
 ## Inspect and repeat
 
-[`proof.php`](proof.php) contains the exact operator-written PHP bodies. It prints JSON, exits nonzero on failure and replaces the single ignored `var/latest-proof.json`. The [recorded successful run](../../docs/evidence/drupal-authorization-proof-2026-11-02.json) includes programs, discovered schemas, host call ledgers, Drupal audit events, versions, limits and cleanup checks. No model generated this proof.
+[`proof.php`](proof.php) contains the exact operator-written PHP bodies. It prints JSON, exits nonzero on failure and replaces the single ignored `var/latest-proof.json`. The [recorded successful run](../../docs/evidence/drupal-authorization-proof.json) includes programs, discovered schemas, host call ledgers, Drupal audit events, versions, limits and cleanup checks. The latest capture uses the shared `AgentResponse` formatter: `agentResponse` contains only the value or a sanitized reason/tool, while the host retains `toolCalls`, run IDs and independent Drupal events. No model generated this proof.
 
 ```bash
 # From this Drupal directory:

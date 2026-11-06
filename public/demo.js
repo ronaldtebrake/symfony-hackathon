@@ -807,3 +807,33 @@ async function refreshPerformance() {
   } finally { setTimeout(refreshPerformance, 5000); }
 }
 refreshPerformance();
+
+async function loadResponsePayloads() {
+  try {
+    const response = await fetch('/demo/response-payloads', {cache:'no-store', credentials:'same-origin'});
+    if (!response.ok) throw new Error('Payload evidence unavailable');
+    const report = await response.json();
+    if (report.status !== 'verified') throw new Error('Measurements need regeneration');
+    const groups = new Map();
+    for (const sample of report.samples) {
+      const group = groups.get(sample.group) ?? {count:0, before:0, after:0};
+      group.count++; group.before += sample.beforeTokens; group.after += sample.afterTokens;
+      groups.set(sample.group, group);
+      const details = node('details', undefined, 'proof-details');
+      details.append(node('summary', `${sample.group} · ${sample.pointer}`), node('p', `${sample.source} · ${sample.beforeBytes} → ${sample.afterBytes} bytes`, 'measurement-note'), node('h3', 'Before'), node('pre', sample.before), node('h3', 'Lean response'), node('pre', sample.after));
+      byId('lean-samples').append(details);
+    }
+    for (const [name, group] of groups) {
+      const row = node('tr');
+      row.append(node('td', name), node('td', group.count), node('td', number(group.before)), node('td', number(group.after)), node('td', `${(100 * (1 - group.after / group.before)).toFixed(1)}%`));
+      byId('lean-rows').append(row);
+    }
+    byId('lean-scope').textContent = `${report.measurement.library} · ${report.measurement.encoding}. ${report.measurement.scope}`;
+    byId('lean-state').textContent = 'SOURCE HASHES MATCH';
+    byId('lean-evidence').hidden = false;
+  } catch {
+    byId('lean-state').textContent = 'MEASUREMENTS UNAVAILABLE';
+    byId('lean-evidence').hidden = true;
+  }
+}
+loadResponsePayloads();

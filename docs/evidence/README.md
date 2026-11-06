@@ -1,9 +1,10 @@
 # Evidence used by the hackathon demo
 
-These are reviewed execution captures, not generated example outputs. The read-only [workbench](http://127.0.0.1:8000/demo) displays them without starting models or PHP. Local reports in ignored `var/demo/` take precedence, including failed runs.
+These are reviewed execution captures and a separately labelled offline payload measurement. The read-only [workbench](http://127.0.0.1:8000/demo) displays them without starting models or PHP. Local reports in ignored `var/demo/` take precedence, including failed runs.
 
 | Capture | What it establishes | Viewer |
 | --- | --- | --- |
+| [Lean response payloads](lean-responses.json) | Offline gpt-oss tokenization of nine retained responses with current formatting; source/payload hashes checked. No inference call or provider-billing claim. | [Payload methodology](../demo.md#lean-response-measurement) |
 | [Symfony performance investigation](performance-proof.json) | Real synthetic HttpKernel requests, persisted Symfony Profiler records, PDO queries and redacted PSR-3 events. Two fixed PHP programs correlate N+1 work and verify identical output with 13 → 1 queries. Both restricted readers denied; cleanup and attempt limit checked. First inconclusive attempt retained. | [Performance guide](../performance.md) |
 | [Fresh Symfony application](fresh-symfony-app.json) | Independent Composer install without the root autoloader or package source directories at execution: own native tool and policy, allowed/denied reads over MCP and gVisor, cleanup and attempt exhaustion. 24 checks; operator-written PHP, no model called. | [Reproduce](../../examples/symfony/README.md) |
 | [Repeated Symfony evaluation](evaluation.json) | Five scenarios, two repetitions per path; v4 passes all 20 live conversations with shared answer review and its cost included. Retains all 80 live and 20 reference conversations, original failures, drafts, invalid reviews, generated PHP, calls and measured timelines. Protocol versions stay separate; results are independently rechecked. | Evaluation |
@@ -13,7 +14,7 @@ These are reviewed execution captures, not generated example outputs. The read-o
 | [Boundary recovery](boundary-recovery-2026-11-02.json) | Codex CLI rehearsal: denied draft read, agent-proposed alternative, user-selected published-content audit. No denied value returned; both containers removed. This is not desktop footage. | Recovery |
 | [Security probes](security-proof-2026-11-01.json) | Fixed PHP programs: authorized read, `tool_denied`, and `wall_timeout` after a completed read. Exact container removal checked. No model called. | Security |
 | [Reference comparison](reference-comparison-2026-10-31.json) | Operator-written algorithms: 48 articles, ten matching findings and ten MCP calls each; 20,154 → 3,014 serialized tool-result bytes. No model called. | Reference |
-| [Drupal authorization](drupal-authorization-proof-2026-11-02.json) | Optional DDEV example: published read allowed, restricted read denied with independent Drupal access evidence and cleanup checks. No model called. | [Drupal example](../../examples/drupal/README.md) |
+| [Drupal authorization](drupal-authorization-proof.json) | Optional DDEV example: published read allowed, restricted read denied with independent Drupal access evidence and cleanup checks. No model called. | [Drupal example](../../examples/drupal/README.md) |
 
 The original [Hugging Face Code Mode capture](huggingface-proof.json) and [failed direct baseline](huggingface-baseline.json) are retained as exact regression fixtures. The baseline binds the original Code Mode file by SHA-256. Their attempts also appear in the matched pair; retaining these original bytes preserves that historical binding and the replay tests. Superseded prose and screenshots are not needed to retain the failed runs.
 

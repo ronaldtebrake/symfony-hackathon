@@ -101,10 +101,16 @@ final class AdoptionProofVerifier
         }
         foreach ($executions as $index => $run) {
             $result = json_decode($php[$index]['result'], true);
+            $lean = 'lean-v1' === ($run['agentResponseFormat'] ?? null);
             if (($trace['programs'][$index] ?? null) !== ($php[$index]['arguments']['code'] ?? null)
-                || ($result['toolCalls'] ?? []) !== ($run['toolCalls'] ?? []) || ($result['runId'] ?? null) !== ($run['runId'] ?? null)
+                || (!$lean && (($result['toolCalls'] ?? []) !== ($run['toolCalls'] ?? []) || ($result['runId'] ?? null) !== ($run['runId'] ?? null)))
                 || ($result['value'] ?? null) !== ($run['value'] ?? null) || ($result['error']['reason'] ?? null) !== ($run['reason'] ?? null)
                 || (isset($result['error']) ? 'failed' : 'succeeded') !== ($run['status'] ?? null)) { return false; }
+            if ($lean) {
+                $expected = 'succeeded' === $run['status'] ? ['value' => $run['value']]
+                    : \CodeMode\AgentResponse::failure(new \CodeMode\SandboxException($run['reason'], '', $run['toolCalls']), \CodeMode\ExecutionProfile::Gvisor);
+                if ($result !== $expected || \CodeMode\ExecutionProfile::Gvisor->metadata() !== ($run['runtime'] ?? null)) { return false; }
+            }
             if (null !== ($run['runId'] ?? null)) {
                 if (!preg_match('/\Acode-mode-[a-f0-9]{32}\z/D', $run['runId']) || true !== ($run['containerRemoved'] ?? null) || in_array($run['runId'], $runIds, true)) { return false; }
                 $runIds[] = $run['runId'];

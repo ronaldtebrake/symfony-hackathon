@@ -99,7 +99,7 @@ final class EvaluationVerifier
                 if ('succeeded' === $execution['status']) {
                     $turnIndex = null;
                     foreach ($turns as $t => $turn) { if ($i >= $turn['executionStart'] && $i < $turn['executionEnd']) { $turnIndex = $t; } }
-                    $source = $source && null !== $turnIndex && self::same($response['result'] ?? null, EvaluationScenario::expected($scenario, $turnIndex));
+                    $source = $source && null !== $turnIndex && self::same($response['value'] ?? $response['result'] ?? null, EvaluationScenario::expected($scenario, $turnIndex));
                 } else { $source = $source && ($execution['reason'] ?? null) === ($response['error']['reason'] ?? null); }
                 array_push($ledger, ...$execution['toolCalls']);
             }

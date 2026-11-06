@@ -32,6 +32,17 @@
         </div>
       </section>
 
+      <section id="lean-responses" class="hf-proof" aria-labelledby="lean-heading">
+        <div class="section-top"><div><span class="eyebrow">Same execution · smaller agent response</span><h2 id="lean-heading">Return the answer. Retain the evidence.</h2></div><span id="lean-state" class="run-state" role="status">Loading payload measurements</span></div>
+        <p class="codex-intro">Successful gVisor execution returns the value. Failures return a reason and the affected tool when known. Full traces stay on the host for these proof viewers; local unsafe execution keeps its warning.</p>
+        <div id="lean-evidence" hidden>
+          <div class="inspector"><div class="table-scroll"><table><caption>Response-body tokens, counted locally with the gpt-oss tokenizer</caption><thead><tr><th>Retained executions</th><th>Responses</th><th>Before</th><th>Lean</th><th>Reduction</th></tr></thead><tbody id="lean-rows"></tbody></table></div></div>
+          <p id="lean-scope" class="measurement-note"></p>
+          <details class="proof-details"><summary>Exact before / after responses and source references</summary><div id="lean-samples"></div></details>
+        </div>
+        <p class="measurement-note">Offline replay of retained executions, including failures. No new model call. These are response-payload savings, not total conversation or provider-billed savings. <a href="/demo/response-payloads">Measurement evidence (JSON) ↗</a></p>
+      </section>
+
       <section id="performance" class="hf-proof" aria-labelledby="performance-heading">
         <div class="section-top"><div><span class="eyebrow">Symfony Profiler + redacted logs → isolated PHP</span><h2 id="performance-heading">Find the repeated work.</h2></div><span id="performance-state" class="run-state" role="status">Loading performance proof</span></div>
         <p id="performance-note" class="codex-intro">A reference investigation and follow-up over real synthetic Symfony requests. Operator-written PHP; no model called. Conversations stay in the agent.</p>

@@ -159,7 +159,9 @@ final class CodeModeDemoTest extends KernelTestCase
             $run = $client->callTool('php_execute', ['code' => 'return $tools->call("cms_list_articles", ["offset" => 0, "limit" => 1])->total;']);
             self::assertFalse($run->isError);
             self::assertSame(48, $run->structuredContent['value']);
-            self::assertSame('cms_list_articles', $run->structuredContent['toolCalls'][0]['name']);
+            self::assertSame(['value' => 48], $run->structuredContent);
+            self::assertSame([], $run->content, 'The audit endpoint must not add a duplicate text body.');
+            self::assertStringNotContainsString('toolCalls', json_encode($run));
             // A follow-up from the same agent can reshape the computation using the same tools.
             $followUp = $client->callTool('php_execute', ['code' => '$page = $tools->call("cms_list_articles", ["offset" => 0, "limit" => 2]); return ["article_ids" => array_map(static fn ($article) => $article->id, $page->items)];']);
             self::assertFalse($followUp->isError);

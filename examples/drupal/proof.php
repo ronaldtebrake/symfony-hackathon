@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CodeMode\{CodeModeSession, DockerEngine, ExecutionIdentity, ExecutionLimits, GvisorSandbox, SandboxException};
+use CodeMode\{AgentResponse, CodeModeSession, DockerEngine, ExecutionIdentity, ExecutionLimits, GvisorSandbox, SandboxException};
 use CodeMode\Mcp\McpGateway;
 use CodeModeDemo\Drupal\ProofVerifier;
 use Mcp\Client;
@@ -75,15 +75,16 @@ try {
         $case = ['id' => $id, 'code' => $code, 'startedAt' => gmdate(DATE_ATOM), 'value' => null, 'reason' => null, 'runId' => null, 'toolCalls' => [], 'containerRemoved' => false];
         $started = hrtime(true);
         try {
-            $result = $session->execute($code);
-            $case['value'] = json_decode(json_encode($result->value, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
-            $case['toolCalls'] = $result->toolCalls;
-            $case['runId'] = $result->runId;
+            $response = AgentResponse::execute($session, $code, static function (string $submitted, array $trace) use (&$case): void {
+                $case['value'] = json_decode(json_encode($trace['value'] ?? null, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
+                $case['toolCalls'] = $trace['toolCalls'];
+                $case['runId'] = $trace['runId'];
+                $case['reason'] = $trace['error']['reason'] ?? null;
+            });
         } catch (SandboxException $error) {
-            $case['reason'] = $error->reason;
-            $case['toolCalls'] = $error->toolCalls;
-            $case['runId'] = $error->runId;
+            $response = AgentResponse::failure($error, $session->profile());
         }
+        $case['agentResponse'] = json_decode(json_encode($response, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
         $case['durationMs'] = (hrtime(true) - $started) / 1_000_000;
         if (is_string($case['runId']) && preg_match('/\Acode-mode-[a-f0-9]{32}\z/D', $case['runId'])) {
             $case['containerRemoved'] = '' === $docker->control(['ps', '-aq', '--filter', 'name=^/'.$case['runId'].'$']);

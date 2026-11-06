@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CodeMode\CodeModeSession;
 use CodeMode\DockerEngine;
+use CodeMode\ExecutionTraceFile;
 use CodeMode\Symfony\SessionFactory;
 use Composer\InstalledVersions;
 use Mcp\Client;
@@ -33,6 +34,9 @@ foreach (['PATH', 'HOME', 'DOCKER_HOST', 'DOCKER_CONTEXT', 'DOCKER_CONFIG', 'SSH
 }
 $client = Client::builder()->setClientInfo('fresh-symfony-proof', '1')->setInitTimeout(10)->setRequestTimeout(30)->setMaxRetries(0)->build();
 $exitCode = 0;
+$traceDir = sys_get_temp_dir().'/code-mode-adoption-'.bin2hex(random_bytes(12));
+mkdir($traceDir, 0700);
+$traceFile = $traceDir.'/trace.jsonl';
 
 try {
     $vendor = realpath($app.'/vendor').'/';
@@ -54,7 +58,7 @@ try {
     $verify('gvisor_profile', \CodeMode\ExecutionProfile::Gvisor->metadata() === ($prerequisites['runtime'] ?? null));
     $docker = new DockerEngine(json_decode($environment['CODE_MODE_DOCKER_COMMAND'] ?? '["docker"]', true, flags: JSON_THROW_ON_ERROR));
 
-    $client->connect(new StdioTransport(PHP_BINARY, ['bin/console', 'code-mode:serve'], $app, $environment, maxBufferSize: 65536));
+    $client->connect(new StdioTransport(PHP_BINARY, ['bin/console', 'code-mode:serve', '--trace-file='.$traceFile], $app, $environment, maxBufferSize: 65536));
     $verify('three_code_mode_tools', ['tools_search', 'tools_describe', 'php_execute'] === array_column($client->listTools()->tools, 'name'));
     $search = $client->callTool('tools_search', ['query' => 'publication']);
     $verify('only_explicitly_approved_tool_discovered', !$search->isError && ['publication_read'] === array_column($search->structuredContent, 'name'));
@@ -67,7 +71,8 @@ try {
     foreach (['authorized' => 101, 'restricted' => 202] as $name => $id) {
         $php = sprintf('return $tools->call("publication_read", ["id" => %d]);', $id);
         $result = $client->callTool('php_execute', ['code' => $php]);
-        $trace = $result->structuredContent;
+        $trace = ExecutionTraceFile::last($traceFile, $php);
+        $verify($name.':lean_response', $result->structuredContent === (101 === $id ? ['value' => $trace['value']] : ['error' => ['reason' => 'tool_denied', 'tool' => 'publication_read']]));
         $runId = $trace['runId'] ?? '';
         $verify($name.':real_execution', is_string($runId) && 1 === preg_match('/\Acode-mode-[a-f0-9]{32}\z/D', $runId));
         $removed = '' === $docker->control(['ps', '-aq', '--filter', 'name=^/'.$runId.'$']);
@@ -80,12 +85,13 @@ try {
             $verify('restricted:denied', $result->isError && 'tool_denied' === ($trace['error']['reason'] ?? null) && 'denied' === $trace['toolCalls'][0]['status']);
             $verify('restricted:no_value', !array_key_exists('value', $trace) && !isset($trace['toolCalls'][0]['resultBytes']));
         }
-        $cases[] = ['case' => $name, 'php' => $php, 'isError' => $result->isError, 'trace' => $trace, 'containerRemoved' => $removed];
+        $cases[] = ['case' => $name, 'php' => $php, 'isError' => $result->isError, 'trace' => $trace, 'agentResponse' => $result->structuredContent, 'containerRemoved' => $removed];
     }
     $verify('separate_containers_same_session', $cases[0]['trace']['runId'] !== $cases[1]['trace']['runId']);
     $exhausted = $client->callTool('php_execute', ['code' => 'return 1;']);
     $verify('failure_consumes_attempt', $exhausted->isError && 'execution_limit' === ($exhausted->structuredContent['error']['reason'] ?? null)
-        && array_key_exists('runId', $exhausted->structuredContent) && null === $exhausted->structuredContent['runId'] && [] === $exhausted->structuredContent['toolCalls']);
+        && ['error' => ['reason' => 'execution_limit']] === $exhausted->structuredContent
+        && null === ExecutionTraceFile::last($traceFile, 'return 1;')['runId']);
     $wire = json_encode([$search, $describe, $unapproved, $cases, $exhausted], JSON_THROW_ON_ERROR);
     $verify('restricted_fixture_not_returned', !str_contains($wire, 'PRIVATE_FIXTURE_DO_NOT_RETURN'));
 
@@ -110,5 +116,7 @@ try {
     $exitCode = 1;
 } finally {
     $client->disconnect();
+    if (is_file($traceFile)) { unlink($traceFile); }
+    rmdir($traceDir);
 }
 exit($exitCode);

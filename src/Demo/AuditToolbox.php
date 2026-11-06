@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Demo;
 
 use CodeMode\BrokerWorker;
+use CodeMode\AgentResponse;
 use CodeMode\CodeModeSession;
 use CodeMode\ExecutionIdentity;
 use CodeMode\ExecutionLimits;
@@ -39,7 +40,7 @@ final class AuditToolbox implements ToolboxInterface
         if (!in_array($approach, ['direct', 'code'], true)) {
             throw new \InvalidArgumentException('Unknown demo approach.');
         }
-        $definitions = 'code' === $approach ? CodeModeSession::definitions() : $catalog->all();
+        $definitions = 'code' === $approach ? $session->toolDefinitions() : $catalog->all();
         foreach ($definitions as $index => $definition) {
             // Provider function names have stricter syntax than MCP names (e.g. Drupal's dots).
             $alias = 'direct' === $approach ? 'mcp_'.($index + 1) : $definition->name;
@@ -95,7 +96,8 @@ final class AuditToolbox implements ToolboxInterface
             $status = 'failed';
             $reason = $error instanceof SandboxException ? $error->reason : 'tool_failed';
             $this->trace->record('rejected', $name, ['reason' => $reason]);
-            $encoded = json_encode(['error' => ['reason' => $reason, 'message' => 'The host rejected or could not complete this tool call. Check the described schema and available execution budget.']], JSON_THROW_ON_ERROR);
+            $encoded = json_encode('code' === $this->approach ? AgentResponse::failure($error, $this->session->profile())
+                : ['error' => ['reason' => $reason, 'message' => 'The host rejected or could not complete this tool call. Check the described schema and available execution budget.']], JSON_THROW_ON_ERROR);
             if ('direct' === $this->approach && count($this->trace->brokerCalls) === $brokerCallCount + 1) {
                 $last = array_key_last($this->trace->brokerCalls);
                 if ('incomplete' === $this->trace->brokerCalls[$last]['status']) {
@@ -126,7 +128,7 @@ final class AuditToolbox implements ToolboxInterface
         array_push($this->trace->brokerCalls, ...$result->toolCalls);
         $this->trace->executions[] = ['programIndex' => count($this->trace->programs) - 1, 'runId' => $result->runId, 'status' => 'succeeded', 'durationMs' => $result->durationMs, 'outputBytes' => $result->outputBytes, 'toolCalls' => $result->toolCalls];
         $this->trace->report = $result->value;
-        return ['result' => $result->value, 'toolCalls' => count($result->toolCalls)];
+        return AgentResponse::success($result);
     }
 
     private function invokeDirect(string $name, array $arguments): mixed

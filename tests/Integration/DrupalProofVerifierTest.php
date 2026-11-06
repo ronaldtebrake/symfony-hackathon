@@ -13,7 +13,7 @@ final class DrupalProofVerifierTest extends TestCase
 {
     private function recorded(): array
     {
-        return json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/drupal-authorization-proof-2026-11-02.json'), true, flags: JSON_THROW_ON_ERROR);
+        return json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/drupal-authorization-proof.json'), true, flags: JSON_THROW_ON_ERROR);
     }
 
     public function testRecordedReadsHaveIndependentDrupalAndHostEvidence(): void
@@ -26,6 +26,7 @@ final class DrupalProofVerifierTest extends TestCase
         self::assertTrue($report['accountStillRestricted']);
         self::assertCount(2, $report['cases']);
         foreach ($report['cases'] as $case) {
+            self::assertArrayHasKey('agentResponse', $case);
             self::assertTrue(ProofVerifier::casePassed($case, $report['fixture']));
             self::assertNotEmpty($case['runId']);
             self::assertStringNotContainsString('RESTRICTED-CONTENT-CANARY', json_encode($case));
@@ -64,5 +65,16 @@ final class DrupalProofVerifierTest extends TestCase
         $fixture = $report['fixture'];
         $fixture['restricted']['exists'] = false;
         self::assertFalse(ProofVerifier::fixture($fixture));
+    }
+
+    public function testAgentResponseCannotContainRestrictedContentOrHostLedger(): void
+    {
+        $report = $this->recorded();
+        $case = $report['cases'][1];
+        $case['agentResponse']['value'] = ['title' => 'private'];
+        self::assertFalse(ProofVerifier::casePassed($case, $report['fixture']));
+        $case = $report['cases'][0];
+        $case['agentResponse']['toolCalls'] = $case['toolCalls'];
+        self::assertFalse(ProofVerifier::casePassed($case, $report['fixture']));
     }
 }

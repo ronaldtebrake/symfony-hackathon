@@ -67,6 +67,13 @@ final class ProofVerifier
         }
         $runIds = [];
         foreach ([...$turns, ...($report['denials'] ?? [])] as $execution) {
+            if (array_key_exists('agentResponse', $execution)) {
+                $trace = $execution['trace'];
+                $expectedResponse = isset($trace['error'])
+                    ? \CodeMode\AgentResponse::failure(new \CodeMode\SandboxException($trace['error']['reason'], '', $trace['toolCalls']), ExecutionProfile::Gvisor)
+                    : ['value' => $trace['value']];
+                $checks['leanResponsesMatchHostEvidence'] = ($checks['leanResponsesMatchHostEvidence'] ?? true) && $expectedResponse === $execution['agentResponse'];
+            }
             if (array_key_exists('runtime', $execution['trace'] ?? [])) {
                 $checks['sandboxConfiguration'] = $checks['sandboxConfiguration'] && ExecutionProfile::Gvisor->metadata() === $execution['trace']['runtime'];
             }

@@ -70,7 +70,7 @@ final readonly class EvaluationRunner
                     if ('code' === $approach) {
                         $value = $this->call($context, 'php_execute', ['code' => EvaluationScenario::program($scenario, $index)]);
                         $value = 'boundary' === $scenario && 0 === $index && 'tool_denied' === ($value->error->reason ?? null)
-                            ? ['status' => 'denied', 'alternative' => 'published_metadata_audit'] : ($value->result ?? null);
+                            ? ['status' => 'denied', 'alternative' => 'published_metadata_audit'] : ($value->value ?? null);
                     } else {
                         $value = EvaluationScenario::reference($scenario, $index, fn ($name, $args) => $this->call($context, $name, $args));
                     }

@@ -42,9 +42,15 @@ final class CodeModeToolboxTest extends TestCase
         $denial = $call('php_execute', ['code' => 'return $tools->call("articles_read", ["id" => 49]);']);
         self::assertSame('tool_denied', $denial['error']['reason']);
         self::assertStringNotContainsString('private exception', json_encode($denial));
-        self::assertSame('denied', $denial['toolCalls'][0]['status']);
+        self::assertArrayNotHasKey('toolCalls', $denial);
+        self::assertSame('articles_read', $denial['error']['tool']);
+        self::assertSame('denied', $toolbox->lastExecution()['trace']['toolCalls'][0]['status']);
         $recovery = $call('php_execute', ['code' => 'return $tools->call("articles_read", ["id" => 1]);']);
         self::assertSame(['id' => 1], $recovery['value']);
+        self::assertSame('succeeded', $toolbox->lastExecution()['trace']['toolCalls'][0]['status']);
+        self::assertArrayNotHasKey('runId', $recovery);
+        $call('tools_search', ['query' => 'article']);
+        self::assertNull($toolbox->lastExecution(), 'Another call must not reuse stale execution evidence.');
         self::assertSame('execution_limit', $call('php_execute', ['code' => 'return 2;'])['error']['reason']);
         self::assertCount(2, $sandbox->programs);
     }

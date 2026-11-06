@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CodeMode\Symfony\Ai;
 
 use CodeMode\CodeModeSession;
+use CodeMode\AgentResponse;
 use CodeMode\ExecutionProfile;
 use CodeMode\SandboxException;
 use Opis\JsonSchema\SchemaLoader;
@@ -20,6 +21,7 @@ use Symfony\AI\Platform\Tool\ToolEffectHints;
 final class CodeModeToolbox implements ToolboxInterface
 {
     private int $calls = 0;
+    private ?array $lastExecution = null;
 
     public function __construct(private readonly CodeModeSession $session) {}
 
@@ -30,6 +32,7 @@ final class CodeModeToolbox implements ToolboxInterface
 
     public function execute(ToolCall $toolCall): ToolResult
     {
+        $this->lastExecution = null;
         try {
             if (++$this->calls > 60) {
                 throw new SandboxException('tool_call_limit', 'Conversation call budget exhausted.');
@@ -47,19 +50,18 @@ final class CodeModeToolbox implements ToolboxInterface
             };
         } catch (\Throwable $error) {
             // A sanitized, model-visible result permits recovery without leaking exception details.
-            $value = ['error' => ['reason' => $error instanceof SandboxException ? $error->reason : 'tool_failed']];
-            if ($error instanceof SandboxException) {
-                $value['toolCalls'] = $error->toolCalls;
-                $value['runId'] = $error->runId;
-            }
-            $value['runtime'] = $this->session->profile()->metadata();
+            $value = AgentResponse::failure($error, $this->session->profile());
         }
         return new ToolResult($toolCall, json_encode($value, JSON_THROW_ON_ERROR));
     }
 
     private function executePhp(string $code): array
     {
-        $result = $this->session->execute($code);
-        return ['value' => $result->value, 'toolCalls' => $result->toolCalls, 'durationMs' => $result->durationMs, 'runId' => $result->runId, 'runtime' => $result->profile->metadata()];
+        return AgentResponse::execute($this->session, $code, function (string $code, array $trace): void {
+            $this->lastExecution = ['code' => $code, 'trace' => $trace];
+        });
     }
+
+    /** Host-only observation of this call; cleared before every call. Not part of ToolResult. */
+    public function lastExecution(): ?array { return $this->lastExecution; }
 }

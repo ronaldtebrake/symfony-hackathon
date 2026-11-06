@@ -12,7 +12,7 @@ php bin/console code-mode:doctor
 php bin/console code-mode:serve --no-debug
 ```
 
-The last command speaks MCP over STDIO; configure it in your agent rather than typing into its terminal. No HTTP execution endpoint is added. The existing audit server, `code-mode:mcp`, remains available unchanged.
+The last command speaks MCP over STDIO; configure it in your agent rather than typing into its terminal. No HTTP execution endpoint is added. The audit server, `code-mode:mcp`, uses the same lean response format with its own tool catalog and limits.
 
 ## Four lines to approve your tools
 
@@ -71,9 +71,24 @@ The doctor prints a warning. MCP/Symfony AI results and failures carry host-supp
 
 This switch applies to the bundle's `code-mode:serve` and its session factory. The hackathon's audit, performance, evaluation and security-proof commands keep their explicit gVisor runners. Recorded workbench evidence is unchanged and does not become evidence for local mode.
 
+## Agent responses and host evidence
+
+Successful gVisor execution returns `{"value": ...}`. A failure returns `{"error":{"reason":"tool_denied","tool":"publishing_read"}}`; the tool name is omitted when no failed call is known. MCP also sets `isError`. Private exception messages and intermediate results are not included. Local unsafe and unknown executors retain their runtime warnings on every execution response.
+
+The underlying `ExecutionResult` and `SandboxException` keep their complete host ledgers. For Symfony AI, `CodeModeToolbox::lastExecution()` exposes the latest call's PHP and sanitized trace to trusted application code, outside `ToolResult`. It is cleared before each tool call. The workbench recorder uses this accessor.
+
+For MCP recording, the operator can enable a separate file:
+
+```sh
+mkdir -p -m 700 var/code-mode-traces
+php bin/console code-mode:serve --no-debug --trace-file=var/code-mode-traces/take-1.jsonl
+```
+
+The same option works on `code-mode:mcp` and `code-mode:performance-mcp`. Use a **new filename for each server process**. The sink creates files exclusively with mode 0600, refuses existing files/symlinks and caps each file at 2 MiB. If recording fails, the call reports a sanitized failure; it does not retry execution. Traces contain submitted PHP and returned application data: keep them private and review before sharing. No path or trace option is exposed to the agent, and traces are never added to MCP content, structured results or `_meta`. Fresh recordings are not automatically published in the workbench.
+
 ## Boundary recovery
 
-[The recorded conversation](../../docs/demo.md#optional-boundary-recovery-opening) asks for article 49, receives `tool_denied`, then audits published articles after the user changes scope. The server returns `isError: true` with a sanitized reason, host ledger and run ID. Private content and exception messages never become the explanation. The permitted response is a separate successful execution under the same identity and attempt budget.
+[The recorded conversation](../../docs/demo.md#optional-boundary-recovery-opening) asks for article 49, receives `tool_denied`, then audits published articles after the user changes scope. The current server returns `isError: true` with a sanitized reason and affected tool; the original capture retains its older, detailed response. Private content and exception messages never become the explanation. The permitted response is a separate successful execution under the same identity and attempt budget.
 
 For Symfony AI, the same `CodeModeSession` backs `CodeModeToolbox`, a `ToolboxInterface` implementation. Keep one session across user turns; see the [conversation recipe](../../docs/contributing/symfony-ai-recipe.md).
 

@@ -36,6 +36,10 @@ final class ProofVerifier
             return false;
         }
         $restricted = ($case['id'] ?? '') === 'restricted_read';
+        if (array_key_exists('agentResponse', $case)) {
+            $expected = $restricted ? ['error' => ['reason' => 'tool_failed', 'tool' => self::TOOL]] : ['value' => $case['value']];
+            if ($case['agentResponse'] !== $expected) { return false; }
+        }
         if (!$restricted && ($case['id'] ?? '') !== 'authorized_read') {
             return false;
         }
