@@ -18,7 +18,7 @@ final class CodeModeSession
         private readonly ExecutionIdentity $identity,
         private readonly ExecutionLimits $limits = new ExecutionLimits(),
         private readonly int $maxExecutions = 2,
-        private readonly DiscoveryMode $discovery = DiscoveryMode::Full,
+        private readonly DiscoveryMode $discovery = DiscoveryMode::Compact,
     ) {
         if ($maxExecutions < 1 || $maxExecutions > 3) {
             throw new \InvalidArgumentException('A session permits between one and three execution attempts.');
@@ -75,7 +75,7 @@ final class CodeModeSession
     public function toolDefinitions(): array { return self::definitions($this->profile(), $this->discovery); }
 
     /** Canonical schemas shared by MCP servers and model-provider toolboxes. @return list<ToolDefinition> */
-    public static function definitions(ExecutionProfile $profile = ExecutionProfile::Gvisor, DiscoveryMode $discovery = DiscoveryMode::Full): array
+    public static function definitions(ExecutionProfile $profile = ExecutionProfile::Gvisor, DiscoveryMode $discovery = DiscoveryMode::Compact): array
     {
         $execution = match ($profile) {
             ExecutionProfile::Gvisor => 'Execute a PHP 8.4 function body in gVisor isolation. No filesystem, network or credentials from the host.',

@@ -21,7 +21,7 @@ final readonly class DemoRunner
         #[Autowire('%kernel.project_dir%')] private string $projectDir,
     ) {}
 
-    public function run(string $mode, string $approach, string $backend = 'fixture', ?DemoContext $context = null, ?\Closure $progress = null, ?DemoQuestion $question = null, ?int $maxModelRequests = null, string $protocol = 'legacy'): array
+    public function run(string $mode, string $approach, string $backend = 'fixture', ?DemoContext $context = null, ?\Closure $progress = null, ?DemoQuestion $question = null, ?int $maxModelRequests = null, string $protocol = AuditPrompt::COVERAGE_PROTOCOL): array
     {
         if (null !== $maxModelRequests && ($maxModelRequests < 1 || $maxModelRequests > 20)) {
             throw new \InvalidArgumentException('Choose a bounded model request budget between one and twenty.');
@@ -31,7 +31,7 @@ final readonly class DemoRunner
         }
         $question ??= DemoQuestion::preset();
         $question->requireSupportedRun($mode, $backend);
-        $context ??= $this->factory->create($approach, $backend);
+        $context ??= $this->factory->create($approach, $backend, discovery: 'reference' === $mode || AuditPrompt::COVERAGE_PROTOCOL === $protocol ? \CodeMode\DiscoveryMode::Compact : \CodeMode\DiscoveryMode::Full);
         $trace = $context->trace;
         $started = hrtime(true);
         $tokens = null;
@@ -39,8 +39,10 @@ final readonly class DemoRunner
         if ('reference' === $mode) {
             $trace->record('reference', 'Reference program; no model request');
             if ('code' === $approach) {
-                $this->call($context, 'tools_search', ['query' => 'article metadata media']);
-                $this->call($context, 'tools_describe', ['names' => BackendFactory::FIXTURE_TOOLS]);
+                $found = $this->call($context, 'tools_search', ['query' => 'article metadata media']);
+                $ready = array_map(static fn ($tool) => $tool->name, array_filter($found, static fn ($tool) => false === ($tool->requiresDescribe ?? null)));
+                $missing = array_values(array_diff(BackendFactory::FIXTURE_TOOLS, $ready));
+                if ([] !== $missing) { $this->call($context, 'tools_describe', ['names' => $missing]); }
                 $this->call($context, 'php_execute', ['code' => file_get_contents($this->projectDir.'/resources/demo/audit.php.txt')]);
             } else {
                 $trace->report = $this->referenceDirect($context);
@@ -84,7 +86,7 @@ final readonly class DemoRunner
         $verification = (new AuditVerifier())->verify($trace->report, $backend, $trace->brokerCalls, $question);
         return [
             'questionId' => $question->id, 'task' => $question->text,
-            'approach' => $approach, 'mode' => $mode, 'model' => 'live' === $mode ? BackendFactory::env('HUGGINGFACE_MODEL', 'openai/gpt-oss-120b') : null,
+            'approach' => $approach, 'mode' => $mode, 'discoveryMode' => 'code' === $approach ? $context->session->discoveryMode()->value : null, 'model' => 'live' === $mode ? BackendFactory::env('HUGGINGFACE_MODEL', 'openai/gpt-oss-120b') : null,
             'durationMs' => (hrtime(true) - $started) / 1_000_000, 'modelRequests' => $trace->modelRequests,
             'agentToolCalls' => $trace->agentToolCalls, 'toolPayloadBytes' => $trace->toolPayloadBytes,
             'providerTokens' => $tokens, 'brokerCalls' => $trace->brokerCalls, 'programs' => $trace->programs,

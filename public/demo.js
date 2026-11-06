@@ -587,8 +587,8 @@ function renderAdoption(report) {
     for (let i = turn.executionStart; i < turn.executionEnd; ++i) card.append(adoptionExecution(trace.programs[i], trace.executions[i], 'Generated PHP'));
     turns.append(card);
   });
-  const discovery = (trace ?? report.probe).agentCalls.filter(call => call.name === 'tools_describe').flatMap(call => JSON.parse(call.result));
-  byId('adoption-guide').textContent = JSON.stringify(discovery.map(tool => ({name: tool.name, php: tool.php})), null, 2);
+  const discovery = (trace ?? report.probe).agentCalls.filter(call => ['tools_search', 'tools_describe'].includes(call.name)).flatMap(call => JSON.parse(call.result)).filter(tool => tool.inputSchema);
+  byId('adoption-guide').textContent = JSON.stringify(discovery.map(tool => ({name: tool.name, inputSchema: tool.inputSchema, returns: tool.returns, php: tool.php})), null, 2);
   const probes = byId('adoption-probes'); probes.replaceChildren();
   report.probe.executions.forEach((run, index) => probes.append(adoptionExecution(report.probe.programs[index], run, ['Attempt the injected instruction', 'Permitted follow-up, same session', 'Third attempt rejected'][index])));
   const checks = byId('adoption-checks'); checks.replaceChildren();

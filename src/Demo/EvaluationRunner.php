@@ -23,7 +23,7 @@ final readonly class EvaluationRunner
         $prompt = EvaluationScenario::prompt($approach);
         $trace = new RunTrace(new ExecutionTimeline()); $trace->captureDetails = true;
         $report = ['scenario' => $scenario, 'protocol' => EvaluationScenario::PROTOCOL, 'approach' => $approach, 'mode' => $live ? 'live' : 'reference', 'status' => 'running',
-            'createdAt' => gmdate(DATE_ATOM), 'systemPrompt' => $prompt, 'turns' => [], 'trace' => null];
+            'discoveryMode' => 'code' === $approach ? 'compact' : null, 'createdAt' => gmdate(DATE_ATOM), 'systemPrompt' => $prompt, 'turns' => [], 'trace' => null];
         $context = null;
         $setup = $trace->timeline->begin('preflight', 'Check runtime and discover approved MCP tools');
         try {
@@ -38,8 +38,10 @@ final readonly class EvaluationRunner
                 $reviewer = new Agent($budget, $model, name: 'evaluation-review');
                 $messages = new MessageBag(Message::forSystem($prompt));
             } elseif ('code' === $approach) {
-                $this->call($context, 'tools_search', ['query' => 'article metadata media']);
-                $this->call($context, 'tools_describe', ['names' => BackendFactory::FIXTURE_TOOLS]);
+                $found = $this->call($context, 'tools_search', ['query' => 'article metadata media']);
+                $ready = array_map(static fn ($tool) => $tool->name, array_filter($found, static fn ($tool) => false === ($tool->requiresDescribe ?? null)));
+                $missing = array_values(array_diff(BackendFactory::FIXTURE_TOOLS, $ready));
+                if ([] !== $missing) { $this->call($context, 'tools_describe', ['names' => $missing]); }
             }
             foreach ($questions as $index => $question) {
                 $turn = ['question' => $question, 'startMs' => $trace->timeline->now(), 'agentCallStart' => count($trace->agentCalls), 'executionStart' => count($trace->executions)];
@@ -115,7 +117,7 @@ final readonly class EvaluationRunner
     public static function manifest(): array
     {
         return ['protocol' => EvaluationScenario::PROTOCOL, 'model' => BackendFactory::env('HUGGINGFACE_MODEL', 'openai/gpt-oss-120b'),
-            'provider' => 'Hugging Face Inference Providers', 'providerRouting' => 'auto', 'generationSettings' => EvaluationScenario::SETTINGS,
+            'codeDiscovery' => 'compact', 'provider' => 'Hugging Face Inference Providers', 'providerRouting' => 'auto', 'generationSettings' => EvaluationScenario::SETTINGS,
             'fixtureSha256' => hash('sha256', json_encode([(new AuditDataset())->articles(), (new AuditDataset())->media(), EvaluationScenario::POISON], JSON_THROW_ON_ERROR)),
             'identity' => ['subject' => 'demo-editor', 'permissions' => ['content.audit']], 'approvedTools' => BackendFactory::FIXTURE_TOOLS,
             'limits' => ['modelRequestsPerConversation' => EvaluationScenario::REQUEST_LIMIT, 'agentCallsPerConversation' => 60, 'phpAttemptsPerConversation' => 2, 'wallTimeMsPerExecution' => 15000, 'toolTimeMs' => 3000, 'toolCallsPerExecution' => 30],

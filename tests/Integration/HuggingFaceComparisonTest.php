@@ -13,6 +13,25 @@ use Symfony\Component\HttpClient\MockHttpClient;
 
 final class HuggingFaceComparisonTest extends TestCase
 {
+    public function testCompactSchemaComparisonRequiresDisclosedInputsAndOriginalHostSchemas(): void
+    {
+        // Synthetic verifier input only: never saved or presented as a new model run.
+        $pair = self::capture();
+        $pair['direct']['protocol'] = \App\Demo\AuditPrompt::COVERAGE_PROTOCOL;
+        $pair['code']['result']['agentCalls'] = [['name' => 'tools_search', 'result' => json_encode(array_map(
+            static fn ($tool) => ['name' => $tool['name'], 'inputSchema' => $tool['inputSchema'], 'requiresDescribe' => false],
+            $pair['code']['approvedTools']), JSON_THROW_ON_ERROR)]];
+        $checks = self::compare($pair)['checks'];
+        self::assertTrue($checks['compactContractsDisclosed']);
+        self::assertTrue($checks['sameToolSchemas']);
+        $found = json_decode($pair['code']['result']['agentCalls'][0]['result'], true);
+        $found[0]['inputSchema']['additionalProperties'] = true;
+        $pair['code']['result']['agentCalls'][0]['result'] = json_encode($found, JSON_THROW_ON_ERROR);
+        self::assertFalse(self::compare($pair)['checks']['compactContractsDisclosed']);
+        $pair['code']['approvedTools'][0]['outputSchema'] = ['type' => 'null'];
+        self::assertFalse(self::compare($pair)['checks']['sameToolSchemas']);
+    }
+
     public function testActualPairHasCorrectAnswersReconciledUsageAndAllHistoricalAttempts(): void
     {
         $pair = self::capture();

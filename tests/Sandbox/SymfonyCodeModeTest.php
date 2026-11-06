@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 final class SymfonyCodeModeTest extends TestCase
 {
-    public static function discoveryModes(): iterable { yield ['full']; yield ['compact']; }
+    public static function discoveryModes(): iterable { yield ['full']; yield ['default']; }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('discoveryModes')]
     public function testBundleDeniesDraftThenCompletesPublishedAlternativeInSameSession(string $mode): void
@@ -24,9 +24,9 @@ final class SymfonyCodeModeTest extends TestCase
         mkdir($traceDir, 0700);
         $traceFile = $traceDir.'/trace.jsonl';
         try {
-            $client->connect(new StdioTransport(PHP_BINARY, ['bin/console', 'code-mode:serve', '--no-debug', '--discovery='.$mode, '--trace-file='.$traceFile], dirname(__DIR__, 2), maxBufferSize: 65536));
+            $client->connect(new StdioTransport(PHP_BINARY, ['bin/console', 'code-mode:serve', '--no-debug', ...('default' === $mode ? [] : ['--discovery='.$mode]), '--trace-file='.$traceFile], dirname(__DIR__, 2), maxBufferSize: 65536));
             self::assertSame(['tools_search', 'tools_describe', 'php_execute'], array_column($client->listTools()->tools, 'name'));
-            if ('compact' === $mode) {
+            if ('default' === $mode) {
                 $found = $client->callTool('tools_search', ['query' => 'articles']);
                 self::assertFalse($found->isError);
                 self::assertSame([false, false], array_column($found->structuredContent, 'requiresDescribe'));

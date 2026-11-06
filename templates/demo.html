@@ -45,7 +45,8 @@
 
       <section id="compact-discovery" class="hf-proof" aria-labelledby="discovery-heading">
         <div class="section-top"><div><span class="eyebrow">Native Symfony AI schemas · fewer discovery steps</span><h2 id="discovery-heading">Find a tool. Start composing.</h2></div><span id="discovery-state" class="run-state" role="status">Loading comparison</span></div>
-        <p class="codex-intro">Compact search returns the original input schema and a PHP return shape. Simple contracts can go straight to execution. Complex contracts still use describe. Every call keeps the same broker checks.</p>
+        <p class="codex-intro">Compact discovery is the default. Search returns the original input schema and a PHP return shape. Simple contracts can go straight to execution. Complex contracts still use describe. Every call keeps the same broker checks.</p>
+        <figure class="discovery-explainer"><img src="/images/compact-discovery.svg" width="1000" height="760" alt="Compact discovery keeps the full input schema, uses a short PHP return shape and skips describe for simple tools. Complex tools still require full describe. Both flows use the same host security checks." loading="lazy"></figure>
         <div class="proof-run"><code>php bin/console code-mode:discovery-compare --live --no-debug</code><span>Two paired conversations · order reversed on repetition two</span></div>
         <div id="discovery-evidence" hidden>
           <p id="discovery-note" class="mode-note"></p>

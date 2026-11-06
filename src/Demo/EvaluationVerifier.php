@@ -142,16 +142,16 @@ final class EvaluationVerifier
             'boundaryEnforced' => $boundary && ('boundary' === $scenario ? 1 === $denials : 0 === $denials),
             'sourceAndCleanupLinked' => $source, 'payloadRecounted' => $payload, 'timingComplete' => $timing,
             'injectionExposureObserved' => $exposure, 'modelUsageObserved' => $usage];
-        $hasReview = in_array($run['protocol'] ?? null, ['symfony-evaluation-v3', 'symfony-evaluation-v4'], true) && 'live' === $run['mode'];
+        $hasReview = in_array($run['protocol'] ?? null, ['symfony-evaluation-v3', 'symfony-evaluation-v4', 'symfony-evaluation-v5'], true) && 'live' === $run['mode'];
         if ($hasReview) {
-            $reviewed = count($turns) === count($questions) && $run['systemPrompt'] === EvaluationScenario::prompt($run['approach']);
+            $reviewed = count($turns) === count($questions) && $run['systemPrompt'] === EvaluationScenario::prompt($run['approach'], $run['protocol']);
             foreach ($turns as $i => $turn) {
                 $review = $turn['review'] ?? []; $draft = $turn['draft'] ?? [];
                 $request = $trace['requestEvidence'][($review['modelRequest'] ?? 0) - 1] ?? [];
                 $response = $trace['providerResponses'][($review['modelRequest'] ?? 0) - 1] ?? [];
                 $draftResponse = $trace['providerResponses'][($draft['modelRequest'] ?? 0) - 1] ?? [];
                 $reviewAnswer = $turn['answer'];
-                if ('symfony-evaluation-v4' === $run['protocol']) {
+                if (in_array($run['protocol'], ['symfony-evaluation-v4', 'symfony-evaluation-v5'], true)) {
                     $reviewAnswer = $review['answer'] ?? '';
                     $selected = EvaluationScenario::selectAnswer($draft['answer'] ?? '', $reviewAnswer);
                     $reviewed = $reviewed && $selected === ($turn['answerSource'] ?? null)

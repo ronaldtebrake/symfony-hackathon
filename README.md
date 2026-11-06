@@ -68,7 +68,7 @@ php bin/console code-mode:serve --no-debug
 
 It speaks MCP over STDIO; no web server is needed. For another Symfony application, register `CodeMode\Symfony\CodeModeBundle` and follow the [integration guide](packages/symfony-code-mode/README.md). The [independent Symfony example](examples/symfony/README.md) has its own Composer install, native AI tool and policy. Both packages currently use Composer path repositories and are **not yet published to Packagist**.
 
-## Discover, describe, execute
+## Discover, then execute
 
 Here is a small task using the checkout's two read services:
 
@@ -82,11 +82,11 @@ The agent calls `tools_search` with:
 {"query":"published articles"}
 ```
 
-Search returns compact names and descriptions. For this task, the relevant tool is `articles_list_published`. The current implementation uses keyword matching and returns at most eight matches, so the model does not need every schema upfront.
+Search returns matching names and descriptions, the **unchanged input schema** and a short PHP return shape. For `articles_list_published`, `requiresDescribe: false` means the agent can go straight to PHP. Search uses keyword matching and returns at most eight matches.
 
-### 2. Inspect the schema
+### When needed: inspect the full schema
 
-The agent calls `tools_describe` with:
+If a result has `requiresDescribe: true`, the agent calls `tools_describe` before using it. For example:
 
 ```json
 {"names":["articles_list_published"]}
@@ -94,9 +94,9 @@ The agent calls `tools_describe` with:
 
 The response includes the input schema and a PHP invocation guide. This tool accepts a `page` integer, returns twelve published articles per page, and provides `nextPage` until the list is exhausted. JSON objects become PHP `stdClass` values; JSON lists become arrays.
 
-Only tools described in this session can be called by the program. Every call must also pass the host's authorization and argument validation.
+Only tools whose contracts were disclosed in this session can be called by the program. Every call must also pass the host's authorization and argument validation.
 
-### 3. Compose the reads in PHP
+### 2. Compose the reads in PHP
 
 The agent submits this function body as the `code` argument to `php_execute`, without a `<?php` tag:
 
@@ -135,14 +135,18 @@ Code Mode is useful when a task needs pagination, branching or several related r
 
 ## Compact discovery
 
-Add one setting alongside your approved tools and policy:
+Compact discovery is now the default in the core package, Symfony bundle and demos. “Compact” describes the introduction the agent receives: exact input constraints plus a short return shape, with full schemas retained by the host. It saves a discovery round trip for simple tools and avoids repeating verbose examples and notes.
+
+![Compact discovery: full inputs, less context, with full describe as the fallback and the same host checks.](public/images/compact-discovery.svg)
+
+To restore the original three-step flow, set:
 
 ```yaml
 code_mode:
-    discovery: compact
+    discovery: full
 ```
 
-`tools_search` now returns each matching tool's **original input schema** and a short PHP return shape. A result with `requiresDescribe: false` is ready for `php_execute`; `requiresDescribe: true` tells the agent to call `tools_describe` first. Full discovery remains the default. For an operator-controlled trial, use `code-mode:serve --discovery=compact --no-debug` or `code-mode:mcp --discovery=compact --no-debug`.
+`tools_search` now returns each matching tool's **original input schema** and a short PHP return shape. A result with `requiresDescribe: false` is ready for `php_execute`; `requiresDescribe: true` tells the agent to call `tools_describe` first. The operator can also select `--discovery=full` on `code-mode:serve` or `code-mode:mcp`. Agents cannot change the mode through tool arguments.
 
 The Symfony adapter reuses the schemas from your existing AI toolbox. It does not generate another validator or infer permissions from tool descriptions. Compact entries are capped at 4 KiB, search at eight matches and 32 KiB; complex, referenced or oversized contracts fall back to describe. The broker retains the full schemas, per-call authorization and execution limits. Discovery never grants access to restricted content.
 

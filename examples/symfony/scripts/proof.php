@@ -64,8 +64,7 @@ try {
     $verify('only_explicitly_approved_tool_discovered', !$search->isError && ['publication_read'] === array_column($search->structuredContent, 'name'));
     $unapproved = $client->callTool('tools_describe', ['names' => ['publication_count']]);
     $verify('unapproved_tool_hidden', $unapproved->isError && 'tool_denied' === ($unapproved->structuredContent['error']['reason'] ?? null));
-    $describe = $client->callTool('tools_describe', ['names' => ['publication_read']]);
-    $verify('approved_schema_described', !$describe->isError && ['publication_read'] === array_column($describe->structuredContent, 'name'));
+    $verify('compact_contract_ready_by_default', [false] === array_column($search->structuredContent, 'requiresDescribe') && isset($search->structuredContent[0]['inputSchema']));
 
     $cases = [];
     foreach (['authorized' => 101, 'restricted' => 202] as $name => $id) {
@@ -92,7 +91,7 @@ try {
     $verify('failure_consumes_attempt', $exhausted->isError && 'execution_limit' === ($exhausted->structuredContent['error']['reason'] ?? null)
         && ['error' => ['reason' => 'execution_limit']] === $exhausted->structuredContent
         && null === ExecutionTraceFile::last($traceFile, 'return 1;')['runId']);
-    $wire = json_encode([$search, $describe, $unapproved, $cases, $exhausted], JSON_THROW_ON_ERROR);
+    $wire = json_encode([$search, $unapproved, $cases, $exhausted], JSON_THROW_ON_ERROR);
     $verify('restricted_fixture_not_returned', !str_contains($wire, 'PRIVATE_FIXTURE_DO_NOT_RETURN'));
 
     $versions = [];
@@ -105,7 +104,7 @@ try {
         'installation' => ['versions' => $versions, 'composerLockSha256' => hash_file('sha256', $app.'/composer.lock'), 'symlink' => false,
             'pathRepositorySourcesPresent' => is_dir($app.'/../../packages'), 'rootAutoloaderPresent' => is_file($app.'/../../vendor/autoload.php')],
         'runtime' => ['image' => $environment['CODE_MODE_IMAGE'], 'hostPhp' => PHP_VERSION, 'prerequisites' => $prerequisites],
-        'discovery' => ['search' => $search->structuredContent, 'describe' => $describe->structuredContent, 'unapproved' => $unapproved->structuredContent],
+        'discovery' => ['search' => $search->structuredContent, 'mode' => 'compact', 'unapproved' => $unapproved->structuredContent],
         'cases' => $cases, 'thirdAttempt' => $exhausted->structuredContent, 'checks' => $checks,
     ];
     echo json_encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n";

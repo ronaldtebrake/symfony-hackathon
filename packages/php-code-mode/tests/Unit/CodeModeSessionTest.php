@@ -20,7 +20,7 @@ final class CodeModeSessionTest extends TestCase
             }
         };
         $catalog = new ToolCatalog([new ToolDefinition('content.read', 'Read content metadata', (object) ['type' => 'object'])]);
-        $session = new CodeModeSession($catalog, new ToolBroker([]), $sandbox, new ExecutionIdentity('alice'));
+        $session = new CodeModeSession($catalog, new ToolBroker([]), $sandbox, new ExecutionIdentity('alice'), discovery: \CodeMode\DiscoveryMode::Full);
         self::assertSame(['name', 'description'], array_keys($session->search('metadata')[0]));
         try {
             $session->execute('return 42;');

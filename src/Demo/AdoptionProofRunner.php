@@ -35,7 +35,7 @@ final readonly class AdoptionProofRunner
 
     public function __construct(#[Autowire(service: 'app.publishing_sessions')] private SessionFactory $sessions, private DemoIdentityProvider $identityProvider, private HttpClientInterface $httpClient, #[Autowire(service: 'code_mode.limits')] private ExecutionLimits $limits) {}
 
-    public function run(bool $live = false, ?\Closure $progress = null, ?PlatformInterface $testPlatform = null, DiscoveryMode $discovery = DiscoveryMode::Full): array
+    public function run(bool $live = false, ?\Closure $progress = null, ?PlatformInterface $testPlatform = null, DiscoveryMode $discovery = DiscoveryMode::Compact): array
     {
         $report = ['version' => 1, 'kind' => 'adoption-proof', 'discoveryMode' => $discovery->value, 'mode' => $live ? 'live' : 'local', 'status' => 'running', 'createdAt' => gmdate(DATE_ATOM),
             'runtime' => 'runsc', 'image' => BackendFactory::env('CODE_MODE_IMAGE'), 'model' => $live ? BackendFactory::env('HUGGINGFACE_MODEL', 'openai/gpt-oss-120b') : null,
@@ -60,10 +60,11 @@ final readonly class AdoptionProofRunner
             $report['approvedTools'] = $this->sessions->catalog()->all();
             $probe = new RunTrace(); $probe->captureDetails = true;
             $toolbox = new RecordingCodeModeToolbox(new CodeModeToolbox($this->sessions->create($identity, $discovery)), $probe);
-            $toolbox->execute(new ToolCall('probe-search', 'tools_search', ['query' => 'publishing']));
-            if (DiscoveryMode::Full === $discovery) {
-                $toolbox->execute(new ToolCall('probe-describe', 'tools_describe', ['names' => ['publishing_read', 'publishing_list']]));
-            }
+            $search = $toolbox->execute(new ToolCall('probe-search', 'tools_search', ['query' => 'publishing']));
+            $found = json_decode($search->getResult(), true, flags: JSON_THROW_ON_ERROR);
+            $ready = array_column(array_filter($found, static fn ($tool) => false === ($tool['requiresDescribe'] ?? null)), 'name');
+            $missing = array_values(array_diff(['publishing_read', 'publishing_list'], $ready));
+            if ([] !== $missing) { $toolbox->execute(new ToolCall('probe-describe', 'tools_describe', ['names' => $missing])); }
             foreach ([['php_execute', ['code' => self::PROBE]], ['php_execute', ['code' => self::RECOVERY]], ['php_execute', ['code' => 'return "budget must remain exhausted";']]] as [$name, $args]) {
                 $toolbox->execute(new ToolCall('probe-'.($probe->agentToolCalls + 1), $name, $args));
             }

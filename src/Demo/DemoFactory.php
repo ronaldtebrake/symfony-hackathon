@@ -17,7 +17,7 @@ final readonly class DemoFactory
 {
     public function __construct(#[Autowire('%kernel.project_dir%')] private string $projectDir) {}
 
-    public function create(string $approach = 'code', string $backend = 'fixture', ?SandboxExecutor $sandbox = null, bool $evaluation = false, ?RunTrace $trace = null, DiscoveryMode $discovery = DiscoveryMode::Full): DemoContext
+    public function create(string $approach = 'code', string $backend = 'fixture', ?SandboxExecutor $sandbox = null, bool $evaluation = false, ?RunTrace $trace = null, DiscoveryMode $discovery = DiscoveryMode::Compact): DemoContext
     {
         $trace ??= new RunTrace();
         if (null === $sandbox) {

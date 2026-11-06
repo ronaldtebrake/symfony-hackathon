@@ -1,6 +1,6 @@
 # Symfony Code Mode integration
 
-Approve existing Symfony read services, then give an MCP client three tools: discover, describe, execute PHP. The generic runner and broker remain in `ronaldtebrake/php-code-mode`. This bundle supplies the Symfony container integration and a STDIO entry point.
+Approve existing Symfony read services, then give an MCP client compact search, optional full describe and PHP execution. The generic runner and broker remain in `ronaldtebrake/php-code-mode`. This bundle supplies the Symfony container integration and a STDIO entry point.
 
 For a consumer with its own dependencies, native `#[AsTool]` service and authorization policy, use the [separate Symfony app](../../examples/symfony/README.md). Its recorded allowed/denied proof runs through this bundle's normal MCP server without the main demo autoloader.
 
@@ -114,13 +114,13 @@ Calls go through the original Symfony AI toolbox, preserving its argument resolv
 
 ## Compact discovery
 
-Set `code_mode.discovery: compact` alongside the approved toolbox and authorization policy. `full` is the default. Alternatively, the operator can launch `code-mode:serve --discovery=compact --no-debug`; the agent cannot change this setting through a tool argument. Restart the MCP process after configuration changes.
+Compact discovery is the default alongside your approved toolbox and authorization policy. To restore the original search → describe → execute flow, set `code_mode.discovery: full` or launch `code-mode:serve --discovery=full --no-debug`. The agent cannot change this setting through a tool argument. Restart the MCP process after configuration changes.
 
 Search results include the original adapted Symfony AI `inputSchema` and a bounded `returns` PHP shape. `requiresDescribe: false` means the contract was disclosed and the tool may be called; `true` requires `tools_describe`. The exact input constraints remain visible. Output shapes are documentation only; the original output schema still validates results. Missing output schemas are explicitly marked `mixed (no output schema declared)`.
 
 The core formatter falls back for references, deep/wide output shapes, unsupported output compositions and entries larger than 4 KiB. Search retains its eight-result limit and a 32 KiB response cap. Contracts become callable only after the whole response is constructed. These discovery decisions do not change allowlists, identities, policies, broker schema validation, execution attempts or isolation.
 
-For a Symfony AI conversation, configure the session factory or pass the host-owned override `$sessions->create($identity, \CodeMode\DiscoveryMode::Compact)`. Keep that same session for follow-ups. Both the MCP server and `CodeModeToolbox` expose the appropriate discovery instructions.
+For a Symfony AI conversation, use `$sessions->create($identity)`. The optional host-owned override `\CodeMode\DiscoveryMode::Full` restores full discovery. Keep that same session for follow-ups. Both the MCP server and `CodeModeToolbox` expose the appropriate discovery instructions.
 
 [The paired comparison](../../docs/demo.md#compact-discovery-comparison) reuses native `#[AsTool]` schemas, Symfony's toolbox lifecycle and the same gVisor package.
 

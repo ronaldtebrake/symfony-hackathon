@@ -18,7 +18,7 @@ final readonly class HuggingFaceProofRunner
 {
     public function __construct(private DemoFactory $factory, private HttpClientInterface $httpClient, #[Autowire('%kernel.project_dir%')] private string $projectDir) {}
 
-    public function run(?\Closure $progress = null, string $approach = 'code', string $protocol = 'legacy', ?string $codeCaptureJson = null): array
+    public function run(?\Closure $progress = null, string $approach = 'code', string $protocol = AuditPrompt::COVERAGE_PROTOCOL, ?string $codeCaptureJson = null): array
     {
         if (!in_array($approach, ['code', 'direct'], true)) {
             throw new \InvalidArgumentException('Choose code or direct.');
@@ -37,6 +37,7 @@ final readonly class HuggingFaceProofRunner
                 : ['toolTimeMs' => 3000, 'maxToolRounds' => 20, 'maxAdmittedToolCalls' => 60, 'executionAttempts' => 0, 'maxModelRequests' => $maxRequests],
             'components' => [], 'result' => null];
         $report['protocol'] = $protocol;
+        $report['discoveryMode'] = 'code' === $approach ? (AuditPrompt::COVERAGE_PROTOCOL === $protocol ? 'compact' : 'full') : null;
         $report['systemPrompt'] = $systemPrompt;
         $report['sharedPromptSha256'] = hash('sha256', AuditPrompt::shared($protocol));
         $report['generationSettings'] = AuditPrompt::options($protocol) + ['providerRouting' => 'auto'];
@@ -64,7 +65,7 @@ final readonly class HuggingFaceProofRunner
         $started = hrtime(true);
         try {
             // Require gVisor and the pinned image before constructing/invoking the provider.
-            $context = $this->factory->create($approach, 'fixture');
+            $context = $this->factory->create($approach, 'fixture', discovery: AuditPrompt::COVERAGE_PROTOCOL === $protocol ? \CodeMode\DiscoveryMode::Compact : \CodeMode\DiscoveryMode::Full);
             $context->trace->captureDetails = true;
             $report['approvedTools'] = array_values($context->catalog->all());
             if ('direct' === $approach) {

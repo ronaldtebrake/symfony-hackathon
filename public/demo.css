@@ -1471,3 +1471,6 @@ footer {
 #evaluation-turns article { padding:18px; background:var(--surface); border:1px solid var(--line); border-radius:12px; min-width:0; }
 #evaluation-turns blockquote { margin:10px 0; font-size:13px; }
 @media(max-width:760px) { #evaluation-turns { grid-template-columns:1fr; } }
+
+.discovery-explainer { margin: 24px 0; max-width: 1000px; }
+.discovery-explainer img { display: block; width: 100%; height: auto; }

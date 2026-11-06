@@ -49,7 +49,10 @@ final class CompactToolGuide
             return true;
         }
         if ('object' === ($schema->type ?? null)) {
-            if (isset($schema->patternProperties) || !($schema->properties ?? new \stdClass()) instanceof \stdClass
+            if (isset($schema->patternProperties) || isset($schema->dependentSchemas)
+                || ($schema->additionalProperties ?? false) instanceof \stdClass
+                || (true === ($schema->additionalProperties ?? false))
+                || !(($schema->properties ?? new \stdClass()) instanceof \stdClass)
                 || !is_array($schema->required ?? []) || count((array) ($schema->properties ?? [])) > 8) { return false; }
             foreach ((array) ($schema->properties ?? []) as $property) {
                 if (!$this->hasRenderableShape($property, $depth + 1)) { return false; }

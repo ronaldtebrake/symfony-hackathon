@@ -37,7 +37,7 @@ $snapshot = static function () use ($ddev, $environment): array {
     return json_decode($process->getOutput(), true, 32, JSON_THROW_ON_ERROR);
 };
 $options = getopt('', ['discovery:']);
-$discovery = DiscoveryMode::from($options['discovery'] ?? 'full');
+$discovery = DiscoveryMode::from($options['discovery'] ?? 'compact');
 $report = ['discoveryMode' => $discovery->value, 'version' => 1, 'kind' => 'drupal-authorization-proof', 'createdAt' => gmdate(DATE_ATOM), 'status' => 'running',
     'transport' => 'local DDEV STDIO', 'modelCalled' => false, 'programOrigin' => 'Fixed operator-written probes',
     'runtime' => 'runsc', 'image' => $env('CODE_MODE_IMAGE'), 'cases' => []];

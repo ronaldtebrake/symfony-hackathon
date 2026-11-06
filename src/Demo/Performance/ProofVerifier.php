@@ -23,12 +23,15 @@ final class ProofVerifier
         $expectedExhausted = ['error' => ['reason' => 'execution_limit'], 'toolCalls' => [], 'runId' => null];
         // Retain historical evidence while requiring gVisor for newly labelled traces.
         if (array_key_exists('runtime', $exhausted)) { $expectedExhausted['runtime'] = ExecutionProfile::Gvisor->metadata(); }
+        $disclosed = array_merge(array_filter($report['discovery']['search'] ?? [], static fn ($tool) => false === ($tool['requiresDescribe'] ?? null)), $report['discovery']['describe'] ?? []);
+        $names = array_column($disclosed, 'name'); sort($names);
+        $expectedNames = ReadTools::NAMES; sort($expectedNames);
         $checks = [
             'referenceProvenance' => 'performance-proof' === ($report['kind'] ?? null) && 1 === ($report['version'] ?? null)
                 && 'reference' === ($report['mode'] ?? null) && 0 === ($report['modelRequests'] ?? null) && 2 === ($report['simulatedLatencyPerQueryMs'] ?? null),
             'sandboxConfiguration' => 'runsc' === ($report['runtime'] ?? null) && 1 === preg_match('/\Asha256:[a-f0-9]{64}\z/D', $report['image'] ?? '')
                 && ['wallTimeMs' => 5000, 'memoryMiB' => 128, 'maxToolCalls' => 10, 'attemptsPerSession' => 2] === ($report['limits'] ?? null),
-            'approvedDiscovery' => ReadTools::NAMES === array_column($report['discovery']['describe'] ?? [], 'name'),
+            'approvedDiscovery' => $expectedNames === $names,
             'exactPrograms' => [ProofRunner::INVESTIGATE, ProofRunner::COMPARE] === array_column($turns, 'php'),
             'slowRouteIdentified' => 'catalog_naive' === ($investigation['profile']['route'] ?? null) && 'profile-01' === ($investigation['profile']['requestId'] ?? null),
             'repeatedQueryCorrelated' => ['author_by_id'] === array_column($investigation['repeatedQueries'] ?? [], 'fingerprint')

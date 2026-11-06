@@ -154,8 +154,8 @@ final class CodeModeDemoTest extends KernelTestCase
             self::assertSame(['tools_search', 'tools_describe', 'php_execute'], array_map(static fn ($tool) => $tool->name, $client->listTools()->tools));
             $search = $client->callTool('tools_search', ['query' => 'published articles']);
             self::assertFalse($search->isError);
-            $description = $client->callTool('tools_describe', ['names' => ['cms_list_articles']]);
-            self::assertFalse($description->isError);
+            $found = array_column($search->structuredContent, null, 'name');
+            self::assertFalse($found['cms_list_articles']['requiresDescribe'], 'The demo must default to compact search.');
             $run = $client->callTool('php_execute', ['code' => 'return $tools->call("cms_list_articles", ["offset" => 0, "limit" => 1])->total;']);
             self::assertFalse($run->isError);
             self::assertSame(48, $run->structuredContent['value']);

@@ -37,7 +37,6 @@ final class ApprovedToolboxTest extends TestCase
             'identity_provider' => 'native.identity', 'ai_toolbox' => 'native.tools',
             'ai_authorization' => 'native.policy', 'ai_tools' => ['publishing_list'],
             'image' => 'sha256:'.str_repeat('a', 64), 'docker_command' => ['docker'],
-            'discovery' => 'compact',
         ]], $container);
         $container->getDefinition(SessionFactory::class)->setPublic(true);
         $container->compile();

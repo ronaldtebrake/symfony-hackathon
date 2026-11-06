@@ -49,13 +49,13 @@ Lean responses now work here through the same PHP core package, with no Drupal m
 Compact discovery also works through that same session, using the Tool API/MCP bridge's original schemas. No Drupal module change is required:
 
 ```sh
-php examples/drupal/proof.php --discovery=compact
+php examples/drupal/proof.php # compact by default
 php examples/drupal/proof.php --discovery=full
 ```
 
 Both modes were exercised against the same fixture, reader account, pinned image and limits. Compact needed one discovery call; full needed search and describe. Each returned the published ID/title and denied the restricted read, with independent Drupal access logs, unchanged node data and container cleanup. No model was called, so this proves reuse and authorization, not Drupal token savings. The single committed report includes the matching full-mode proof under `fullDiscoveryProof`.
 
-In a host integration, pass `discovery: \CodeMode\DiscoveryMode::Compact` to `CodeModeSession`. Search results with `requiresDescribe: true` still need full description. Drupal continues to enforce node and field access on every read; a discovery result cannot grant permission.
+In a host integration, `CodeModeSession` uses compact discovery by default; `discovery: \CodeMode\DiscoveryMode::Full` restores the original flow. Search results with `requiresDescribe: true` still need full description. Drupal continues to enforce node and field access on every read; a discovery result cannot grant permission.
 
 The Symfony bundle's DI configuration and `#[AsTool]` adapter are Symfony integration points. Drupal continues to use Tool API and its MCP bridge. The new PHP-only development executor could technically be wired in, but this proof keeps gVisor: unsandboxed PHP could access local services outside Drupal's tool permissions. A real Drupal agent conversation and paginated journal audit remain separate milestones.
 

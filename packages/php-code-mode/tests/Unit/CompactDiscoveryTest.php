@@ -31,6 +31,8 @@ final class CompactDiscoveryTest extends TestCase
             [$schema, json_decode('{"type":"array","items":{"type":"array","items":{"type":"array","items":{"type":"array","items":{"type":"string"}}}}}')],
             [$schema, (object) ['oneOf' => array_fill(0, 7, (object) ['type' => 'integer'])]],
             [$schema, (object) ['type' => 'object', 'patternProperties' => (object) ['.*' => (object) ['type' => 'string']]]],
+            [$schema, (object) ['type' => 'object', 'additionalProperties' => (object) ['type' => 'string']]],
+            [$schema, (object) ['type' => 'object', 'additionalProperties' => true]],
             [(object) ['type' => 'object', 'description' => str_repeat('large', 900)], null],
         ];
         foreach ($cases as [$input, $output]) {
@@ -99,5 +101,23 @@ final class CompactDiscoveryTest extends TestCase
         catch (SandboxException $error) { self::assertSame('discovery_limit', $error->reason); }
         try { $session->execute('return 1;'); self::fail('Oversized response activated tools.'); }
         catch (SandboxException $error) { self::assertSame('discovery_required', $error->reason); }
+    }
+
+    public function testCatalogBeyondSearchLimitNeedsAnotherDiscoveryBeforeUse(): void
+    {
+        $tools = [];
+        for ($i = 0; $i < 9; ++$i) { $tools[] = new ToolDefinition('reader_'.$i, 'Read', (object) ['type' => 'object']); }
+        $sandbox = new class implements SandboxExecutor {
+            public array $allowed = [];
+            public function execute(string $code, ToolBroker $broker, ExecutionIdentity $identity, array $allowedTools = [], ?ExecutionLimits $limits = null): ExecutionResult
+            { $this->allowed = $allowedTools; return new ExecutionResult(42, [], 1, 0, 'unit'); }
+        };
+        $session = new CodeModeSession(new ToolCatalog($tools), new ToolBroker([]), $sandbox, new ExecutionIdentity('reader'));
+        self::assertCount(8, $session->search('read'));
+        $session->execute('return 42;');
+        self::assertNotContains('reader_8', $sandbox->allowed);
+        self::assertSame('reader_8', $session->search('reader_8')[0]['name']);
+        $session->execute('return 42;');
+        self::assertContains('reader_8', $sandbox->allowed);
     }
 }

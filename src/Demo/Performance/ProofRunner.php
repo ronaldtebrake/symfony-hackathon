@@ -102,9 +102,16 @@ PHP;
     private function discover(Client $client): array
     {
         $search = $client->callTool('tools_search', ['query' => 'perf']);
-        $describe = $client->callTool('tools_describe', ['names' => ReadTools::NAMES]);
-        if ($search->isError || $describe->isError) { throw new \RuntimeException('Discovery failed.'); }
-        return ['search' => $search->structuredContent, 'describe' => $describe->structuredContent];
+        if ($search->isError) { throw new \RuntimeException('Discovery failed.'); }
+        $ready = array_column(array_filter($search->structuredContent, static fn ($tool) => false === ($tool['requiresDescribe'] ?? null)), 'name');
+        $missing = array_values(array_diff(ReadTools::NAMES, $ready));
+        $describe = [];
+        if ([] !== $missing) {
+            $result = $client->callTool('tools_describe', ['names' => $missing]);
+            if ($result->isError) { throw new \RuntimeException('Discovery failed.'); }
+            $describe = $result->structuredContent;
+        }
+        return ['mode' => 'compact', 'search' => $search->structuredContent, 'describe' => $describe];
     }
 
     private function execute(Client $client, DockerEngine $docker, string $traceFile, string $php): array

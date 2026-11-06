@@ -22,6 +22,10 @@ final class HuggingFaceComparison
         $dataset = new AuditDataset();
         $protocol = $direct['protocol'] ?? 'legacy';
         $matchedProtocol = 'legacy' !== $protocol;
+        if (AuditPrompt::COVERAGE_PROTOCOL === $protocol) {
+            // Compact discovery omits output schemas on the wire; compare full host contracts separately.
+            $descriptions = $code['approvedTools'] ?? null;
+        }
         $codeLimit = AuditPrompt::maxRequests('code', $protocol);
         $directLimit = AuditPrompt::maxRequests('direct', $protocol);
         $checks = [
@@ -39,6 +43,9 @@ final class HuggingFaceComparison
             'directResultVerified' => 'complete' === ($direct['status'] ?? null) && (new HuggingFaceBaselineVerifier())->verify($direct, $directLimit)['passed'],
             'providerUsageReported' => $this->validUsage($code) && $this->validUsage($direct),
         ];
+        if (AuditPrompt::COVERAGE_PROTOCOL === $protocol) {
+            $checks['compactContractsDisclosed'] = $this->compactContractsDisclosed($code);
+        }
         if ($matchedProtocol) {
             $checks += [
                 'sameProtocol' => $protocol === ($code['protocol'] ?? null),
@@ -66,6 +73,22 @@ final class HuggingFaceComparison
                 'modelRequests' => $direct['result']['modelRequests'] - $code['result']['modelRequests'],
                 'tokenReductionPercent' => 100 * (1 - $code['result']['providerTokens']['total'] / $direct['result']['providerTokens']['total']),
             ] : null];
+    }
+
+    private function compactContractsDisclosed(array $capture): bool
+    {
+        $approved = array_column($capture['approvedTools'] ?? [], null, 'name');
+        $disclosed = [];
+        foreach ($capture['result']['agentCalls'] ?? [] as $call) {
+            if (!in_array($call['name'], ['tools_search', 'tools_describe'], true)) { continue; }
+            foreach (json_decode($call['result'], true, flags: JSON_THROW_ON_ERROR) as $tool) {
+                if (!isset($tool['inputSchema'])) { continue; }
+                $name = $tool['name'];
+                if (!isset($approved[$name]) || $approved[$name]['inputSchema'] !== $tool['inputSchema']) { return false; }
+                if ('tools_describe' === $call['name'] || false === ($tool['requiresDescribe'] ?? null)) { $disclosed[$name] = true; }
+            }
+        }
+        return [] !== $approved && [] === array_diff(array_keys($approved), array_keys($disclosed));
     }
 
     private function definitions(array $definitions): array
