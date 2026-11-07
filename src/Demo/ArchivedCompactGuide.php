@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-namespace CodeMode;
+namespace App\Demo;
 
-/** Reuses the original input schema and PHP shape renderer; never builds a validation schema. */
-final class CompactToolGuide
+use CodeMode\{ToolDefinition, PhpToolGuide};
+
+/** Reproduce archived experimental payloads for evidence verification only. Never used by a session. */
+final class ArchivedCompactGuide
 {
     public function describe(ToolDefinition $tool): array
     {
@@ -19,6 +21,13 @@ final class CompactToolGuide
         $compact = ['name' => $tool->name, 'description' => $tool->description, 'requiresDescribe' => false,
             'inputSchema' => $tool->inputSchema, 'returns' => $guide['returns']];
         return strlen(json_encode($compact, JSON_THROW_ON_ERROR, 32)) <= 4096 ? $compact : $brief;
+    }
+
+    /** A selected tool is fully disclosed: compact when renderable, full otherwise. */
+    public function selected(ToolDefinition $tool): array
+    {
+        $compact = $this->describe($tool);
+        return $compact['requiresDescribe'] ? $tool->jsonSerialize() + ['php' => (new PhpToolGuide())->describe($tool)] : $compact;
     }
 
     private function hasReference(mixed $value): bool

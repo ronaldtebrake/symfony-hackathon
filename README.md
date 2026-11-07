@@ -82,11 +82,11 @@ The agent calls `tools_search` with:
 {"query":"published articles"}
 ```
 
-Search returns matching names and descriptions, the **unchanged input schema** and a short PHP return shape. For `articles_list_published`, `requiresDescribe: false` means the agent can go straight to PHP. The response wraps those tools in `tools` and reports `matched`, `returned`, `limit: 8` and `truncated`. All query terms must match. Refine a truncated search with an action or field, or use an exact tool name; zero matches suggest fewer terms or a synonym.
+Search returns matching names and descriptions. It does not enable tool execution. The response wraps those tools in `tools` and reports `matched`, `returned`, `limit: 8` and `truncated`. All query terms must match. Refine a truncated search with an action or field, or use an exact tool name; zero matches suggest fewer terms or a synonym.
 
-### When needed: inspect the full schema
+### 2. Inspect the full schema
 
-If a result has `requiresDescribe: true`, the agent calls `tools_describe` before using it. For example:
+The agent calls `tools_describe` for the selected tools before using them. For example:
 
 ```json
 {"names":["articles_list_published"]}
@@ -96,7 +96,7 @@ The response includes the input schema and a PHP invocation guide. This tool acc
 
 Only tools whose contracts were disclosed in this session can be called by the program. Every call must also pass the host's authorization and argument validation.
 
-### 2. Compose the reads in PHP
+### 3. Compose the reads in PHP
 
 The agent submits this function body as the `code` argument to `php_execute`, without a `<?php` tag:
 
@@ -132,47 +132,6 @@ That is one PHP execution with **four broker calls**. The agent receives `{"valu
 A follow-up uses the same conversation, identity and remaining execution budget. If the agent attempts a restricted read, the broker returns `tool_denied`. The agent can explain the boundary and propose a permitted alternative. [See the recorded denial and recovery](docs/demo.md#optional-boundary-recovery-opening).
 
 Code Mode is useful when a task needs pagination, branching or several related reads. A simple lookup may need less work as a direct tool call. Discovery and sandbox startup have costs too.
-
-## Compact discovery
-
-Compact discovery is now the default in the core package, Symfony bundle and demos. “Compact” describes the introduction the agent receives: exact input constraints plus a short return shape, with full schemas retained by the host. It saves a discovery round trip for simple tools and avoids repeating verbose examples and notes.
-
-To restore the original three-step flow, set:
-
-```yaml
-code_mode:
-    discovery: full
-```
-
-`tools_search` now returns each matching tool's **original input schema** and a short PHP return shape. A result with `requiresDescribe: false` is ready for `php_execute`; `requiresDescribe: true` tells the agent to call `tools_describe` first. The operator can also select `--discovery=full` on `code-mode:serve` or `code-mode:mcp`. Agents cannot change the mode through tool arguments.
-
-The Symfony adapter reuses the schemas from your existing AI toolbox. It does not generate another validator or infer permissions from tool descriptions. Compact entries are capped at 4 KiB, search at eight matches and 32 KiB; complex, referenced or oversized contracts fall back to describe. The broker retains the full schemas, per-call authorization and execution limits. Discovery never grants access to restricted content.
-
-With the original **two-tool catalog**, two live conversations per mode used the same gpt-oss model, questions, data and permissions. Both flows returned correct answers:
-
-| Measured across both conversations | Search + describe | Compact search |
-| --- | ---: | ---: |
-| Provider tokens, including completion | 16,330 | 10,854 |
-| Model requests | 14 | 10 |
-| Discovery tool calls | 6 | 2 |
-| Correct conversations | 2 / 2 | 2 / 2 |
-
-That is **33.5% fewer provider tokens** in this small sample. Both arms use lean execution responses; order was reversed for the second pair. Each capture also verifies a denied draft read, permitted recovery and an exhausted execution budget using fixed PHP. [Inspect generated PHP, calls and every attempt](http://127.0.0.1:8000/demo#compact-discovery), or [reproduce the comparison](docs/demo.md#compact-discovery-comparison).
-
-With the **16-tool catalog**, the final matched batch also returns correct answers in both modes:
-
-| Measured across both conversations | Search + describe | Compact search |
-| --- | ---: | ---: |
-| Correct conversations / answers | 2 / 2 · 4 / 4 | 2 / 2 · 4 / 4 |
-| Provider tokens | 31,185 | 31,946 |
-| Model requests | 16 | 14 |
-| Discovery tool calls | 8 | 6 |
-
-Compact uses fewer requests here, but **2.4% more tokens**. Catalog shape and generated plans matter; compact discovery does not guarantee token savings. Search now reports `matched`, `returned`, `limit` and `truncated`, with guidance to refine a truncated search. All query terms must match; an exact tool name selects one tool. Zero matches suggest fewer terms or a synonym. Full discovery still requires describe, and complex compact contracts retain that fallback.
-
-Earlier attempts exposed search truncation, contradictory summarization instructions and a per-record plan that exceeded the ten-call budget. Both modes now receive the same corrected instructions: preserve the requested output, discover a collection reader for collection work, and plan within the existing limits. The model, questions, data, schemas and permissions are unchanged. All five earlier batches, including failures and incomplete usage, remain available in the [discovery evidence](https://ronaldtebrake.github.io/symfony-hackathon/#compact-discovery).
-
-The shared PHP package also accepts MCP schemas from Drupal's Tool API. The [Drupal proof](examples/drupal/README.md#reuse-from-symfony-code-mode) checks both discovery modes with the same restricted Drupal account and real node-access decisions.
 
 ## Execution profiles
 

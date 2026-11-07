@@ -73,21 +73,6 @@ final readonly class DemoController
         return $this->response($this->store->readAdoptionProof() ?? '{"status":"empty"}', 'application/json');
     }
 
-    #[Route('/demo/discovery-report', name: 'app_demo_discovery_report', methods: ['GET'])]
-    public function discoveryReport(Request $request): Response
-    {
-        $this->requireLocalRequest($request);
-        $report = json_decode($this->store->readDiscoveryComparison() ?? '{"status":"empty"}', true, flags: JSON_THROW_ON_ERROR);
-        if ('empty' !== $report['status']) {
-            foreach ($report['previousAttempts'] ?? [] as $index => $previous) {
-                $report['previousAttempts'][$index]['summary'] = (new \App\Demo\DiscoveryComparison())->summarize($previous);
-            }
-            $report['summary'] = (new \App\Demo\DiscoveryComparison())->summarize($report);
-            if ('complete' === $report['status'] && !$report['summary']['allCorrect']) { $report['status'] = 'failed'; }
-        }
-        return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
-    }
-
     #[Route('/demo/evaluation-report', name: 'app_demo_evaluation_report', methods: ['GET'])]
     public function evaluationReport(Request $request): Response
     {

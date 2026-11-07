@@ -26,13 +26,9 @@ final class SymfonyCodeModeTest extends TestCase
         try {
             $client->connect(new StdioTransport(PHP_BINARY, ['bin/console', 'code-mode:serve', '--no-debug', ...('default' === $mode ? [] : ['--discovery='.$mode]), '--trace-file='.$traceFile], dirname(__DIR__, 2), maxBufferSize: 65536));
             self::assertSame(['tools_search', 'tools_describe', 'php_execute'], array_column($client->listTools()->tools, 'name'));
-            if ('default' === $mode) {
-                $found = $client->callTool('tools_search', ['query' => 'articles']);
-                self::assertFalse($found->isError);
-                self::assertSame([false, false], array_column($found->structuredContent['tools'], 'requiresDescribe'));
-            } else {
-                $client->callTool('tools_describe', ['names' => ['articles_read', 'articles_list_published']]);
-            }
+            $found = $client->callTool('tools_search', ['query' => 'articles']);
+            self::assertArrayNotHasKey('inputSchema', $found->structuredContent['tools'][0]);
+            $client->callTool('tools_describe', ['names' => ['articles_read', 'articles_list_published']]);
             $denied = $client->callTool('php_execute', ['code' => 'return $tools->call("articles_read", ["id" => 49]);']);
             self::assertTrue($denied->isError);
             self::assertSame('tool_denied', $denied->structuredContent['error']['reason']);

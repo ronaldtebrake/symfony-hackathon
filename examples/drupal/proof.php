@@ -37,7 +37,7 @@ $snapshot = static function () use ($ddev, $environment): array {
     return json_decode($process->getOutput(), true, 32, JSON_THROW_ON_ERROR);
 };
 $options = getopt('', ['discovery:']);
-$discovery = DiscoveryMode::from($options['discovery'] ?? 'compact');
+$discovery = DiscoveryMode::from($options['discovery'] ?? 'full');
 $report = ['discoveryMode' => $discovery->value, 'version' => 1, 'kind' => 'drupal-authorization-proof', 'createdAt' => gmdate(DATE_ATOM), 'status' => 'running',
     'transport' => 'local DDEV STDIO', 'modelCalled' => false, 'programOrigin' => 'Fixed operator-written probes',
     'runtime' => 'runsc', 'image' => $env('CODE_MODE_IMAGE'), 'cases' => []];
@@ -73,10 +73,8 @@ try {
     $report['search'] = $session->searchResult(ProofVerifier::TOOL);
     $report['discovery'] = $report['search']['tools'];
     $report['discoveryRequests'] = 1;
-    if (DiscoveryMode::Full === $discovery || in_array(true, array_column($report['discovery'], 'requiresDescribe'), true)) {
-        $report['described'] = $session->describe([ProofVerifier::TOOL]);
-        ++$report['discoveryRequests'];
-    }
+    $report['described'] = $session->describe([ProofVerifier::TOOL]);
+    ++$report['discoveryRequests'];
     $cursor = $before['auditCursor'];
     foreach (['authorized_read' => 'published', 'restricted_read' => 'restricted'] as $id => $fixtureKey) {
         $code = 'return $tools->call("'.ProofVerifier::TOOL.'", ["id" => '.$before[$fixtureKey]['id'].']);';

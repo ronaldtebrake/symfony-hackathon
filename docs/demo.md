@@ -143,39 +143,3 @@ Security probes use two seconds, 128 MiB and three calls each. Normal audit exec
 The CLI also supports `composer demo -- --mode=live --scenario=impact` and `--question='Count published articles by language. Return counts.'`. Custom answers are marked **review required**; they have no independent correctness badge. Runtime settings and permissions remain host-controlled. Custom-question live inference is outside the captured proof.
 
 The [hackathon brief](https://symfony.com/hackathon), checked **3 November 2026**, asks for a public runnable repository and a 90-second real demo by **22 November, 18:00 CET**. The [evidence index](evidence/README.md) identifies the sources for each claim. The optional [Drupal example](../examples/drupal/README.md) is separate from this recording.
-
-## Compact discovery comparison
-
-```sh
-# Fixed PHP: authorization, denied draft, recovery and exhausted budget, no model
-php bin/console code-mode:discovery-compare --no-debug
-# Same two-turn native Symfony AI task on both flows; uses inference credits
-php bin/console code-mode:discovery-compare --live --repetitions=2 --no-debug
-# Larger catalog: same questions, model and permissions; includes complex fallback
-php bin/console code-mode:discovery-compare --catalog=large --live --repetitions=2 --no-debug
-```
-
-Open `/demo#compact-discovery`. Full discovery is the original search → describe → execute flow; compact is now the default for new sessions. Compact search includes the existing Symfony AI input schemas and bounded PHP return shapes. Both use lean execution responses. Every execution still runs through gVisor and the same authorization policy.
-
-The command persists the schedule before calling the provider, reverses arm order on repetition two, and retains all runs and earlier batches in one report. Each conversation has two PHP attempts and at most twelve provider requests. It stops on a provider/runtime error, retaining pending rows rather than repeatedly spending credits. Correctness requires the full first article, including the injected text as data, and an exact follow-up audit of 48 published articles with missing IDs `[11,22,33,44]`. A separate fixed probe proves denial, recovery and budget exhaustion. The viewer rechecks execution/result/ledger links and matching comparison conditions.
-
-The [recorded comparison](evidence/compact-discovery.json) contains six batches. The current `publishing-16-v1` batch uses sixteen native `#[AsTool]` readers, eleven compact contracts and five full-description fallbacks. Both modes receive the same model, questions, data, schemas, identity and execution limits. The final paired conversations both pass:
-
-| Across two conversations per mode | Full | Compact |
-| --- | ---: | ---: |
-| Correct conversations | 2 / 2 | 2 / 2 |
-| Correct individual answers | 4 / 4 | 4 / 4 |
-| Model requests | 16 | 14 |
-| Provider tokens | 31,185 | 31,946 |
-| Search / describe calls | 4 / 4 | 4 / 2 |
-| Discovery response bytes | 12,668 | 15,628 |
-
-Compact saves two requests but uses 2.4% more tokens here. This does not establish a general token-saving claim. The earlier two-tool batch used 16,330 tokens / 14 requests for full versus 10,854 / 10 for compact, with both correct. Totals are never combined across catalog profiles or prompt revisions.
-
-All earlier attempts remain visible. The first large batch completed no conversation correctly because bounded search hid the body reader. Explicit `matched`, `returned`, `limit`, `truncated` and refinement hints helped all four conversations find it, but malformed tool output and execution planning still caused failures. Correcting the shared prompt’s contradictory instruction to summarize fixed exact-body answers. Finally, stating the existing ten-call limit and requiring a fresh collection search prevented a per-record plan from exhausting that budget. Both arms use each shared prompt revision; the recorded request digests bind the prompt and unchanged questions to the provider requests. No expected answers were supplied to the model and no outputs were repaired.
-
-Every batch includes fixed PHP probes for denial, permitted recovery and attempt exhaustion. The workbench shows exact discovery responses, generated PHP, actual calls, per-question correctness, complete or partial provider usage and all five earlier batches. It cannot trigger execution. `--resume` runs only pending conversations in an interrupted live batch, after checking unchanged conditions; it never retries a failed or completed conversation. Model-format failures count as attempts and the planned schedule continues. Runtime or transport failures stop the schedule. At most eight retained batches and a 4 MiB report cap bound storage; further captures require deliberate evidence review.
-
-Only the reviewed JSON is committed. Local logs stay ignored. The static documentation exports reviewed fixtures only; the local viewer can also follow operator-generated reports.
-
-The default-switch checks also run the five reference scenarios (pagination, join, follow-up, boundary recovery and injected content), a mixed simple/complex catalog with real PHP fallback, strict input/output validation, and the independent Symfony and Drupal proofs. These are execution checks, not additional live model-token measurements. New evaluation captures use `symfony-evaluation-v5`; new Hugging Face audit captures use `coverage-v10`, preserving older prompts and evidence for replay. Each retained batch keeps its original prompts, results and request measurements.

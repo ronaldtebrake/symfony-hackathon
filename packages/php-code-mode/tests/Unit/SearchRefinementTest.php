@@ -49,10 +49,12 @@ final class SearchRefinementTest extends TestCase
             { $this->allowed = $allowedTools; return new ExecutionResult(1, [], 1, 0, 'unit'); }
         };
         $session = new CodeModeSession($this->catalog(), new ToolBroker([]), $sandbox, new ExecutionIdentity('reader'));
+        $session->describe(['reader_0']);
         $session->searchResult('article');
         $session->execute('return 1;');
         self::assertNotContains('reader_11', $sandbox->allowed);
         $session->searchResult('article body');
+        $session->describe(['reader_11']);
         $session->execute('return 1;');
         self::assertContains('reader_11', $sandbox->allowed);
         $session->searchResult('reader_11');
@@ -64,21 +66,22 @@ final class SearchRefinementTest extends TestCase
         catch (SandboxException $error) { self::assertSame('discovery_required', $error->reason); }
     }
 
-    public function testEnvelopeBudgetFailureDoesNotDiscloseAnyTool(): void
+    public function testBroadSearchDefersLargeContractsWithoutDisclosingThem(): void
     {
         $tools = [];
         for ($i = 0; $i < 8; ++$i) {
             $input = (object) ['type' => 'object', 'description' => ''];
             $tool = new ToolDefinition('reader_'.$i, 'Read', $input);
-            $input->description = str_repeat('x', 4080 - strlen(json_encode((new \CodeMode\CompactToolGuide())->describe($tool), JSON_THROW_ON_ERROR)));
+            $input->description = str_repeat('x', 4000);
             $tools[] = $tool;
         }
         $tools[] = new ToolDefinition('omitted', 'Read', (object) ['type' => 'object']);
         $sandbox = $this->createMock(SandboxExecutor::class); $sandbox->expects(self::never())->method('execute');
         $session = new CodeModeSession(new ToolCatalog($tools), new ToolBroker([]), $sandbox, new ExecutionIdentity('reader'));
-        try { $session->searchResult('read'); self::fail('Envelope exceeded the response budget.'); }
-        catch (SandboxException $error) { self::assertSame('discovery_limit', $error->reason); }
-        try { $session->execute('return 1;'); self::fail('Oversized envelope activated tools.'); }
+        $result = $session->searchResult('read');
+        self::assertTrue($result['truncated']);
+        foreach ($result['tools'] as $tool) { self::assertArrayNotHasKey('inputSchema', $tool); }
+        try { $session->execute('return 1;'); self::fail('Search summaries activated tools.'); }
         catch (SandboxException $error) { self::assertSame('discovery_required', $error->reason); }
     }
 }

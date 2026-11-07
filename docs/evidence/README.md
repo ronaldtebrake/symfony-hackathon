@@ -4,7 +4,6 @@ These are reviewed execution captures and a separately labelled offline payload 
 
 | Capture | What it establishes | Viewer |
 | --- | --- | --- |
-| [Compact/full discovery](compact-discovery.json) | Same native Symfony AI task in both modes. Retains the successful two-tool comparison and all four failed 16-tool conversations, exact discovery, generated PHP, calls, correctness and partial provider usage. The larger catalog does not establish token savings; fixed security probes pass. | Compact discovery |
 | [Lean response payloads](lean-responses.json) | Offline gpt-oss tokenization of nine retained responses with current formatting; source/payload hashes checked. No inference call or provider-billing claim. | [Payload methodology](../demo.md#lean-response-measurement) |
 | [Symfony performance investigation](performance-proof.json) | Real synthetic HttpKernel requests, persisted Symfony Profiler records, PDO queries and redacted PSR-3 events. Two fixed PHP programs correlate N+1 work and verify identical output with 13 → 1 queries. Both restricted readers denied; cleanup and attempt limit checked. First inconclusive attempt retained. | [Performance guide](../performance.md) |
 | [Fresh Symfony application](fresh-symfony-app.json) | Independent Composer install without the root autoloader or package source directories at execution: own native tool and policy, allowed/denied reads over MCP and gVisor, cleanup and attempt exhaustion. 24 checks; operator-written PHP, no model called. | [Reproduce](../../examples/symfony/README.md) |
@@ -23,4 +22,4 @@ The original [Hugging Face Code Mode capture](huggingface-proof.json) and [faile
 
 ## Visuals
 
-The README keeps the self-contained [value animation](../images/code-mode-value.svg), [compact discovery explainer](../../public/images/compact-discovery.svg) and [actual matched-comparison screenshot](../images/huggingface-matched-comparison.jpg). The animations illustrate reference payload bytes and discovery flow, not model tokens or execution speed; preserve their reduced-motion behavior when editing. All use the Symfony AI palette. The unretouched screenshot was captured on 2 November 2026. Other proof details are available in the viewer and JSON rather than duplicated as screenshots.
+The README keeps the self-contained [value animation](../images/code-mode-value.svg) and [actual matched-comparison screenshot](../images/huggingface-matched-comparison.jpg). The animation illustrates reference payload bytes, not model tokens or execution speed; preserve its reduced-motion behavior when editing. Both use the Symfony AI palette. The unretouched screenshot was captured on 2 November 2026. Other proof details are available in the viewer and JSON rather than duplicated as screenshots.

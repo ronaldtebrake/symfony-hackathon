@@ -37,7 +37,7 @@ final readonly class HuggingFaceProofRunner
                 : ['toolTimeMs' => 3000, 'maxToolRounds' => 20, 'maxAdmittedToolCalls' => 60, 'executionAttempts' => 0, 'maxModelRequests' => $maxRequests],
             'components' => [], 'result' => null];
         $report['protocol'] = $protocol;
-        $report['discoveryMode'] = 'code' === $approach ? (AuditPrompt::COVERAGE_PROTOCOL === $protocol ? 'compact' : 'full') : null;
+        $report['discoveryMode'] = 'code' === $approach ? 'full' : null;
         $report['systemPrompt'] = $systemPrompt;
         $report['sharedPromptSha256'] = hash('sha256', AuditPrompt::shared($protocol));
         $report['generationSettings'] = AuditPrompt::options($protocol) + ['providerRouting' => 'auto'];
@@ -65,7 +65,7 @@ final readonly class HuggingFaceProofRunner
         $started = hrtime(true);
         try {
             // Require gVisor and the pinned image before constructing/invoking the provider.
-            $context = $this->factory->create($approach, 'fixture', discovery: AuditPrompt::COVERAGE_PROTOCOL === $protocol ? \CodeMode\DiscoveryMode::Compact : \CodeMode\DiscoveryMode::Full);
+            $context = $this->factory->create($approach, 'fixture', discovery: \CodeMode\DiscoveryMode::Full);
             $context->trace->captureDetails = true;
             $report['approvedTools'] = array_values($context->catalog->all());
             if ('direct' === $approach) {

@@ -13,7 +13,7 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 use Symfony\AI\Agent\Toolbox\Toolbox;
 use Symfony\AI\Platform\Tool\ToolEffectHints;
 
-final class CompactDiscoveryTest extends TestCase
+final class FullDiscoveryTest extends TestCase
 {
     private function sessions(): SessionFactory
     {
@@ -26,13 +26,16 @@ final class CompactDiscoveryTest extends TestCase
             aiToolbox: new ApprovedToolbox(new Toolbox([new MixedDiscoveryTools()]), ['simple_read', 'complex_read'], $policy));
     }
 
-    public function testDefaultMixedCatalogRequiresFullFallbackBeforeComplexExecution(): void
+    public function testDefaultRequiresFullContractsBeforeSimpleOrComplexExecution(): void
     {
         $session = $this->sessions()->create(new ExecutionIdentity('reader', ['read']));
-        self::assertSame(DiscoveryMode::Compact, $session->discoveryMode());
+        self::assertSame(DiscoveryMode::Full, $session->discoveryMode());
         $found = array_column($session->search('read'), null, 'name');
-        self::assertFalse($found['simple_read']['requiresDescribe']);
-        self::assertTrue($found['complex_read']['requiresDescribe']);
+        self::assertArrayNotHasKey('inputSchema', $found['simple_read']);
+        self::assertArrayNotHasKey('inputSchema', $found['complex_read']);
+        try { $session->execute('return 1;'); self::fail('Search enabled execution.'); }
+        catch (SandboxException $error) { self::assertSame('discovery_required', $error->reason); }
+        $session->describe(['simple_read']);
         try { $session->execute('return $tools->call("complex_read", ["id" => 1]);'); self::fail('Undisclosed complex tool ran.'); }
         catch (SandboxException $error) { self::assertSame('tool_denied', $error->reason); }
         $session->describe(['complex_read']);
@@ -43,10 +46,11 @@ final class CompactDiscoveryTest extends TestCase
         catch (SandboxException $error) { self::assertSame('execution_limit', $error->reason); }
     }
 
-    public function testCompactDiscoveryPreservesOriginalInputAndOutputValidation(): void
+    public function testFullDiscoveryPreservesOriginalInputAndOutputValidation(): void
     {
         $session = $this->sessions()->create(new ExecutionIdentity('reader', ['read']));
         $session->search('simple');
+        $session->describe(['simple_read']);
         try { $session->execute('return $tools->call("simple_read", ["id" => 1, "permissions" => ["admin"]]);'); self::fail('Additional argument bypassed schema.'); }
         catch (SandboxException $error) { self::assertSame('invalid_arguments', $error->reason); }
         try { $session->execute('return $tools->call("simple_read", ["id" => 1, "invalid" => true]);'); self::fail('Invalid handler result passed the original output schema.'); }

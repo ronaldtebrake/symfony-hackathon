@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Demo;
 
 use App\CodeMode\PublishingTools;
-use CodeMode\{CompactToolGuide, DockerEngine, ExecutionIdentity, ExecutionLimits};
+use CodeMode\{DockerEngine, ExecutionIdentity, ExecutionLimits};
 use CodeMode\Symfony\Ai\{ApprovedToolbox, ToolAuthorizationInterface};
 use CodeMode\Symfony\SessionFactory;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
@@ -58,7 +58,7 @@ final class DiscoveryCatalog implements ToolAuthorizationInterface
     {
         $ready = $fallback = [];
         foreach ($definitions as $definition) {
-            if ((new CompactToolGuide())->describe($definition)['requiresDescribe']) { $fallback[] = $definition->name; }
+            if ((new ArchivedCompactGuide())->describe($definition)['requiresDescribe']) { $fallback[] = $definition->name; }
             else { $ready[] = $definition->name; }
         }
         return ['tools' => count($definitions), 'compactReady' => $ready, 'requiresDescribe' => $fallback, 'searchResultLimit' => 8];

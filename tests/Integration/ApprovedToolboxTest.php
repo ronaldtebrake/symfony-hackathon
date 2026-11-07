@@ -42,12 +42,13 @@ final class ApprovedToolboxTest extends TestCase
         $container->compile();
         self::assertSame(['publishing_list'], array_column($container->get(SessionFactory::class)->catalog()->all(), 'name'));
         $session = $container->get(SessionFactory::class)->create($this->identity());
-        self::assertSame(\CodeMode\DiscoveryMode::Compact, $session->discoveryMode());
-        $compact = $session->search('publishing')[0];
+        self::assertSame(\CodeMode\DiscoveryMode::Full, $session->discoveryMode());
+        self::assertSame(['name', 'description'], array_keys($session->search('publishing')[0]));
         $full = $session->describe(['publishing_list'])[0];
-        self::assertFalse($compact['requiresDescribe']);
-        self::assertEquals($full['inputSchema'], $compact['inputSchema']);
-        self::assertSame($full['php']['returns'], $compact['returns']);
+        self::assertArrayHasKey('inputSchema', $full);
+        self::assertArrayHasKey('outputSchema', $full);
+        self::assertArrayHasKey('php', $full);
+        self::assertNull(\CodeMode\DiscoveryMode::tryFrom('compact'));
     }
 
     public function testOnlyApprovedToolsAreAdaptedAndSymfonyLifecycleStillRuns(): void

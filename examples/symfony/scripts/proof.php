@@ -64,7 +64,9 @@ try {
     $verify('only_explicitly_approved_tool_discovered', !$search->isError && ['publication_read'] === array_column($search->structuredContent['tools'], 'name'));
     $unapproved = $client->callTool('tools_describe', ['names' => ['publication_count']]);
     $verify('unapproved_tool_hidden', $unapproved->isError && 'tool_denied' === ($unapproved->structuredContent['error']['reason'] ?? null));
-    $verify('compact_contract_ready_by_default', [false] === array_column($search->structuredContent['tools'], 'requiresDescribe') && isset($search->structuredContent['tools'][0]['inputSchema']));
+    $verify('full_contract_required_by_default', !isset($search->structuredContent['tools'][0]['inputSchema']));
+    $described = $client->callTool('tools_describe', ['names' => ['publication_read']]);
+    $verify('original_contract_disclosed', isset($described->structuredContent[0]['inputSchema'], $described->structuredContent[0]['php']));
 
     $cases = [];
     foreach (['authorized' => 101, 'restricted' => 202] as $name => $id) {
@@ -104,7 +106,7 @@ try {
         'installation' => ['versions' => $versions, 'composerLockSha256' => hash_file('sha256', $app.'/composer.lock'), 'symlink' => false,
             'pathRepositorySourcesPresent' => is_dir($app.'/../../packages'), 'rootAutoloaderPresent' => is_file($app.'/../../vendor/autoload.php')],
         'runtime' => ['image' => $environment['CODE_MODE_IMAGE'], 'hostPhp' => PHP_VERSION, 'prerequisites' => $prerequisites],
-        'discovery' => ['search' => $search->structuredContent, 'mode' => 'compact', 'unapproved' => $unapproved->structuredContent],
+        'discovery' => ['search' => $search->structuredContent, 'mode' => 'full', 'unapproved' => $unapproved->structuredContent],
         'cases' => $cases, 'thirdAttempt' => $exhausted->structuredContent, 'checks' => $checks,
     ];
     echo json_encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n";

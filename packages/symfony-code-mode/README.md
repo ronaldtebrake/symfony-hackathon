@@ -1,6 +1,6 @@
 # Symfony Code Mode integration
 
-Approve existing Symfony read services, then give an MCP client compact search, optional full describe and PHP execution. The generic runner and broker remain in `ronaldtebrake/php-code-mode`. This bundle supplies the Symfony container integration and a STDIO entry point.
+Approve existing Symfony read services, then give an MCP client bounded search, full describe and PHP execution. The generic runner and broker remain in `ronaldtebrake/php-code-mode`. This bundle supplies the Symfony container integration and a STDIO entry point.
 
 For a consumer with its own dependencies, native `#[AsTool]` service and authorization policy, use the [separate Symfony app](../../examples/symfony/README.md). Its recorded allowed/denied proof runs through this bundle's normal MCP server without the main demo autoloader.
 
@@ -112,25 +112,8 @@ Calls go through the original Symfony AI toolbox, preserving its argument resolv
 
 `tools_describe` adds a bounded PHP invocation example and input/output shapes for only the selected tools. JSON objects are `stdClass`, lists are arrays, and unknown/referenced schemas remain `mixed`. These guides are documentation; the broker still checks schemas and authorization for every call.
 
-## Compact discovery
+## Full schema discovery
 
-Compact discovery is the default alongside your approved toolbox and authorization policy. To restore the original search → describe → execute flow, set `code_mode.discovery: full` or launch `code-mode:serve --discovery=full --no-debug`. The agent cannot change this setting through a tool argument. Restart the MCP process after configuration changes.
+Search returns candidate names and descriptions in a `tools` list, with `matched`, `returned`, `limit` and `truncated`. A truncated or empty result includes refinement guidance. All query terms must match; an exact approved name selects one tool. Search returns at most eight entries and 32 KiB. It never makes a tool callable.
 
-Search results include the original adapted Symfony AI `inputSchema` and a bounded `returns` PHP shape. `requiresDescribe: false` means the contract was disclosed and the tool may be called; `true` requires `tools_describe`. The exact input constraints remain visible. Output shapes are documentation only; the original output schema still validates results. Missing output schemas are explicitly marked `mixed (no output schema declared)`.
-
-The core formatter falls back for references, deep/wide output shapes, unsupported output compositions and entries larger than 4 KiB. Search returns a `tools` list plus `matched`, `returned`, `limit` and `truncated`. Truncated and zero-match responses include refinement guidance. All query terms must match; an exact approved tool name selects one result. The eight-result limit and 32 KiB cap apply to the entire response, including metadata. Contracts become callable only after the whole response is constructed. These discovery decisions do not change allowlists, identities, policies, broker schema validation, execution attempts or isolation.
-
-For a Symfony AI conversation, use `$sessions->create($identity)`. The optional host-owned override `\CodeMode\DiscoveryMode::Full` restores full discovery. Keep that same session for follow-ups. Both the MCP server and `CodeModeToolbox` expose the appropriate discovery instructions.
-
-[The paired comparison](../../docs/demo.md#compact-discovery-comparison) reuses native `#[AsTool]` schemas, Symfony's toolbox lifecycle and the same gVisor package.
-
-## Run the adoption proof
-
-```sh
-# Real gVisor execution, no provider:
-php bin/console code-mode:adoption-proof --no-debug
-# Also capture two real Symfony AI + Hugging Face turns; consumes inference credits:
-php bin/console code-mode:adoption-proof --live --no-debug
-```
-
-The read-only [Adoption viewer](http://127.0.0.1:8000/demo#adoption-proof) shows the actual generated PHP, follow-up, tool calls, usage and PHP discovery guides. The [reviewed evidence](../../docs/evidence/adoption-proof.json) includes the first live attempt, which filtered the injected paragraph before it reached the model, and the next attempt, which requested the full body and passed the exposure check. A separate fixed probe attempts the restricted read, recovers under the same identity, and proves the two-attempt budget cannot be reset. This is a specific execution proof, not general prompt-injection protection.
+Call `tools_describe` for the selected tools before executing PHP. The response includes the original input/output schemas and a PHP invocation guide. The broker continues to validate arguments and results and authorize every call. Search and describe never reset execution attempts. The core's list-only `search()` API remains available for existing PHP callers.

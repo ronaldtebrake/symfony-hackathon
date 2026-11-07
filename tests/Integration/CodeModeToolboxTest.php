@@ -43,8 +43,9 @@ final class CodeModeToolboxTest extends TestCase
         self::assertSame('discovery_required', $call('php_execute', ['code' => 'return 1;'])['error']['reason']);
         self::assertSame('invalid_arguments', $call('tools_search', ['query' => 'article', 'discovery' => 'compact'])['error']['reason']);
         self::assertSame('invalid_arguments', $call('tools_search', ['query' => 'article', 'limit' => 128])['error']['reason']);
-        if (\CodeMode\DiscoveryMode::Compact === $mode) { $call('tools_search', ['query' => 'article']); }
-        else { $call('tools_describe', ['names' => ['articles_read']]); }
+        $call('tools_search', ['query' => 'article']);
+        self::assertSame('discovery_required', $call('php_execute', ['code' => 'return 1;'])['error']['reason']);
+        $call('tools_describe', ['names' => ['articles_read']]);
         $denial = $call('php_execute', ['code' => 'return $tools->call("articles_read", ["id" => 49]);']);
         self::assertSame('tool_denied', $denial['error']['reason']);
         self::assertStringNotContainsString('private exception', json_encode($denial));

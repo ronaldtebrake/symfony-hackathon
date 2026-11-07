@@ -31,7 +31,7 @@ final readonly class DemoRunner
         }
         $question ??= DemoQuestion::preset();
         $question->requireSupportedRun($mode, $backend);
-        $context ??= $this->factory->create($approach, $backend, discovery: 'reference' === $mode || AuditPrompt::COVERAGE_PROTOCOL === $protocol ? \CodeMode\DiscoveryMode::Compact : \CodeMode\DiscoveryMode::Full);
+        $context ??= $this->factory->create($approach, $backend, discovery: \CodeMode\DiscoveryMode::Full);
         $trace = $context->trace;
         $started = hrtime(true);
         $tokens = null;

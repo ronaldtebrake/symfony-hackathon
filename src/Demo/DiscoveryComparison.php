@@ -29,12 +29,28 @@ final class DiscoveryComparison
             }
             $passed = $passed && ($attempt['discovery'] ?? null) === ($proof['discoveryMode'] ?? null);
             $passed = $passed && ($report['catalogProfile'] ?? 'publishing-2-v1') === ($proof['catalogProfile'] ?? 'publishing-2-v1');
+            $passed = $passed && ($report['discoveryProtocol'] ?? 'eager-v1') === ($proof['discoveryProtocol'] ?? 'eager-v1');
             $passed = $passed && ($report['searchProtocol'] ?? 'ranked-any-v1') === ($proof['searchProtocol'] ?? 'ranked-any-v1');
             $catalogVerified = !$large || ($this->largeCatalogVerified($proof, $trace) && $this->largeCatalogVerified($proof, $proof['probe'] ?? []));
             $passed = $passed && $catalogVerified;
             $discovery = array_values(array_filter($trace['agentCalls'] ?? [], static fn ($call) => in_array($call['name'], ['tools_search', 'tools_describe'], true)));
             $search = array_values(array_filter($discovery, static fn ($call) => 'tools_search' === $call['name']));
             $describe = array_values(array_filter($discovery, static fn ($call) => 'tools_describe' === $call['name']));
+            $discoveryHashes = []; $disclosed = [];
+            foreach ($discovery as $call) {
+                $discoveryHashes[hash('sha256', $call['result'])] = true;
+                $payload = json_decode($call['result'], true, flags: JSON_THROW_ON_ERROR);
+                foreach ($payload['tools'] ?? $payload as $tool) {
+                    if (isset($tool['name'], $tool['inputSchema'])) { $disclosed[$tool['name']] = true; }
+                }
+            }
+            $replayedDiscoveryBytes = 0;
+            foreach ($trace['requestEvidence'] ?? [] as $request) {
+                foreach ($request['toolMessages'] ?? [] as $message) {
+                    if (isset($discoveryHashes[$message['sha256'] ?? ''])) { $replayedDiscoveryBytes += $message['bytes']; }
+                }
+            }
+            $unusedContracts = array_values(array_diff(array_keys($disclosed), array_column($trace['brokerCalls'] ?? [], 'name')));
             $fallback = []; $found = []; $searches = [];
             foreach ($search as $call) {
                 $payload = json_decode($call['result'], true, flags: JSON_THROW_ON_ERROR);
@@ -65,7 +81,7 @@ final class DiscoveryComparison
             $rows[] = ['discovery' => $attempt['discovery'], 'repetition' => $attempt['repetition'], 'status' => $attempt['status'],
                 'correct' => $passed, 'modelRequests' => $trace['modelRequests'] ?? 0, 'providerTokens' => $trace['providerTokens'] ?? null,
                 'observedTokens' => $observedTokens, 'meteredResponses' => $metered, 'answers' => $answers, 'catalogVerified' => $catalogVerified,
-                'searches' => $searches,
+                'searches' => $searches, 'replayedDiscoveryBytes' => $replayedDiscoveryBytes, 'unusedContracts' => $unusedContracts,
                 'bodyReaderFound' => isset($found['publishing_read']), 'auditListFound' => isset($found['publishing_list']),
                 'discoveryRequests' => count($discovery), 'discoveryBytes' => array_sum(array_column($discovery, 'bytesToModel')),
                 'searchRequests' => count($search), 'describeRequests' => count($describe), 'fallbackTools' => array_keys($fallback),
@@ -74,6 +90,7 @@ final class DiscoveryComparison
             // Only the discovery presentation is allowed to differ between arms.
             $contract = [];
             foreach (['mode', 'model', 'provider', 'providerRouting', 'systemPrompt', 'generationSettings', 'image', 'limits', 'identity', 'fixtureSha256', 'approvedTools'] as $key) { $contract[$key] = $proof[$key] ?? null; }
+            $contract['discoveryProtocol'] = $proof['discoveryProtocol'] ?? 'eager-v1';
             $contract['searchProtocol'] = $proof['searchProtocol'] ?? 'ranked-any-v1';
             $contract['catalogProfile'] = $proof['catalogProfile'] ?? 'publishing-2-v1';
             $contract['questions'] = $proof['questions'] ?? array_column($proof['turns'] ?? [], 'question');
@@ -90,6 +107,8 @@ final class DiscoveryComparison
             $arm = array_values(array_filter($rows, static fn ($row) => $mode === $row['discovery']));
             $tokens = array_column($arm, 'providerTokens');
             $totals[$mode] = ['planned' => count($arm), 'correct' => count(array_filter($arm, static fn ($row) => $row['correct'])),
+                'replayedDiscoveryBytes' => array_sum(array_column($arm, 'replayedDiscoveryBytes')),
+                'unusedContracts' => array_sum(array_map(static fn ($row) => count($row['unusedContracts']), $arm)),
                 'questions' => array_sum(array_map(static fn ($row) => count($row['answers']), $arm)),
                 'correctAnswers' => array_sum(array_map(static fn ($row) => count(array_filter($row['answers'], static fn ($answer) => $answer['correct'])), $arm)),
                 'observedTokens' => array_sum(array_column(array_column($arm, 'observedTokens'), 'total')), 'meteredResponses' => array_sum(array_column($arm, 'meteredResponses')),
@@ -101,7 +120,7 @@ final class DiscoveryComparison
                 'completionTokens' => [] === $tokens || in_array(null, $tokens, true) ? null : array_sum(array_column($tokens, 'completion'))];
         }
         return ['matchedConditions' => $matched, 'allCorrect' => $complete && $matched && $correct, 'complete' => $complete,
-            'searchProtocol' => $report['searchProtocol'] ?? 'ranked-any-v1',
+            'searchProtocol' => $report['searchProtocol'] ?? 'ranked-any-v1', 'discoveryProtocol' => $report['discoveryProtocol'] ?? 'eager-v1',
             'catalogProfile' => $report['catalogProfile'] ?? 'publishing-2-v1',
             'catalog' => $report['attempts'][0]['proof']['catalogSummary'] ?? ['tools' => 2, 'compactReady' => ['publishing_read', 'publishing_list'], 'requiresDescribe' => [], 'searchResultLimit' => 8],
             'contractSha256' => $matched ? $contracts[0] : null, 'rows' => $rows, 'totals' => $totals,
@@ -125,22 +144,23 @@ final class DiscoveryComparison
                         || !in_array($request['userMessageSha256'] ?? [], [[$questions[0]], $questions], true)) { return false; }
                 }
             }
+            $selective = 'selective-contracts-v1' === ($proof['discoveryProtocol'] ?? null);
             $ready = []; $execution = 0;
             foreach ($trace['agentCalls'] ?? [] as $call) {
                 $result = json_decode($call['result'], true, flags: JSON_THROW_ON_ERROR);
                 if ('tools_search' === $call['name']) {
-                    $refined = \CodeMode\ToolCatalog::SEARCH_PROTOCOL === ($proof['searchProtocol'] ?? null);
-                    $envelope = $refined ? $catalog->searchResult($call['arguments']['query']) : null;
+                    $refined = in_array($proof['searchProtocol'] ?? null, ['bounded-refinement-v1', 'schema-fields-v2'], true);
+                    $envelope = $refined ? (new ArchivedToolCatalog($catalog->all()))->searchResult($call['arguments']['query'], schemaFields: 'schema-fields-v2' === ($proof['searchProtocol'] ?? null)) : null;
                     $expected = $envelope['tools'] ?? $catalog->search($call['arguments']['query']);
-                    if ('compact' === $proof['discoveryMode']) {
-                        $expected = array_map(static fn ($tool) => (new \CodeMode\CompactToolGuide())->describe($tool), $catalog->describe(array_column($expected, 'name')));
+                    if ('compact' === $proof['discoveryMode'] && (!$selective || (null !== $envelope && !$envelope['truncated'] && $envelope['matched'] <= 3))) {
+                        $expected = array_map(static fn ($tool) => (new ArchivedCompactGuide())->describe($tool), $catalog->describe(array_column($expected, 'name')));
                     }
                     if (null !== $envelope) { $expected = array_replace($envelope, ['tools' => $expected]); }
                     if ($normalize($expected) !== $result) { return false; }
                     foreach ($result['tools'] ?? $result as $tool) { if (false === ($tool['requiresDescribe'] ?? null)) { $ready[$tool['name']] = true; } }
                 } elseif ('tools_describe' === $call['name']) {
                     $definitions = $catalog->describe($call['arguments']['names']);
-                    $expected = array_map(static fn ($tool) => $tool->jsonSerialize() + ['php' => (new \CodeMode\PhpToolGuide())->describe($tool)], $definitions);
+                    $expected = array_map(static fn ($tool) => $selective && 'compact' === $proof['discoveryMode'] ? (new ArchivedCompactGuide())->selected($tool) : $tool->jsonSerialize() + ['php' => (new \CodeMode\PhpToolGuide())->describe($tool)], $definitions);
                     if ($normalize($expected) !== $result) { return false; }
                     foreach ($result as $tool) { $ready[$tool['name']] = true; }
                 } elseif ('php_execute' === $call['name']) {

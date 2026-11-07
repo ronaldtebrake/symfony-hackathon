@@ -17,7 +17,7 @@ final class HuggingFaceComparisonTest extends TestCase
     {
         // Synthetic verifier input only: never saved or presented as a new model run.
         $pair = self::capture();
-        $pair['direct']['protocol'] = \App\Demo\AuditPrompt::COVERAGE_PROTOCOL;
+        $pair['direct']['protocol'] = 'coverage-v10';
         $pair['code']['result']['agentCalls'] = [['name' => 'tools_search', 'result' => json_encode(array_map(
             static fn ($tool) => ['name' => $tool['name'], 'inputSchema' => $tool['inputSchema'], 'requiresDescribe' => false],
             $pair['code']['approvedTools']), JSON_THROW_ON_ERROR)]];
@@ -30,6 +30,20 @@ final class HuggingFaceComparisonTest extends TestCase
         self::assertFalse(self::compare($pair)['checks']['compactContractsDisclosed']);
         $pair['code']['approvedTools'][0]['outputSchema'] = ['type' => 'null'];
         self::assertFalse(self::compare($pair)['checks']['sameToolSchemas']);
+    }
+
+    public function testCurrentProtocolRequiresFullInputAndOutputDisclosure(): void
+    {
+        // Synthetic verifier input only; never retained as provider evidence.
+        $pair = self::capture();
+        $pair['direct']['protocol'] = \App\Demo\AuditPrompt::COVERAGE_PROTOCOL;
+        $pair['code']['result']['agentCalls'] = [['name' => 'tools_search', 'result' => json_encode($pair['code']['approvedTools'], JSON_THROW_ON_ERROR)]];
+        self::assertFalse(self::compare($pair)['checks']['fullContractsDisclosed']);
+        $pair['code']['result']['agentCalls'][0]['name'] = 'tools_describe';
+        self::assertTrue(self::compare($pair)['checks']['fullContractsDisclosed']);
+        $found = $pair['code']['approvedTools']; $found[0]['outputSchema'] = ['type' => 'null'];
+        $pair['code']['result']['agentCalls'][0]['result'] = json_encode($found, JSON_THROW_ON_ERROR);
+        self::assertFalse(self::compare($pair)['checks']['fullContractsDisclosed']);
     }
 
     public function testActualPairHasCorrectAnswersReconciledUsageAndAllHistoricalAttempts(): void

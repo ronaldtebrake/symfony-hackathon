@@ -83,14 +83,11 @@ $catalog = $gateway->discover();
 $session = new CodeModeSession($catalog, $gateway->broker($catalog), $sandbox,
     new ExecutionIdentity('authenticated-user', ['content.read']), new ExecutionLimits());
 $matches = $session->search('articles');
-$found = array_column($matches, null, 'name');
-if (false !== ($found['articles.list']['requiresDescribe'] ?? null)) {
-    $schemas = $session->describe(['articles.list']);
-}
+$schemas = $session->describe(['articles.list']);
 $result = $session->execute('return $tools->call("articles.list");');
 ```
 
-Adapt the example to the discovered tool's required arguments. Only locally approved tools disclosed by compact search or full describe can be called; describing a tool does not bypass its authorization callback. The default session allows two execution attempts, including failures. Create a new session for a new host-authorized task. `$session->toolDefinitions()` supplies the three canonical schemas and the selected runtime description for MCP servers and model toolboxes. The static `CodeModeSession::definitions()` retains gVisor descriptions for existing integrations.
+Adapt the example to the discovered tool's required arguments. Only locally approved tools disclosed by full describe can be called; describing a tool does not bypass its authorization callback. The default session allows two execution attempts, including failures. Create a new session for a new host-authorized task. `$session->toolDefinitions()` supplies the three canonical schemas and the selected runtime description for MCP servers and model toolboxes. The static `CodeModeSession::definitions()` retains gVisor descriptions for existing integrations.
 
 At the agent boundary, `AgentResponse::execute($session, $code, $record)` returns only `value` for successful gVisor execution. Its optional trusted callback receives the PHP and full sanitized trace. On failure it records the trace and rethrows; `AgentResponse::failure($error, $session->profile())` produces the compact error reason and affected tool. Local unsafe/unknown runtime warnings are preserved. Direct session/executor calls still return the full `ExecutionResult`; authorization, schemas, limits and cleanup are unchanged. The [Symfony adapter](../symfony-code-mode/README.md#agent-responses-and-host-evidence) supplies MCP and toolbox integration. The Drupal proof uses this same PHP formatter.
 
@@ -114,12 +111,8 @@ Use reviewed snippets in a disposable environment. The child has no inherited en
 
 The root Symfony app supplies an editorial audit, batched direct-call baseline, inspectable PHP/MCP trace, and separate reference/live modes. It also exposes Code Mode to external MCP clients over STDIO. See [the walkthrough](../../docs/demo.md). A separate [Drupal DDEV proof](../../examples/drupal/README.md) verifies real published/restricted node reads through **Tool API → MCP Server Tool Bridge → MCP Server**, using local STDIO and this package. Drupal HTTP authentication remains unverified. No token-saving claim is inferred from the reference run.
 
-## Compact discovery
+## Full schema discovery
 
-New `CodeModeSession` instances use compact discovery by default. To restore the original three-stage flow, the host can pass `discovery: \CodeMode\DiscoveryMode::Full`. This works with the same `ToolCatalog` whether definitions came from Symfony AI, MCP discovery or local services; the core has no Symfony AI or Drupal dependency.
+Search returns candidate names and descriptions in a `tools` list, with `matched`, `returned`, `limit` and `truncated`. A truncated or empty result includes refinement guidance. All query terms must match; an exact approved name selects one tool. Search returns at most eight entries and 32 KiB. It never makes a tool callable.
 
-Compact entries returned by `searchResult()` contain `name`, `description`, `requiresDescribe`, and, when ready, the **unchanged** `inputSchema` plus a PHP `returns` shape from `PhpToolGuide`. Only returned ready contracts enter the session's callable subset. Complex, referenced and oversized contracts return `requiresDescribe: true`; ordinary `describe()` remains available. Missing output schemas are explicitly marked as unknown. No schema reference is fetched and no signature is evaluated as code.
-
-`searchResult()` returns `{tools, matched, returned, limit, truncated}` and a `hint` when the query is truncated or has no matches. All terms must match a name or description; an exact approved name selects only that tool. Agents can narrow their query without increasing the eight-result limit. The legacy PHP `search()` method keeps its list-only, ranked OR-search behavior for compatibility; the MCP and Symfony AI adapters use `searchResult()`.
-
-Entries are bounded to 4 KiB, search returns at most eight matches, and the entire response, including counts and hints, is capped at 32 KiB. Failed response construction activates no additional tools. Input and output schemas remain host validation contracts; discovery presentation cannot relax broker authorization, resource checks, limits or sandbox isolation. A later search or describe never resets the attempt budget.
+Call `tools_describe` for the selected tools before executing PHP. The response includes the original input/output schemas and a PHP invocation guide. The broker continues to validate arguments and results and authorize every call. Search and describe never reset execution attempts. The core's list-only `search()` API remains available for existing PHP callers.

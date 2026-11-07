@@ -29,7 +29,6 @@
       <a href="#huggingface-proof">Symfony AI in action</a>
       <span class="nav-label">MEASURE THE DIFFERENCE</span>
       <a href="#live-comparison">Direct tools vs. Code Mode</a>
-      <a href="#compact-discovery">Compact discovery</a>
       <a href="#lean-responses">Lean responses</a>
       <a href="#evaluation">Evaluation &amp; timelines</a>
       <span class="nav-label">EXPLORE FURTHER</span>
@@ -77,22 +76,6 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
           <details class="proof-details"><summary>Exact before / after responses and source references</summary><div id="lean-samples"></div></details>
         </div>
         <p class="measurement-note">Offline replay of retained executions, including failures. No new model call. These are response-payload savings, not total conversation or provider-billed savings. <a href="/demo/response-payloads">Measurement evidence (JSON) ↗</a></p>
-      </section>
-
-      <section data-doc-page id="compact-discovery" class="hf-proof" aria-labelledby="discovery-heading">
-        <div class="section-top"><div><span class="eyebrow">Native Symfony AI schemas · fewer discovery steps</span><h2 id="discovery-heading">Find a tool. Start composing.</h2></div><span id="discovery-state" class="run-state" role="status">Loading comparison</span></div>
-        <p class="agent-intro">Compact discovery is the default. Search returns the original input schema and a PHP return shape. Simple contracts can go straight to execution. Complex contracts still use describe. Every call keeps the same broker checks.</p>
-        <div class="proof-run"><code>php bin/console code-mode:discovery-compare --catalog=large --live --no-debug</code><span>Two paired conversations · order reversed on repetition two</span></div>
-        <div id="discovery-evidence" hidden>
-          <p id="discovery-note" class="mode-note"></p>
-          <p id="discovery-catalog" class="measurement-note"></p>
-          <p id="discovery-outcome" class="mode-note"></p>
-          <div class="inspector"><div class="table-scroll"><table><caption>All planned conversations, including failures</caption><thead><tr><th>Discovery</th><th>Correct / planned</th><th>Model requests</th><th>Provider tokens</th><th>Discovery calls</th><th>Discovery bytes</th></tr></thead><tbody id="discovery-rows"></tbody></table></div></div>
-          <p id="discovery-scope" class="measurement-note"></p>
-          <div id="discovery-attempts"></div>
-          <details class="proof-details"><summary>Earlier batches · retained without replacing failures</summary><div id="discovery-history"></div></details>
-        </div>
-        <p class="measurement-note">Conversations stay in the agent. This page only reads recorded PHP, tool calls and measurements. <a href="/demo/discovery-report">Full comparison evidence (JSON) ↗</a></p>
       </section>
 
       <section data-doc-page id="performance" class="hf-proof" aria-labelledby="performance-heading">

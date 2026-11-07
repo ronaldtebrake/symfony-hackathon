@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use App\Demo\{AdoptionProofVerifier, DiscoveryCatalog};
-use CodeMode\{CompactToolGuide, DockerEngine, ExecutionIdentity, ExecutionLimits};
+use CodeMode\{DockerEngine, ExecutionIdentity, ExecutionLimits};
 use CodeMode\Symfony\Ai\ApprovedToolbox;
 use PHPUnit\Framework\TestCase;
 use Symfony\AI\Agent\Toolbox\Toolbox;
@@ -58,7 +58,7 @@ final class DiscoveryCatalogTest extends TestCase
         self::assertCount(11, $summary['compactReady']);
         self::assertSame(['article_links', 'article_localization', 'publishing_archive', 'publishing_list', 'publishing_locale_summary'], $summary['requiresDescribe']);
         $list = $catalog->describe(['publishing_list'])[0];
-        self::assertTrue((new CompactToolGuide())->describe($list)['requiresDescribe']);
+        self::assertTrue((new \App\Demo\ArchivedCompactGuide())->describe($list)['requiresDescribe']);
         $audited = 0; $missing = [];
         for ($page = 1; $page <= 4; ++$page) {
             foreach ((new DiscoveryCatalog())->list($page)['items'] as $article) {

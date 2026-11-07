@@ -24,7 +24,7 @@ final class CodeModeMcpCommand extends Command
     {
         $this->addOption('backend', null, InputOption::VALUE_REQUIRED, 'fixture or drupal', 'fixture');
         $this->addOption('trace-file', null, InputOption::VALUE_REQUIRED, 'Optional new host-only execution evidence file.');
-        $this->addOption('discovery', null, InputOption::VALUE_REQUIRED, 'Operator discovery mode: compact (default) or full.', 'compact');
+        $this->addOption('discovery', null, InputOption::VALUE_REQUIRED, 'Discovery mode: full (the supported schema flow).', 'full');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

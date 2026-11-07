@@ -22,7 +22,7 @@ final class HuggingFaceComparison
         $dataset = new AuditDataset();
         $protocol = $direct['protocol'] ?? 'legacy';
         $matchedProtocol = 'legacy' !== $protocol;
-        if (AuditPrompt::COVERAGE_PROTOCOL === $protocol) {
+        if (in_array($protocol, ['coverage-v10', AuditPrompt::COVERAGE_PROTOCOL], true)) {
             // Compact discovery omits output schemas on the wire; compare full host contracts separately.
             $descriptions = $code['approvedTools'] ?? null;
         }
@@ -43,8 +43,8 @@ final class HuggingFaceComparison
             'directResultVerified' => 'complete' === ($direct['status'] ?? null) && (new HuggingFaceBaselineVerifier())->verify($direct, $directLimit)['passed'],
             'providerUsageReported' => $this->validUsage($code) && $this->validUsage($direct),
         ];
-        if (AuditPrompt::COVERAGE_PROTOCOL === $protocol) {
-            $checks['compactContractsDisclosed'] = $this->compactContractsDisclosed($code);
+        if (in_array($protocol, ['coverage-v10', AuditPrompt::COVERAGE_PROTOCOL], true)) {
+            $checks['coverage-v10' === $protocol ? 'compactContractsDisclosed' : 'fullContractsDisclosed'] = $this->compactContractsDisclosed($code, allowCompact: 'coverage-v10' === $protocol);
         }
         if ($matchedProtocol) {
             $checks += [
@@ -75,17 +75,18 @@ final class HuggingFaceComparison
             ] : null];
     }
 
-    private function compactContractsDisclosed(array $capture): bool
+    private function compactContractsDisclosed(array $capture, bool $allowCompact = true): bool
     {
         $approved = array_column($capture['approvedTools'] ?? [], null, 'name');
         $disclosed = [];
         foreach ($capture['result']['agentCalls'] ?? [] as $call) {
-            if (!in_array($call['name'], ['tools_search', 'tools_describe'], true)) { continue; }
+            if (!in_array($call['name'], $allowCompact ? ['tools_search', 'tools_describe'] : ['tools_describe'], true)) { continue; }
             $result = json_decode($call['result'], true, flags: JSON_THROW_ON_ERROR);
             foreach ($result['tools'] ?? $result as $tool) {
                 if (!isset($tool['inputSchema'])) { continue; }
                 $name = $tool['name'];
                 if (!isset($approved[$name]) || $approved[$name]['inputSchema'] !== $tool['inputSchema']) { return false; }
+                if (!$allowCompact && ($approved[$name]['outputSchema'] ?? null) !== ($tool['outputSchema'] ?? null)) { return false; }
                 if ('tools_describe' === $call['name'] || false === ($tool['requiresDescribe'] ?? null)) { $disclosed[$name] = true; }
             }
         }

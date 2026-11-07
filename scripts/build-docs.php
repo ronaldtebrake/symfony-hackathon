@@ -24,7 +24,7 @@ $reports = [
     'report' => 'report', 'security-report' => 'securityReport', 'agent-report' => 'codexReport',
     'boundary-report' => 'boundaryReport', 'huggingface-report' => 'huggingFaceReport',
     'huggingface-comparison' => 'huggingFaceComparison', 'adoption-report' => 'adoptionReport',
-    'discovery-report' => 'discoveryReport', 'evaluation-report' => 'evaluationReport',
+    'evaluation-report' => 'evaluationReport',
     'performance-report' => 'performanceReport', 'response-payloads' => 'responsePayloads',
 ];
 foreach ($reports as $filename => $method) {

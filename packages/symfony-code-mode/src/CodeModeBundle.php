@@ -25,7 +25,7 @@ final class CodeModeBundle extends AbstractBundle
     {
         $definition->rootNode()->children()
             ->enumNode('executor')->values(['gvisor', 'local-unsafe'])->defaultValue('gvisor')->end()
-            ->enumNode('discovery')->values(['full', 'compact'])->defaultValue('compact')->end()
+            ->enumNode('discovery')->values(['full'])->defaultValue('full')->end()
             ->scalarNode('image')->defaultValue('%env(CODE_MODE_IMAGE)%')->end()
             ->variableNode('docker_command')->defaultValue('%env(json:CODE_MODE_DOCKER_COMMAND)%')->end()
             ->scalarNode('identity_provider')->isRequired()->cannotBeEmpty()->end()

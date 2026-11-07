@@ -20,7 +20,7 @@ use CodeMode\Symfony\Ai\ApprovedToolbox;
 final readonly class SessionFactory
 {
     /** @param list<ReadToolInterface> $tools */
-    public function __construct(private array $tools, private string $image = '', private DockerEngine $docker = new DockerEngine(), private ExecutionLimits $limits = new ExecutionLimits(), private ?ApprovedToolbox $aiToolbox = null, private ExecutionProfile $executor = ExecutionProfile::Gvisor, private DiscoveryMode $discovery = DiscoveryMode::Compact)
+    public function __construct(private array $tools, private string $image = '', private DockerEngine $docker = new DockerEngine(), private ExecutionLimits $limits = new ExecutionLimits(), private ?ApprovedToolbox $aiToolbox = null, private ExecutionProfile $executor = ExecutionProfile::Gvisor, private DiscoveryMode $discovery = DiscoveryMode::Full)
     {
         if (ExecutionProfile::Unknown === $executor) {
             throw new \InvalidArgumentException('Select gvisor or explicitly opt in to local-unsafe.');

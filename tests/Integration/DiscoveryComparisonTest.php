@@ -59,7 +59,8 @@ final class DiscoveryComparisonTest extends WebTestCase
 
     public function testRefinedSearchAndBudgetGuidanceProduceCorrectMatchedAnswers(): void
     {
-        $report = json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/compact-discovery.json'), true, flags: JSON_THROW_ON_ERROR);
+        $all = json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/compact-discovery.json'), true, flags: JSON_THROW_ON_ERROR);
+        $report = $all['previousAttempts'][5];
         $summary = (new DiscoveryComparison())->summarize($report);
         self::assertTrue($summary['allCorrect']);
         self::assertSame([2, 2], array_column($summary['totals'], 'correct'));
@@ -67,13 +68,31 @@ final class DiscoveryComparisonTest extends WebTestCase
         self::assertSame([16, 14], array_column($summary['totals'], 'modelRequests'));
         self::assertSame([31185, 31946], array_column($summary['totals'], 'providerTokens'));
         self::assertSame([true, true, true, true], array_column($summary['rows'], 'bodyReaderFound'));
-        self::assertCount(5, $report['previousAttempts']);
-        foreach ($report['previousAttempts'] as $previous) { self::assertTrue((new DiscoveryComparison())->summarize($previous)['matchedConditions']); }
+        self::assertCount(7, $all['previousAttempts']);
+        foreach ($all['previousAttempts'] as $previous) { self::assertTrue((new DiscoveryComparison())->summarize($previous)['matchedConditions']); }
         foreach ($report['attempts'] as $attempt) { self::assertTrue((new \App\Demo\AdoptionProofVerifier())->verifyProbe($attempt['proof']['probe'])); }
         $call = &$report['attempts'][0]['proof']['liveTrace']['agentCalls'][0];
         $result = json_decode($call['result'], true); $result['truncated'] = !$result['truncated'];
         $call['result'] = json_encode($result, JSON_THROW_ON_ERROR);
         self::assertFalse((new DiscoveryComparison())->summarize($report)['rows'][0]['catalogVerified']);
+    }
+
+    public function testArchiveRetainsBothFailedOptimizationExperiments(): void
+    {
+        $report = json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/compact-discovery.json'), true, flags: JSON_THROW_ON_ERROR);
+        $first = (new DiscoveryComparison())->summarize($report['previousAttempts'][6]);
+        self::assertTrue($first['allCorrect']);
+        self::assertSame([33027, 35006], array_column($first['totals'], 'providerTokens'));
+        $last = (new DiscoveryComparison())->summarize($report);
+        self::assertTrue($last['matchedConditions']);
+        self::assertFalse($last['allCorrect']);
+        self::assertSame([0, 0], array_column($last['totals'], 'correct'));
+        self::assertSame([49526, 33726], array_column($last['totals'], 'providerTokens'));
+        self::assertSame([true, true, true, true], array_column($last['rows'], 'catalogVerified'));
+        $before = (new DiscoveryComparison())->summarize($report['previousAttempts'][5]);
+        self::assertSame([0, 14], array_column($before['totals'], 'unusedContracts'));
+        self::assertSame([61234, 72060], array_column($before['totals'], 'replayedDiscoveryBytes'));
+        foreach ($report['attempts'] as $attempt) { self::assertTrue((new \App\Demo\AdoptionProofVerifier())->verifyProbe($attempt['proof']['probe'])); }
     }
 
     private function evidence(): array
@@ -144,18 +163,10 @@ final class DiscoveryComparisonTest extends WebTestCase
         }
     }
 
-    public function testViewerOnlyReadsTheFixedReportOnLoopback(): void
+    public function testArchivedExperimentHasNoViewerEndpoint(): void
     {
         $client = self::createClient();
-        $client->request('GET', '/demo/discovery-report?file=../../.env.local');
-        self::assertResponseIsSuccessful();
-        $report = json_decode($client->getResponse()->getContent(), true);
-        self::assertSame('discovery-comparison', $report['kind']);
-        self::assertSame((new DiscoveryComparison())->summarize($report), $report['summary']);
-        foreach ($report['previousAttempts'] ?? [] as $previous) {
-            self::assertSame((new DiscoveryComparison())->summarize($previous), $previous['summary']);
-        }
-        $client->request('POST', '/demo/discovery-report'); self::assertResponseStatusCodeSame(405);
-        $client->request('GET', '/demo/discovery-report', server: ['REMOTE_ADDR' => '203.0.113.1']); self::assertResponseStatusCodeSame(403);
+        $client->request('GET', '/demo/discovery-report');
+        self::assertResponseStatusCodeSame(404);
     }
 }
