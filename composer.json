@@ -93,12 +93,14 @@
             "@php bin/console lint:container --resolve-env-vars",
             "@test",
             "@test:package"
-        ]
+        ],
+        "docs:build": "@php scripts/build-docs.php"
     },
     "scripts-descriptions": {
         "start": "Start the local development server at http://127.0.0.1:8000",
         "test": "Run the tests without external API calls",
-        "check": "Validate dependencies, configuration, and integration tests"
+        "check": "Validate dependencies, configuration, and integration tests",
+        "docs:build": "Build static visual documentation from reviewed evidence only"
     },
     "conflict": {
         "symfony/symfony": "*"

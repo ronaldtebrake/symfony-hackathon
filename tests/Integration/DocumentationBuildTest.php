@@ -1,0 +1,64 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Integration;
+
+use App\Demo\ReportStore;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Process\Process;
+
+final class DocumentationBuildTest extends TestCase
+{
+    public function testReviewedStoreCannotReadLocalReports(): void
+    {
+        $root = sys_get_temp_dir().'/code-mode-pages-'.bin2hex(random_bytes(6));
+        $fs = new Filesystem();
+        $fs->mkdir([$root.'/docs/evidence', $root.'/var/demo']);
+        foreach (['compact-discovery.json', 'evaluation.json', 'adoption-proof.json', 'huggingface-proof.json', 'security-proof-2026-11-01.json', 'performance-proof.json', 'reference-comparison-2026-10-31.json'] as $file) {
+            file_put_contents($root.'/docs/evidence/'.$file, '{"source":"reviewed"}');
+        }
+        foreach (['discovery.json', 'evaluation.json', 'adoption.json', 'huggingface.json', 'huggingface-pair.json', 'security.json', 'performance.json', 'latest.json'] as $file) {
+            file_put_contents($root.'/var/demo/'.$file, '{"source":"PRIVATE_LOCAL_SENTINEL"}');
+        }
+        try {
+            $store = new ReportStore($root, reviewedOnly: true);
+            foreach (['readDiscoveryComparison', 'readEvaluation', 'readAdoptionProof', 'readHuggingFaceProof', 'readSecurityProof', 'readPerformanceProof', 'read'] as $method) {
+                self::assertSame('{"source":"reviewed"}', $store->$method());
+            }
+            self::assertNull($store->readHuggingFacePair());
+            self::assertNull($store->readLocalPerformanceProof());
+            self::assertStringContainsString('PRIVATE_LOCAL_SENTINEL', (new ReportStore($root))->read());
+        } finally { $fs->remove($root); }
+    }
+
+    public function testStaticBuildExportsOnlyFixedAssetsAndVerifiedReports(): void
+    {
+        $root = dirname(__DIR__, 2);
+        (new Filesystem())->mkdir($root.'/var/pages');
+        file_put_contents($root.'/var/pages/stale-private.txt', 'DO_NOT_PUBLISH');
+        $process = new Process([PHP_BINARY, 'scripts/build-docs.php'], $root, ['HUGGINGFACE_API_KEY' => 'unused-build-sentinel'], timeout: 60);
+        $process->mustRun();
+        self::assertFileDoesNotExist($root.'/var/pages/stale-private.txt');
+        $html = file_get_contents($root.'/var/pages/index.html');
+        self::assertStringContainsString('data-static="true"', $html);
+        self::assertStringContainsString('href="demo.css"', $html);
+        self::assertStringContainsString('href="evidence/agent-report.json"', $html);
+        self::assertStringNotContainsString('href="/demo', $html);
+        self::assertStringNotContainsString('Codex', $html);
+        self::assertStringContainsString('Content-Security-Policy', $html);
+        $files = [];
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root.'/var/pages', \FilesystemIterator::SKIP_DOTS)) as $file) {
+            $files[] = substr($file->getPathname(), strlen($root.'/var/pages/'));
+            self::assertStringNotContainsString('unused-build-sentinel', file_get_contents($file->getPathname()));
+        }
+        sort($files);
+        $expected = ['.nojekyll', 'index.html', 'demo.css', 'demo.js', 'docs.js', 'images/code-mode-value.svg'];
+        foreach (['report', 'security-report', 'agent-report', 'boundary-report', 'huggingface-report', 'huggingface-comparison', 'adoption-report', 'discovery-report', 'evaluation-report', 'performance-report', 'response-payloads'] as $name) { $expected[] = 'evidence/'.$name.'.json'; }
+        sort($expected); self::assertSame($expected, $files);
+        $report = json_decode(file_get_contents($root.'/var/pages/evidence/discovery-report.json'), true, flags: JSON_THROW_ON_ERROR);
+        self::assertTrue($report['summary']['allCorrect']);
+        self::assertCount(5, $report['previousAttempts']);
+    }
+}

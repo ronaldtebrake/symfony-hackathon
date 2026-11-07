@@ -1,3 +1,6 @@
+const staticDocumentation = document.documentElement.dataset.static === 'true';
+const evidenceUrl = (path) => staticDocumentation ? `evidence/${path.split('/').pop()}.json` : path;
+const poll = (callback, delay) => { if (!staticDocumentation) setTimeout(callback, delay); };
 'use strict';
 
 const byId = (id) => document.getElementById(id);
@@ -86,7 +89,6 @@ function render(report) {
     list.append(row);
   });
   byId('source-note').textContent = report.backend === 'drupal' ? 'Connected through MCP to the configured Drupal Tool API bridge. Review external findings on the site; fixture verification does not apply.' : 'The fixture is a real PHP MCP server. Both paths use the same dataset, authorization and batched tools.';
-  if (report.createdAt) byId('updated-at').textContent = `Comparison recorded · ${new Date(report.createdAt).toLocaleString()}`;
   renderTrace();
 }
 
@@ -114,7 +116,7 @@ document.querySelectorAll('[role="tablist"]').forEach((tablist) => {
 byId('trace-approach').addEventListener('change', renderTrace);
 async function refresh() {
   try {
-    const response = await fetch('/demo/report', {cache: 'no-store', credentials: 'same-origin'});
+    const response = await fetch(evidenceUrl('/demo/report'), {cache: 'no-store', credentials: 'same-origin'});
     if (!response.ok) throw new Error('Report unavailable');
     const body = await response.text();
     if (body !== lastBody) {
@@ -124,7 +126,7 @@ async function refresh() {
   } catch {
     byId('run-state').textContent = 'REPORT UNAVAILABLE';
   } finally {
-    setTimeout(refresh, 2500);
+    poll(refresh, 2500);
   }
 }
 refresh();
@@ -180,7 +182,7 @@ function renderSecurity(report) {
 let lastSecurityBody = '';
 async function refreshSecurity() {
   try {
-    const response = await fetch('/demo/security-report', {cache: 'no-store', credentials: 'same-origin'});
+    const response = await fetch(evidenceUrl('/demo/security-report'), {cache: 'no-store', credentials: 'same-origin'});
     if (!response.ok) throw new Error('Security report unavailable');
     const body = await response.text();
     if (body !== lastSecurityBody) {
@@ -192,35 +194,35 @@ async function refreshSecurity() {
     byId('security-state').textContent = 'REPORT UNAVAILABLE';
     byId('security-note').textContent = 'The security report could not be loaded. Any observations below are from the previous successful refresh.';
   } finally {
-    setTimeout(refreshSecurity, 2500);
+    poll(refreshSecurity, 2500);
   }
 }
 refreshSecurity();
 
-let codexCapture = null;
-let selectedCodexTurn = 0;
-const turnButtons = Array.from(document.querySelectorAll('[data-codex-turn]'));
+let agentCapture = null;
+let selectedAgentTurn = 0;
+const turnButtons = Array.from(document.querySelectorAll('[data-agent-turn]'));
 
-function renderCodexTurn(index) {
-  if (!codexCapture) return;
-  selectedCodexTurn = index;
-  const turn = codexCapture.turns[index];
+function renderAgentTurn(index) {
+  if (!agentCapture) return;
+  selectedAgentTurn = index;
+  const turn = agentCapture.turns[index];
   const calls = turn.items.filter((item) => item.type === 'mcpToolCall');
   const execution = calls.find((item) => item.tool === 'php_execute');
   const result = execution.result.structuredContent;
   const value = result.value;
-  turnButtons.forEach((button) => button.setAttribute('aria-pressed', String(Number(button.dataset.codexTurn) === index)));
-  byId('codex-turn-label').textContent = index === 0 ? 'Original question · recorded' : 'Follow-up · recorded';
-  byId('codex-prompt').textContent = turn.prompt;
-  byId('codex-program').textContent = execution.arguments.code;
-  byId('codex-program').parentElement.scrollTop = 0;
-  byId('codex-program-caption').textContent = `Codex-generated PHP · executed in gVisor · ${result.durationMs.toFixed(0)} ms runner time`;
-  byId('codex-call-count').textContent = result.toolCalls.length;
-  renderCallRows(byId('codex-call-rows'), result.toolCalls);
-  byId('codex-answer').textContent = JSON.stringify(value, null, 2);
-  byId('codex-answer').scrollTop = 0;
-  byId('codex-response').textContent = turn.items.filter((item) => item.type === 'agentMessage' && item.phase === 'final_answer').map((item) => item.text).join('\n\n');
-  const mcpCalls = byId('codex-mcp-calls');
+  turnButtons.forEach((button) => button.setAttribute('aria-pressed', String(Number(button.dataset.agentTurn) === index)));
+  byId('agent-turn-label').textContent = index === 0 ? 'Original question · recorded' : 'Follow-up · recorded';
+  byId('agent-prompt').textContent = turn.prompt;
+  byId('agent-program').textContent = execution.arguments.code;
+  byId('agent-program').parentElement.scrollTop = 0;
+  byId('agent-program-caption').textContent = `Agent-generated PHP · executed in gVisor · ${result.durationMs.toFixed(0)} ms runner time`;
+  byId('agent-call-count').textContent = result.toolCalls.length;
+  renderCallRows(byId('agent-call-rows'), result.toolCalls);
+  byId('agent-answer').textContent = JSON.stringify(value, null, 2);
+  byId('agent-answer').scrollTop = 0;
+  byId('agent-response').textContent = turn.items.filter((item) => item.type === 'agentMessage' && item.phase === 'final_answer').map((item) => item.text).join('\n\n');
+  const mcpCalls = byId('agent-mcp-calls');
   mcpCalls.replaceChildren();
   for (const call of calls) {
     const details = node('details', undefined, 'proof-details');
@@ -230,29 +232,29 @@ function renderCodexTurn(index) {
     details.append(trace);
     mcpCalls.append(details);
   }
-  const detail = byId('codex-result-detail');
+  const detail = byId('agent-result-detail');
   detail.replaceChildren();
   if (index === 0) {
-    byId('codex-result-summary').textContent = `${value.total_audited} articles audited · ${value.affected_count} affected`;
+    byId('agent-result-summary').textContent = `${value.total_audited} articles audited · ${value.affected_count} affected`;
     detail.append(node('li', `Affected IDs: ${value.affected_articles.map((article) => article.id).join(', ')}`));
   } else {
-    byId('codex-result-summary').textContent = `${value.total_audited} articles rechecked · ${value.shared_hero_image_fix_count} shared-image fixes`;
+    byId('agent-result-summary').textContent = `${value.total_audited} articles rechecked · ${value.shared_hero_image_fix_count} shared-image fixes`;
     for (const fix of value.hero_image_alt_fixes_ranked_by_impact) {
       detail.append(node('li', `Image ${fix.image_id} → articles ${fix.affected_article_ids.join(', ')} (${fix.affected_article_count} helped)`));
     }
     detail.append(node('li', `Missing descriptions: ${value.meta_description_fixes.map((article) => article.id).join(', ')}`));
   }
-  const verified = codexCapture.verification?.[index === 0 ? 'auditMatchesIndependentOracle' : 'impactMatchesIndependentOracle'];
-  byId('codex-validation').textContent = verified === true ? 'Recorded fixture check: matched the independent expected result.' : 'No successful fixture check recorded for this turn.';
+  const verified = agentCapture.verification?.[index === 0 ? 'auditMatchesIndependentOracle' : 'impactMatchesIndependentOracle'];
+  byId('agent-validation').textContent = verified === true ? 'Recorded fixture check: matched the independent expected result.' : 'No successful fixture check recorded for this turn.';
 }
 
-turnButtons.forEach((button) => button.addEventListener('click', () => renderCodexTurn(Number(button.dataset.codexTurn))));
+turnButtons.forEach((button) => button.addEventListener('click', () => renderAgentTurn(Number(button.dataset.agentTurn))));
 
 // Present only the reviewed capture. Code is text, never HTML or executable JS.
 const phpPresentation = byId('php-presentation');
 byId('present-php').addEventListener('click', () => {
-  if (!codexCapture) return;
-  const source = byId('codex-program').textContent;
+  if (!agentCapture) return;
+  const source = byId('agent-program').textContent;
   const lines = source.split('\n');
   const code = byId('php-presentation-code');
   code.replaceChildren();
@@ -262,13 +264,13 @@ byId('present-php').addEventListener('click', () => {
     row.classList.toggle('php-tool-line', line.includes('$tools->call('));
     code.append(row);
   });
-  byId('php-presentation-title').textContent = selectedCodexTurn === 0 ? '01 · Audit the published articles.' : '02 · Rank the shared-image fixes.';
-  const date = new Date(codexCapture.recordedAt).toLocaleDateString('en-GB', {day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Amsterdam'});
-  byId('php-presentation-meta').textContent = `Recorded ${date} · ${byId('codex-program-caption').textContent}`;
+  byId('php-presentation-title').textContent = selectedAgentTurn === 0 ? '01 · Audit the published articles.' : '02 · Rank the shared-image fixes.';
+  const date = new Date(agentCapture.recordedAt).toLocaleDateString('en-GB', {day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Amsterdam'});
+  byId('php-presentation-meta').textContent = `Recorded ${date} · ${byId('agent-program-caption').textContent}`;
   byId('php-copy-status').textContent = '';
   const navigation = byId('php-source-nav');
   navigation.replaceChildren();
-  const sections = selectedCodexTurn === 0
+  const sections = selectedAgentTurn === 0
     ? [['List articles', '$listed ='], ['Read batches', '$articles ='], ['Find issues', '$affected ='], ['Return findings', 'return [']]
     : [['Read articles', '$listed ='], ['Group images', '$imageUsage ='], ['Rank fixes', 'usort($imageFixes,'], ['Return plan', 'return [']];
   for (const [label, marker] of sections) {
@@ -300,14 +302,14 @@ byId('copy-php').addEventListener('click', async () => {
   }
 });
 
-async function loadCodexCapture() {
+async function loadAgentCapture() {
   try {
-    const response = await fetch('/demo/codex-report', {cache: 'no-store', credentials: 'same-origin'});
+    const response = await fetch(evidenceUrl('/demo/agent-report'), {cache: 'no-store', credentials: 'same-origin'});
     if (!response.ok) throw new Error('Capture unavailable');
     const report = await response.json();
     if (report.status === 'empty') {
-      byId('codex-state').textContent = 'NO CAPTURE';
-      byId('codex-note').textContent = 'The recorded Codex capture is not available in this checkout.';
+      byId('agent-state').textContent = 'NO CAPTURE';
+      byId('agent-note').textContent = 'The recorded Agent capture is not available in this checkout.';
       return;
     }
     // This viewer handles the reviewed two-turn Symfony rehearsal, not arbitrary imports.
@@ -319,28 +321,28 @@ async function loadCodexCapture() {
         || !Array.isArray(runs[0].result?.structuredContent?.toolCalls)) throw new Error('Incomplete capture');
       return runs[0].result.structuredContent;
     });
-    codexCapture = report;
-    renderCodexTurn(0);
-    byId('codex-state').textContent = '2 RECORDED TURNS';
-    byId('codex-note').textContent = 'Two prompts in one Codex desktop chat; both responses and PHP programs were generated live. This capture matches the fresh judge-demo rehearsal. Conversations stay in Codex.';
+    agentCapture = report;
+    renderAgentTurn(0);
+    byId('agent-state').textContent = '2 RECORDED TURNS';
+    byId('agent-note').textContent = 'Two prompts in one recorded agent conversation. Both responses and PHP programs were generated live. Inspect the follow-up without leaving the evidence; start fresh conversations in your own agent.';
     const recorded = new Date(report.recordedAt).toLocaleString('en-GB', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Amsterdam', timeZoneName: 'short'});
     const callCount = executions.reduce((count, execution) => count + execution.toolCalls.length, 0);
-    byId('codex-provenance').textContent = `${report.client} · ${report.backend} · ${executions.length} PHP executions · ${callCount} upstream calls · Recorded ${recorded}`;
-    byId('codex-session-note').textContent = 'Audit and follow-up are from the same recorded Codex chat, with one PHP execution per turn. This export does not include the model or MCP process identity.';
-    byId('codex-evidence').hidden = false;
+    byId('agent-provenance').textContent = `MCP client capture · ${report.backend} · ${executions.length} PHP executions · ${callCount} upstream calls · Recorded ${recorded}`;
+    byId('agent-session-note').textContent = 'Audit and follow-up are from the same recorded agent conversation, with one PHP execution per turn. This export does not include the model or MCP process identity.';
+    byId('agent-evidence').hidden = false;
   } catch {
-    codexCapture = null;
-    byId('codex-evidence').hidden = true;
-    byId('codex-state').textContent = 'CAPTURE UNAVAILABLE';
-    byId('codex-note').textContent = 'The saved Codex evidence could not be loaded. No execution or successful result is implied.';
+    agentCapture = null;
+    byId('agent-evidence').hidden = true;
+    byId('agent-state').textContent = 'CAPTURE UNAVAILABLE';
+    byId('agent-note').textContent = 'The saved Agent evidence could not be loaded. No execution or successful result is implied.';
   }
 }
-loadCodexCapture();
+loadAgentCapture();
 
 async function loadBoundaryRecovery() {
   const target = byId('recovery-turns');
   try {
-    const response = await fetch('/demo/boundary-report', {cache: 'no-store', credentials: 'same-origin'});
+    const response = await fetch(evidenceUrl('/demo/boundary-report'), {cache: 'no-store', credentials: 'same-origin'});
     if (!response.ok) throw new Error('Capture unavailable');
     const report = await response.json();
     if (report.turns?.length !== 2) throw new Error('Incomplete conversation');
@@ -383,12 +385,12 @@ async function loadBoundaryRecovery() {
       };
       appendDetail('Exact generated PHP', execution.arguments.code, index === 0);
       appendDetail('Actual MCP requests and responses', JSON.stringify(turn.items.filter((item) => item.type === 'mcpToolCall'), null, 2));
-      appendDetail('Codex response · verbatim', turn.items.filter((item) => item.type === 'agentMessage').map((item) => item.text).join('\n\n'));
+      appendDetail('Agent response · verbatim', turn.items.filter((item) => item.type === 'agentMessage').map((item) => item.text).join('\n\n'));
       card.append(node('p', `${result.runId} · removal checked`, 'recovery-run-id'));
       target.append(card);
     });
     byId('recovery-state').textContent = 'DENIED → RECOVERED';
-    byId('recovery-provenance').textContent = `${report.client} · ${report.model} · ${new Date(report.recordedAt).toLocaleString('en-GB', {timeZone: 'Europe/Amsterdam'})} CET · Real generation and gVisor execution. CLI rehearsal, not desktop footage. The successful answer matched the independent fixture; both containers were confirmed absent.`;
+    byId('recovery-provenance').textContent = `MCP client capture · ${report.model} · ${new Date(report.recordedAt).toLocaleString('en-GB', {timeZone: 'Europe/Amsterdam'})} CET · Real generation and gVisor execution. CLI rehearsal, not desktop footage. The successful answer matched the independent fixture; both containers were confirmed absent.`;
   } catch {
     target.replaceChildren();
     byId('recovery-state').textContent = 'CAPTURE UNAVAILABLE';
@@ -456,7 +458,7 @@ function renderHuggingFaceProof(report) {
 let lastHuggingFaceBody = '';
 async function refreshHuggingFaceProof() {
   try {
-    const response = await fetch('/demo/huggingface-report', {cache: 'no-store', credentials: 'same-origin'});
+    const response = await fetch(evidenceUrl('/demo/huggingface-report'), {cache: 'no-store', credentials: 'same-origin'});
     if (!response.ok) throw new Error('Proof unavailable');
     const body = await response.text();
     if (body !== lastHuggingFaceBody) { renderHuggingFaceProof(JSON.parse(body)); lastHuggingFaceBody = body; }
@@ -465,7 +467,7 @@ async function refreshHuggingFaceProof() {
     byId('hf-evidence').hidden = true;
     byId('hf-state').textContent = 'CAPTURE UNAVAILABLE';
     byId('hf-note').textContent = 'The live proof could not be loaded or verified. No successful execution is implied.';
-  } finally { setTimeout(refreshHuggingFaceProof, 2500); }
+  } finally { poll(refreshHuggingFaceProof, 2500); }
 }
 refreshHuggingFaceProof();
 
@@ -539,7 +541,7 @@ function renderLiveComparison(report) {
 let lastLiveComparisonBody = '';
 async function refreshLiveComparison() {
   try {
-    const response = await fetch('/demo/huggingface-comparison', {cache:'no-store', credentials:'same-origin'});
+    const response = await fetch(evidenceUrl('/demo/huggingface-comparison'), {cache:'no-store', credentials:'same-origin'});
     if (!response.ok) throw new Error('Comparison unavailable');
     const body = await response.text();
     if (body !== lastLiveComparisonBody) { renderLiveComparison(JSON.parse(body)); lastLiveComparisonBody = body; }
@@ -548,7 +550,7 @@ async function refreshLiveComparison() {
     byId('live-evidence').hidden = true;
     byId('live-state').textContent = 'COMPARISON UNAVAILABLE';
     byId('live-note').textContent = 'The paired evidence could not be loaded or checked. No comparison is verified.';
-  } finally { setTimeout(refreshLiveComparison, 2500); }
+  } finally { poll(refreshLiveComparison, 2500); }
 }
 refreshLiveComparison();
 
@@ -587,7 +589,7 @@ function renderAdoption(report) {
     for (let i = turn.executionStart; i < turn.executionEnd; ++i) card.append(adoptionExecution(trace.programs[i], trace.executions[i], 'Generated PHP'));
     turns.append(card);
   });
-  const discovery = (trace ?? report.probe).agentCalls.filter(call => ['tools_search', 'tools_describe'].includes(call.name)).flatMap(call => JSON.parse(call.result)).filter(tool => tool.inputSchema);
+  const discovery = (trace ?? report.probe).agentCalls.filter(call => ['tools_search', 'tools_describe'].includes(call.name)).flatMap(call => { const result = JSON.parse(call.result); return result.tools ?? result; }).filter(tool => tool.inputSchema);
   byId('adoption-guide').textContent = JSON.stringify(discovery.map(tool => ({name: tool.name, inputSchema: tool.inputSchema, returns: tool.returns, php: tool.php})), null, 2);
   const probes = byId('adoption-probes'); probes.replaceChildren();
   report.probe.executions.forEach((run, index) => probes.append(adoptionExecution(report.probe.programs[index], run, ['Attempt the injected instruction', 'Permitted follow-up, same session', 'Third attempt rejected'][index])));
@@ -602,7 +604,7 @@ function renderAdoption(report) {
 let lastAdoptionBody = '';
 async function refreshAdoption() {
   try {
-    const response = await fetch('/demo/adoption-report', {cache: 'no-store', credentials: 'same-origin'});
+    const response = await fetch(evidenceUrl('/demo/adoption-report'), {cache: 'no-store', credentials: 'same-origin'});
     if (!response.ok) throw new Error('Adoption evidence unavailable');
     const body = await response.text();
     if (body !== lastAdoptionBody) { renderAdoption(JSON.parse(body)); lastAdoptionBody = body; }
@@ -611,7 +613,7 @@ async function refreshAdoption() {
     byId('adoption-evidence').hidden = true;
     byId('adoption-state').textContent = 'REPORT UNAVAILABLE';
     byId('adoption-note').textContent = 'The adoption evidence could not be loaded or checked. No success is implied.';
-  } finally { setTimeout(refreshAdoption, 2500); }
+  } finally { poll(refreshAdoption, 2500); }
 }
 refreshAdoption();
 
@@ -744,13 +746,13 @@ byId('evaluation-run').addEventListener('change', renderEvaluationRun);
 let lastEvaluationBody = '';
 async function refreshEvaluation() {
   try {
-    const response = await fetch('/demo/evaluation-report', {cache:'no-store', credentials:'same-origin'});
+    const response = await fetch(evidenceUrl('/demo/evaluation-report'), {cache:'no-store', credentials:'same-origin'});
     if (!response.ok) throw new Error('Evaluation unavailable');
     const body = await response.text();
     if (body !== lastEvaluationBody) { renderEvaluation(JSON.parse(body)); lastEvaluationBody = body; }
   } catch {
     lastEvaluationBody = ''; byId('evaluation-evidence').hidden = true; byId('evaluation-state').textContent = 'REPORT UNAVAILABLE';
-  } finally { setTimeout(refreshEvaluation, 5000); }
+  } finally { poll(refreshEvaluation, 5000); }
 }
 refreshEvaluation();
 
@@ -798,19 +800,19 @@ byId('performance-turn').addEventListener('change', renderPerformanceTurn);
 let lastPerformanceBody = '';
 async function refreshPerformance() {
   try {
-    const response = await fetch('/demo/performance-report', {cache:'no-store', credentials:'same-origin'});
+    const response = await fetch(evidenceUrl('/demo/performance-report'), {cache:'no-store', credentials:'same-origin'});
     if (!response.ok) throw new Error('Performance evidence unavailable');
     const body = await response.text();
     if (body !== lastPerformanceBody) { renderPerformance(JSON.parse(body)); lastPerformanceBody = body; }
   } catch {
     lastPerformanceBody = ''; byId('performance-evidence').hidden = true; byId('performance-state').textContent = 'REPORT UNAVAILABLE';
-  } finally { setTimeout(refreshPerformance, 5000); }
+  } finally { poll(refreshPerformance, 5000); }
 }
 refreshPerformance();
 
 async function loadResponsePayloads() {
   try {
-    const response = await fetch('/demo/response-payloads', {cache:'no-store', credentials:'same-origin'});
+    const response = await fetch(evidenceUrl('/demo/response-payloads'), {cache:'no-store', credentials:'same-origin'});
     if (!response.ok) throw new Error('Payload evidence unavailable');
     const report = await response.json();
     if (report.status !== 'verified') throw new Error('Measurements need regeneration');
@@ -820,12 +822,12 @@ async function loadResponsePayloads() {
       group.count++; group.before += sample.beforeTokens; group.after += sample.afterTokens;
       groups.set(sample.group, group);
       const details = node('details', undefined, 'proof-details');
-      details.append(node('summary', `${sample.group} · ${sample.pointer}`), node('p', `${sample.source} · ${sample.beforeBytes} → ${sample.afterBytes} bytes`, 'measurement-note'), node('h3', 'Before'), node('pre', sample.before), node('h3', 'Lean response'), node('pre', sample.after));
+      details.append(node('summary', `${sample.group.replace('Codex', 'Agent')} · ${sample.pointer}`), node('p', `${sample.source} · ${sample.beforeBytes} → ${sample.afterBytes} bytes`, 'measurement-note'), node('h3', 'Before'), node('pre', sample.before), node('h3', 'Lean response'), node('pre', sample.after));
       byId('lean-samples').append(details);
     }
     for (const [name, group] of groups) {
       const row = node('tr');
-      row.append(node('td', name), node('td', group.count), node('td', number(group.before)), node('td', number(group.after)), node('td', `${(100 * (1 - group.after / group.before)).toFixed(1)}%`));
+      row.append(node('td', name.replace('Codex', 'Agent')), node('td', group.count), node('td', number(group.before)), node('td', number(group.after)), node('td', `${(100 * (1 - group.after / group.before)).toFixed(1)}%`));
       byId('lean-rows').append(row);
     }
     byId('lean-scope').textContent = `${report.measurement.library} · ${report.measurement.encoding}. ${report.measurement.scope}`;
@@ -848,6 +850,13 @@ function discoveryAttempts(report, target) {
     details.append(node('p', `${result.providerTokens ? `${number(result.providerTokens.total)} tokens (${number(result.providerTokens.prompt)} prompt + ${number(result.providerTokens.completion)} completion)` : result.modelRequests ? `${number(result.observedTokens.total)} observed tokens; usage available for ${result.meteredResponses}/${result.modelRequests} requests, total incomplete` : 'No model called'} · ${result.searchRequests} searches · ${result.describeRequests} descriptions · ${bytes(result.discoveryBytes)} discovery responses`, 'measurement-note'));
     if (result.answers.length) details.append(node('p', result.answers.map(answer => `Question ${answer.turn}: ${answer.correct ? 'correct' : answer.answered ? 'incorrect' : 'no final answer'}`).join(' · '), 'measurement-note'));
     details.append(node('p', `Returned by search: article-body reader ${result.bodyReaderFound ? 'found' : 'not found'} · paginated audit reader ${result.auditListFound ? 'found' : 'not found'}`, 'measurement-note'));
+    const searches = node('ol');
+    for (const search of result.searches) {
+      const item = node('li', `Search ${JSON.stringify(search.query)}: ${search.returned} returned${search.matched === null ? '; total matches not recorded' : ` / ${search.matched} matched`}${search.truncated ? ' · TRUNCATED' : ''}. ${search.names.join(', ')}`);
+      if (search.hint) item.append(node('p', search.hint, 'measurement-note'));
+      searches.append(item);
+    }
+    details.append(searches);
     if (result.fallbackTools.length) details.append(node('p', `Full description required: ${result.fallbackTools.join(', ')}`, 'measurement-note'));
     if (proof) {
       const trace = proof.liveTrace ?? proof.probe;
@@ -867,7 +876,7 @@ function discoveryAttempts(report, target) {
 
 async function refreshDiscovery() {
   try {
-    const response = await fetch('/demo/discovery-report', {cache: 'no-store', credentials: 'same-origin'});
+    const response = await fetch(evidenceUrl('/demo/discovery-report'), {cache: 'no-store', credentials: 'same-origin'});
     if (!response.ok) throw new Error('Discovery comparison unavailable');
     const body = await response.text();
     if (body === lastDiscoveryBody) return;
@@ -877,10 +886,9 @@ async function refreshDiscovery() {
     byId('discovery-evidence').hidden = !summary;
     if (!summary) return;
     byId('discovery-note').textContent = `${report.mode === 'live' ? 'Real Hugging Face generation' : 'Fixed probes; no model called'} · ${summary.matchedConditions ? 'comparison conditions match' : 'comparison conditions not yet verified'} · ${new Date(report.createdAt).toLocaleString()}`;
-    byId('discovery-catalog').textContent = `${summary.catalog.tools} approved tools · ${summary.catalog.compactReady.length} compact contracts · ${summary.catalog.requiresDescribe.length} full-description fallbacks · at most ${summary.catalog.searchResultLimit} search results. Catalog: ${summary.catalogProfile}.`;
+    byId('discovery-catalog').textContent = `${summary.catalog.tools} approved tools · ${summary.catalog.compactReady.length} compact contracts · ${summary.catalog.requiresDescribe.length} full-description fallbacks · at most ${summary.catalog.searchResultLimit} search results. Catalog: ${summary.catalogProfile}. Search: ${summary.searchProtocol}.`;
     const bodyMissing = summary.rows.filter(row => !row.bodyReaderFound).length;
-    byId('discovery-outcome').textContent = report.mode === 'live' && summary.complete && !summary.allCorrect
-      ? `This batch does not establish token savings with correct answers. The article-body reader was absent from the search results in ${bodyMissing}/${summary.rows.length} conversations, although it exists in the approved catalog. Questions and permissions were unchanged between modes. All failures and incomplete usage remain below.` : '';
+    byId('discovery-outcome').textContent = summary.allCorrect ? 'Every planned conversation returned both expected answers. Compare requests and tokens below; fewer discovery steps do not always mean fewer tokens.' : report.mode === 'live' && summary.catalog.tools > 8 ? `${summary.rows.length - bodyMissing}/${summary.rows.length} conversations found the body reader. Inspect each answer and failure below; all attempts remain available.` : '';
     byId('discovery-scope').textContent = summary.scope;
     const rows = byId('discovery-rows'); rows.replaceChildren();
     for (const [mode, totals] of Object.entries(summary.totals)) {
@@ -898,7 +906,7 @@ async function refreshDiscovery() {
     const history = byId('discovery-history'); history.replaceChildren();
     for (const previous of report.previousAttempts ?? []) {
       const batch = node('details', undefined, 'proof-details');
-      batch.append(node('summary', `${previous.summary.catalog.tools} tools · ${previous.mode} · ${previous.status} · ${new Date(previous.createdAt).toLocaleString()}`));
+      batch.append(node('summary', `${previous.summary.catalog.tools} tools · ${previous.summary.searchProtocol} · ${previous.mode} · ${previous.status} · ${new Date(previous.createdAt).toLocaleString()}`));
       for (const [mode, totals] of Object.entries(previous.summary.totals)) batch.append(node('p', `${mode}: ${totals.correct}/${totals.planned} correct · ${totals.modelRequests} model requests · ${totals.providerTokens === null ? 'tokens not measured' : `${number(totals.providerTokens)} provider tokens`}`, 'measurement-note'));
       discoveryAttempts(previous, batch);
       history.append(batch);
@@ -906,6 +914,6 @@ async function refreshDiscovery() {
     lastDiscoveryBody = body;
   } catch {
     lastDiscoveryBody = ''; byId('discovery-state').textContent = 'REPORT UNAVAILABLE'; byId('discovery-evidence').hidden = true;
-  } finally { setTimeout(refreshDiscovery, 5000); }
+  } finally { poll(refreshDiscovery, 5000); }
 }
 refreshDiscovery();

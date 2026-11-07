@@ -23,7 +23,7 @@ composer install
 composer start
 ```
 
-Open [the workbench](http://127.0.0.1:8000/demo). It shows the Codex conversation and follow-up, exact PHP, actual tool calls, measured model usage and security proofs. It is a read-only viewer of saved runs. To execute new PHP, choose an [execution profile](#execution-profiles) and connect an agent as described below.
+Browse the [visual documentation](https://ronaldtebrake.github.io/symfony-hackathon/) or open [the local workbench](http://127.0.0.1:8000/demo). It shows the agent conversation and follow-up, exact PHP, actual tool calls, measured model usage and security proofs. It is a read-only viewer of saved runs. To execute new PHP, choose an [execution profile](#execution-profiles) and connect an agent as described below.
 
 ## Use your Symfony tools
 
@@ -82,7 +82,7 @@ The agent calls `tools_search` with:
 {"query":"published articles"}
 ```
 
-Search returns matching names and descriptions, the **unchanged input schema** and a short PHP return shape. For `articles_list_published`, `requiresDescribe: false` means the agent can go straight to PHP. Search uses keyword matching and returns at most eight matches.
+Search returns matching names and descriptions, the **unchanged input schema** and a short PHP return shape. For `articles_list_published`, `requiresDescribe: false` means the agent can go straight to PHP. The response wraps those tools in `tools` and reports `matched`, `returned`, `limit: 8` and `truncated`. All query terms must match. Refine a truncated search with an action or field, or use an exact tool name; zero matches suggest fewer terms or a synonym.
 
 ### When needed: inspect the full schema
 
@@ -137,8 +137,6 @@ Code Mode is useful when a task needs pagination, branching or several related r
 
 Compact discovery is now the default in the core package, Symfony bundle and demos. “Compact” describes the introduction the agent receives: exact input constraints plus a short return shape, with full schemas retained by the host. It saves a discovery round trip for simple tools and avoids repeating verbose examples and notes.
 
-![Compact discovery: full inputs, less context, with full describe as the fallback and the same host checks.](public/images/compact-discovery.svg)
-
 To restore the original three-step flow, set:
 
 ```yaml
@@ -161,7 +159,18 @@ With the original **two-tool catalog**, two live conversations per mode used the
 
 That is **33.5% fewer provider tokens** in this small sample. Both arms use lean execution responses; order was reversed for the second pair. Each capture also verifies a denied draft read, permitted recovery and an exhausted execution budget using fixed PHP. [Inspect generated PHP, calls and every attempt](http://127.0.0.1:8000/demo#compact-discovery), or [reproduce the comparison](docs/demo.md#compact-discovery-comparison).
 
-A **16-tool catalog** exposed a limitation: both modes missed the article-body reader in bounded search results. Neither completed a full conversation correctly. Full discovery answered 1/4 individual questions correctly with 13 model requests; compact answered 0/4 with 14. Compact used 26,612 provider tokens. Full reported 15,340 observed tokens across 12/13 requests; one malformed tool-call response has no captured usage, so its total is incomplete. This batch does **not** establish token savings with correct answers. All four failed conversations, generated PHP and earlier successful batches remain in the workbench. The fixed denial, recovery and budget probes passed in both modes.
+With the **16-tool catalog**, the final matched batch also returns correct answers in both modes:
+
+| Measured across both conversations | Search + describe | Compact search |
+| --- | ---: | ---: |
+| Correct conversations / answers | 2 / 2 · 4 / 4 | 2 / 2 · 4 / 4 |
+| Provider tokens | 31,185 | 31,946 |
+| Model requests | 16 | 14 |
+| Discovery tool calls | 8 | 6 |
+
+Compact uses fewer requests here, but **2.4% more tokens**. Catalog shape and generated plans matter; compact discovery does not guarantee token savings. Search now reports `matched`, `returned`, `limit` and `truncated`, with guidance to refine a truncated search. All query terms must match; an exact tool name selects one tool. Zero matches suggest fewer terms or a synonym. Full discovery still requires describe, and complex compact contracts retain that fallback.
+
+Earlier attempts exposed search truncation, contradictory summarization instructions and a per-record plan that exceeded the ten-call budget. Both modes now receive the same corrected instructions: preserve the requested output, discover a collection reader for collection work, and plan within the existing limits. The model, questions, data, schemas and permissions are unchanged. All five earlier batches, including failures and incomplete usage, remain available in the [discovery evidence](https://ronaldtebrake.github.io/symfony-hackathon/#compact-discovery).
 
 The shared PHP package also accepts MCP schemas from Drupal's Tool API. The [Drupal proof](examples/drupal/README.md#reuse-from-symfony-code-mode) checks both discovery modes with the same restricted Drupal account and real node-access decisions.
 
@@ -205,7 +214,7 @@ Code Mode used **71.4% fewer provider tokens in this successful pair**. All 21 d
 
 A separate evaluation repeats five scenarios twice per approach. Its latest live batch passes **10/10 conversations on both sides**, with **63.7% fewer reported tokens** for Code Mode, including shared answer-review costs. Earlier failed batches remain available. [Evaluation protocol and results](docs/demo.md#repeatable-evaluation).
 
-The current lean response format also reduces context overhead. Offline replay of retained responses measures **46.9% fewer response-body tokens for the Codex pair**, **69.7% for the Symfony AI adoption pair**, and **9.5% for the already compact Hugging Face audit**. All use the gpt-oss tokenizer; these are payload counts, not new provider usage or total conversation savings. Historical live captures remain unchanged. [Inspect and reproduce the measurement](docs/demo.md#lean-response-measurement).
+The current lean response format also reduces context overhead. Offline replay of retained responses measures **46.9% fewer response-body tokens for the recorded MCP conversation**, **69.7% for the Symfony AI adoption pair**, and **9.5% for the already compact Hugging Face audit**. All use the gpt-oss tokenizer; these are payload counts, not new provider usage or total conversation savings. Historical live captures remain unchanged. [Inspect and reproduce the measurement](docs/demo.md#lean-response-measurement).
 
 ## Run the demos
 
@@ -221,7 +230,7 @@ The commands below use gVisor, including when the bundle's `code-mode:serve` is 
 
 For the live matched comparison, set `HUGGINGFACE_API_KEY` in ignored `.env.local`, then run `php bin/console code-mode:huggingface-compare --no-debug`. Live commands consume inference credits. The saved evidence can be viewed without a token.
 
-For the recorded Codex audit and its follow-up, connect the separate `code-mode:mcp --no-debug` server using the [Codex guide](docs/codex.md). Its tool catalog differs from the small `code-mode:serve` walkthrough above. The [performance guide](docs/performance.md) supplies another agent connection and explains the scope of its synthetic profiler data. Conversations stay in the agent; the workbench does not start executions.
+For the recorded agent audit and its follow-up, connect the separate `code-mode:mcp --no-debug` server using the [MCP client connection example](docs/codex.md). Its tool catalog differs from the small `code-mode:serve` walkthrough above. The [performance guide](docs/performance.md) supplies another agent connection and explains the scope of its synthetic profiler data. Conversations stay in the agent; the workbench does not start executions.
 
 ## Packages and contributions
 
@@ -235,3 +244,9 @@ Run `composer check` for configuration, application and package checks. With gVi
 [Evidence index](docs/evidence/README.md) · [90-second recording guide](docs/demo.md)
 
 The hackathon deadline is **22 November 2026, 18:00 CET**. The final manual recording and formal submission remain pending.
+
+## Publish the visual documentation
+
+`composer docs:build` exports the same read-only proof viewers to `var/pages`. Preview with `php -S 127.0.0.1:8080 -t var/pages`. The build reads only the reviewed evidence in `docs/evidence`; it does not load `.env.local`, local reports, Docker or a model provider. Historical client names remain in original capture provenance; the documentation works with any MCP client or Symfony AI agent.
+
+The [Pages workflow](.github/workflows/pages.yaml) builds pull requests and deploys `main` to GitHub Pages. Select **GitHub Actions** as the repository’s Pages source. Only the generated HTML, CSS, JavaScript, animation and fixed JSON exports are published. New executions still run through a local agent or the operator CLI.

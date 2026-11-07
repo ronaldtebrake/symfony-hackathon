@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class ReportStore
 {
-    public function __construct(#[Autowire('%kernel.project_dir%')] private string $projectDir) {}
+    public function __construct(#[Autowire('%kernel.project_dir%')] private string $projectDir, private bool $reviewedOnly = false) {}
 
     public function save(array $report): void
     {
@@ -30,7 +30,7 @@ final readonly class ReportStore
     public function readDiscoveryComparison(): ?string
     {
         $local = $this->projectDir.'/var/demo/discovery.json';
-        return $this->readPath(is_file($local) ? $local : $this->projectDir.'/docs/evidence/compact-discovery.json', 4 * 1048576);
+        return $this->readPath(!$this->reviewedOnly && is_file($local) ? $local : $this->projectDir.'/docs/evidence/compact-discovery.json', 4 * 1048576);
     }
 
     public function saveEvaluation(array $report): void
@@ -53,7 +53,7 @@ final readonly class ReportStore
     public function readEvaluation(): ?string
     {
         $local = $this->projectDir.'/var/demo/evaluation.json';
-        return $this->readPath(is_file($local) ? $local : $this->projectDir.'/docs/evidence/evaluation.json', 8 * 1048576);
+        return $this->readPath(!$this->reviewedOnly && is_file($local) ? $local : $this->projectDir.'/docs/evidence/evaluation.json', 8 * 1048576);
     }
 
     public function readAdoptionProof(): ?string
@@ -158,7 +158,7 @@ final readonly class ReportStore
 
     private function readFile(string $filename): ?string
     {
-        return $this->readPath($this->projectDir.'/var/demo/'.$filename);
+        return $this->reviewedOnly ? null : $this->readPath($this->projectDir.'/var/demo/'.$filename);
     }
 
     private function readPath(string $path, int $maxBytes = 1048576): ?string

@@ -18,7 +18,7 @@ final class DemoPageTest extends WebTestCase
         self::assertStringContainsString("script-src 'self'", $client->getResponse()->headers->get('Content-Security-Policy'));
         self::assertCount(0, $crawler->filterXPath('//textarea'));
         self::assertCount(0, $crawler->filterXPath('//form|//input'));
-        self::assertCount(1, $crawler->filterXPath('//*[@id="codex-run"]'));
+        self::assertCount(1, $crawler->filterXPath('//*[@id="agent-run"]'));
         self::assertCount(1, $crawler->filterXPath('//*[@id="security-proof"]'));
         $client->request('GET', '/demo/questions');
         self::assertResponseStatusCodeSame(404);

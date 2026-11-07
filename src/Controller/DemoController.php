@@ -37,6 +37,7 @@ final readonly class DemoController
         return $this->response($this->store->readSecurityProof() ?? '{"status":"empty","cases":[]}', 'application/json');
     }
 
+    #[Route('/demo/agent-report', name: 'app_demo_agent_report', methods: ['GET'])]
     #[Route('/demo/codex-report', name: 'app_demo_codex_report', methods: ['GET'])]
     public function codexReport(Request $request): Response
     {
@@ -124,6 +125,13 @@ final readonly class DemoController
     {
         $this->requireLocalRequest($request);
         return $this->response(json_encode((new \App\Demo\ResponsePayloadComparison($this->projectDir))->report(), JSON_THROW_ON_ERROR), 'application/json');
+    }
+
+    #[Route('/images/code-mode-value.svg', name: 'app_value_explainer', methods: ['GET'])]
+    public function explainer(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+        return $this->response(file_get_contents($this->projectDir.'/docs/images/code-mode-value.svg'), 'image/svg+xml');
     }
 
     private function requireLocalRequest(Request $request): void
