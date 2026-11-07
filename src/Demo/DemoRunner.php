@@ -39,7 +39,8 @@ final readonly class DemoRunner
         if ('reference' === $mode) {
             $trace->record('reference', 'Reference program; no model request');
             if ('code' === $approach) {
-                $found = $this->call($context, 'tools_search', ['query' => 'article metadata media']);
+                $search = $this->call($context, 'tools_search', ['query' => '']);
+                $found = $search->tools;
                 $ready = array_map(static fn ($tool) => $tool->name, array_filter($found, static fn ($tool) => false === ($tool->requiresDescribe ?? null)));
                 $missing = array_values(array_diff(BackendFactory::FIXTURE_TOOLS, $ready));
                 if ([] !== $missing) { $this->call($context, 'tools_describe', ['names' => $missing]); }

@@ -11,7 +11,7 @@ final class DiscoveryComparisonTest extends WebTestCase
 {
     public function testLargeCatalogRetainsFailuresPartialUsageAndPerQuestionCorrectness(): void
     {
-        $report = json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/compact-discovery.json'), true, flags: JSON_THROW_ON_ERROR);
+        $report = $this->originalLarge();
         self::assertSame(\App\Demo\DiscoveryCatalog::PROFILE, $report['catalogProfile']);
         $summary = (new DiscoveryComparison())->summarize($report);
         self::assertTrue($summary['matchedConditions']);
@@ -35,7 +35,7 @@ final class DiscoveryComparisonTest extends WebTestCase
 
     public function testLargeCatalogVerifierRejectsAlteredFallbackAndSchemaEvidence(): void
     {
-        $report = json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/compact-discovery.json'), true, flags: JSON_THROW_ON_ERROR);
+        $report = $this->originalLarge();
         $call = &$report['attempts'][1]['proof']['liveTrace']['agentCalls'][0];
         $result = json_decode($call['result'], true);
         foreach ($result as &$tool) { if (true === ($tool['requiresDescribe'] ?? null)) { $tool['requiresDescribe'] = false; break; } }
@@ -46,6 +46,34 @@ final class DiscoveryComparisonTest extends WebTestCase
         self::assertFalse((new DiscoveryComparison())->summarize($report)['rows'][0]['catalogVerified']);
         $report['attempts'][2]['proof']['liveTrace']['requestEvidence'][0]['userMessageSha256'] = [hash('sha256', 'changed question')];
         self::assertFalse((new DiscoveryComparison())->summarize($report)['rows'][2]['catalogVerified']);
+    }
+
+    private function originalLarge(): array
+    {
+        $report = json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/compact-discovery.json'), true, flags: JSON_THROW_ON_ERROR);
+        foreach ([$report, ...($report['previousAttempts'] ?? [])] as $batch) {
+            if ('publishing-16-v1' === ($batch['catalogProfile'] ?? null) && !isset($batch['searchProtocol'])) { return $batch; }
+        }
+        throw new \RuntimeException('The original failed large-catalog batch must remain in evidence.');
+    }
+
+    public function testRefinedSearchAndBudgetGuidanceProduceCorrectMatchedAnswers(): void
+    {
+        $report = json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/compact-discovery.json'), true, flags: JSON_THROW_ON_ERROR);
+        $summary = (new DiscoveryComparison())->summarize($report);
+        self::assertTrue($summary['allCorrect']);
+        self::assertSame([2, 2], array_column($summary['totals'], 'correct'));
+        self::assertSame([4, 4], array_column($summary['totals'], 'correctAnswers'));
+        self::assertSame([16, 14], array_column($summary['totals'], 'modelRequests'));
+        self::assertSame([31185, 31946], array_column($summary['totals'], 'providerTokens'));
+        self::assertSame([true, true, true, true], array_column($summary['rows'], 'bodyReaderFound'));
+        self::assertCount(5, $report['previousAttempts']);
+        foreach ($report['previousAttempts'] as $previous) { self::assertTrue((new DiscoveryComparison())->summarize($previous)['matchedConditions']); }
+        foreach ($report['attempts'] as $attempt) { self::assertTrue((new \App\Demo\AdoptionProofVerifier())->verifyProbe($attempt['proof']['probe'])); }
+        $call = &$report['attempts'][0]['proof']['liveTrace']['agentCalls'][0];
+        $result = json_decode($call['result'], true); $result['truncated'] = !$result['truncated'];
+        $call['result'] = json_encode($result, JSON_THROW_ON_ERROR);
+        self::assertFalse((new DiscoveryComparison())->summarize($report)['rows'][0]['catalogVerified']);
     }
 
     private function evidence(): array

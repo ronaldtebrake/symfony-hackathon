@@ -34,6 +34,21 @@ final class DiscoveryCatalogTest extends TestCase
         self::assertFalse($native->isGranted($reader, 'unapproved_tool', new \stdClass()));
     }
 
+    public function testRefinementFindsPreviouslyOmittedCapabilityWithoutChangingTheCatalog(): void
+    {
+        $catalog = DiscoveryCatalog::sessions('', new DockerEngine(), new ExecutionLimits())->catalog();
+        $broad = $catalog->searchResult('article read');
+        self::assertTrue($broad['truncated']);
+        self::assertGreaterThan(8, $broad['matched']);
+        self::assertNotContains('publishing_read', array_column($broad['tools'], 'name'));
+        $body = $catalog->searchResult('complete body');
+        self::assertSame(['publishing_read'], array_column($body['tools'], 'name'));
+        self::assertFalse($body['truncated']);
+        $audit = $catalog->searchResult('meta_description');
+        self::assertContains('publishing_list', array_column($audit['tools'], 'name'));
+        self::assertFalse($audit['truncated']);
+    }
+
     public function testNestedAndMapContractsFallBackAndAuditDataRemainsTheSame(): void
     {
         $catalog = DiscoveryCatalog::sessions('', new DockerEngine(), new ExecutionLimits())->catalog();

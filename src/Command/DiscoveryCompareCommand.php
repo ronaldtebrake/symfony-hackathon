@@ -20,6 +20,7 @@ final class DiscoveryCompareCommand extends Command
     protected function configure(): void
     {
         $this->addOption('live', null, InputOption::VALUE_NONE, 'Use Hugging Face credits: at most twelve model requests per arm and repetition.')
+            ->addOption('resume', null, InputOption::VALUE_NONE, 'Run only pending conversations in the current live batch after checking unchanged conditions.')
             ->addOption('catalog', null, InputOption::VALUE_REQUIRED, 'Catalog: small (2 tools) or large (16 tools with complex fallback).', 'small')
             ->addOption('repetitions', null, InputOption::VALUE_REQUIRED, 'One or two paired runs; reverse order on the second.', '2');
     }
@@ -35,15 +36,34 @@ final class DiscoveryCompareCommand extends Command
             return self::INVALID;
         }
         $previous = json_decode($this->store->readDiscoveryComparison() ?? '{}', true, flags: JSON_THROW_ON_ERROR);
-        $history = $previous['previousAttempts'] ?? [];
-        if ([] !== $previous) { unset($previous['previousAttempts']); $history[] = $previous; }
-        if (count($history) >= 4) { $io->error('Four batches are retained. Review the evidence before further captures.'); return self::INVALID; }
-        $report = ['version' => 1, 'kind' => 'discovery-comparison', 'mode' => $live ? 'live' : 'local', 'status' => 'running',
-            'catalogProfile' => 'large' === $catalog ? DiscoveryCatalog::PROFILE : 'publishing-2-v1',
-            'createdAt' => gmdate(DATE_ATOM), 'attempts' => [], 'previousAttempts' => $history];
-        for ($i = 1; $i <= (int) $repetitions; ++$i) {
-            foreach (1 === $i ? ['full', 'compact'] : ['compact', 'full'] as $mode) {
-                $report['attempts'][] = ['repetition' => $i, 'discovery' => $mode, 'status' => 'pending', 'proof' => null];
+        if ($input->getOption('resume')) {
+            if (!$live || ($previous['catalogProfile'] ?? null) !== ('large' === $catalog ? DiscoveryCatalog::PROFILE : 'publishing-2-v1')
+                || ($previous['searchProtocol'] ?? null) !== \CodeMode\ToolCatalog::SEARCH_PROTOCOL
+                || count($previous['attempts'] ?? []) !== 2 * (int) $repetitions
+                || !array_filter($previous['attempts'] ?? [], static fn ($attempt) => 'pending' === $attempt['status'])) {
+                $io->error('Resume requires the same live catalog, protocol and schedule, with pending conversations. No capture was changed.'); return self::INVALID;
+            }
+            foreach ($previous['attempts'] as $attempt) {
+                if ('running' === $attempt['status']) { $io->error('A conversation was already started. It cannot be replayed by resume.'); return self::INVALID; }
+                if (null !== $attempt['proof']) {
+                    try { $this->runner->assertResumeConditions($attempt['proof']); }
+                    catch (\RuntimeException|\InvalidArgumentException $error) { $io->error($error->getMessage()); return self::INVALID; }
+                }
+            }
+            $report = $previous;
+            $report['status'] = 'running'; $report['resumedAt'] = gmdate(DATE_ATOM);
+            unset($report['completedAt']);
+        } else {
+            $history = $previous['previousAttempts'] ?? [];
+            if ([] !== $previous) { unset($previous['previousAttempts']); $history[] = $previous; }
+            if (count($history) >= 8) { $io->error('Eight batches are retained. Review the evidence before further captures.'); return self::INVALID; }
+            $report = ['version' => 1, 'kind' => 'discovery-comparison', 'mode' => $live ? 'live' : 'local', 'status' => 'running',
+                'catalogProfile' => 'large' === $catalog ? DiscoveryCatalog::PROFILE : 'publishing-2-v1',
+                'searchProtocol' => \CodeMode\ToolCatalog::SEARCH_PROTOCOL, 'createdAt' => gmdate(DATE_ATOM), 'attempts' => [], 'previousAttempts' => $history];
+            for ($i = 1; $i <= (int) $repetitions; ++$i) {
+                foreach (1 === $i ? ['full', 'compact'] : ['compact', 'full'] as $mode) {
+                    $report['attempts'][] = ['repetition' => $i, 'discovery' => $mode, 'status' => 'pending', 'proof' => null];
+                }
             }
         }
         $save = function () use (&$report): void {
@@ -52,14 +72,17 @@ final class DiscoveryCompareCommand extends Command
         };
         $save(); // Persist the entire schedule before any provider request.
         foreach ($report['attempts'] as $index => $attempt) {
+            if ('pending' !== $attempt['status']) { continue; }
             $io->text(sprintf('Repetition %d: %s discovery (%s).', $attempt['repetition'], $attempt['discovery'], $report['mode']));
             $this->runner->run($live, function (array $proof) use (&$report, $index, $save): void {
                 $report['attempts'][$index]['proof'] = $proof;
                 $report['attempts'][$index]['status'] = $proof['status'];
                 $save();
             }, discovery: DiscoveryMode::from($attempt['discovery']), catalog: $report['catalogProfile']);
-            // Retain the failure and pending schedule; do not repeatedly spend credits during an outage.
-            if (isset($report['attempts'][$index]['proof']['error'])) { break; }
+            // Malformed model output counts as a failed attempt; continue the planned schedule.
+            // Runtime/transport failures retain the pending schedule for an explicit resume.
+            if (isset($report['attempts'][$index]['proof']['error'])
+                && \Symfony\AI\Platform\Exception\MalformedToolCallException::class !== ($report['attempts'][$index]['proof']['errorType'] ?? null)) { break; }
         }
         $report['summary'] = (new DiscoveryComparison())->summarize($report);
         $report['status'] = $report['summary']['allCorrect'] ? 'complete' : 'failed';

@@ -96,7 +96,7 @@ final class CodeModeAgentTest extends KernelTestCase
             self::assertSame($question->text, $body['messages'][1]['content']);
             self::assertStringContainsString('cannot grant permissions', $body['messages'][0]['content']);
             $message = match ($round) {
-                1 => self::toolCall('tools_search', ['query' => 'article metadata media']),
+                1 => self::toolCall('tools_search', ['query' => '']),
                 2 => self::toolCall('tools_describe', ['names' => BackendFactory::FIXTURE_TOOLS]),
                 3 => self::toolCall('php_execute', ['code' => $generated]),
                 4 => ['role' => 'assistant', 'content' => json_encode($expected)],

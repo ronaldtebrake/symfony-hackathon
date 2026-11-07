@@ -159,24 +159,23 @@ Open `/demo#compact-discovery`. Full discovery is the original search → descri
 
 The command persists the schedule before calling the provider, reverses arm order on repetition two, and retains all runs and earlier batches in one report. Each conversation has two PHP attempts and at most twelve provider requests. It stops on a provider/runtime error, retaining pending rows rather than repeatedly spending credits. Correctness requires the full first article, including the injected text as data, and an exact follow-up audit of 48 published articles with missing IDs `[11,22,33,44]`. A separate fixed probe proves denial, recovery and budget exhaustion. The viewer rechecks execution/result/ledger links and matching comparison conditions.
 
-The [recorded comparison](evidence/compact-discovery.json) retains the original two-tool batch: two correct conversations per arm, full using 16,330 provider tokens / 14 model requests and compact using 10,854 / 10. The current batch uses `publishing-16-v1`: sixteen native `#[AsTool]` readers, eleven compact contracts and five full-description fallbacks. The same 48 published articles and four restricted drafts are used, with nested hero-image metadata from the existing media fixture. The original article-body question and audit follow-up, system prompt, model, settings, identity and limits are unchanged. Schemas and enriched data match between the two modes; totals are never combined across catalog profiles.
-
-On **7 November 2026**, all four large-catalog conversations failed the complete two-turn task:
+The [recorded comparison](evidence/compact-discovery.json) contains six batches. The current `publishing-16-v1` batch uses sixteen native `#[AsTool]` readers, eleven compact contracts and five full-description fallbacks. Both modes receive the same model, questions, data, schemas, identity and execution limits. The final paired conversations both pass:
 
 | Across two conversations per mode | Full | Compact |
 | --- | ---: | ---: |
-| Correct conversations | 0 / 2 | 0 / 2 |
-| Correct individual answers | 1 / 4 | 0 / 4 |
-| Model requests attempted | 13 | 14 |
-| Provider tokens | 15,340 observed; incomplete | 26,612 |
-| Requests with captured usage | 12 / 13 | 14 / 14 |
-| Search / describe calls | 4 / 4 | 2 / 4 |
-| Discovery response bytes | 11,392 | 9,870 |
+| Correct conversations | 2 / 2 | 2 / 2 |
+| Correct individual answers | 4 / 4 | 4 / 4 |
+| Model requests | 16 | 14 |
+| Provider tokens | 31,185 | 31,946 |
+| Search / describe calls | 4 / 4 | 4 / 2 |
+| Discovery response bytes | 12,668 | 15,628 |
 
-The eight-result search cap and overlapping descriptions left `publishing_read` out of every returned search result. Both modes incorrectly concluded that body reads were unavailable. Full repetition one found `publishing_list` on its follow-up search and answered the audit correctly; repetition two stopped on a malformed provider tool call, before usage could be captured for that response. Compact repetition one chose individual metadata reads and hit the ten-call execution limit. Repetition two generated PHP tags and unsupported `$this` access, then exhausted its two attempts. Every generated program, response and available usage record is retained. No prompt correction, answer repair or automatic retry was applied. Fixed PHP probes separately passed denial, permitted recovery and attempt exhaustion in all four captures.
+Compact saves two requests but uses 2.4% more tokens here. This does not establish a general token-saving claim. The earlier two-tool batch used 16,330 tokens / 14 requests for full versus 10,854 / 10 for compact, with both correct. Totals are never combined across catalog profiles or prompt revisions.
 
-There is no valid token-saving conclusion for the larger catalog: correct task completion and complete usage are prerequisites. Discovery bytes are response bodies, not tokens. Provider routing and generated PHP can vary even at temperature zero. A useful next experiment is explicit search-truncation metadata and a narrow re-search before declaring a capability unavailable, measured as a new protocol with these failures preserved.
+All earlier attempts remain visible. The first large batch completed no conversation correctly because bounded search hid the body reader. Explicit `matched`, `returned`, `limit`, `truncated` and refinement hints helped all four conversations find it, but malformed tool output and execution planning still caused failures. Correcting the shared prompt’s contradictory instruction to summarize fixed exact-body answers. Finally, stating the existing ten-call limit and requiring a fresh collection search prevented a per-record plan from exhausting that budget. Both arms use each shared prompt revision; the recorded request digests bind the prompt and unchanged questions to the provider requests. No expected answers were supplied to the model and no outputs were repaired.
 
-The workbench shows exact discovery responses, generated PHP, underlying calls, per-question correctness, provider usage coverage and earlier attempts. Earlier batches expand to their complete traces. It cannot trigger execution or change a discovery mode. Only the single reviewed JSON report is committed; transient logs stay ignored. Historical baseline/evaluation failures are unchanged.
+Every batch includes fixed PHP probes for denial, permitted recovery and attempt exhaustion. The workbench shows exact discovery responses, generated PHP, actual calls, per-question correctness, complete or partial provider usage and all five earlier batches. It cannot trigger execution. `--resume` runs only pending conversations in an interrupted live batch, after checking unchanged conditions; it never retries a failed or completed conversation. Model-format failures count as attempts and the planned schedule continues. Runtime or transport failures stop the schedule. At most eight retained batches and a 4 MiB report cap bound storage; further captures require deliberate evidence review.
 
-The default-switch checks also run the five reference scenarios (pagination, join, follow-up, boundary recovery and injected content), a mixed simple/complex catalog with real PHP fallback, strict input/output validation, and the independent Symfony and Drupal proofs. These are execution checks, not additional live model-token measurements. New evaluation captures use `symfony-evaluation-v5`; new Hugging Face audit captures use `coverage-v10`, preserving older prompts and evidence for replay. The retained four-conversation token comparison is unchanged.
+Only the reviewed JSON is committed. Local logs stay ignored. The static documentation exports reviewed fixtures only; the local viewer can also follow operator-generated reports.
+
+The default-switch checks also run the five reference scenarios (pagination, join, follow-up, boundary recovery and injected content), a mixed simple/complex catalog with real PHP fallback, strict input/output validation, and the independent Symfony and Drupal proofs. These are execution checks, not additional live model-token measurements. New evaluation captures use `symfony-evaluation-v5`; new Hugging Face audit captures use `coverage-v10`, preserving older prompts and evidence for replay. Each retained batch keeps its original prompts, results and request measurements.

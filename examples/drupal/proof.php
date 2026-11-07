@@ -70,7 +70,8 @@ try {
     $limits = new ExecutionLimits(wallTimeMs: 15000, toolTimeMs: 3000, maxToolCalls: 1);
     $report['limits'] = ['wallTimeMs' => $limits->wallTimeMs, 'toolTimeMs' => $limits->toolTimeMs, 'memoryMiB' => $limits->memoryMiB, 'maxToolCalls' => $limits->maxToolCalls, 'executions' => 2];
     $session = new CodeModeSession($catalog, $gateway->broker($catalog), $sandbox, new ExecutionIdentity('drupal-proof-reader', ['content.audit']), $limits, discovery: $discovery);
-    $report['discovery'] = $session->search(ProofVerifier::TOOL);
+    $report['search'] = $session->searchResult(ProofVerifier::TOOL);
+    $report['discovery'] = $report['search']['tools'];
     $report['discoveryRequests'] = 1;
     if (DiscoveryMode::Full === $discovery || in_array(true, array_column($report['discovery'], 'requiresDescribe'), true)) {
         $report['described'] = $session->describe([ProofVerifier::TOOL]);

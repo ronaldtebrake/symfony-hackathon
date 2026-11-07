@@ -17,7 +17,7 @@ final class McpServerFactory
     public function create(CodeModeSession $session, ?\Closure $record = null, bool $includeTextContent = true): Server
     {
         $handlers = [
-            'tools_search' => fn (string $query): CallToolResult => $this->result(fn () => $session->search($query), includeTextContent: $includeTextContent),
+            'tools_search' => fn (string $query): CallToolResult => $this->result(fn () => $session->searchResult($query), includeTextContent: $includeTextContent),
             'tools_describe' => fn (array $names): CallToolResult => $this->result(fn () => $session->describe($names), includeTextContent: $includeTextContent),
             'php_execute' => fn (string $code): CallToolResult => $this->result(static fn (): array => AgentResponse::execute($session, $code, $record), $session->profile(), $includeTextContent),
         ];

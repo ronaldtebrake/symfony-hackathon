@@ -81,7 +81,8 @@ final class HuggingFaceComparison
         $disclosed = [];
         foreach ($capture['result']['agentCalls'] ?? [] as $call) {
             if (!in_array($call['name'], ['tools_search', 'tools_describe'], true)) { continue; }
-            foreach (json_decode($call['result'], true, flags: JSON_THROW_ON_ERROR) as $tool) {
+            $result = json_decode($call['result'], true, flags: JSON_THROW_ON_ERROR);
+            foreach ($result['tools'] ?? $result as $tool) {
                 if (!isset($tool['inputSchema'])) { continue; }
                 $name = $tool['name'];
                 if (!isset($approved[$name]) || $approved[$name]['inputSchema'] !== $tool['inputSchema']) { return false; }

@@ -42,6 +42,7 @@ final class CodeModeToolboxTest extends TestCase
         self::assertSame('invalid_arguments', $call('php_execute', ['code' => 'return 1;', 'permissions' => ['admin']])['error']['reason']);
         self::assertSame('discovery_required', $call('php_execute', ['code' => 'return 1;'])['error']['reason']);
         self::assertSame('invalid_arguments', $call('tools_search', ['query' => 'article', 'discovery' => 'compact'])['error']['reason']);
+        self::assertSame('invalid_arguments', $call('tools_search', ['query' => 'article', 'limit' => 128])['error']['reason']);
         if (\CodeMode\DiscoveryMode::Compact === $mode) { $call('tools_search', ['query' => 'article']); }
         else { $call('tools_describe', ['names' => ['articles_read']]); }
         $denial = $call('php_execute', ['code' => 'return $tools->call("articles_read", ["id" => 49]);']);

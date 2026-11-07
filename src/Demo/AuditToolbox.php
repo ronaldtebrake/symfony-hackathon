@@ -79,7 +79,7 @@ final class AuditToolbox implements ToolboxInterface
                     throw new SandboxException('invalid_arguments', 'The Code Mode call does not match its schema.');
                 }
                 $value = match ($name) {
-                    'tools_search' => $this->session->search($arguments['query']),
+                    'tools_search' => $this->session->searchResult($arguments['query']),
                     'tools_describe' => $this->session->describe($arguments['names']),
                     'php_execute' => $this->executePhp($arguments['code']),
                 };

@@ -7,6 +7,7 @@ namespace CodeMode;
 /** Progressive discovery over a host-approved, bounded catalog. */
 final class ToolCatalog
 {
+    public const SEARCH_PROTOCOL = 'bounded-refinement-v1';
     /** @var array<string, ToolDefinition> */
     private array $definitions = [];
 
@@ -38,6 +39,29 @@ final class ToolCatalog
         }
         arsort($scores, SORT_NUMERIC);
         return array_map(fn (string $name): array => ['name' => $name, 'description' => $this->definitions[$name]->description], array_slice(array_keys($scores), 0, $limit));
+    }
+
+    /** Bounded agent-facing discovery. Counts include only this host-approved catalog. */
+    public function searchResult(string $query): array
+    {
+        if (strlen($query) > 256) { throw new \InvalidArgumentException('Search exceeds its supported bounds.'); }
+        $query = strtolower(trim($query));
+        $terms = array_unique(preg_split('/[^a-z0-9]+/', $query, flags: PREG_SPLIT_NO_EMPTY));
+        $matches = [];
+        foreach ($this->definitions as $name => $definition) {
+            if ($query === strtolower($name)) { $matches = [$definition]; break; }
+            $text = strtolower($name.' '.$definition->description);
+            if ([] === array_filter($terms, static fn ($term) => !str_contains($text, $term))) { $matches[] = $definition; }
+        }
+        $total = count($matches);
+        $result = ['tools' => array_map(static fn ($tool) => ['name' => $tool->name, 'description' => $tool->description], array_slice($matches, 0, 8)),
+            'matched' => $total, 'returned' => min(8, $total), 'limit' => 8, 'truncated' => $total > 8];
+        if ($total > 8) {
+            $result['hint'] = 'More matching tools exist. If the needed capability is missing, search again with a specific action or field before saying it is unavailable. All query terms must match; an exact tool name selects one tool.';
+        } elseif (0 === $total) {
+            $result['hint'] = 'No tool matched all query terms. Try fewer terms or a synonym. This is not evidence that the capability is unavailable.';
+        }
+        return $result;
     }
 
     /** @param list<string> $names @return list<ToolDefinition> */

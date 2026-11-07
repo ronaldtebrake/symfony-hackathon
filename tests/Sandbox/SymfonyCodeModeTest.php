@@ -29,7 +29,7 @@ final class SymfonyCodeModeTest extends TestCase
             if ('default' === $mode) {
                 $found = $client->callTool('tools_search', ['query' => 'articles']);
                 self::assertFalse($found->isError);
-                self::assertSame([false, false], array_column($found->structuredContent, 'requiresDescribe'));
+                self::assertSame([false, false], array_column($found->structuredContent['tools'], 'requiresDescribe'));
             } else {
                 $client->callTool('tools_describe', ['names' => ['articles_read', 'articles_list_published']]);
             }

@@ -61,10 +61,10 @@ try {
     $client->connect(new StdioTransport(PHP_BINARY, ['bin/console', 'code-mode:serve', '--trace-file='.$traceFile], $app, $environment, maxBufferSize: 65536));
     $verify('three_code_mode_tools', ['tools_search', 'tools_describe', 'php_execute'] === array_column($client->listTools()->tools, 'name'));
     $search = $client->callTool('tools_search', ['query' => 'publication']);
-    $verify('only_explicitly_approved_tool_discovered', !$search->isError && ['publication_read'] === array_column($search->structuredContent, 'name'));
+    $verify('only_explicitly_approved_tool_discovered', !$search->isError && ['publication_read'] === array_column($search->structuredContent['tools'], 'name'));
     $unapproved = $client->callTool('tools_describe', ['names' => ['publication_count']]);
     $verify('unapproved_tool_hidden', $unapproved->isError && 'tool_denied' === ($unapproved->structuredContent['error']['reason'] ?? null));
-    $verify('compact_contract_ready_by_default', [false] === array_column($search->structuredContent, 'requiresDescribe') && isset($search->structuredContent[0]['inputSchema']));
+    $verify('compact_contract_ready_by_default', [false] === array_column($search->structuredContent['tools'], 'requiresDescribe') && isset($search->structuredContent['tools'][0]['inputSchema']));
 
     $cases = [];
     foreach (['authorized' => 101, 'restricted' => 202] as $name => $id) {
