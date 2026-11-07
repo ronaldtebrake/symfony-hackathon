@@ -19,7 +19,9 @@ if ! command -v docker >/dev/null; then
     apt-get install -y docker.io
 fi
 curl -fsSL https://gvisor.dev/archive.key | gpg --dearmor --yes -o /usr/share/keyrings/gvisor-archive-keyring.gpg
-printf 'deb [arch=%s signed-by=/usr/share/keyrings/gvisor-archive-keyring.gpg] https://storage.googleapis.com/gvisor/releases release main\n' "$(dpkg --print-architecture)" > /etc/apt/sources.list.d/gvisor.list
+# The rolling release index drops older versions. Use the dated, signed repository
+# that contains our exact pin: https://gvisor.dev/docs/user_guide/install/#specific-release
+printf 'deb [arch=%s signed-by=/usr/share/keyrings/gvisor-archive-keyring.gpg] https://storage.googleapis.com/gvisor/releases 20261026 main\n' "$(dpkg --print-architecture)" > /etc/apt/sources.list.d/gvisor.list
 apt-get update
 apt-get install -y runsc=20261026.0
 runsc install
