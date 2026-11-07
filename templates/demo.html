@@ -47,13 +47,15 @@
         <div class="section-top"><div><span class="eyebrow">Native Symfony AI schemas · fewer discovery steps</span><h2 id="discovery-heading">Find a tool. Start composing.</h2></div><span id="discovery-state" class="run-state" role="status">Loading comparison</span></div>
         <p class="codex-intro">Compact discovery is the default. Search returns the original input schema and a PHP return shape. Simple contracts can go straight to execution. Complex contracts still use describe. Every call keeps the same broker checks.</p>
         <figure class="discovery-explainer"><img src="/images/compact-discovery.svg" width="1000" height="760" alt="Compact discovery keeps the full input schema, uses a short PHP return shape and skips describe for simple tools. Complex tools still require full describe. Both flows use the same host security checks." loading="lazy"></figure>
-        <div class="proof-run"><code>php bin/console code-mode:discovery-compare --live --no-debug</code><span>Two paired conversations · order reversed on repetition two</span></div>
+        <div class="proof-run"><code>php bin/console code-mode:discovery-compare --catalog=large --live --no-debug</code><span>Two paired conversations · order reversed on repetition two</span></div>
         <div id="discovery-evidence" hidden>
           <p id="discovery-note" class="mode-note"></p>
+          <p id="discovery-catalog" class="measurement-note"></p>
+          <p id="discovery-outcome" class="mode-note"></p>
           <div class="inspector"><div class="table-scroll"><table><caption>All planned conversations, including failures</caption><thead><tr><th>Discovery</th><th>Correct / planned</th><th>Model requests</th><th>Provider tokens</th><th>Discovery calls</th><th>Discovery bytes</th></tr></thead><tbody id="discovery-rows"></tbody></table></div></div>
           <p id="discovery-scope" class="measurement-note"></p>
           <div id="discovery-attempts"></div>
-          <details class="proof-details"><summary>Earlier batches · retained without replacing failures</summary><pre id="discovery-history" tabindex="0"></pre></details>
+          <details class="proof-details"><summary>Earlier batches · retained without replacing failures</summary><div id="discovery-history"></div></details>
         </div>
         <p class="measurement-note">Conversations stay in the agent. This page only reads recorded PHP, tool calls and measurements. <a href="/demo/discovery-report">Full comparison evidence (JSON) ↗</a></p>
       </section>

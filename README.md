@@ -150,7 +150,7 @@ code_mode:
 
 The Symfony adapter reuses the schemas from your existing AI toolbox. It does not generate another validator or infer permissions from tool descriptions. Compact entries are capped at 4 KiB, search at eight matches and 32 KiB; complex, referenced or oversized contracts fall back to describe. The broker retains the full schemas, per-call authorization and execution limits. Discovery never grants access to restricted content.
 
-In **two live conversations per mode**, using the same gpt-oss model, questions, data and permissions, both flows returned correct answers:
+With the original **two-tool catalog**, two live conversations per mode used the same gpt-oss model, questions, data and permissions. Both flows returned correct answers:
 
 | Measured across both conversations | Search + describe | Compact search |
 | --- | ---: | ---: |
@@ -160,6 +160,8 @@ In **two live conversations per mode**, using the same gpt-oss model, questions,
 | Correct conversations | 2 / 2 | 2 / 2 |
 
 That is **33.5% fewer provider tokens** in this small sample. Both arms use lean execution responses; order was reversed for the second pair. Each capture also verifies a denied draft read, permitted recovery and an exhausted execution budget using fixed PHP. [Inspect generated PHP, calls and every attempt](http://127.0.0.1:8000/demo#compact-discovery), or [reproduce the comparison](docs/demo.md#compact-discovery-comparison).
+
+A **16-tool catalog** exposed a limitation: both modes missed the article-body reader in bounded search results. Neither completed a full conversation correctly. Full discovery answered 1/4 individual questions correctly with 13 model requests; compact answered 0/4 with 14. Compact used 26,612 provider tokens. Full reported 15,340 observed tokens across 12/13 requests; one malformed tool-call response has no captured usage, so its total is incomplete. This batch does **not** establish token savings with correct answers. All four failed conversations, generated PHP and earlier successful batches remain in the workbench. The fixed denial, recovery and budget probes passed in both modes.
 
 The shared PHP package also accepts MCP schemas from Drupal's Tool API. The [Drupal proof](examples/drupal/README.md#reuse-from-symfony-code-mode) checks both discovery modes with the same restricted Drupal account and real node-access decisions.
 

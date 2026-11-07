@@ -35,8 +35,9 @@ final readonly class AdoptionProofRunner
 
     public function __construct(#[Autowire(service: 'app.publishing_sessions')] private SessionFactory $sessions, private DemoIdentityProvider $identityProvider, private HttpClientInterface $httpClient, #[Autowire(service: 'code_mode.limits')] private ExecutionLimits $limits) {}
 
-    public function run(bool $live = false, ?\Closure $progress = null, ?PlatformInterface $testPlatform = null, DiscoveryMode $discovery = DiscoveryMode::Compact): array
+    public function run(bool $live = false, ?\Closure $progress = null, ?PlatformInterface $testPlatform = null, DiscoveryMode $discovery = DiscoveryMode::Compact, string $catalog = 'publishing-2-v1'): array
     {
+        if (!in_array($catalog, ['publishing-2-v1', DiscoveryCatalog::PROFILE], true)) { throw new \InvalidArgumentException('Unknown discovery catalog.'); }
         $report = ['version' => 1, 'kind' => 'adoption-proof', 'discoveryMode' => $discovery->value, 'mode' => $live ? 'live' : 'local', 'status' => 'running', 'createdAt' => gmdate(DATE_ATOM),
             'runtime' => 'runsc', 'image' => BackendFactory::env('CODE_MODE_IMAGE'), 'model' => $live ? BackendFactory::env('HUGGINGFACE_MODEL', 'openai/gpt-oss-120b') : null,
             'provider' => $live ? 'Hugging Face Inference Providers' : null, 'providerRouting' => $live ? 'auto' : null,
@@ -48,7 +49,9 @@ final readonly class AdoptionProofRunner
         }
         $identity = $this->identityProvider->identity();
         $report['identity'] = ['subject' => $identity->subject, 'capabilities' => $identity->permissions];
-        $report['fixtureSha256'] = hash('sha256', json_encode([(new AuditDataset())->articles(), PublishingTools::POISON], JSON_THROW_ON_ERROR));
+        $report['catalogProfile'] = $catalog;
+        $report['questions'] = self::QUESTIONS;
+        $report['fixtureSha256'] = DiscoveryCatalog::PROFILE === $catalog ? DiscoveryCatalog::fixtureHash() : hash('sha256', json_encode([(new AuditDataset())->articles(), PublishingTools::POISON], JSON_THROW_ON_ERROR));
         $trace = null;
         $started = hrtime(true);
         $progress?->__invoke($report);
@@ -57,9 +60,11 @@ final readonly class AdoptionProofRunner
             // Fail before spending credits when the runtime or pinned image is unavailable.
             $docker->requireGvisor();
             $docker->control(['image', 'inspect', '--format', '{{.Id}}', $report['image']]);
-            $report['approvedTools'] = $this->sessions->catalog()->all();
+            $sessions = DiscoveryCatalog::PROFILE === $catalog ? DiscoveryCatalog::sessions($report['image'], $docker, $this->limits) : $this->sessions;
+            $report['approvedTools'] = $sessions->catalog()->all();
+            $report['catalogSummary'] = DiscoveryCatalog::summary($report['approvedTools']);
             $probe = new RunTrace(); $probe->captureDetails = true;
-            $toolbox = new RecordingCodeModeToolbox(new CodeModeToolbox($this->sessions->create($identity, $discovery)), $probe);
+            $toolbox = new RecordingCodeModeToolbox(new CodeModeToolbox($sessions->create($identity, $discovery)), $probe);
             $search = $toolbox->execute(new ToolCall('probe-search', 'tools_search', ['query' => 'publishing']));
             $found = json_decode($search->getResult(), true, flags: JSON_THROW_ON_ERROR);
             $ready = array_column(array_filter($found, static fn ($tool) => false === ($tool['requiresDescribe'] ?? null)), 'name');
@@ -79,7 +84,7 @@ final readonly class AdoptionProofRunner
                 $report['generationSettings'] = ['temperature' => 0, 'max_tokens' => 4096, 'reasoning_effort' => 'medium'];
                 $platform = $testPlatform ?? Factory::createPlatform(BackendFactory::env('HUGGINGFACE_API_KEY'), httpClient: $this->httpClient->withOptions(['timeout' => 45, 'max_duration' => 60, 'max_redirects' => 0]));
                 // Same session, identity, discovery and attempt budget across both user turns.
-                $toolbox = new RecordingCodeModeToolbox(new CodeModeToolbox($this->sessions->create($identity, $discovery)), $trace);
+                $toolbox = new RecordingCodeModeToolbox(new CodeModeToolbox($sessions->create($identity, $discovery)), $trace);
                 $agent = new Agent(new BudgetedPlatform($platform, $trace, 12), $report['model'], name: 'publishing-code-mode', toolbox: $toolbox, maxToolCalls: 12);
                 $messages = new MessageBag(Message::forSystem(self::PROMPT));
                 foreach (self::QUESTIONS as $question) {

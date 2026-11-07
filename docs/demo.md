@@ -151,14 +151,32 @@ The [hackathon brief](https://symfony.com/hackathon), checked **3 November 2026*
 php bin/console code-mode:discovery-compare --no-debug
 # Same two-turn native Symfony AI task on both flows; uses inference credits
 php bin/console code-mode:discovery-compare --live --repetitions=2 --no-debug
+# Larger catalog: same questions, model and permissions; includes complex fallback
+php bin/console code-mode:discovery-compare --catalog=large --live --repetitions=2 --no-debug
 ```
 
 Open `/demo#compact-discovery`. Full discovery is the original search → describe → execute flow; compact is now the default for new sessions. Compact search includes the existing Symfony AI input schemas and bounded PHP return shapes. Both use lean execution responses. Every execution still runs through gVisor and the same authorization policy.
 
 The command persists the schedule before calling the provider, reverses arm order on repetition two, and retains all runs and earlier batches in one report. Each conversation has two PHP attempts and at most twelve provider requests. It stops on a provider/runtime error, retaining pending rows rather than repeatedly spending credits. Correctness requires the full first article, including the injected text as data, and an exact follow-up audit of 48 published articles with missing IDs `[11,22,33,44]`. A separate fixed probe proves denial, recovery and budget exhaustion. The viewer rechecks execution/result/ledger links and matching comparison conditions.
 
-The [recorded comparison](evidence/compact-discovery.json) contains two correct conversations per arm: full uses 16,330 provider tokens / 14 model requests; compact uses 10,854 / 10. Totals include prompt and completion usage from all observed requests. Discovery response bytes are measured separately; they are not token estimates. The prompt, model, generation settings, native tool schemas, fixture, identity, image and limits match. Generated PHP and Hugging Face's automatic provider routing may vary. This small sample is evidence for this task, not a benchmark across models or catalogs.
+The [recorded comparison](evidence/compact-discovery.json) retains the original two-tool batch: two correct conversations per arm, full using 16,330 provider tokens / 14 model requests and compact using 10,854 / 10. The current batch uses `publishing-16-v1`: sixteen native `#[AsTool]` readers, eleven compact contracts and five full-description fallbacks. The same 48 published articles and four restricted drafts are used, with nested hero-image metadata from the existing media fixture. The original article-body question and audit follow-up, system prompt, model, settings, identity and limits are unchanged. Schemas and enriched data match between the two modes; totals are never combined across catalog profiles.
 
-The workbench shows exact discovery responses, generated PHP, underlying calls, provider usage and earlier attempts. It cannot trigger execution or change a discovery mode. Only the single reviewed JSON report is committed; transient logs stay ignored. Historical baseline/evaluation failures are unchanged.
+On **7 November 2026**, all four large-catalog conversations failed the complete two-turn task:
+
+| Across two conversations per mode | Full | Compact |
+| --- | ---: | ---: |
+| Correct conversations | 0 / 2 | 0 / 2 |
+| Correct individual answers | 1 / 4 | 0 / 4 |
+| Model requests attempted | 13 | 14 |
+| Provider tokens | 15,340 observed; incomplete | 26,612 |
+| Requests with captured usage | 12 / 13 | 14 / 14 |
+| Search / describe calls | 4 / 4 | 2 / 4 |
+| Discovery response bytes | 11,392 | 9,870 |
+
+The eight-result search cap and overlapping descriptions left `publishing_read` out of every returned search result. Both modes incorrectly concluded that body reads were unavailable. Full repetition one found `publishing_list` on its follow-up search and answered the audit correctly; repetition two stopped on a malformed provider tool call, before usage could be captured for that response. Compact repetition one chose individual metadata reads and hit the ten-call execution limit. Repetition two generated PHP tags and unsupported `$this` access, then exhausted its two attempts. Every generated program, response and available usage record is retained. No prompt correction, answer repair or automatic retry was applied. Fixed PHP probes separately passed denial, permitted recovery and attempt exhaustion in all four captures.
+
+There is no valid token-saving conclusion for the larger catalog: correct task completion and complete usage are prerequisites. Discovery bytes are response bodies, not tokens. Provider routing and generated PHP can vary even at temperature zero. A useful next experiment is explicit search-truncation metadata and a narrow re-search before declaring a capability unavailable, measured as a new protocol with these failures preserved.
+
+The workbench shows exact discovery responses, generated PHP, underlying calls, per-question correctness, provider usage coverage and earlier attempts. Earlier batches expand to their complete traces. It cannot trigger execution or change a discovery mode. Only the single reviewed JSON report is committed; transient logs stay ignored. Historical baseline/evaluation failures are unchanged.
 
 The default-switch checks also run the five reference scenarios (pagination, join, follow-up, boundary recovery and injected content), a mixed simple/complex catalog with real PHP fallback, strict input/output validation, and the independent Symfony and Drupal proofs. These are execution checks, not additional live model-token measurements. New evaluation captures use `symfony-evaluation-v5`; new Hugging Face audit captures use `coverage-v10`, preserving older prompts and evidence for replay. The retained four-conversation token comparison is unchanged.

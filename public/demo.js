@@ -839,6 +839,32 @@ async function loadResponsePayloads() {
 loadResponsePayloads();
 
 let lastDiscoveryBody = '';
+function discoveryAttempts(report, target) {
+  report.attempts.forEach((attempt, index) => {
+    const proof = attempt.proof;
+    const details = node('details', undefined, 'proof-details');
+    const result = report.summary.rows[index];
+    details.append(node('summary', `Repetition ${attempt.repetition} · ${attempt.discovery} · ${attempt.status} · ${result.correct ? 'correct' : 'not verified'} · ${result.modelRequests} model requests`));
+    details.append(node('p', `${result.providerTokens ? `${number(result.providerTokens.total)} tokens (${number(result.providerTokens.prompt)} prompt + ${number(result.providerTokens.completion)} completion)` : result.modelRequests ? `${number(result.observedTokens.total)} observed tokens; usage available for ${result.meteredResponses}/${result.modelRequests} requests, total incomplete` : 'No model called'} · ${result.searchRequests} searches · ${result.describeRequests} descriptions · ${bytes(result.discoveryBytes)} discovery responses`, 'measurement-note'));
+    if (result.answers.length) details.append(node('p', result.answers.map(answer => `Question ${answer.turn}: ${answer.correct ? 'correct' : answer.answered ? 'incorrect' : 'no final answer'}`).join(' · '), 'measurement-note'));
+    details.append(node('p', `Returned by search: article-body reader ${result.bodyReaderFound ? 'found' : 'not found'} · paginated audit reader ${result.auditListFound ? 'found' : 'not found'}`, 'measurement-note'));
+    if (result.fallbackTools.length) details.append(node('p', `Full description required: ${result.fallbackTools.join(', ')}`, 'measurement-note'));
+    if (proof) {
+      const trace = proof.liveTrace ?? proof.probe;
+      if (proof.error) details.append(node('p', `Stopped: ${proof.error} (${proof.errorType ?? 'unknown type'}). Recorded usage and tool calls are retained.`, 'measurement-note'));
+      (proof.turns ?? []).forEach(turn => details.append(node('blockquote', turn.question), node('pre', turn.answer)));
+      (trace?.executions ?? []).forEach((run, i) => details.append(adoptionExecution(trace.programs[i], run, proof.mode === 'live' ? 'Generated PHP' : 'Fixed probe PHP')));
+      const discovery = node('details', undefined, 'proof-details');
+      discovery.append(node('summary', 'Exact discovery messages, provider usage and security probes'), node('pre', JSON.stringify({agentCalls: trace?.agentCalls, providerResponses: trace?.providerResponses, fixedProbe: proof.probe, verification: proof.verification}, null, 2)));
+      details.append(discovery);
+      const catalog = node('details', undefined, 'proof-details');
+      catalog.append(node('summary', 'Approved catalog and comparison conditions'), node('pre', JSON.stringify({catalogProfile: proof.catalogProfile ?? 'publishing-2-v1', tools: proof.approvedTools, model: proof.model, questions: proof.questions, systemPrompt: proof.systemPrompt, generationSettings: proof.generationSettings, identity: proof.identity, limits: proof.limits, fixtureSha256: proof.fixtureSha256}, null, 2)));
+      details.append(catalog);
+    }
+    target.append(details);
+  });
+}
+
 async function refreshDiscovery() {
   try {
     const response = await fetch('/demo/discovery-report', {cache: 'no-store', credentials: 'same-origin'});
@@ -847,34 +873,36 @@ async function refreshDiscovery() {
     if (body === lastDiscoveryBody) return;
     const report = JSON.parse(body);
     const summary = report.summary;
-    byId('discovery-state').textContent = report.status === 'empty' ? 'NOT CAPTURED' : summary?.allCorrect ? 'MATCHED · ALL CORRECT' : report.status === 'running' ? 'CAPTURE IN PROGRESS' : 'CHECK INCOMPLETE';
+    byId('discovery-state').textContent = report.status === 'empty' ? 'NOT CAPTURED' : summary?.allCorrect ? 'MATCHED · ALL CORRECT' : report.status === 'running' ? 'CAPTURE IN PROGRESS' : summary?.complete && summary?.matchedConditions ? 'MATCHED · FAILURES RETAINED' : 'CHECK INCOMPLETE';
     byId('discovery-evidence').hidden = !summary;
     if (!summary) return;
     byId('discovery-note').textContent = `${report.mode === 'live' ? 'Real Hugging Face generation' : 'Fixed probes; no model called'} · ${summary.matchedConditions ? 'comparison conditions match' : 'comparison conditions not yet verified'} · ${new Date(report.createdAt).toLocaleString()}`;
+    byId('discovery-catalog').textContent = `${summary.catalog.tools} approved tools · ${summary.catalog.compactReady.length} compact contracts · ${summary.catalog.requiresDescribe.length} full-description fallbacks · at most ${summary.catalog.searchResultLimit} search results. Catalog: ${summary.catalogProfile}.`;
+    const bodyMissing = summary.rows.filter(row => !row.bodyReaderFound).length;
+    byId('discovery-outcome').textContent = report.mode === 'live' && summary.complete && !summary.allCorrect
+      ? `This batch does not establish token savings with correct answers. The article-body reader was absent from the search results in ${bodyMissing}/${summary.rows.length} conversations, although it exists in the approved catalog. Questions and permissions were unchanged between modes. All failures and incomplete usage remain below.` : '';
     byId('discovery-scope').textContent = summary.scope;
     const rows = byId('discovery-rows'); rows.replaceChildren();
     for (const [mode, totals] of Object.entries(summary.totals)) {
       const row = node('tr');
-      row.append(node('td', mode === 'full' ? 'Search → describe → execute' : 'Compact search → execute'), node('td', `${totals.correct} / ${totals.planned}`), node('td', number(totals.modelRequests)), node('td', totals.providerTokens === null ? 'Not measured' : number(totals.providerTokens)), node('td', number(totals.discoveryRequests)), node('td', bytes(totals.discoveryBytes)));
+      const tokens = node('td', totals.providerTokens === null ? `${number(totals.observedTokens)} observed` : number(totals.providerTokens));
+      if (totals.providerTokens !== null) tokens.append(node('div', `${number(totals.promptTokens)} prompt + ${number(totals.completionTokens)} completion`, 'measurement-note'));
+      else tokens.append(node('div', totals.modelRequests ? `Incomplete: ${totals.meteredResponses}/${totals.modelRequests} requests report usage` : 'No model called', 'measurement-note'));
+      const correct = node('td', `${totals.correct} / ${totals.planned} conversations`);
+      if (totals.questions) correct.append(node('div', `${totals.correctAnswers} / ${totals.questions} answers correct`, 'measurement-note'));
+      row.append(node('td', mode === 'full' ? 'Search → describe → execute' : 'Compact search + fallback'), correct, node('td', number(totals.modelRequests)), tokens, node('td', `${totals.discoveryRequests} (${totals.searchRequests} search / ${totals.describeRequests} describe)`), node('td', bytes(totals.discoveryBytes)));
       rows.append(row);
     }
     const attempts = byId('discovery-attempts'); attempts.replaceChildren();
-    report.attempts.forEach((attempt, index) => {
-      const proof = attempt.proof;
-      const details = node('details', undefined, 'proof-details');
-      const result = summary.rows[index];
-      details.append(node('summary', `Repetition ${attempt.repetition} · ${attempt.discovery} · ${attempt.status} · ${result.correct ? 'correct' : 'not verified'} · ${result.modelRequests} model requests`));
-      if (proof) {
-        const trace = proof.liveTrace ?? proof.probe;
-        (proof.turns ?? []).forEach(turn => details.append(node('blockquote', turn.question), node('pre', turn.answer)));
-        (trace?.executions ?? []).forEach((run, i) => details.append(adoptionExecution(trace.programs[i], run, proof.mode === 'live' ? 'Generated PHP' : 'Fixed probe PHP')));
-        const discovery = node('details', undefined, 'proof-details');
-        discovery.append(node('summary', 'Exact discovery messages, provider usage and security probes'), node('pre', JSON.stringify({agentCalls: trace?.agentCalls, providerResponses: trace?.providerResponses, fixedProbe: proof.probe, verification: proof.verification}, null, 2)));
-        details.append(discovery);
-      }
-      attempts.append(details);
-    });
-    byId('discovery-history').textContent = JSON.stringify((report.previousAttempts ?? []).map(previous => ({createdAt: previous.createdAt, mode: previous.mode, status: previous.status, summary: previous.summary})), null, 2);
+    discoveryAttempts(report, attempts);
+    const history = byId('discovery-history'); history.replaceChildren();
+    for (const previous of report.previousAttempts ?? []) {
+      const batch = node('details', undefined, 'proof-details');
+      batch.append(node('summary', `${previous.summary.catalog.tools} tools · ${previous.mode} · ${previous.status} · ${new Date(previous.createdAt).toLocaleString()}`));
+      for (const [mode, totals] of Object.entries(previous.summary.totals)) batch.append(node('p', `${mode}: ${totals.correct}/${totals.planned} correct · ${totals.modelRequests} model requests · ${totals.providerTokens === null ? 'tokens not measured' : `${number(totals.providerTokens)} provider tokens`}`, 'measurement-note'));
+      discoveryAttempts(previous, batch);
+      history.append(batch);
+    }
     lastDiscoveryBody = body;
   } catch {
     lastDiscoveryBody = ''; byId('discovery-state').textContent = 'REPORT UNAVAILABLE'; byId('discovery-evidence').hidden = true;

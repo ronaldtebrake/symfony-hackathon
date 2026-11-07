@@ -78,6 +78,9 @@ final readonly class DemoController
         $this->requireLocalRequest($request);
         $report = json_decode($this->store->readDiscoveryComparison() ?? '{"status":"empty"}', true, flags: JSON_THROW_ON_ERROR);
         if ('empty' !== $report['status']) {
+            foreach ($report['previousAttempts'] ?? [] as $index => $previous) {
+                $report['previousAttempts'][$index]['summary'] = (new \App\Demo\DiscoveryComparison())->summarize($previous);
+            }
             $report['summary'] = (new \App\Demo\DiscoveryComparison())->summarize($report);
             if ('complete' === $report['status'] && !$report['summary']['allCorrect']) { $report['status'] = 'failed'; }
         }

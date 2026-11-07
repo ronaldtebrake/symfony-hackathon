@@ -9,9 +9,52 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class DiscoveryComparisonTest extends WebTestCase
 {
+    public function testLargeCatalogRetainsFailuresPartialUsageAndPerQuestionCorrectness(): void
+    {
+        $report = json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/compact-discovery.json'), true, flags: JSON_THROW_ON_ERROR);
+        self::assertSame(\App\Demo\DiscoveryCatalog::PROFILE, $report['catalogProfile']);
+        $summary = (new DiscoveryComparison())->summarize($report);
+        self::assertTrue($summary['matchedConditions']);
+        self::assertTrue($summary['complete']);
+        self::assertFalse($summary['allCorrect']);
+        self::assertSame([0, 0], array_column($summary['totals'], 'correct'));
+        self::assertSame([1, 0], array_column($summary['totals'], 'correctAnswers'));
+        self::assertSame([13, 14], array_column($summary['totals'], 'modelRequests'));
+        self::assertSame([15340, 26612], array_column($summary['totals'], 'observedTokens'));
+        self::assertSame([12, 14], array_column($summary['totals'], 'meteredResponses'));
+        self::assertNull($summary['totals']['full']['providerTokens']);
+        self::assertSame(26612, $summary['totals']['compact']['providerTokens']);
+        self::assertSame([true, true, true, true], array_column($summary['rows'], 'catalogVerified'));
+        self::assertSame([false, false, false, false], array_column($summary['rows'], 'bodyReaderFound'));
+        foreach ($report['attempts'] as $attempt) {
+            self::assertTrue((new \App\Demo\AdoptionProofVerifier())->verifyProbe($attempt['proof']['probe']));
+        }
+        $report['attempts'][1]['proof']['model'] = 'other';
+        self::assertFalse((new DiscoveryComparison())->summarize($report)['matchedConditions']);
+    }
+
+    public function testLargeCatalogVerifierRejectsAlteredFallbackAndSchemaEvidence(): void
+    {
+        $report = json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/compact-discovery.json'), true, flags: JSON_THROW_ON_ERROR);
+        $call = &$report['attempts'][1]['proof']['liveTrace']['agentCalls'][0];
+        $result = json_decode($call['result'], true);
+        foreach ($result as &$tool) { if (true === ($tool['requiresDescribe'] ?? null)) { $tool['requiresDescribe'] = false; break; } }
+        unset($tool);
+        $call['result'] = json_encode($result, JSON_THROW_ON_ERROR);
+        self::assertFalse((new DiscoveryComparison())->summarize($report)['rows'][1]['catalogVerified']);
+        $report['attempts'][0]['proof']['approvedTools'][0]['inputSchema']['additionalProperties'] = true;
+        self::assertFalse((new DiscoveryComparison())->summarize($report)['rows'][0]['catalogVerified']);
+        $report['attempts'][2]['proof']['liveTrace']['requestEvidence'][0]['userMessageSha256'] = [hash('sha256', 'changed question')];
+        self::assertFalse((new DiscoveryComparison())->summarize($report)['rows'][2]['catalogVerified']);
+    }
+
     private function evidence(): array
     {
-        return json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/compact-discovery.json'), true, flags: JSON_THROW_ON_ERROR);
+        $report = json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/compact-discovery.json'), true, flags: JSON_THROW_ON_ERROR);
+        foreach ([$report, ...($report['previousAttempts'] ?? [])] as $batch) {
+            if ('live' === $batch['mode'] && 'publishing-2-v1' === ($batch['catalogProfile'] ?? 'publishing-2-v1')) { return $batch; }
+        }
+        throw new \RuntimeException('The original small-catalog comparison must remain in evidence.');
     }
 
     public function testMatchedLiveResultsAndLocalProbeRemainIndependentlyVerifiable(): void
@@ -24,7 +67,8 @@ final class DiscoveryComparisonTest extends WebTestCase
         self::assertSame([2, 2], array_column($summary['totals'], 'correct'));
         self::assertSame([14, 10], array_column($summary['totals'], 'modelRequests'));
         self::assertSame([16330, 10854], array_column($summary['totals'], 'providerTokens'));
-        self::assertTrue((new DiscoveryComparison())->summarize($report['previousAttempts'][0])['allCorrect']);
+        $all = json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/compact-discovery.json'), true, flags: JSON_THROW_ON_ERROR);
+        self::assertTrue((new DiscoveryComparison())->summarize($all['previousAttempts'][0])['allCorrect']);
     }
 
     public static function mismatches(): iterable
@@ -80,6 +124,9 @@ final class DiscoveryComparisonTest extends WebTestCase
         $report = json_decode($client->getResponse()->getContent(), true);
         self::assertSame('discovery-comparison', $report['kind']);
         self::assertSame((new DiscoveryComparison())->summarize($report), $report['summary']);
+        foreach ($report['previousAttempts'] ?? [] as $previous) {
+            self::assertSame((new DiscoveryComparison())->summarize($previous), $previous['summary']);
+        }
         $client->request('POST', '/demo/discovery-report'); self::assertResponseStatusCodeSame(405);
         $client->request('GET', '/demo/discovery-report', server: ['REMOTE_ADDR' => '203.0.113.1']); self::assertResponseStatusCodeSame(403);
     }
