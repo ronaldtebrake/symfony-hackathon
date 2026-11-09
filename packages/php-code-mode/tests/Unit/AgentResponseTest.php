@@ -46,9 +46,9 @@ final class AgentResponseTest extends TestCase
         self::assertStringNotContainsString('SECRET', json_encode($records));
     }
 
-    public function testUnsafeAndUnknownProfilesAlwaysKeepTheirWarning(): void
+    public function testUnknownProfileAlwaysKeepsItsWarning(): void
     {
-        foreach ([ExecutionProfile::LocalUnsafe, ExecutionProfile::Unknown] as $profile) {
+        foreach ([ExecutionProfile::Unknown] as $profile) {
             self::assertSame($profile->metadata(), AgentResponse::success(new ExecutionResult(null, [], 1, 1, 'host-run', $profile))['runtime']);
             self::assertSame($profile->metadata(), AgentResponse::failure(new \RuntimeException('secret'), $profile)['runtime']);
         }

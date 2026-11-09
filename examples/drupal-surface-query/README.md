@@ -106,6 +106,93 @@ across transports. It makes no model-quality, token-saving, pagination or public
 service security claim. A future Data Surface provider can reuse this boundary
 without coupling the Symfony package to Drupal or bypassing the query pipeline.
 
+## JSON batch comparison
+
+The separate batch server reuses the same approved `McpProvider`, reader identity,
+query schemas and per-call broker checks. It executes literal calls to trusted
+handlers; no PHP program, Docker client or gVisor runner is involved in this path.
+DDEV still hosts the Drupal fixture. Configure an MCP client to start:
+
+```bash
+php examples/drupal-surface-query/batch-mcp.php
+```
+
+For the separate two-tool interface, append `--catalog`. It advertises only
+`search_tools` and `execute_tools`. Search returns complete `drupal.search`
+contracts, so the describe step is unnecessary; the same JSON below goes to
+`execute_tools`. Provider approval, Drupal entity/field access, supervision and
+limits are unchanged. The retained reference comparison below used the original
+three-tool interface; it is not a live measurement of this catalog iteration.
+The two-tool server was also checked against the real DDEV site on 9 November:
+both restricted canary searches returned no visible matches, then the permitted
+orchard follow-up returned two accessible records in the same session. This was
+a read-only MCP smoke check, with no model or generated PHP execution.
+
+Describe `drupal.search`, then call `tools_execute` with:
+
+```json
+{"calls":[
+  {"name":"drupal.search","arguments":{"values":{"keywords":"SCMQ orchard","limit":10}}},
+  {"name":"drupal.search","arguments":{"values":{"keywords":"SCMQ garden","limit":10}}}
+]}
+```
+
+Run the reference probes without gVisor, or compare both paths:
+
+```bash
+php examples/drupal-surface-query/compare-batch.php --batch-only
+php examples/drupal-surface-query/compare-batch.php
+```
+
+The paired [9 November reference capture](proof/batch-comparison.json) passes
+**34 checks**. Both paths use the same schemas and make the same two actual MCP
+reads, with the same arguments, reader and returned data. Limits remain 15 seconds,
+3 seconds/tool, two calls per attempt and two attempts per session. Both exclude
+unpublished and title-denied records, return an empty list/count for no matches,
+reject unknown inputs and raw upstream names, and fail after permission revocation
+following discovery. The same sessions can read again after restoration. The
+PHP containers are confirmed removed. All attempts, including an initial run
+blocked by local Docker-socket access, are retained in ignored `var/`.
+
+| Composition reference | JSON batch | Code Mode PHP |
+| --- | ---: | ---: |
+| Actual underlying MCP reads | 2 | 2 |
+| Returned records | 4 across two lists, including one duplicate | 3 unique records |
+| Whole invocation, including cleanup | 4,408 ms | 4,892 ms |
+| Execution request payload tokens | 47 | 141 |
+| Execution response payload tokens | 118 | 83 |
+| Definitions + discovery + execution, each counted once | 864 | 1,151 |
+
+The batch **does not produce the requested combined answer**: the caller must
+still deduplicate, sort and calculate the final count. The verifier checks its
+raw lists against independently known visible records. PHP performs that work
+before returning. Batching has less request/discovery overhead in this tiny
+one-tool example; PHP returns a smaller response. This is a reason to offer both
+paths, not evidence that either always wins.
+
+The [token breakdown](proof/batch-payload-tokens.json) uses pinned
+`tiktoken==0.12.0`, `o200k_harmony`, and hashes of the exact canonical payloads.
+These are **offline payload tokens**, not provider usage, financial savings or a
+model-quality benchmark. They exclude prompts, repeated context, protocol/chat
+framing, final answer generation and the security probes. Both plans are
+operator-written; no model was called. The single sequential timing sample
+includes DDEV/MCP connection overhead and is not a latency benchmark.
+
+To reproduce the optional offline counts in an isolated Python environment:
+
+```bash
+python3 -m venv /tmp/surface-tokenizer
+/tmp/surface-tokenizer/bin/pip install tiktoken==0.12.0
+/tmp/surface-tokenizer/bin/python examples/drupal-surface-query/measure-batch.py examples/drupal-surface-query/proof/batch-comparison.json
+```
+
+A purpose-built multi-term Data Surface query could move deduplication into
+trusted Drupal code. That extension is not implemented here: its result limits,
+ordering and field-access semantics would need their own contract and tests.
+This proof supports reuse of typed query contracts, not a claim that Drupal Core
+already provides a general JSON query language. See [batch adoption and hosted
+Symfony limits](../../docs/batching.md).
+
 ## Live agent conversation
 
 The [reviewed conversation](proof/client-conversation.md) ran successfully in

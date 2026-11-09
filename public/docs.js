@@ -3,7 +3,8 @@ const chapters = [...document.querySelectorAll('#documentation > section')];
 const chapterLinks = [...document.querySelectorAll('.docs-nav a')];
 function openChapter() {
   const requested = decodeURIComponent(location.hash.slice(1));
-  const id = requested === 'codex-run' ? 'agent-run' : requested || 'overview';
+  const aliases = {'codex-run': 'agent-run', journey: 'version-two'};
+  const id = aliases[requested] ?? (requested || 'overview');
   const target = document.getElementById(id);
   const chapter = chapters.find((item) => item === target || item.contains(target)) ?? chapters[0];
   chapters.forEach((item) => { item.hidden = item !== chapter; });
@@ -23,14 +24,18 @@ if (document.documentElement.dataset.static === 'true') {
 // This guide consumes the same reviewed evidence as the detailed inspectors.
 // It never invokes a model, MCP endpoint or PHP executor.
 const demoShots = [
-  {time:'00:00–00:10', label:'Ask for an audit', title:'Start with a real task.', source:'Recorded MCP client conversation', href:'#agent-run', narration:'Symfony Code Mode lets an agent use your approved tools through PHP. Here, I ask it to audit the published articles for missing descriptions and image alt text.'},
-  {time:'00:10–00:20', label:'Reshape the question', title:'Turn findings into a repair plan.', source:'Same recorded conversation · second execution', href:'#agent-run', narration:'Now I ask which shared image fixes help the most articles. The agent writes a new program and checks the data again, with the same permissions.'},
-  {time:'00:20–00:35', label:'Inspect generated PHP', title:'PHP does the intermediate work.', source:'Exact PHP submitted in the follow-up', href:'#agent-run', narration:'This is the PHP it actually submitted. It fetches approved data, groups shared images and ranks the fixes. That work happens inside the runner, before the result goes back to the model.'},
-  {time:'00:35–00:48', label:'Check actual tool calls', title:'Every tool call crosses the broker.', source:'Host-recorded follow-up ledger', href:'#agent-run', narration:'These are the actual calls, recorded by the host. The broker validates the arguments and checks authorization on every invocation. Generated PHP cannot grant itself more access.'},
-  {time:'00:48–01:00', label:'Compare tokens', title:'Measure the model work.', source:'Separate matched Symfony AI + Hugging Face pair', href:'#live-comparison', narration:'In a separate matched Symfony AI run, both paths find all ten issues. Code Mode uses 12,597 tokens instead of 43,979: 71.4 percent fewer in this recorded pair.'},
-  {time:'01:00–01:22', label:'Prove the boundaries', title:'Useful access. Enforced limits.', source:'Separate fixed PHP probes · no model called', href:'#security-proof', narration:'These separate security probes run real PHP. An authorized read succeeds. An unauthorized tool call is denied. An infinite loop is terminated, and container removal is checked. The model controls the program; the host controls its permissions and execution budget.'},
-  {time:'01:22–01:30', label:'Use it in Symfony', title:'Bring your existing Symfony tools.', source:'Reusable Composer integration', href:'#quickstart', narration:'Register your Symfony AI tools and policy, check prerequisites, and connect your agent. The packages and reproducible evidence are in the repository.'},
+  {time:'00:00–00:10', label:'Start with the task', title:'An audit, through an agent.', source:'Version one · recorded PHP conversation', href:'#agent-run', narration:'We began with an agent auditing published articles for missing descriptions and image alt text. It wrote PHP against approved tools, and the sandbox ran it.'},
+  {time:'00:10–00:20', label:'Reshape the question', title:'Turn findings into a repair plan.', source:'Same recorded conversation · follow-up', href:'#agent-run', narration:'The follow-up asks which shared image fixes help the most articles. The agent composes another program, with the same permissions. The conversation stays in the client.'},
+  {time:'00:20–00:30', label:'Inspect the PHP', title:'The computation is real.', source:'Exact generated follow-up source', href:'#version-one', narration:'This is the submitted PHP. It reads approved data, groups shared images and ranks fixes. That saves model-side work, but it requires a dedicated sandbox runtime.'},
+  {time:'00:30–00:40', label:'Keep access checks', title:'The host owns the boundary.', source:'Host-recorded follow-up ledger', href:'#agent-run', narration:'Every actual call crosses the broker for validation and authorization. Those checks are the part we keep when we change the execution interface.'},
+  {time:'00:40–00:55', label:'Move to JSON', title:'Two tools. Existing handlers.', source:'Version two · actual catalog calls', href:'#version-two', narration:'For adoption, we follow Laravel’s search-and-execute approach. Search returns full contracts. Execute accepts literal JSON calls. There is no generated program, so this path needs no gVisor. The current worker still needs Unix PHP CLI.'},
+  {time:'00:55–01:07', label:'Measure all three', title:'Correctness comes before savings.', source:'Matched live Symfony AI + Hugging Face triplet', href:'#three-way', narration:'We compare direct tools, the JSON catalog and sandboxed PHP on the same model, question, data and permissions. Review costs count. Earlier failures stay visible; these are measured runs, not a promise that one path always wins.'},
+  {time:'01:07–01:23', label:'Inspect the boundaries', title:'The original security evidence.', source:'Version one · fixed sandbox probes', href:'#security-proof', narration:'The retained sandbox probes show an allowed read, a denied call and an infinite loop being terminated. JSON removes arbitrary generated code from its path; approved handlers still need access checks and execution budgets.'},
+  {time:'01:23–01:30', label:'Adopt in Symfony', title:'Register tools. Supply your policy.', source:'Symfony AI schemas + PHP MCP SDK', href:'#quickstart', narration:'Reuse your Symfony AI tools and policy. Enable the catalog, check prerequisites and connect your agent. Drupal is an optional reuse example.'},
 ];
+function latestVerifiedCatalog() {
+  return [...threeWayAttempts].reverse().find(attempt => /^audit-catalog-v/.test(attempt.protocol ?? '') && attempt.verification?.passed === true);
+}
 let demoShot = 0;
 function proofLink(href, text) { const link = node('a', text); link.href = href; return link; }
 function sourceBlock(text, php = false) { const pre = node('pre', text, 'tour-code'); pre.tabIndex = 0; if (php) PhpSyntax.render(pre, text); return pre; }
@@ -92,14 +97,28 @@ function showDemoShot() {
       const scroll = node('div', undefined, 'table-scroll'); scroll.append(table); content.append(scroll, node('p', 'Payload bytes are diagnostic measurements, not token counts. The full capture includes the exact outer MCP requests and returned results.', 'measurement-note'));
     }
   } else if (demoShot === 4) {
-    if (!judgeComparison) { content.append(node('p', 'No verified token comparison is available.')); return; }
-    const direct = judgeComparison.direct.result; const code = judgeComparison.code.result;
-    const reduction = 100 * (direct.providerTokens.total - code.providerTokens.total) / direct.providerTokens.total;
-    content.append(node('div', `${number(direct.providerTokens.total)} → ${number(code.providerTokens.total)}`, 'tour-token-total'), node('p', `${reduction.toFixed(1)}% fewer provider tokens · ${direct.modelRequests} → ${code.modelRequests} model requests`, 'tour-token-label'));
-    const list = node('dl', undefined, 'tour-token-detail');
-    for (const [label, field] of [['Input tokens','prompt'], ['Output tokens','completion']]) { const item = node('div'); item.append(node('dt',label),node('dd',`${number(direct.providerTokens[field])} → ${number(code.providerTokens[field])}`)); list.append(item); }
-    content.append(list, node('p','Both paths find all 10 issues in 48 articles. Same model, question, data and permissions. This is one matched pair, including each invocation’s failed tool attempts. Earlier runs remain inspectable.','measurement-note'), node('p','Tokens affect inference cost. The actual charge depends on input/output rates and provider billing; use the estimator in the full comparison.','measurement-note'));
+    const attempt = latestVerifiedCatalog();
+    if (!attempt) { content.append(node('p', 'A verified catalog comparison is not yet available. Inspect all attempts in the comparison chapter.')); return; }
+    const calls = attempt.runs.batch.result.agentCalls;
+    const search = calls.find(call => call.name === 'search_tools');
+    const execute = calls.find(call => call.name === 'execute_tools');
+    const submitted = execute?.arguments?.calls ?? [];
+    const full = node('details', undefined, 'proof-details');
+    full.append(node('summary', `Full recorded submission · ${submitted.length} calls`), sourceBlock(JSON.stringify(execute?.arguments, null, 2)));
+    content.append(node('span', 'SEARCH_TOOLS · ACTUAL REQUEST', 'tour-label'), sourceBlock(JSON.stringify(search?.arguments, null, 2)), node('span', `EXECUTE_TOOLS · FIRST CALL EXCERPT OF ${submitted.length}`, 'tour-label'), sourceBlock(JSON.stringify({calls: submitted.slice(0, 1)}, null, 2)), full, node('p', 'Literal arguments go to existing approved handlers. Independent calls can share a submission; dependent calls wait for their inputs. The full capture includes seven extra empty-page reads and their costs.', 'measurement-note'), proofLink('#three-way', 'Inspect every call and result →'));
   } else if (demoShot === 5) {
+    const attempt = latestVerifiedCatalog();
+    if (!attempt) { content.append(node('p', 'No fully verified catalog triplet is available. Failed attempts remain inspectable.')); return; }
+    const table = node('table'); table.append(node('caption', 'Provider tokens · complete conversations, including review'));
+    const head = node('thead'), header = node('tr'); ['Path', 'Tokens', 'Requests', 'Correct'].forEach(label => header.append(node('th', label))); head.append(header);
+    const body = node('tbody');
+    for (const [key, label] of [['direct','Direct tools'], ['batch','JSON catalog'], ['code','Sandboxed PHP']]) {
+      const run = attempt.runs[key], row = node('tr');
+      row.append(node('td', label), node('td', number(run.result.providerTokens.total)), node('td', number(run.result.modelRequests)), node('td', '10 / 10 findings, exact titles')); body.append(row);
+    }
+    table.append(head, body); const scroll = node('div', undefined, 'table-scroll'); scroll.append(table);
+    content.append(scroll, node('p', `Captured ${new Date(attempt.createdAt).toLocaleDateString()} · ${attempt.protocol}. Same 48 published articles, model, original question and permissions. One successful triplet; all unsuccessful attempts remain visible.`, 'measurement-note'), node('p', 'JSON reduces deployment requirements. PHP can reduce intermediate data returned to the model. Actual charges depend on provider input/output pricing.', 'measurement-note'));
+  } else if (demoShot === 6) {
     if (!judgeSecurity?.cases?.length) { content.append(node('p','Security evidence is not available.')); return; }
     const list = node('div', undefined, 'tour-security');
     for (const probe of judgeSecurity.cases) {
@@ -109,7 +128,7 @@ function showDemoShot() {
     }
     content.append(list, node('p','Fixed probes use a 2-second wall-clock budget and 128 MiB. Timing includes setup and cleanup. These checks demonstrate specific controls; they are not an independent security audit.', 'measurement-note'));
   } else {
-    content.append(node('p','Symfony AI supplies the schemas and existing tool execution. Code Mode adds PHP composition, host authorization and a bounded runner.'), sourceBlock("code_mode:\n    ai_toolbox: app.toolbox\n    ai_tools: ['publication_read']\n    ai_authorization: Adoption\\ReadPolicy\n    identity_provider: Adoption\\LocalReader"), sourceBlock('php bin/console code-mode:doctor\nphp bin/console code-mode:serve --no-debug'), node('p','Composer path packages today; not yet on Packagist. Secure execution requires the configured gVisor runner. The independent Symfony example includes the full configuration.', 'measurement-note'));
+    content.append(node('p','Symfony AI supplies the schemas and existing tool execution. The catalog exposes search and literal JSON calls, with host authorization and supervised handlers.'), sourceBlock("code_mode:\n    mode: catalog\n    ai_toolbox: app.toolbox\n    ai_tools: ['publication_read']\n    ai_authorization: Adoption\\ReadPolicy\n    identity_provider: Adoption\\LocalReader"), sourceBlock('php bin/console code-mode:doctor\nphp bin/console code-mode:serve --no-debug'), node('p','Composer path packages today; not yet on Packagist. JSON requires Unix PHP CLI, pcntl and posix. The sandboxed PHP path remains available separately; it requires gVisor.', 'measurement-note'));
   }
 }
 for (const [index, shot] of demoShots.entries()) {

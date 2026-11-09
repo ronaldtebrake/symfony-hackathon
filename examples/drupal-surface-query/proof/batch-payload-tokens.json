@@ -1,0 +1,85 @@
+{
+  "kind": "offline-data-surface-payload-counts",
+  "library": "tiktoken==0.12.0",
+  "encoding": "o200k_harmony",
+  "sourceSha256": "53d1d90cf30bec08f44b54031dc725bb360f57687ca658bd52689d71bf9364a3",
+  "scope": "One canonical copy of tool definitions, search/describe requests and responses, and the composition request/response. No inference. Excludes system/user prompts, repeated conversation history, chat/protocol framing, final answer generation, failures and security probes. Not billed tokens, request counts, cost savings or model correctness. Batch returns separate lists; PHP returns deduplicated output.",
+  "samples": {
+    "batch": {
+      "toolDefinitions": {
+        "tokens": 356,
+        "bytes": 1616,
+        "sha256": "bfda284eb26dbd395fe0a433860cf8da634577023b5a090bb7e1be8ba6613cc6"
+      },
+      "searchRequest": {
+        "tokens": 5,
+        "bytes": 18,
+        "sha256": "2299032127fd54a88877f79fd32f4d96b01a1337ec914122533397039a3a2767"
+      },
+      "searchResponse": {
+        "tokens": 47,
+        "bytes": 207,
+        "sha256": "151c68897fda67d605e02cfd4da1f32205d9d85b7dedec30e402201c9715dc93"
+      },
+      "describeRequest": {
+        "tokens": 8,
+        "bytes": 27,
+        "sha256": "054886e38a4d0a6dd6bd5df4d35c89c07795efae23917bf8345851ef773c2fab"
+      },
+      "describeResponse": {
+        "tokens": 283,
+        "bytes": 1345,
+        "sha256": "aabcaae488d4e1d27b2a294b8c30e43d1add91473c2527167dfdad140e3b2754"
+      },
+      "executionRequest": {
+        "tokens": 47,
+        "bytes": 184,
+        "sha256": "19e611d2d3a574228f1354a474d534ab87f52175ca1cbd2e57c82e24244f3036"
+      },
+      "executionResponse": {
+        "tokens": 118,
+        "bytes": 370,
+        "sha256": "1890fa35961a99b1bc1fc9591f2cc43985b8cea5e71d5c282eff3417faa2bac1"
+      },
+      "sumOfSingleCopies": 864
+    },
+    "php": {
+      "toolDefinitions": {
+        "tokens": 371,
+        "bytes": 1714,
+        "sha256": "1a8157895e3468c7633618afc082adc7f767bca23100069338fb1c1ca8408796"
+      },
+      "searchRequest": {
+        "tokens": 5,
+        "bytes": 18,
+        "sha256": "2299032127fd54a88877f79fd32f4d96b01a1337ec914122533397039a3a2767"
+      },
+      "searchResponse": {
+        "tokens": 47,
+        "bytes": 207,
+        "sha256": "151c68897fda67d605e02cfd4da1f32205d9d85b7dedec30e402201c9715dc93"
+      },
+      "describeRequest": {
+        "tokens": 8,
+        "bytes": 27,
+        "sha256": "054886e38a4d0a6dd6bd5df4d35c89c07795efae23917bf8345851ef773c2fab"
+      },
+      "describeResponse": {
+        "tokens": 496,
+        "bytes": 2307,
+        "sha256": "17accd20de1c2eb611c70c05f0ff1c13f80bb819d99982d9f8350bb6d2beb834"
+      },
+      "executionRequest": {
+        "tokens": 141,
+        "bytes": 442,
+        "sha256": "98cc59575854b23e899885aa755b74de0ec63d5e13b6ba41c4bf57ad572fb1ea"
+      },
+      "executionResponse": {
+        "tokens": 83,
+        "bytes": 252,
+        "sha256": "f810cefae005c9b2e06f9d43c7848ea4e7466a50f8ebe0afc3f822cfc32a0e67"
+      },
+      "sumOfSingleCopies": 1151
+    }
+  }
+}

@@ -1,18 +1,30 @@
 # Symfony Code Mode
 
-Let an agent write PHP to compose approved tools, then return the result.
+A searchable tool catalog for Symfony AI, following Laravel MCP’s search-and-execute approach.
 
-An article audit might need to read several pages, join image metadata and collect missing descriptions. With direct tool calls, the model receives the intermediate results and coordinates each step. Code Mode lets PHP do the pagination, joins and filtering in one execution. The agent discovers the tools it needs and receives a compact answer.
+Expose two stable tools: `search_tools` returns approved contracts and `execute_tools` invokes them with literal JSON arguments. Reuse Symfony AI schemas, Symfony/MCP providers and application access checks. There is no generated program in this path. The earlier sandboxed PHP implementation remains available as a historical reference and a computation option.
 
-The default runner executes generated PHP in gVisor. Your Symfony application owns the tool implementations, permissions and execution limits. Conversations stay in your MCP client or Symfony AI agent.
+Your application owns the tool implementations, identity, permissions and execution limits. Conversations stay in your MCP client or Symfony AI agent. Generated PHP requires gVisor. JSON batching needs no gVisor, although the current supervisor still requires Unix PHP CLI, `pcntl` and `posix`.
 
-**Measured with Symfony AI + Hugging Face:** 43,979 → 12,597 provider tokens (**71.4% fewer**) and 11 → 5 model requests in one matched article audit. Both answers are correct. [Inspect the input/output breakdown, conditions and earlier attempts](docs/huggingface-comparison.md). Actual cost depends on provider pricing.
+**Latest matched audit:** direct tools **46,438 tokens**, the two-tool JSON catalog **29,798**, sandboxed PHP **12,806**. All three return the same correct findings; totals include answer review. JSON uses **35.8% fewer tokens than direct calls** in this run and requires no generated-code sandbox. PHP uses **72.4% fewer**. All 13 development attempts remain visible; this is a corrected example, not a reliability estimate. [Results, corrections and retained failures](docs/batching.md#live-three-way-symfony-audit).
 
 ![The same 48 articles and 10 findings, with 43,979 versus 12,597 provider tokens in one matched Symfony AI and Hugging Face pair.](docs/images/code-mode-value.svg)
 
 *Illustrated flow of the reviewed 2 November 2026 pair: 71.4% fewer input + output tokens and 11 → 5 model requests. Same model, question, data and permissions. One verified pair, not a billing estimate.*
 
 Built for the [Symfony AI & MCP Hackathon](https://symfony.com/hackathon), using **Symfony AI**, the **PHP MCP SDK** and **Hugging Face Inference Providers**. The runner and Symfony integration are reusable Composer packages.
+
+## How the goal evolved
+
+1. **Code Mode: let the agent compose the work.** PHP can paginate, join and filter tool results before returning an answer. This is the motivating idea, not permission to execute arbitrary PHP inside an application.
+2. **Code Mode with a sandbox: make execution bounded.** gVisor runs real PHP while a host broker checks every tool call. The proof works, but a dedicated Linux runtime adds deployment work for Symfony applications.
+3. **Code Mode through JSON: make more tasks easier to adopt.** A small JSON Schema describes ordered calls to approved handlers. There is no generated program and no code sandbox to deploy. It trades arbitrary loops and joins for literal arguments and separate results.
+
+These are the design questions that led to **two supported execution paths**. The unsafe local PHP executor has been removed. JSON keeps authorization, argument validation and execution budgets; it does not make unsafe handlers safe. A portable Symfony Process or Messenger adapter is future work, so ordinary shared hosting is not yet verified.
+
+This echoes [Laravel's learning about JSON and searchable catalogs](https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#what-changed-for-me). Our contribution is a Symfony AI integration with reusable providers, two bounded execution paths, and complete model-run comparisons. The [visual walkthrough](http://127.0.0.1:8000/demo#version-two) connects those decisions to the evidence.
+
+Drupal is an optional reuse example: the separate [Data Surface query proof](examples/drupal-surface-query/README.md#json-batch-comparison) accepts schema-defined arguments through Tool API and MCP, preserving publication, entity and field access. A query that already returns useful projections can be called through JSON; PHP remains available to combine multiple query results. This is an experimental Rosetta integration, not a claim about Drupal Core adoption.
 
 ## Getting started
 
@@ -25,19 +37,20 @@ composer install
 composer start
 ```
 
-Browse the [visual documentation](https://ronaldtebrake.github.io/symfony-hackathon/) or open [the local workbench](http://127.0.0.1:8000/demo). It shows the agent conversation and follow-up, exact PHP, actual tool calls, measured model usage and security proofs. It is a read-only viewer of saved runs. To execute new PHP, choose an [execution profile](#execution-profiles) and connect an agent as described below.
+Browse the [visual documentation](https://ronaldtebrake.github.io/symfony-hackathon/) or open [the local workbench](http://127.0.0.1:8000/demo). It shows the agent conversation and follow-up, exact PHP, actual tool calls, measured model usage and security proofs. It is a read-only viewer of saved runs. To execute new PHP, choose an [execution path](#execution-paths) and connect an agent as described below.
 
 The [Symfony performance conversation](docs/performance.md) shows a real agent correlating profiler records and logs, then verifying a prepared optimization: **13 queries → 1, identical output**. Inspect generated PHP, actual calls and a matched direct-tool baseline in [the local viewer](http://127.0.0.1:8000/demo#performance). Both approaches answer correctly; this small three-reader case uses fewer model requests with Code Mode, but more tokens.
 
 ## Use your Symfony tools
 
-The Symfony bundle exposes three MCP tools: `tools_search`, `tools_describe` and `php_execute`. Your approved application tools remain behind the broker.
+With `mode: catalog`, the Symfony bundle exposes two MCP tools: `search_tools` and `execute_tools`. Your approved application tools remain behind the broker.
 
-This checkout already registers two read services and a local demonstration identity:
+This checkout includes two read services and a local demonstration identity. To expose them through the JSON catalog, use:
 
 ```yaml
 # config/packages/code_mode.yaml
 code_mode:
+    mode: catalog
     identity_provider: App\CodeMode\DemoIdentityProvider
     tools:
         - App\CodeMode\ReadArticle
@@ -50,6 +63,7 @@ Already using Symfony AI's `#[AsTool]` services? Connect their existing toolbox 
 
 ```yaml
 code_mode:
+    mode: catalog
     identity_provider: App\CodeMode\DemoIdentityProvider
     ai_toolbox: app.publishing_toolbox
     ai_tools: [publishing_read, publishing_list]
@@ -76,7 +90,32 @@ The [provider composition example](examples/composition/README.md) runs beside t
 
 ## Discover, then execute
 
-Here is a small task using the checkout's two read services:
+For a read of published article 7, the agent first calls `search_tools`:
+
+```json
+{"query":"articles_read"}
+```
+
+Search returns the full approved contract. It matches names, descriptions and
+schema fields, with bounded results and explicit truncation. Search does not
+confer permission. The agent then calls `execute_tools`:
+
+```json
+{"calls":[{"name":"articles_read","arguments":{"id":7}}]}
+```
+
+The broker checks the caller, tool and arguments before invoking the handler.
+A call list may contain one read or several independent reads. Results remain
+separate; dependent calls need a later submission. There are no expressions,
+loops or result-reference syntax. Keep the same session and remaining budget for
+follow-ups. [Contracts, limits and live comparisons](docs/batching.md).
+
+<details>
+<summary>Version one: the sandboxed PHP walkthrough</summary>
+
+### Historical PHP walkthrough
+
+With `mode: php` and gVisor configured, here is the original composition walkthrough:
 
 > Find published articles with an empty meta description. Return their IDs and the number of articles checked.
 
@@ -139,41 +178,41 @@ A follow-up uses the same conversation, identity and remaining execution budget.
 
 Code Mode is useful when a task needs pagination, branching or several related reads. A simple lookup may need less work as a direct tool call. Discovery and sandbox startup have costs too.
 
-## Execution profiles
 
-Runtime selection belongs to the operator. An MCP argument cannot select an executor, grant permissions or increase limits.
+</details>
 
-| Profile | What you need | Execution boundary |
+## Execution paths
+
+| Path | What you need | What executes |
 | --- | --- | --- |
-| `gvisor` — default | Dedicated Linux Docker endpoint with `runsc`, plus a pinned PHP 8.4 runner image | Isolated execution with no guest network, host mounts or forwarded credentials |
-| `local-unsafe` — explicit opt-in | Unix PHP CLI and the Composer dependencies | Same OS user; **no host filesystem or network isolation** |
+| Historical PHP — `mode: php` (package default) | Dedicated Linux Docker endpoint with `runsc` and a pinned runner image | PHP in gVisor, with no guest network, host mounts or forwarded credentials |
+| JSON catalog — `mode: catalog` | Unix PHP CLI with `pcntl`, `posix` and a supervised worker | Existing approved tool handlers; no generated code and no gVisor |
 
-For gVisor, follow the [runtime setup](packages/php-code-mode/README.md#run-the-proof), put the image ID and Docker command in ignored `.env.local`, then run `code-mode:doctor`. macOS can use a Linux VM. Ordinary Docker alone is insufficient; an unavailable gVisor runtime never triggers a local fallback.
+For gVisor, follow the [runtime setup](packages/php-code-mode/README.md#run-the-proof), put the image ID and Docker command in ignored `.env.local`, then run `code-mode:doctor`. macOS can use a Linux VM. Ordinary Docker alone is insufficient. There is no unsafe local PHP executor or automatic fallback.
 
-For reviewed snippets in a disposable development environment, add this alongside the existing bundle configuration:
+For the JSON catalog, add `mode: catalog` alongside your approved tools and identity provider. `code-mode:serve` exposes `search_tools` and `execute_tools`. Each call uses the same authorization and schema checks. Results stay separate; the model combines them. The earlier `mode: batch` interface with a separate describe step remains available for reproducing its captures. [Batch format, limits and hosted Symfony requirements](docs/batching.md).
 
-```yaml
-when@dev:
-    code_mode:
-        executor: local-unsafe
-```
+A hosted application needs a compatible CLI worker for batches. Generated PHP needs a dedicated sandbox host when the platform cannot provide gVisor. A public hosted executor and PHP-FPM batch adapter are not implemented.
 
-Use `code-mode:doctor --env=dev`, then connect to `code-mode:serve --env=dev --no-debug`. The doctor and results explicitly label this **Unsandboxed local execution**. Broker checks still apply, but generated PHP can access host files and services directly. Timeouts and cleanup are best effort; this profile is unsuitable for hostile generated code. [Local-mode setup and limitations](packages/symfony-code-mode/README.md#php-only-development-opt-in).
+The bundle defaults to **5 seconds per execution/batch, 1 second per tool, 10 tool calls and two attempts**, including failures. gVisor adds a 128 MiB container limit. The separate editorial-audit harness uses a larger bounded profile, documented in its [demo guide](docs/demo.md).
 
-The bundle defaults to **5 seconds per execution, 1 second per tool, 10 tool calls and two execution attempts**, including failures. gVisor adds a 128 MiB container limit; local mode has only the 32 MiB PHP heap limit. The separate editorial-audit harness uses a larger bounded profile, documented in its [demo guide](docs/demo.md).
-
-The default security proof checks an authorized read, a denied tool call and an infinite loop terminated after a completed read, with container removal verified. Tool descriptions, CMS content and generated PHP remain untrusted. This is a tested development proof, not an audited public execution service. [Security model](packages/php-code-mode/docs/security.md) · [Verification scope](packages/php-code-mode/docs/verification.md).
+The security proof checks an authorized read, a denied tool call and an infinite loop terminated after a completed read, with container removal verified. Tool descriptions, CMS content and generated PHP remain untrusted. This is a tested development proof, not an audited public execution service. [Security model](packages/php-code-mode/docs/security.md) · [Verification scope](packages/php-code-mode/docs/verification.md).
 
 ## Measured results
 
-The recorded editorial audit checks missing article descriptions and hero-image alt text. Symfony AI and Hugging Face ran both direct tools and Code Mode with the **same model, question, data and permissions**. Both returned all **10 findings across 48 articles**, with ten successful underlying reads per path:
+The latest Symfony AI + Hugging Face comparison keeps **model, question, data and permissions identical** across all three paths. Each reads all **48 articles** and returns the correct **10 findings**, including exact titles and issues:
 
-| Matched live run | Direct tools | Code Mode |
-| --- | ---: | ---: |
-| Model requests | 11 | 5 |
-| Provider tokens | 43,979 | 12,597 |
+| Matched live run · 9 November 2026 · `audit-catalog-v10` | Direct tools | JSON catalog | Sandboxed PHP |
+| --- | ---: | ---: | ---: |
+| Model requests, including review | 12 | 6 | 5 |
+| Provider input + output tokens | 46,438 | 29,798 | 12,806 |
+| Actual underlying tool calls | 10 | 17 | 10 |
+| Elapsed time | 8.8 s | 5.8 s | 4.3 s |
+| Generated-code sandbox | None | None | gVisor |
 
-Code Mode used **71.4% fewer provider tokens in this successful pair**. All 21 development invocations, including failures, remain in the [comparison evidence and methodology](docs/huggingface-comparison.md). This is a measured example, not a general performance guarantee.
+The model corrected the direct and JSON drafts; it explicitly kept PHP's correct draft. The host follows that recorded decision without consulting the expected answer. JSON made seven extra empty-page reads; their costs count too. All **13 attempts / 39 runs** remain in the workbench: **1,194,226 reported tokens**, with usage missing for three rejected requests. Protocol changes and failures are documented. This selected development result does not establish repeatable savings or financial charges. [Full methodology, drafts and costs](docs/batching.md#live-three-way-symfony-audit).
+
+The original two-way proof below and the animated explainer above retain their **2 November** measurements: 43,979 → 12,597 tokens, **71.4% fewer**. That is separate evidence, with all 21 historical development invocations retained in its [methodology](docs/huggingface-comparison.md).
 
 ![Actual workbench showing both verified answers and measured provider usage.](docs/images/huggingface-matched-comparison.jpg)
 
@@ -192,6 +231,7 @@ The commands below use gVisor, including when the bundle's `code-mode:serve` is 
 | `php bin/console code-mode:adoption-proof --no-debug` | Existing Symfony AI tools, denied access and a permitted follow-up; add `--live` for Hugging Face generation |
 | `php bin/console code-mode:performance-proof --no-debug` | Approved Symfony profiler/log reads: 13 queries → 1 with identical output; fixed PHP, simulated latency disclosed |
 | `php bin/console code-mode:evaluate --no-debug` | Five repeatable scenarios with correctness checks and an execution timeline; add `--live` for Hugging Face |
+| `php bin/console code-mode:audit-three-way --protocol=audit-catalog-v10 --no-debug` | Live direct/JSON/PHP audit with the same model, data and permissions; shared review and all attempt costs retained |
 
 For the live matched comparison, set `HUGGINGFACE_API_KEY` in ignored `.env.local`, then run `php bin/console code-mode:huggingface-compare --no-debug`. Live commands consume inference credits. The saved evidence can be viewed without a token.
 

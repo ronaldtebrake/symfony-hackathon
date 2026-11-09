@@ -25,6 +25,7 @@ services:
     App\Demo\ReportStore: ~
     App\Demo\SecurityProofRunner: ~
     App\Demo\HuggingFaceProofRunner: ~
+    App\Demo\ThreeWayAuditRunner: ~
     App\Demo\AdoptionProofRunner: ~
     App\Demo\EvaluationRunner: ~
     App\Demo\Performance\ProofRunner: ~

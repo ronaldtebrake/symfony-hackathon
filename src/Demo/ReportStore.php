@@ -131,6 +131,32 @@ final readonly class ReportStore
         return json_encode((new HuggingFaceComparison())->build($code, json_decode($direct, true, flags: JSON_THROW_ON_ERROR)), JSON_THROW_ON_ERROR);
     }
 
+    public function readThreeWayAudit(): array
+    {
+        $reviewed = $this->readPath($this->projectDir.'/docs/evidence/audit-three-way.json', 16 * 1048576);
+        $reviewedReport = null === $reviewed ? [] : json_decode($reviewed, true, 64, JSON_THROW_ON_ERROR);
+        $attempts = [];
+        foreach ($reviewedReport['attempts'] ?? [] as $attempt) {
+            $attempts[$attempt['id']] = $attempt;
+        }
+        // Fixed host paths only. Unreviewed local attempts never enter a Pages build.
+        if (!$this->reviewedOnly) {
+            $paths = glob($this->projectDir.'/var/demo/audit-three-way/*.json');
+            if (count($paths) > 100) { throw new \RuntimeException('Too many audit captures to display together.'); }
+            $size = 0;
+            foreach ($paths as $path) {
+                if (!preg_match('/\A\d{8}-\d{6}-[a-f0-9]{8}\.json\z/D', basename($path))) { continue; }
+                $data = $this->readPath($path, 8 * 1048576);
+                $size += strlen($data);
+                if ($size > 16 * 1048576) { throw new \RuntimeException('Audit captures exceed the viewer size limit.'); }
+                $attempt = json_decode($data, true, 64, JSON_THROW_ON_ERROR);
+                $attempts[$attempt['id']] = $attempt;
+            }
+        }
+        ksort($attempts);
+        return ['version' => 1, 'kind' => ThreeWayAuditRunner::PROTOCOL, 'attempts' => array_values($attempts), 'diagnostics' => $reviewedReport['diagnostics'] ?? []];
+    }
+
     private function saveFile(string $filename, array $report, int $maxBytes = 1048576): void
     {
         $directory = $this->projectDir.'/var/demo';

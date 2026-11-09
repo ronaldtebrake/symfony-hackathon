@@ -13,7 +13,12 @@ final class DemoPageTest extends WebTestCase
         $client = self::createClient();
         $crawler = $client->request('GET', '/demo');
         self::assertResponseIsSuccessful();
-        self::assertStringContainsString('Give your agents', $crawler->filterXPath('//h1')->text());
+        self::assertStringContainsString('One searchable catalog.', $crawler->filterXPath('//h1')->text());
+        $nav = $crawler->filterXPath('//nav[@aria-label="Documentation"]');
+        self::assertStringContainsString('HISTORICAL REFERENCE', $nav->text());
+        self::assertSame(['#version-one', '#version-two'], $nav->filterXPath('.//a[contains(text(),"Version ")]')->extract(['href']));
+        self::assertCount(0, $nav->filterXPath('.//a[@href="#lean-responses" or @href="#adoption-proof"]'));
+        self::assertCount(1, $crawler->filterXPath('//*[@id="version-one"]//img[contains(@src,"code-mode-value.svg")]'));
         self::assertResponseHeaderSame('x-content-type-options', 'nosniff');
         self::assertStringContainsString("script-src 'self'", $client->getResponse()->headers->get('Content-Security-Policy'));
         self::assertCount(0, $crawler->filterXPath('//textarea'));

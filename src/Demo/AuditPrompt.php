@@ -51,9 +51,12 @@ final class AuditPrompt
     public static function build(string $approach, DemoQuestion $question, string $protocol = self::COVERAGE_PROTOCOL): string
     {
         $prompt = self::shared($protocol);
-        $prompt .= 'code' === $approach
-            ? ('coverage-v10' === $protocol ? 'Discover tool contracts according to tools_search instructions, then use php_execute.' : 'Use tools_search, then tools_describe for the needed tools, then php_execute.').' Write real PHP that retrieves, joins and filters the data; return only the compact audit from PHP. Tool JSON objects are stdClass (use ->); JSON lists are arrays. There is no host network or filesystem. You have at most two execution attempts. The PHP result is the source for your final JSON.'
-            : 'Call the available MCP tools directly. The tools support batching; use it. Tool aliases refer to the original MCP tools described. Produce the same compact audit from their results.';
+        $prompt .= match ($approach) {
+            'code' => ('coverage-v10' === $protocol ? 'Discover tool contracts according to tools_search instructions, then use php_execute.' : 'Use tools_search, then tools_describe for the needed tools, then php_execute.').' Write real PHP that retrieves, joins and filters the data; return only the compact audit from PHP. Tool JSON objects are stdClass (use ->); JSON lists are arrays. There is no host network or filesystem. You have at most two execution attempts. The PHP result is the source for your final JSON.',
+            'direct' => 'Call the available MCP tools directly. The tools support batching; use it. Tool aliases refer to the original MCP tools described. Produce the same compact audit from their results.',
+            'batch' => 'Use tools_search, then tools_describe for the needed tools, then tools_execute. Submit literal JSON calls with name and arguments. A batch can contain independent calls whose arguments are already known; otherwise use the returned results to form the next batch. Results are returned in call order and are not joined or filtered for you. Produce the compact audit from these results. No PHP executes. You have at most 14 batch submissions and 60 underlying tool calls.',
+            default => throw new \InvalidArgumentException('Unknown audit approach.'),
+        };
         if ('code' === $approach && in_array($protocol, ['coverage-v9', 'coverage-v10', self::COVERAGE_PROTOCOL], true)) {
             $prompt .= ' For the final answer, copy the entire result value returned by php_execute verbatim as JSON, preserving every item and exact title. Do not summarize or reconstruct it. The result is already the requested answer; output it in full.';
         }

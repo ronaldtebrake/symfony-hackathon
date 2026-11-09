@@ -36,7 +36,9 @@ final class DocumentationBuildTest extends TestCase
     {
         $root = sys_get_temp_dir().'/code-mode-pages-'.bin2hex(random_bytes(6));
         $fs = new Filesystem();
-        $fs->mkdir([$root.'/docs/evidence', $root.'/var/demo']);
+        $fs->mkdir([$root.'/docs/evidence', $root.'/var/demo/audit-three-way']);
+        file_put_contents($root.'/docs/evidence/audit-three-way.json', '{"attempts":[{"id":"reviewed"}]}');
+        file_put_contents($root.'/var/demo/audit-three-way/20261109-120000-abcdef12.json', '{"id":"PRIVATE_LOCAL_SENTINEL"}');
         foreach (['compact-discovery.json', 'evaluation.json', 'adoption-proof.json', 'huggingface-proof.json', 'security-proof-2026-11-01.json', 'performance-proof.json', 'performance-conversation.json', 'performance-baseline.json', 'reference-comparison-2026-10-31.json'] as $file) {
             file_put_contents($root.'/docs/evidence/'.$file, '{"source":"reviewed"}');
         }
@@ -50,6 +52,8 @@ final class DocumentationBuildTest extends TestCase
             }
             self::assertNull($store->readHuggingFacePair());
             self::assertNull($store->readLocalPerformanceProof());
+            self::assertSame([['id' => 'reviewed']], $store->readThreeWayAudit()['attempts']);
+            self::assertCount(2, (new ReportStore($root))->readThreeWayAudit()['attempts']);
             self::assertStringContainsString('PRIVATE_LOCAL_SENTINEL', (new ReportStore($root))->read());
         } finally { $fs->remove($root); }
     }
@@ -76,7 +80,7 @@ final class DocumentationBuildTest extends TestCase
         }
         sort($files);
         $expected = ['.nojekyll', 'index.html', 'demo.css', 'demo.js', 'docs.js', 'php-syntax.js', 'images/code-mode-value.svg'];
-        foreach (['report', 'security-report', 'agent-report', 'boundary-report', 'huggingface-report', 'huggingface-comparison', 'adoption-report', 'evaluation-report', 'performance-report', 'performance-conversation', 'performance-baseline', 'response-payloads'] as $name) { $expected[] = 'evidence/'.$name.'.json'; }
+        foreach (['report', 'security-report', 'agent-report', 'boundary-report', 'huggingface-report', 'huggingface-comparison', 'adoption-report', 'evaluation-report', 'performance-report', 'performance-conversation', 'performance-baseline', 'response-payloads', 'audit-three-way'] as $name) { $expected[] = 'evidence/'.$name.'.json'; }
         sort($expected); self::assertSame($expected, $files);
         self::assertFileDoesNotExist($root.'/var/pages/evidence/discovery-report.json');
         self::assertStringNotContainsString('compact-discovery', $html);

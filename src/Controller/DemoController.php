@@ -66,6 +66,27 @@ final readonly class DemoController
         return $this->response($this->store->readHuggingFaceComparison(), 'application/json');
     }
 
+    #[Route('/demo/audit-three-way', name: 'app_demo_audit_three_way', methods: ['GET'])]
+    public function threeWayAudit(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+        $report = $this->store->readThreeWayAudit();
+        foreach ($report['attempts'] as &$attempt) {
+            foreach ($attempt['runs'] as &$run) {
+                $run['verification'] = \App\Demo\ThreeWayAuditVerifier::verify($run);
+                if (isset($run['draft']['answer'])) {
+                    $run['draft']['verification'] = (new \App\Demo\AuditVerifier())->verify(json_decode($run['draft']['answer'], true), 'fixture', $run['result']['brokerCalls'] ?? []);
+                }
+                if ('running' !== $run['status']) { $run['status'] = $run['verification']['passed'] ? 'complete' : 'failed'; }
+            }
+            unset($run);
+            $attempt['verification'] = \App\Demo\ThreeWayAuditVerifier::compare($attempt);
+            if ('running' !== $attempt['status']) { $attempt['status'] = $attempt['verification']['passed'] ? 'complete' : 'failed'; }
+        }
+        unset($attempt);
+        return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
+    }
+
     #[Route('/demo/adoption-report', name: 'app_demo_adoption_report', methods: ['GET'])]
     public function adoptionReport(Request $request): Response
     {

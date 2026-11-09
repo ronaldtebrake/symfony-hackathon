@@ -133,8 +133,8 @@ final class PerformanceProofTest extends WebTestCase
             'count' => $report['turns'][1]['trace']['value']['after']['profile']['queryCount'] = 2,
             'denial' => $report['denials'][0]['trace']['value'] = 'private',
             'budget' => $report['exhausted']['error']['reason'] = 'tool_failed',
-            'local_runtime' => $report['turns'][0]['trace']['runtime'] = \CodeMode\ExecutionProfile::LocalUnsafe->metadata(),
-            'local_budget' => $report['exhausted']['runtime'] = \CodeMode\ExecutionProfile::LocalUnsafe->metadata(),
+            'local_runtime' => $report['turns'][0]['trace']['runtime'] = ['executor' => 'untrusted', 'isolation' => 'none'],
+            'local_budget' => $report['exhausted']['runtime'] = ['executor' => 'untrusted', 'isolation' => 'none'],
             'redaction' => $report['turns'][0]['trace']['value']['extra'] = RequestCollector::CANARY,
             'timing' => $report['turns'][1]['trace']['value']['after']['profile']['durationMs'] = -1,
         };

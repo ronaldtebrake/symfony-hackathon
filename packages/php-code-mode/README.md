@@ -1,6 +1,6 @@
 # Symfony Code Mode — PHP package
 
-A reusable Composer library for running real PHP in gVisor and composing explicitly authorized tools through a trusted host broker. This is a security-focused proof, not an audited public execution service. See [the security model and runtime decision](docs/security.md) and [the verification record](docs/verification.md).
+A reusable Composer library for running real PHP in gVisor or dispatching approved JSON batches through a trusted host broker. Batches execute existing handlers without generated code or a sandbox dependency. This is a security-focused proof, not an audited public execution service. See [the security model and runtime decision](docs/security.md) and [the verification record](docs/verification.md).
 
 The package has no Symfony application, Drupal or model-provider dependency. It uses the official PHP MCP SDK for an optional gateway; hosts can also register local trusted handlers. Generated PHP receives only `$tools->call($name, $arguments)` and returns a JSON-compatible value. The broker owns the identity, schema, authorization, and call budget.
 
@@ -89,23 +89,45 @@ $result = $session->execute('return $tools->call("articles.list");');
 
 Adapt the example to the discovered tool's required arguments. Only locally approved tools disclosed by full describe can be called; describing a tool does not bypass its authorization callback. The default session allows two execution attempts, including failures. Create a new session for a new host-authorized task. `$session->toolDefinitions()` supplies the three canonical schemas and the selected runtime description for MCP servers and model toolboxes. The static `CodeModeSession::definitions()` retains gVisor descriptions for existing integrations.
 
-At the agent boundary, `AgentResponse::execute($session, $code, $record)` returns only `value` for successful gVisor execution. Its optional trusted callback receives the PHP and full sanitized trace. On failure it records the trace and rethrows; `AgentResponse::failure($error, $session->profile())` produces the compact error reason and affected tool. Local unsafe/unknown runtime warnings are preserved. Direct session/executor calls still return the full `ExecutionResult`; authorization, schemas, limits and cleanup are unchanged. The [Symfony adapter](../symfony-code-mode/README.md#agent-responses-and-host-evidence) supplies MCP and toolbox integration. The Drupal proof uses this same PHP formatter.
+At the agent boundary, `AgentResponse::execute($session, $code, $record)` returns only `value` for successful gVisor execution. Its optional trusted callback receives the PHP and full sanitized trace. On failure it records the trace and rethrows; `AgentResponse::failure($error, $session->profile())` produces the compact error reason and affected tool. Unknown runtime warnings are preserved. Direct session/executor calls still return the full `ExecutionResult`; authorization, schemas, limits and cleanup are unchanged. The [Symfony adapter](../symfony-code-mode/README.md#agent-responses-and-host-evidence) supplies MCP and toolbox integration. The Drupal proof uses this same PHP formatter.
 
 Discovery permits 128 upstream tools, 8 continuation cursors, a 64 KiB result and a 3-second worker deadline. Search returns at most 8 name/description matches; describe accepts at most 16 names. Large catalogs must be narrowed upstream. Tool results must be structured JSON or a single text item; media/resource results are rejected. The gateway preserves envelopes such as Drupal Tool API's `success`, `message`, `data`. Output schemas are metadata, not proof of valid or trusted output.
 
-## Explicit local development executor
+## JSON batches without a sandbox dependency
 
-`LocalUnsafeExecutor` implements the same `SandboxExecutor` contract. It requires Unix PHP CLI with `pcntl`, `posix` and `proc_open`, but no Docker or runner image:
+`BatchSession` invokes only approved handlers through the existing `ToolBroker`
+and supervised `BrokerWorker`. It does not evaluate code or instantiate Docker:
 
 ```php
-$executor = new \CodeMode\LocalUnsafeExecutor(); // Deliberate operator opt-in; NOT a sandbox.
-$result = $executor->execute($reviewedPhp, $broker, $hostIdentity, $approvedNames);
-$runtime = $result->profile->metadata(); // executor: local-unsafe, isolation: none
+$session = new \CodeMode\BatchSession(
+    $providers->catalog(), $providers->broker(), $hostIdentity,
+    new \CodeMode\ExecutionLimits(maxToolCalls: 2),
+);
+$session->describe(['catalog.getArticles']);
+$result = $session->execute([
+    ['name' => 'catalog.getArticles', 'arguments' => ['ids' => [1]]],
+    ['name' => 'catalog.getArticles', 'arguments' => ['ids' => [2]]],
+]);
+$agentResponse = $result->response(); // Ordered results; no automatic joining.
+$hostEvidence = $result->trace();
 ```
 
-Use reviewed snippets in a disposable environment. The child has no inherited environment or application bootstrap, but runs as the same OS user and **can read host files or contact network services directly**. Broker denials do not provide containment. PHP restrictions and heap limits are best effort. There are no OS memory, CPU, disk or process-count quotas. Cleanup never recursively deletes untrusted files; a nonempty scratch directory produces `cleanup_failed` and is left for operator inspection. See the [security model](docs/security.md#explicit-local-development-profile) and [Symfony configuration](../symfony-code-mode/README.md#php-only-development-opt-in).
+Names and arguments must match your approved provider contracts. Each call
+rechecks authorization and validation. The batch stops on its first failure;
+completed calls are not rolled back. Keep one session for the conversation and
+its follow-up. The same default two-attempt budget includes failures.
 
-`ExecutionResult` and execution failures carry an `ExecutionProfile`; built-in timelines also label the runtime. Custom executors can implement `ProfiledExecutor`; otherwise sessions report `unknown`, without promising isolation. Host metadata describes configuration, not a security attestation. Neither profile is selectable through an MCP argument, and gVisor failures never trigger a local fallback.
+For the optional two-tool catalog, call `searchContracts($query)` instead of a
+separate search/describe sequence. It returns bounded full contracts and records
+exactly which tools were disclosed. `catalogToolDefinitions()` supplies the fixed
+`search_tools` / `execute_tools` interface. Symfony's adapters expose it with
+`mode: catalog`; the executor, authorization and limits are shared with batches.
+
+This requires Unix PHP CLI with `pcntl` and `posix`. It is supervised execution
+of trusted handlers, not a sandbox for arbitrary PHP. Generated PHP has only the
+gVisor implementation; an unavailable runtime never falls back. Custom executor
+metadata remains unverified unless independently established.
+[Batch contract and hosting limits](../../docs/batching.md).
 
 ## Demo for judges
 

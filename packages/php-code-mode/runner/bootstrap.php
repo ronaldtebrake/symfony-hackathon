@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-// Subprocess entry point: isolated image, or explicitly unsandboxed local development.
+// Guest entry point: runs only inside the isolated gVisor image.
 // Never include this file in the host application or broker process.
 final class Tools
 {

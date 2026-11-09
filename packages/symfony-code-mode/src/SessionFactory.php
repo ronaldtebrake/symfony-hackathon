@@ -11,7 +11,7 @@ use CodeMode\ExecutionIdentity;
 use CodeMode\ExecutionLimits;
 use CodeMode\ExecutionProfile;
 use CodeMode\GvisorSandbox;
-use CodeMode\LocalUnsafeExecutor;
+use CodeMode\BatchSession;
 use CodeMode\Tool;
 use CodeMode\ToolBroker;
 use CodeMode\ToolCatalog;
@@ -23,8 +23,8 @@ final readonly class SessionFactory
     /** @param list<ReadToolInterface> $tools @param list<ToolProviderInterface> $providers */
     public function __construct(private array $tools, private string $image = '', private DockerEngine $docker = new DockerEngine(), private ExecutionLimits $limits = new ExecutionLimits(), private ?ApprovedToolbox $aiToolbox = null, private ExecutionProfile $executor = ExecutionProfile::Gvisor, private DiscoveryMode $discovery = DiscoveryMode::Full, private array $providers = [])
     {
-        if (ExecutionProfile::Unknown === $executor) {
-            throw new \InvalidArgumentException('Select gvisor or explicitly opt in to local-unsafe.');
+        if (ExecutionProfile::Gvisor !== $executor) {
+            throw new \InvalidArgumentException('Generated PHP requires the gVisor executor.');
         }
     }
 
@@ -33,20 +33,30 @@ final readonly class SessionFactory
     /** Each host-owned conversation gets its own discovery state and two-attempt budget. */
     public function create(ExecutionIdentity $identity, ?DiscoveryMode $discovery = null): CodeModeSession
     {
+        [$catalog, $broker, $php] = $this->assembleTools();
+        $executor = new GvisorSandbox($this->image, $this->docker);
+        return new CodeModeSession($catalog, $broker, $executor, $identity, $this->limits, discovery: $discovery ?? $this->discovery, phpInterface: $php);
+    }
+
+    /** Batches use the same approved handlers and never construct or contact a sandbox. */
+    public function createBatch(ExecutionIdentity $identity): BatchSession
+    {
+        [$catalog, $broker] = $this->assembleTools();
+        return new BatchSession($catalog, $broker, $identity, $this->limits);
+    }
+
+    /** Both paths assemble identical contracts and handlers; execution does not change policy. */
+    private function assembleTools(): array
+    {
         $tools = $this->approvedTools();
         $providers = [] === $this->providers ? null : new ProviderRegistry($this->providers);
         $catalog = new ToolCatalog([...array_map(static fn (ReadToolInterface $tool) => $tool->definition(), $tools), ...($providers?->catalog()->all() ?? [])]);
-        $brokerTools = [];
+        $handlers = [];
         foreach ($tools as $index => $tool) {
             $definition = $catalog->all()[$index];
-            $brokerTools[] = new Tool($definition->name, $definition->inputSchema, $tool->authorize(...), $tool->invoke(...));
+            $handlers[] = new Tool($definition->name, $definition->inputSchema, $tool->authorize(...), $tool->invoke(...));
         }
-
-        $executor = match ($this->executor) {
-            ExecutionProfile::Gvisor => new GvisorSandbox($this->image, $this->docker),
-            ExecutionProfile::LocalUnsafe => new LocalUnsafeExecutor(),
-        };
-        return new CodeModeSession($catalog, new ToolBroker([...$brokerTools, ...($providers?->handlers() ?? [])]), $executor, $identity, $this->limits, discovery: $discovery ?? $this->discovery, phpInterface: $providers?->php());
+        return [$catalog, new ToolBroker([...$handlers, ...($providers?->handlers() ?? [])]), $providers?->php()];
     }
 
     public function catalog(): ToolCatalog

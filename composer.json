@@ -80,6 +80,7 @@
         ],
         "test": "@php bin/phpunit",
         "test:package": "@php bin/phpunit -c packages/php-code-mode/phpunit.dist.xml --testsuite Unit",
+        "test:data-surface": "@php bin/phpunit --bootstrap vendor/autoload.php examples/drupal-surface-query/tests",
         "test:sandbox": "@php bin/phpunit -c packages/php-code-mode/phpunit.dist.xml --testsuite Sandbox",
         "test:demo": "@php bin/phpunit -c phpunit.sandbox.xml",
         "proof:code-mode": "@php packages/php-code-mode/examples/proof.php",
@@ -92,7 +93,8 @@
             "@php bin/console lint:yaml config --parse-tags",
             "@php bin/console lint:container --resolve-env-vars",
             "@test",
-            "@test:package"
+            "@test:package",
+            "@test:data-surface"
         ],
         "docs:build": "@php scripts/build-docs.php"
     },

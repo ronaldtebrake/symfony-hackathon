@@ -49,7 +49,7 @@ Lean responses now work here through the same PHP core package, with no Drupal m
 New proof runs use search followed by full describe. Drupal enforces node and field access on every read; a discovery result cannot grant permission. The committed report remains an unchanged historical execution capture.
 
 
-The Symfony bundle's DI configuration and `#[AsTool]` adapter are Symfony integration points. Drupal continues to use Tool API and its MCP bridge. The new PHP-only development executor could technically be wired in, but this proof keeps gVisor: unsandboxed PHP could access local services outside Drupal's tool permissions. A real Drupal agent conversation and paginated journal audit remain separate milestones.
+The Symfony bundle's DI configuration and `#[AsTool]` adapter are Symfony integration points. Drupal continues to use Tool API and its MCP bridge. Approved JSON batches can reuse the same provider without generated PHP or gVisor. See the separate [Data Surface comparison](../drupal-surface-query/README.md#json-batch-comparison). This existing execution proof still requires gVisor. A real Drupal agent conversation and paginated journal audit remain separate milestones.
 
 ## Inspect and repeat
 

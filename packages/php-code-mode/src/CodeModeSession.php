@@ -83,7 +83,6 @@ final class CodeModeSession
     {
         $execution = match ($profile) {
             ExecutionProfile::Gvisor => 'Execute a PHP 8.4 function body in gVisor isolation. No filesystem, network or credentials from the host.',
-            ExecutionProfile::LocalUnsafe => 'UNSAFE LOCAL DEVELOPMENT: execute a PHP '.PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION.' function body in an unsandboxed subprocess with the local OS user permissions. No host filesystem or network isolation. Broker authorization only protects calls through the broker. The operator selected this profile; the agent cannot change it.',
             ExecutionProfile::Unknown => 'Execute a PHP function body using the host-configured executor. No verified isolation claim is available.',
         };
         $schema = static fn (array $properties, array $required): \stdClass => json_decode(json_encode(['type' => 'object', 'properties' => $properties, 'required' => $required, 'additionalProperties' => false], JSON_THROW_ON_ERROR));

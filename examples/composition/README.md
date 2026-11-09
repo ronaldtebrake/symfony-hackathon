@@ -22,7 +22,7 @@ php -S 127.0.0.1:8001 -t public
 
 Open <http://127.0.0.1:8001>. The viewer reads `var/latest-proof.json`, falling back to the reviewed `proof/reference.json`. It cannot execute code. Every capture stays in ignored `var/`; only one reviewed reference is kept in the source tree. `var/interfaces.php` contains generated editor stubs. The committed proof is reproducible development evidence, not a tamper-proof attestation or security audit.
 
-Use the [existing gVisor setup](../../packages/php-code-mode/README.md#run-the-proof). Runtime limits match the main article audit: 15 seconds per execution, 3 seconds per tool, 30 calls, 128 MiB container memory, 32 MiB PHP memory, two attempts per session. The complete guest program, including the namespaced proxy, counts against the existing source-byte limit. The proof refuses the unsandboxed profile.
+Use the [existing gVisor setup](../../packages/php-code-mode/README.md#run-the-proof). Runtime limits match the main article audit: 15 seconds per execution, 3 seconds per tool, 30 calls, 128 MiB container memory, 32 MiB PHP memory, two attempts per session. The complete guest program, including the namespaced proxy, counts against the existing source-byte limit. The proof requires gVisor.
 
 To start a conversation in any MCP client, configure this directory as its working directory and launch:
 

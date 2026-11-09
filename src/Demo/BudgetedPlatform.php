@@ -41,7 +41,8 @@ final readonly class BudgetedPlatform implements PlatformInterface
             // Digests bind questions, draft and tool evidence without persisting provider reasoning or credentials.
             $this->trace->requestEvidence[] = ['request' => $index, 'toolMessages' => $tools,
                 'systemPromptSha256' => hash('sha256', (string) $input->getSystemMessage()?->getContent()),
-                'userMessageSha256' => $users, 'assistantMessageSha256' => $assistants, 'toolsAvailable' => [] !== ($options['tools'] ?? [])];
+                'userMessageSha256' => $users, 'assistantMessageSha256' => $assistants, 'toolsAvailable' => [] !== ($options['tools'] ?? []), 'toolsDeclared' => array_key_exists('tools', $options)]
+                + array_intersect_key($options, array_flip(['tool_choice', 'response_format']));
         }
         $span = $this->trace->timeline?->begin('model', 'Model request '.$index, ['request' => $index]);
         try {

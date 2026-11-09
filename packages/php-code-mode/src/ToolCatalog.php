@@ -64,6 +64,44 @@ final class ToolCatalog
         return $result;
     }
 
+    /** Full, bounded contracts for the separate two-tool catalog; never truncates a schema. */
+    public function searchContracts(string $query): array
+    {
+        if (strlen($query) > 256) { throw new \InvalidArgumentException('Search exceeds its supported bounds.'); }
+        $query = strtolower(trim($query));
+        $terms = array_unique(preg_split('/[^a-z0-9]+/', $query, flags: PREG_SPLIT_NO_EMPTY));
+        $ranked = [];
+        foreach ($this->definitions as $definition) {
+            $name = strtolower($definition->name);
+            $description = strtolower($definition->description);
+            $schema = strtolower(json_encode($definition->inputSchema, JSON_THROW_ON_ERROR));
+            if ($query === $name) { $ranked = [['definition' => $definition, 'score' => PHP_INT_MAX]]; break; }
+            $score = 0;
+            foreach ($terms as $term) {
+                $score += (str_contains($name, $term) ? 4 : 0) + (str_contains($description, $term) ? 2 : 0) + (str_contains($schema, $term) ? 1 : 0);
+            }
+            if ([] === $terms || $score > 0) { $ranked[] = ['definition' => $definition, 'score' => $score]; }
+        }
+        // PHP's stable sort preserves the host catalog order for equal scores.
+        usort($ranked, static fn ($a, $b) => $b['score'] <=> $a['score']);
+        $result = ['tools' => [], 'matched' => count($ranked), 'returned' => 0, 'limit' => 8, 'truncated' => count($ranked) > 8];
+        foreach (array_slice($ranked, 0, 8) as $entry) {
+            $candidate = $result;
+            $candidate['tools'][] = $entry['definition']->jsonSerialize();
+            ++$candidate['returned'];
+            // Reserve room for bounded refinement guidance. Never return partial schemas.
+            if (strlen(json_encode($candidate, JSON_THROW_ON_ERROR, 32)) > 32000) {
+                if ([] === $result['tools']) { throw new SandboxException('discovery_limit', 'The contract exceeds the disclosure limit.'); }
+                $result['truncated'] = true;
+                break;
+            }
+            $result = $candidate;
+        }
+        if ($result['truncated']) { $result['hint'] = 'More contracts match. Narrow the query by tool name, action or input field. An exact name selects one tool.'; }
+        elseif ([] === $result['tools']) { $result['hint'] = 'No approved contract matched. Try another name, action or input field.'; }
+        return $result;
+    }
+
     /** @param list<string> $names @return list<ToolDefinition> */
     public function describe(array $names): array
     {

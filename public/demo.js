@@ -1011,3 +1011,105 @@ async function loadResponsePayloads() {
   }
 }
 loadResponsePayloads();
+
+let threeWayAttempts = [];
+let threeWayCurrent = null;
+let threeWayDiagnostics = [];
+function renderThreeWayPath() {
+  const path = byId('three-way-path').value;
+  const run = threeWayCurrent?.runs?.[path];
+  const result = run?.result ?? {};
+  byId('three-way-answer').textContent = prettyEvidence(result.answer || 'No final answer returned.');
+  byId('three-way-review-details').hidden = !run?.review;
+  byId('three-way-draft').textContent = prettyEvidence(run?.draft?.answer ?? '');
+  byId('three-way-review-prompt').textContent = [run?.review?.systemPrompt, run?.review?.instruction].filter(Boolean).join('\n\n');
+  byId('three-way-review-status').textContent = run?.review
+    ? `Draft correctness: ${run.draft?.verification?.passed ? 'passed' : 'failed'}. Final answer: ${run.verification?.checks?.answerCorrect ? 'passed' : 'failed'}. ${run.review.status === 'complete' ? 'One review using the same model and complete history, with no tool execution or expected-answer feedback.' : 'The review did not return an accepted text answer. No review tool executed; its recorded usage is still counted.'} ${run.review.decision ? `Recorded model decision: ${run.review.decision}. The host applies this decision without consulting correctness checks.` : 'The host does not substitute a passing draft.'}` : '';
+  const reviewRows = byId('three-way-review-usage'); reviewRows.replaceChildren();
+  const reviewUsage = run?.review?.providerTokens ?? (result.providerResponses ?? []).find(response => response.request === run?.review?.modelRequest)?.tokens;
+  for (const [label, usage] of [['Draft conversation', run?.draft?.providerTokens], ['Answer review', reviewUsage]]) {
+    const row = node('tr'); row.append(node('td', label), node('td', number(usage?.prompt)), node('td', number(usage?.completion)), node('td', number(usage?.total))); reviewRows.append(row);
+  }
+  const program = byId('three-way-program');
+  program.replaceChildren();
+  program.classList.remove('php-highlight');
+  if (path === 'code') PhpSyntax.render(program, (result.programs ?? []).join('\n\n'));
+  else program.textContent = path === 'batch'
+    ? JSON.stringify((result.agentCalls ?? []).filter(call => ['tools_execute', 'execute_tools'].includes(call.name)).map(call => call.arguments), null, 2)
+    : 'Direct tools do not submit generated PHP or JSON batches.';
+  renderCallRows(byId('three-way-calls'), result.brokerCalls ?? []);
+  byId('three-way-agent-calls').textContent = JSON.stringify(result.agentCalls ?? [], null, 2);
+  byId('three-way-checks').textContent = JSON.stringify({verification: run?.verification, error: run?.error, entryTools: run?.entryTools, limits: run?.limits, reviewSettings: run?.review?.generationSettings, reviewResponse: run?.review?.response, reviewDecision: run?.review?.decision,
+    providerResponses: result.providerResponses, comparison: threeWayCurrent?.verification}, null, 2);
+}
+function renderThreeWayAttempt() {
+  threeWayCurrent = threeWayAttempts[Number(byId('three-way-attempt').value)];
+  if (!threeWayCurrent) return;
+  const attempt = threeWayCurrent;
+  const paired = attempt.verification?.passed === true;
+  byId('three-way-state').textContent = paired ? 'ALL THREE VERIFIED' : attempt.status === 'running' ? 'CAPTURE IN PROGRESS' : 'FAILURES RETAINED';
+  const reference = attempt.runs.direct ?? attempt.runs.batch ?? attempt.runs.code;
+  byId('three-way-question').textContent = reference?.task ?? '';
+  byId('three-way-scope').textContent = `${reference?.model ?? 'No model recorded'} · ${reference?.protocol ?? 'audit-original-v1'} · ${new Date(attempt.createdAt).toLocaleString()} · ${threeWayAttempts.length} experiment attempt(s) retained, including failures.`;
+  const catalog = /^audit-catalog-v/.test(reference?.protocol ?? '');
+  byId('three-way-review-note').textContent = /^audit-catalog-v(?:[4-9]|10)$/.test(reference?.protocol ?? '')
+    ? `Dedicated text-only review on every path, with the same draft prompts, model, original question, data, permissions and 14-request ceiling. No expected findings or evaluator feedback are supplied. ${reference?.toolResultEncoding === 'literal-utf8' ? 'Every path uses literal UTF-8 tool-result text; decoded records are unchanged. ' : ''}${['audit-catalog-v8','audit-catalog-v9','audit-catalog-v10'].includes(reference?.protocol) ? 'Forced JSON output mode is omitted; exact answer checks still apply. ' : ''}${reference?.protocol === 'audit-catalog-v9' ? 'The review checks each draft finding against the actual records before looking for omissions. ' : ''}${reference?.protocol === 'audit-catalog-v10' ? 'The model explicitly keeps the draft or replaces it; the host applies that decision without consulting the expected answer. ' : ''}The full review instructions and request settings are recorded below.`
+    : catalog
+    ? 'Separate catalog iteration: JSON exposes just search_tools and execute_tools. Search returns full contracts, including matches on schema fields. Direct and PHP guidance, all underlying tools and the shared review are unchanged from the reviewed protocol. Fresh conversations on every path; compare within an attempt.'
+    : reference?.protocol === 'audit-reviewed-v2'
+    ? 'Revised protocol: staged collection and one shared review for every path. The same 14-request ceiling includes that review; the model, original question, data, schemas and permissions are unchanged. Earlier attempts used the original guidance without review.'
+    : 'Original protocol: no separate answer review. These captures are retained unchanged; compare paths within the same experiment attempt.';
+  const allRuns = threeWayAttempts.flatMap(item => Object.values(item.runs ?? {}));
+  const totalKnown = allRuns.reduce((sum, run) => sum + (run.verification?.knownProviderTokens?.total ?? 0), 0);
+  const unreported = allRuns.reduce((sum, run) => sum + (run.verification?.unreportedRequests ?? 0), 0);
+  byId('three-way-history-cost').textContent = `Across all ${allRuns.length} retained runs: ${number(totalKnown)} reported tokens, including failures.${unreported ? ` Usage is missing for ${unreported} request(s).` : ' Every issued request has recorded usage.'} Costs depend on input/output pricing; elapsed time also includes provider and runtime work.`;
+  byId('three-way-diagnostics').hidden = !threeWayDiagnostics.length;
+  byId('three-way-diagnostic-data').textContent = JSON.stringify(threeWayDiagnostics, null, 2);
+  const rows = byId('three-way-totals'); rows.replaceChildren();
+  for (const [key, label] of [['direct', 'Direct tools'], ['batch', catalog ? 'JSON catalog · 2 tools' : 'JSON batch · 3 tools'], ['code', 'Code Mode']]) {
+    const run = attempt.runs[key], result = run?.result ?? {}, tokens = run?.verification?.knownProviderTokens;
+    const row = node('tr');
+    row.append(node('td', label), node('td', number(tokens?.prompt)), node('td', number(tokens?.completion)),
+      node('td', !run ? 'Not run' : run.verification?.unreportedRequests ? `${number(tokens?.total)} known; incomplete` : number(tokens?.total)),
+      node('td', number(result.modelRequests)), node('td', run ? number(result.brokerCalls?.length ?? 0) : '—'),
+      node('td', typeof run?.elapsedMs === 'number' ? `${(run.elapsedMs / 1000).toFixed(1)} s` : '—'),
+      node('td', !run ? 'Not run' : run.verification?.checks?.answerCorrect === true ? 'Yes' : run.status === 'running' ? 'Pending' : 'No'));
+    rows.append(row);
+  }
+  if (paired) {
+    const direct = attempt.runs.direct.result.providerTokens.total;
+    const batch = attempt.runs.batch.result.providerTokens.total;
+    const code = attempt.runs.code.result.providerTokens.total;
+    byId('three-way-verdict').textContent = `All three answers and evidence checks passed. JSON batching used ${(100 * Math.abs(1 - batch / direct)).toFixed(1)}% ${batch <= direct ? 'fewer' : 'more'} tokens than direct tools, without a generated-code sandbox. Code Mode used ${(100 * Math.abs(1 - code / direct)).toFixed(1)}% ${code <= direct ? 'fewer' : 'more'} than direct tools, and ${(100 * Math.abs(1 - code / batch)).toFixed(1)}% ${code <= batch ? 'fewer' : 'more'} than JSON batching. This is one matched attempt.`;
+  } else {
+    byId('three-way-verdict').textContent = 'This is not a verified three-way savings comparison. Observed costs remain visible, including incorrect and unfinished answers. An inexpensive wrong answer does not establish a saving.';
+  }
+  renderThreeWayPath();
+}
+byId('three-way-attempt').addEventListener('change', renderThreeWayAttempt);
+byId('three-way-path').addEventListener('change', renderThreeWayPath);
+let lastThreeWayBody = '';
+async function refreshThreeWayAudit() {
+  try {
+    const response = await fetch(evidenceUrl('/demo/audit-three-way'), {cache: 'no-store', credentials: 'same-origin'});
+    if (!response.ok) throw new Error('Capture unavailable');
+    const body = await response.text();
+    if (body !== lastThreeWayBody) {
+      const selected = threeWayCurrent?.id;
+      const report = JSON.parse(body);
+      threeWayAttempts = report.attempts ?? [];
+      threeWayDiagnostics = report.diagnostics ?? [];
+      byId('three-way-evidence').hidden = !threeWayAttempts.length;
+      const select = byId('three-way-attempt'); select.replaceChildren();
+      threeWayAttempts.forEach((attempt, index) => { const option = node('option', `${index + 1} · ${attempt.protocol ?? 'audit-original-v1'} · ${attempt.status} · ${attempt.id}`); option.value = index; select.append(option); });
+      const retained = threeWayAttempts.findIndex(attempt => attempt.id === selected);
+      select.value = retained >= 0 ? retained : threeWayAttempts.length - 1;
+      if (threeWayAttempts.length) renderThreeWayAttempt();
+      else byId('three-way-state').textContent = 'NO THREE-WAY CAPTURE';
+      lastThreeWayBody = body;
+      document.dispatchEvent(new Event('proof-evidence-changed'));
+    }
+  } catch { byId('three-way-state').textContent = 'CAPTURE UNAVAILABLE'; }
+  finally { poll(refreshThreeWayAudit, 5000); }
+}
+refreshThreeWayAudit();

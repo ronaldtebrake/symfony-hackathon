@@ -1,6 +1,6 @@
 # Symfony Code Mode integration
 
-Approve existing Symfony read services, then give an MCP client bounded search, full describe and PHP execution. The generic runner and broker remain in `ronaldtebrake/php-code-mode`. This bundle supplies the Symfony container integration and a STDIO entry point.
+Approve existing Symfony read services, then give an MCP client isolated PHP execution or bounded JSON calls. The generic runner and broker remain in `ronaldtebrake/php-code-mode`. This bundle supplies the Symfony container integration and a STDIO entry point.
 
 For a consumer with its own dependencies, native `#[AsTool]` service and authorization policy, use the [separate Symfony app](../../examples/symfony/README.md). Its recorded allowed/denied proof runs through this bundle's normal MCP server without the main demo autoloader.
 
@@ -68,28 +68,28 @@ Defaults: 5 seconds per execution, 1 second per tool, 128 MiB container memory, 
 
 Each `SessionFactory::create($hostIdentity)` returns fresh conversation state. Keep that same session for follow-ups. Do not recreate it after a denial to reset its budget. `code-mode:serve` creates exactly one session per operator-started server process. STDIO access grants the configured local operator's capabilities; protect the host and command accordingly.
 
-### PHP-only development opt-in
+### JSON batches
 
-For reviewed snippets in a disposable environment, add this alongside the approved tools and identity provider:
+Add `mode: batch` to the same approved-tool configuration to expose
+`tools_search`, `tools_describe` and `tools_execute`. Alternatively, `mode: catalog`
+exposes only `search_tools` and `execute_tools`: search returns full contracts,
+so there is no separate describe step. Search includes schema fields and reports
+truncation. Execution accepts one or more literal calls through the same broker.
+The advertised pair remains fixed; discovery never grants application access.
+The server will not expose
+PHP execution, resolve runner configuration or require Docker/gVisor. The
+existing providers, identity and per-call policies are reused.
 
-```yaml
-# config/packages/code_mode.yaml
-when@dev:
-    code_mode:
-        executor: local-unsafe
-```
-
-Run `php bin/console code-mode:doctor --env=dev`, then connect your agent to `php bin/console code-mode:serve --env=dev --no-debug` over STDIO. PHP 8.2+ CLI, Composer dependencies, `pcntl` and `posix` on Unix are required; Docker, gVisor, a runner image and a web server are not. Generated code uses the host PHP version. Remove the override to return to gVisor; restart the MCP process after configuration changes.
-
-**This is unsandboxed local execution.** PHP runs as your OS user and can access host files and network services. Broker policies still reject unauthorized calls, but cannot prevent direct access outside the broker. Use the isolated executor for untrusted agent-generated code. Timeouts, output bounds, a 32 MiB PHP heap limit and process-group cleanup are best effort; there is no OS memory, CPU, process-count or disk quota. [Exact limitations](../php-code-mode/docs/security.md#explicit-local-development-profile).
-
-The doctor prints a warning. MCP/Symfony AI results and failures carry host-supplied `runtime` metadata with `executor: local-unsafe`, `isolation: none` and the label **Unsandboxed local execution**. Its `php_execute` tool is not advertised as read-only. The only execution argument remains `code`; profile selection, identities and limits are operator configuration. These traces are not tamper-proof audit records on a host running unsandboxed code.
-
-This switch applies to the bundle's `code-mode:serve` and its session factory. The hackathon's audit, performance, evaluation and security-proof commands keep their explicit gVisor runners. Recorded workbench evidence is unchanged and does not become evidence for local mode.
+The batch path requires Unix PHP CLI with `pcntl` and `posix`; it is not a
+PHP-FPM adapter. Use `SessionFactory::createBatch($identity)` and
+`CodeMode\Symfony\Ai\BatchToolbox` for a Symfony AI conversation. Ordered
+results reach the agent without automatic filtering or joining. The default
+`mode: php` keeps gVisor. No unsafe local PHP executor is available.
+[Full batch contract, limits and hosted Symfony guidance](../../docs/batching.md).
 
 ## Agent responses and host evidence
 
-Successful gVisor execution returns `{"value": ...}`. A failure returns `{"error":{"reason":"tool_denied","tool":"publishing_read"}}`; the tool name is omitted when no failed call is known. MCP also sets `isError`. Private exception messages and intermediate results are not included. Local unsafe and unknown executors retain their runtime warnings on every execution response.
+Successful gVisor execution returns `{"value": ...}`. A failure returns `{"error":{"reason":"tool_denied","tool":"publishing_read"}}`; the tool name is omitted when no failed call is known. MCP also sets `isError`. Private exception messages and intermediate results are not included. Unknown executors retain their runtime warning on every execution response.
 
 The underlying `ExecutionResult` and `SandboxException` keep their complete host ledgers. For Symfony AI, `CodeModeToolbox::lastExecution()` exposes the latest call's PHP and sanitized trace to trusted application code, outside `ToolResult`. It is cleared before each tool call. The workbench recorder uses this accessor.
 

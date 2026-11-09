@@ -1,24 +1,34 @@
 # Record the 90-second Symfony demo
 
-One story: audit published content, reshape it into a repair plan, inspect the generated PHP and actual calls, then show measured tokens and enforced boundaries. **Drupal stays outside the main cut.** Its separate proof is an optional follow-up for interested judges.
+One story: **sandboxed PHP proved the idea; a Laravel-style JSON catalog makes it easier to adopt in Symfony.** Show the audit and follow-up, then the change in execution interface and a fair three-way comparison. **Drupal stays outside the main cut.** Its separate proof is an optional follow-up.
 
-The [local 90-second guide](http://127.0.0.1:8000/demo#demo-tour) walks through the saved evidence and suggested narration. It is a recording aid, not a video or an execution interface. Conversations stay in the agent.
+The [local 90-second guide](http://127.0.0.1:8000/demo#demo-tour) walks through saved evidence and suggested narration. It is a recording aid, not a video or an execution interface. Conversations stay in the agent.
 
 ## The edit and voice-over
 
 | Time | Capture | Suggested narration |
 | --- | --- | --- |
-| 00:00–00:10 | Actual agent footage: audit prompt, discovery, PHP submission and answer. | Symfony Code Mode lets an agent use your approved tools through PHP. Here, I ask it to audit the published articles for missing descriptions and image alt text. |
-| 00:10–00:20 | Same chat: follow-up, new PHP execution, repair-plan answer. | Now I ask which shared image fixes help the most articles. The agent writes a new program and checks the data again, with the same permissions. |
-| 00:20–00:35 | Workbench: follow-up → Generated PHP → Present PHP. Hold on grouping and ranking. | This is the PHP it actually submitted. It fetches approved data, groups shared images and ranks the fixes. That work happens inside the runner, before the result goes back to the model. |
-| 00:35–00:48 | Workbench: follow-up → Tool calls. Show the host ledger and an expanded MCP result. | These are the actual calls, recorded by the host. The broker validates the arguments and checks authorization on every invocation. Generated PHP cannot grant itself more access. |
-| 00:48–01:00 | Workbench: Direct tools vs. Code Mode. Hold on total tokens, requests and both answer checks. | In a separate matched Symfony AI run, both paths find all ten issues. Code Mode uses 12,597 tokens instead of 43,979: 71.4 percent fewer in this recorded pair. |
-| 01:00–01:22 | Workbench: Security proofs. Allowed read → denied call → timeout trace and checked cleanup. | These separate security probes run real PHP. An authorized read succeeds. An unauthorized tool call is denied. An infinite loop is terminated, and container removal is checked. The model controls the program; the host controls its permissions and execution budget. |
-| 01:22–01:30 | Workbench: Use it in Symfony. Show the bundle configuration, doctor command and repository. | Register your Symfony AI tools and policy, check prerequisites, and connect your agent. The packages and reproducible evidence are in the repository. |
+| 00:00–00:10 | Actual agent audit footage. | We began with an agent auditing published articles. It wrote PHP against approved tools, and the sandbox ran it. |
+| 00:10–00:20 | Same chat: follow-up and repair plan. | Which shared image fixes help the most articles? The agent composes another program, with the same permissions. |
+| 00:20–00:30 | Workbench: follow-up → Generated PHP. | This is the submitted PHP. It groups images and ranks fixes. That saves model-side work, but requires a dedicated sandbox runtime. |
+| 00:30–00:40 | Follow-up: actual tool calls. | Every call crosses the broker for validation and authorization. We keep those checks when we change the execution interface. |
+| 00:40–00:55 | Version two and the actual catalog search/execute calls. | For adoption, we follow Laravel: search returns full contracts; execute accepts literal JSON calls. No generated program means no gVisor. Our current worker still needs Unix PHP CLI. |
+| 00:55–01:07 | Three-way comparison, attempt 13. Hold on tokens and all three correctness checks. | Same model, question, data and permissions. JSON uses 29,798 tokens; direct tools 46,438; PHP 12,806. Review costs and earlier failures remain visible. |
+| 01:07–01:23 | Original security probes: allowed, denied, loop terminated. | These fixed PHP probes show an allowed read, a denied call and a terminated infinite loop. JSON removes generated code; approved handlers still need checks and budgets. |
+| 01:23–01:30 | Use it in Symfony: `mode: catalog`, policy and doctor command. | Reuse your Symfony AI tools and policy. Enable the catalog, check prerequisites and connect your agent. |
 
-Keep three source labels visible: **recorded MCP client conversation**, **separate Symfony AI + Hugging Face comparison**, and **fixed security probes**. The measured token reduction belongs to the comparison, not the two-turn client chat. These are separate executions using the same package; do not edit them into an apparent single trace.
+Keep source labels visible: **version one: recorded MCP client conversation**,
+**separate Symfony AI + Hugging Face comparison**, and **fixed security probes**.
+The JSON audit is not a continuation of the recorded PHP follow-up. These are
+separate executions using the same package; do not present them as one trace.
 
-The comparison reports 40,133 → 9,578 input tokens and 3,846 → 3,019 output tokens: 43,979 → 12,597 total, or 71.4% fewer in this pair. Input and output can have different prices. Say “fewer tokens,” not “71.4% cheaper.” The workbench estimator accepts the viewer’s rates and labels the result as an estimate, excluding discounts, credits and runner hosting. The animation now illustrates this reviewed pair, with provider-token bars beneath the tool-composition flow. Its animation does not represent execution timing.
+Attempt 13 uses `audit-catalog-v10`. Its JSON path uses **35.8% fewer provider
+tokens than direct tools**, while PHP uses **72.4% fewer**. This is a corrected
+development example selected from thirteen retained attempts, not a reliability
+estimate. The model reviewed every path; the host supplied no expected answer.
+Input/output pricing determines cost, so do not translate token percentages into
+billing percentages. The original animated explainer remains under version one
+and retains its separately labelled 2 November two-way measurements.
 
 ## Prepare the recording
 
