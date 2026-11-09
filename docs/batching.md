@@ -10,6 +10,13 @@ JSON Schema validation and supervised tool handlers. Batching does not add
 permissions. The optional Drupal Data Surface proof exercises the same core
 through MCP; it does not change the main Symfony demo.
 
+The direction grew out of our working PHP sandbox proof and the separate
+Drupal/Rosetta query experiment: an explicit JSON Schema contract suggested a
+simpler way to invoke approved handlers. We then found **Pushpak Chhajed’s**
+[A better way to build MCP servers with Laravel](https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#version-one-i-handed-the-agent-tinker).
+Credit to Pushpak for the account of that transition and the search-and-execute
+design that informed this Symfony adaptation.
+
 ## Two-tool catalog iteration
 
 Set `code_mode.mode: catalog` to expose a fixed pair of MCP tools:

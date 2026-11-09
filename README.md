@@ -16,15 +16,13 @@ Built for the [Symfony AI & MCP Hackathon](https://symfony.com/hackathon), using
 
 ## How the goal evolved
 
-1. **Code Mode: let the agent compose the work.** PHP can paginate, join and filter tool results before returning an answer. This is the motivating idea, not permission to execute arbitrary PHP inside an application.
-2. **Code Mode with a sandbox: make execution bounded.** gVisor runs real PHP while a host broker checks every tool call. The proof works, but a dedicated Linux runtime adds deployment work for Symfony applications.
-3. **Code Mode through JSON: make more tasks easier to adopt.** A small JSON Schema describes ordered calls to approved handlers. There is no generated program and no code sandbox to deploy. It trades arbitrary loops and joins for literal arguments and separate results.
+1. **The sandboxed PHP proof worked.** An agent could paginate, join and filter approved tool results, with authorization and execution limits enforced by the host. Running a dedicated Linux runtime, gVisor and a pinned image made adoption harder for ordinary hosted Symfony applications.
+2. **Drupal/Rosetta made the JSON Schema opportunity concrete.** Our separate Data Surface query experiment exposed typed inputs and results through Tool API and MCP. That raised a useful question: could the agent invoke an approved contract directly with JSON, without generating PHP?
+3. **Laravel helped shape the Symfony implementation.** We then found **Pushpak Chhajed’s** [A better way to build MCP servers with Laravel](https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#version-one-i-handed-the-agent-tinker). His account of the move from PHP to a searchable JSON catalog directly informed this iteration. Symfony now exposes `search_tools` and `execute_tools` over our existing approved providers, schemas and policies.
 
-These are the design questions that led to **two supported execution paths**. The unsafe local PHP executor has been removed. JSON keeps authorization, argument validation and execution budgets; it does not make unsafe handlers safe. A portable Symfony Process or Messenger adapter is future work, so ordinary shared hosting is not yet verified.
+The JSON path accepts literal calls to existing handlers; PHP remains available for loops, joins and filtering inside gVisor. The unsafe local PHP executor has been removed. Both paths retain authorization, argument validation and budgets. The current JSON worker still requires Unix PHP CLI; a portable Symfony Process or Messenger adapter remains future work.
 
-This echoes [Laravel's learning about JSON and searchable catalogs](https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#what-changed-for-me). Our contribution is a Symfony AI integration with reusable providers, two bounded execution paths, and complete model-run comparisons. The [visual walkthrough](http://127.0.0.1:8000/demo#version-two) connects those decisions to the evidence.
-
-Drupal is an optional reuse example: the separate [Data Surface query proof](examples/drupal-surface-query/README.md#json-batch-comparison) accepts schema-defined arguments through Tool API and MCP, preserving publication, entity and field access. A query that already returns useful projections can be called through JSON; PHP remains available to combine multiple query results. This is an experimental Rosetta integration, not a claim about Drupal Core adoption.
+The [visual walkthrough](https://ronaldtebrake.github.io/symfony-hackathon/#version-two) connects the decisions to the working implementation and retained comparisons. Drupal remains an optional reuse example: its [Data Surface query proof](examples/drupal-surface-query/README.md#json-batch-comparison) preserves publication, entity and field access. It is an experimental Rosetta integration, not a claim about Drupal Core adoption.
 
 ## Getting started
 
