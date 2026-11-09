@@ -201,6 +201,7 @@ For the recorded agent audit and its follow-up, connect the separate `code-mode:
 - [Symfony integration](packages/symfony-code-mode/README.md): approved services and native AI tools, session-scoped toolbox, MCP server and prerequisite checks.
 - [Contribution proposals](docs/contributing/README.md): executable PHP MCP SDK and Symfony AI examples for future upstream discussions.
 - [Optional Drupal example](examples/drupal/README.md): reuse through Tool API and MCP Server. The main hackathon demonstration is Symfony-focused.
+- [Separate Data Surface query proof](examples/drupal-surface-query/README.md): Rosetta search through MCP and the same Code Mode provider, with field access, empty results and permission revocation verified.
 
 Run `composer check` for configuration, application and package checks. With gVisor configured, run `composer test:sandbox` and `composer test:demo` sequentially.
 
