@@ -1,8 +1,8 @@
 # Record the 90-second Symfony demo
 
-One story: **sandboxed PHP proved the idea; a Laravel-style JSON catalog makes it easier to adopt in Symfony.** Show the audit and follow-up, then the change in execution interface and a fair three-way comparison. Briefly credit the Drupal/Rosetta schema experiment as an influence; **its demo stays outside the main cut**. The separate proof is an optional follow-up.
+Start with the working PHP audit and its follow-up, explain the cost of operating a sandbox, then show JSON calls through the same approved tools. Finish with the three-way comparison and access checks. Keep the main demo in Symfony; the separate content-query proof is an optional example of reuse.
 
-Credit: [Pushpak Chhajed’s Laravel article](https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#version-one-i-handed-the-agent-tinker) informed the JSON catalog iteration. The version-two chapter links to the original account.
+Credit: [Pushpak Chhajed’s Laravel article](https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#version-one-i-handed-the-agent-tinker) describes a similar conclusion. The version-two chapter links to his account; the narration follows our own experiments.
 
 The [local 90-second guide](http://127.0.0.1:8000/demo#demo-tour) walks through saved evidence and suggested narration. It is a recording aid, not a video or an execution interface. Conversations stay in the agent.
 
@@ -14,7 +14,7 @@ The [local 90-second guide](http://127.0.0.1:8000/demo#demo-tour) walks through 
 | 00:10–00:20 | Same chat: follow-up and repair plan. | Which shared image fixes help the most articles? The agent composes another program, with the same permissions. |
 | 00:20–00:30 | Workbench: follow-up → Generated PHP. | This is the submitted PHP. It groups images and ranks fixes. That saves model-side work, but requires a dedicated sandbox runtime. |
 | 00:30–00:40 | Follow-up: actual tool calls. | Every call crosses the broker for validation and authorization. We keep those checks when we change the execution interface. |
-| 00:40–00:55 | Version two and the actual catalog search/execute calls. | Our Rosetta experiment made JSON Schema contracts concrete. Then we found Pushpak Chhajed’s Laravel post. We brought its search-and-execute approach to Symfony: approved JSON calls, no generated program and no gVisor. |
+| 00:40–00:55 | Version two and the actual catalog search/execute calls. | The application already had tools with schemas and access checks. For ordinary calls, we could accept JSON arguments directly. Search finds the contract, execute invokes the handler, and this path needs no generated-code sandbox. |
 | 00:55–01:07 | Three-way comparison, attempt 13. Hold on tokens and all three correctness checks. | Same model, question, data and permissions. JSON uses 29,798 tokens; direct tools 46,438; PHP 12,806. Review costs and earlier failures remain visible. |
 | 01:07–01:23 | Original security probes: allowed, denied, loop terminated. | These fixed PHP probes show an allowed read, a denied call and a terminated infinite loop. JSON removes generated code; approved handlers still need checks and budgets. |
 | 01:23–01:30 | Use it in Symfony: `mode: catalog`, policy and doctor command. | Reuse your Symfony AI tools and policy. Enable the catalog, check prerequisites and connect your agent. |
@@ -31,6 +31,8 @@ estimate. The model reviewed every path; the host supplied no expected answer.
 Input/output pricing determines cost, so do not translate token percentages into
 billing percentages. The original animated explainer remains under version one
 and retains its separately labelled 2 November two-way measurements.
+
+The current recording guide deliberately uses the historical PHP conversation and a separate JSON audit. A new JSON follow-up, boundary-recovery conversation and control traces are the next captures; see the [coverage review](batching.md#evidence-coverage-and-next-captures).
 
 ## Prepare the recording
 

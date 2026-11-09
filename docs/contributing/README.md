@@ -2,6 +2,8 @@
 
 These are prepared proposals, **not submitted issues or pull requests**. No upstream acceptance or Packagist publication is implied. The existing Symfony demo and its matched Hugging Face comparison remain unchanged.
 
+The integration now also exposes a two-tool JSON catalog through the same approved providers. The [three-way audit](../batching.md#live-three-way-symfony-audit) includes real Symfony AI execution through that path and retains all attempts. The captures and recipe below mostly cover sandboxed PHP; they keep their original scope. New contributions should include the catalog option and distinguish its current audit evidence from the [conversation, adoption and evaluation captures still needed](../batching.md#evidence-coverage-and-next-captures).
+
 ## 1. Symfony AI: bring a working Code Mode example to #2508
 
 [Code Mode discussion #2508](https://github.com/symfony/ai/issues/2508) is open, checked on 3 November 2026. Contributors ask how to sandbox execution, discover tools, preserve structured results and establish a useful problem space. Our publishing audit supplies a concrete example for that discussion.

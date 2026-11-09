@@ -1,6 +1,6 @@
 # Symfony Code Mode
 
-A searchable tool catalog for Symfony AI, following Laravel MCP’s search-and-execute approach.
+A searchable catalog for approved Symfony AI and MCP tools, with JSON calls and optional sandboxed PHP.
 
 Expose two stable tools: `search_tools` returns approved contracts and `execute_tools` invokes them with literal JSON arguments. Reuse Symfony AI schemas, Symfony/MCP providers and application access checks. There is no generated program in this path. The earlier sandboxed PHP implementation remains available as a historical reference and a computation option.
 
@@ -16,13 +16,15 @@ Built for the [Symfony AI & MCP Hackathon](https://symfony.com/hackathon), using
 
 ## How the goal evolved
 
-1. **The sandboxed PHP proof worked.** An agent could paginate, join and filter approved tool results, with authorization and execution limits enforced by the host. Running a dedicated Linux runtime, gVisor and a pinned image made adoption harder for ordinary hosted Symfony applications.
-2. **Drupal/Rosetta made the JSON Schema opportunity concrete.** Our separate Data Surface query experiment exposed typed inputs and results through Tool API and MCP. That raised a useful question: could the agent invoke an approved contract directly with JSON, without generating PHP?
-3. **Laravel helped shape the Symfony implementation.** We then found **Pushpak Chhajed’s** [A better way to build MCP servers with Laravel](https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#version-one-i-handed-the-agent-tinker). His account of the move from PHP to a searchable JSON catalog directly informed this iteration. Symfony now exposes `search_tools` and `execute_tools` over our existing approved providers, schemas and policies.
+The PHP audit worked: an agent could paginate, join and filter approved tool results inside gVisor. Making that practical for other Symfony applications meant asking developers to operate a separate Linux runtime and runner image alongside their app.
 
-The JSON path accepts literal calls to existing handlers; PHP remains available for loops, joins and filtering inside gVisor. The unsafe local PHP executor has been removed. Both paths retain authorization, argument validation and budgets. The current JSON worker still requires Unix PHP CLI; a portable Symfony Process or Messenger adapter remains future work.
+The content-query experiment showed where we could simplify. The application already knew how to execute a query and check access, and MCP exposed its JSON Schema contracts. An agent could call that existing handler with JSON arguments. We kept the approved providers and policies, and added `search_tools` and `execute_tools` over them.
 
-The [visual walkthrough](https://ronaldtebrake.github.io/symfony-hackathon/#version-two) connects the decisions to the working implementation and retained comparisons. Drupal remains an optional reuse example: its [Data Surface query proof](examples/drupal-surface-query/README.md#json-batch-comparison) preserves publication, entity and field access. It is an experimental Rosetta integration, not a claim about Drupal Core adoption.
+We arrived at much the same conclusion as **Pushpak Chhajed**, whose [Laravel article](https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#version-one-i-handed-the-agent-tinker) describes similar tradeoffs. PHP remains useful for computation; JSON avoids hosting generated code for ordinary tool calls. The unsafe local PHP executor has been removed. The current JSON worker still requires Unix PHP CLI.
+
+The [visual walkthrough](https://ronaldtebrake.github.io/symfony-hackathon/#version-two) follows those decisions. The optional [Data Surface query proof](examples/drupal-surface-query/README.md#json-batch-comparison) demonstrates reuse with Drupal/Rosetta, including publication, entity and field access. It remains an experimental integration.
+
+The three-way audit includes the JSON catalog. Earlier conversations, security probes, repeated evaluations and performance measurements retain their PHP scope. [Evidence coverage and next captures](docs/batching.md#evidence-coverage-and-next-captures) separates recorded results from tests and planned work.
 
 ## Getting started
 

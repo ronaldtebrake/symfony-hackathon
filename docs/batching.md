@@ -10,12 +10,12 @@ JSON Schema validation and supervised tool handlers. Batching does not add
 permissions. The optional Drupal Data Surface proof exercises the same core
 through MCP; it does not change the main Symfony demo.
 
-The direction grew out of our working PHP sandbox proof and the separate
-Drupal/Rosetta query experiment: an explicit JSON Schema contract suggested a
-simpler way to invoke approved handlers. We then found **Pushpak Chhajed’s**
-[A better way to build MCP servers with Laravel](https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#version-one-i-handed-the-agent-tinker).
-Credit to Pushpak for the account of that transition and the search-and-execute
-design that informed this Symfony adaptation.
+The PHP proof established that an agent could compute over approved tools. The
+cost of operating its sandbox led us to offer direct JSON calls through the same
+providers. Existing query handlers and JSON Schema contracts made that practical.
+We arrived at a similar conclusion to **Pushpak Chhajed**, whose
+[Laravel article](https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#version-one-i-handed-the-agent-tinker)
+documents the tradeoffs behind a searchable catalog.
 
 ## Two-tool catalog iteration
 
@@ -291,7 +291,7 @@ Later attempts exposed title-encoding errors and reviews that damaged correct
 drafts. Literal UTF-8 and an explicit review decision improved this example;
 we have not established a universal provider defect or a general reliability fix.
 
-This is why we borrow Laravel's simple catalog interface for **adoption**.
+This is why we offer the JSON catalog for **adoption**.
 A stable search/execute contract avoids hosting generated PHP. It does not make
 model extraction deterministic or remove the value of local computation. This
 small catalog also does not isolate discovery savings from computation savings.
@@ -301,6 +301,37 @@ The separate Rosetta example supplies a typed Data Surface query. Useful
 projections can reduce the model's assembly work while retaining publication,
 entity and field access checks. That is an experimental integration, not evidence
 that Drupal Core has adopted a general JSON query or workflow language.
+
+## Evidence coverage and next captures
+
+The existing captures keep their original questions, outputs and measurements.
+The Pages labels now distinguish PHP history from the current catalog proof.
+
+| Evidence | Current coverage | What needs a new capture |
+| --- | --- | --- |
+| Live three-way audit | Direct tools, JSON catalog and sandboxed PHP; all 13 attempts retained, including a correct matched triplet | Fixed-protocol repetitions before making reliability claims |
+| Agent audit and follow-up | Recorded PHP conversation and host traces | A JSON catalog conversation with a useful follow-up |
+| Boundary recovery | Recorded PHP conversation; scripted catalog MCP denial/recovery test | An agent asking for restricted content, then choosing a permitted JSON follow-up |
+| Security proofs | Recorded gVisor probes; JSON tests enforce schemas, authorization, budgets and handler timeouts | Public JSON traces for an allowed call, denied call and timed-out handler |
+| Independent Symfony app | Fresh mirrored-package PHP proof, with authorized and denied reads | The same consumer using `mode: catalog`, without runner configuration or Docker |
+| Repeated evaluation | Five scenarios through direct tools and PHP | Add a catalog arm with matching model, questions, data, permissions and request budgets |
+| Performance investigation | Direct/PHP conversations and measured costs | JSON as a third path before extending those conclusions to the catalog |
+| Optional Data Surface | Fixed JSON/PHP comparison with real Drupal access checks; offline payload counts | A catalog-specific model comparison if this becomes part of the main demo |
+
+Start with the JSON conversation and boundary recovery, then publish the control
+traces and independent-app proof. That gives judges a complete example of the
+current path. Extend the repeated evaluation next; the performance task is an
+additional use case. Fresh model runs must retain every attempt and include all
+review costs, using the same question and permissions within each comparison.
+
+Existing automated coverage is in
+[`BatchRuntimeTest`](../tests/Integration/BatchRuntimeTest.php) and
+[`BatchSessionTest`](../packages/php-code-mode/tests/Unit/BatchSessionTest.php).
+The former drives real MCP calls with scripted inputs, including the two-tool
+catalog. The latter checks broker limits and worker termination. Neither is a
+recorded model conversation. An infinite generated-PHP loop is relevant to the
+sandbox proof; JSON's corresponding deadline test is a handler that does not
+finish. The original PHP visual, savings and timings remain labelled historical.
 
 ## BAML is deferred
 

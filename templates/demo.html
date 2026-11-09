@@ -48,7 +48,7 @@
         <div class="product-hero">
           <div class="product-copy"><div class="eyebrow">Built with Symfony AI + the PHP MCP SDK</div>
             <h1 id="page-title">Your tools.<br><span>One searchable catalog.</span></h1>
-            <p>Discover approved tools. Call them with JSON. Bring the searchable-catalog approach from Laravel MCP to Symfony AI, with your existing services, schemas and access checks.</p>
+            <p>Give your agent access to approved Symfony tools through a searchable catalog. Reuse their schemas and access checks, then invoke them with JSON.</p>
             <div class="hero-actions"><a class="primary-link" href="#demo-tour">Explore the 90-second demo <span aria-hidden="true">↗</span></a><a href="#quickstart">Use it in Symfony →</a></div>
             <div class="hero-footnote">Your MCP client or Symfony AI agent. Your application’s permissions.</div>
           </div>
@@ -68,7 +68,7 @@
         <div class="journey-signpost"><span class="eyebrow">How our goal evolved</span><p>Sandboxed PHP <span aria-hidden="true">→</span> the deployment lesson <span aria-hidden="true">→</span> search + execute with JSON</p><a href="#version-two">Follow the decisions and evidence →</a></div>
         <div class="catalog-benefits"><article><span>DISCOVER</span><h3>A stable entry point.</h3><p>Two advertised tools. Search returns the full contracts you need, including matches on schema fields.</p></article><article><span>ADOPT</span><h3>Your existing Symfony tools.</h3><p>Use approved providers and services. The JSON path needs no gVisor runtime or runner image.</p></article><article><span>VERIFY</span><h3>Keep the host in control.</h3><p>Authorize each call, validate its arguments and enforce budgets. Measure correct answers, including review costs.</p></article></div>
         <p class="measurement-note">The current JSON supervisor requires Unix PHP CLI, pcntl and posix. Ordinary shared hosting and a PHP-FPM execution adapter remain unverified.</p>
-        <div class="feature-grid"><a href="#version-one"><span>01 / THE FIRST PROOF</span><h3>PHP can do the work.</h3><p>The animated explainer, generated programs and sandbox evidence that started this project.</p></a><a href="#version-two"><span>02 / THE ADOPTION LESSON</span><h3>Keep the catalog. Use JSON.</h3><p>Why we follow Laravel’s simpler search-and-execute approach in Symfony.</p></a><a href="#three-way"><span>03 / THE EVIDENCE</span><h3>Compare correct answers.</h3><p>Direct tools, JSON and sandboxed PHP. Inspect measured usage and every failed attempt.</p></a></div>
+        <div class="feature-grid"><a href="#version-one"><span>01 / THE FIRST PROOF</span><h3>PHP can do the work.</h3><p>The animated explainer, generated programs and sandbox evidence that started this project.</p></a><a href="#version-two"><span>02 / THE ADOPTION LESSON</span><h3>Keep the catalog. Use JSON.</h3><p>How we kept approved tool calls and removed the need to run generated PHP.</p></a><a href="#three-way"><span>03 / THE EVIDENCE</span><h3>Compare correct answers.</h3><p>Direct tools, JSON and sandboxed PHP. Inspect measured usage and every failed attempt.</p></a></div>
         <div class="explore-strip"><div><span class="eyebrow">Build on the proof</span><h3>More providers. More useful work.</h3><p>Composable Symfony tools today. Mate investigations and upstream contributions next. Drupal is an optional example of reuse.</p></div><a href="#explore">Explore the opportunities →</a></div>
       </section>
 
@@ -100,13 +100,13 @@
 
       <section id="version-two" class="doc-page" aria-labelledby="journey-heading">
         <div class="eyebrow">Historical reference · version two · our current direction</div><h2 id="journey-heading">From PHP to JSON.</h2>
-        <p class="lede">The PHP proof worked. Making it easier to adopt in Symfony led us to JSON. Our separate Drupal/Rosetta experiment made schema-defined calls tangible; finding Pushpak Chhajed’s Laravel article helped turn that idea into the implementation here.</p>
-        <div class="journey-stages">
-          <article><span class="journey-number">01</span><span class="eyebrow">The working proof</span><h3>PHP proved the idea.</h3><p>The agent ran an audit and a follow-up in real PHP. The sandbox enforced execution limits and the broker checked access. Adoption meant asking each application to operate a dedicated Linux runtime, gVisor and a runner image.</p><a href="#version-one">See the sandbox proof →</a><div class="journey-flow">Useful computation → deployment work</div></article>
-          <article><span class="journey-number">02</span><span class="eyebrow">The schema question</span><h3>Rosetta made JSON concrete.</h3><p>Our optional Drupal/Rosetta Data Surface proof exposed a typed query through Tool API and MCP. Its JSON Schema contracts made the inputs and results explicit, while Drupal kept its access checks.</p><p class="journey-question">Could an agent call that contract with JSON, without writing a program?</p><div class="journey-flow">Typed query → explicit contract</div></article>
-          <article><span class="journey-number">03</span><span class="eyebrow">The next implementation</span><h3>Laravel showed a path.</h3><p>Then we found Pushpak Chhajed’s account of moving from PHP execution to JSON and a searchable catalog. We adopted that search-and-execute approach in Symfony, reusing our approved providers and policies.</p><div class="journey-flow">Laravel’s learning → Symfony integration</div></article>
+        <p class="lede">The sandboxed PHP audit worked. The next challenge was making it practical to use in an ordinary Symfony application.</p>
+        <div class="design-story">
+          <p>Running generated code meant operating a separate environment for it. Our gVisor setup enforced the boundaries we tested, but it also needed a dedicated Linux runtime and a pinned runner image. Installing a Composer package could not take care of that infrastructure.</p>
+          <p>The content-query experiment made another option clearer. The application could run the query itself, check access and return a defined result. Its inputs and outputs already had JSON Schema contracts exposed through MCP. For that kind of task, the agent could supply the arguments directly.</p>
+          <p>We kept discovery and the same approved providers, then added JSON execution over their existing handlers. The agent searches for a contract and calls it. PHP remains useful when a task needs loops or joins before results return to the model; the JSON path makes ordinary tool calls easier to deploy.</p>
         </div>
-        <div class="doc-callout"><strong>Credit to Pushpak Chhajed.</strong><p>His article, <a href="https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#version-one-i-handed-the-agent-tinker">A better way to build MCP servers with Laravel</a>, walks through the earlier Tinker experiment and the decisions that led to the JSON catalog. It directly informed this iteration.</p></div>
+        <div class="doc-callout"><strong>A similar conclusion in Laravel</strong><p>We arrived at much the same conclusion as <strong>Pushpak Chhajed</strong> in <a href="https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#version-one-i-handed-the-agent-tinker">A better way to build MCP servers with Laravel</a>. Credit to Pushpak for documenting the tradeoffs so clearly.</p></div>
         <div class="section-explainer"><span class="eyebrow">What we built in Symfony</span><h3>Two tools. Your existing application checks.</h3><p><code>search_tools</code> finds approved names, descriptions and schema fields, returning full contracts with explicit truncation. <code>execute_tools</code> invokes one or more approved calls with literal JSON arguments. Independent calls can share a submission; dependent calls wait for their inputs. Both reuse Symfony AI schemas and Symfony/MCP providers.</p></div>
         <div class="journey-boundary"><strong>The same checks in both paths</strong><span>Approved providers</span><span>Host-owned identity</span><span>Argument validation</span><span>Authorization per call</span><span>Execution budgets</span></div>
         <p class="measurement-note">JSON removes the generated program, not the need to trust and supervise tool handlers. There are no expressions, loops or result-reference language to interpret. Calls stop on the first failure; completed calls are not rolled back. The unsafe local PHP executor has been removed.</p>
@@ -121,8 +121,9 @@ return ['sameImage' => $a->image_id === $b->image_id];</code></pre><p>Generated 
         </div>
         <p class="measurement-note">Illustrative calls after discovering the full contract. Both paths reuse Symfony AI schemas and the same Symfony/MCP providers. JSON supports <code>mode: catalog</code> for two tools (search + execute), or the original <code>mode: batch</code> with a separate describe step. <code>mode: php</code> uses gVisor. The current JSON worker still needs Unix PHP CLI, <code>pcntl</code> and <code>posix</code>. A portable Symfony Process/Messenger adapter remains future work.</p>
         <div class="doc-callout"><strong>Simpler deployment is a reason to choose JSON. Token savings need evidence.</strong><p>The three-way audit keeps the model, question, data and permissions fixed. It records failed attempts and includes the shared answer-review cost. Fewer dependencies can justify JSON even when computation in PHP uses fewer tokens.</p><a href="#three-way">Read the live comparison →</a></div>
+        <details class="proof-details"><summary>Which evidence covers the JSON catalog?</summary><div class="table-scroll"><table><thead><tr><th>Evidence</th><th>What is available</th></tr></thead><tbody><tr><td>Live Symfony audit</td><td>Direct tools, JSON catalog and sandboxed PHP: a verified matched triplet, with all 13 development attempts retained. <a href="#three-way">Inspect the captures</a>.</td></tr><tr><td>JSON control tests</td><td>Scripted MCP denial and recovery, stable entry tools, schema checks and worker deadlines. These tests are distinct from a recorded agent conversation.</td></tr><tr><td>Earlier demo captures</td><td>The conversation, recovery, security probes, repeated evaluation and performance comparison use sandboxed PHP. Their original measurements remain intact.</td></tr><tr><td>Next captures</td><td>A JSON agent follow-up and boundary recovery, public catalog control traces, and independent Symfony app adoption without Docker. Then extend the fixed evaluation suite and performance comparison.</td></tr></tbody></table></div><p class="measurement-note"><a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/batching.md#evidence-coverage-and-next-captures">Evidence coverage and the next captures</a>.</p></details>
         <div class="journey-extra"><span class="status-pill optional">Optional · Drupal / Rosetta</span><h3>A typed query is a useful adoption example.</h3><p>A Data Surface can expose an approved query through Tool API and MCP. JSON supplies the query arguments; Drupal keeps publication, entity and field-access checks. PHP remains available when the agent needs to combine several query results.</p><p>The separate reference proof exercises both paths, including empty results and revoked permissions. It is an experimental Rosetta integration, not a Drupal Core feature or a live model benchmark.</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/tree/main/examples/drupal-surface-query#json-batch-comparison">Inspect the separate proof ↗</a></div>
-        <p class="measurement-note">This Symfony adaptation retains its own contract-disclosure gate, supervised worker, bounds and response envelope. <a href="https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#what-changed-for-me">Read Pushpak’s reflections on testing and simplifying the design</a>. A smaller advertised catalog is not automatically a smaller total token bill.</p>
+        <p class="measurement-note">This implementation retains its own contract-disclosure gate, supervised worker, bounds and response envelope. <a href="https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#what-changed-for-me">Read Pushpak’s reflections on testing and simplifying the design</a>. A smaller advertised catalog is not automatically a smaller total token bill.</p>
       </section>
 
       <section id="demo-tour" class="doc-page" aria-labelledby="tour-heading">
@@ -138,7 +139,7 @@ return ['sameImage' => $a->image_id === $b->image_id];</code></pre><p>Generated 
         <div class="opportunity-grid">
           <article><span class="status-pill proposed">Next adoption step</span><h3>A worker for hosted Symfony</h3><p>The JSON path avoids gVisor, but the current supervisor needs Unix PHP CLI, pcntl and posix. A portable Symfony Process or Messenger adapter needs its own deadline and cleanup proof.</p><p class="next-question">Keep authorization per call and test worker termination before claiming shared-hosting support.</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/batching.md#could-the-unix-cli-worker-be-replaced">Read the worker requirements ↗</a></article>
           <article><span class="status-pill">Working proof</span><h3>Compose your own providers</h3><p>Register native Symfony AI tools and MCP providers behind the same catalog and policy. The existing composition proof uses PHP; the JSON path reuses those approved contracts and handlers.</p><p class="next-question">Next question: which tools should remain directly available, and which belong behind search?</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/tree/main/examples/composition">Try the composition example ↗</a></article>
-          <article><span class="status-pill proposed">Next experiment</span><h3>Investigate with Symfony Mate</h3><p>The performance proof already joins approved profiler and log readers. A Mate provider could make that useful in an existing Symfony app.</p><p class="next-question">The current three-reader task costs more tokens with Code Mode. Test broader investigations before claiming a saving. A Mate adapter is not implemented.</p><a href="#performance">Inspect the current results →</a> <a href="https://ai.symfony.com/#mate">About Symfony Mate ↗</a></article>
+          <article><span class="status-pill proposed">Next experiment</span><h3>Investigate with Symfony Mate</h3><p>The performance proof already joins approved profiler and log readers. A Mate provider could make that useful in an existing Symfony app.</p><p class="next-question">The recorded three-reader task costs more tokens with sandboxed PHP than with direct tools. Add JSON as a third path before drawing conclusions about the catalog. A Mate adapter is not implemented.</p><a href="#performance">Inspect the current results →</a> <a href="https://ai.symfony.com/#mate">About Symfony Mate ↗</a></article>
           <article><span class="status-pill proposed">Prepared proposals</span><h3>Contribute to Symfony AI &amp; MCP</h3><p>A conversation-scoped toolbox recipe, structured MCP results, and repeatable evaluations for tool design. Small examples maintainers can run and discuss.</p><p class="next-question">Proposals are documented. No upstream submission or acceptance is implied.</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/tree/main/docs/contributing">Review contribution notes ↗</a></article>
           <article><span class="status-pill optional">Optional · Drupal / Rosetta</span><h3>Reuse the boundary in Drupal</h3><p>Tool API, MCP Server and a separate Data Surface query proof reuse the provider contract. Published results, field access, empty results and permission revocation are checked.</p><p class="next-question">The live client conversation is captured separately. The Hugging Face capture is still pending; experimental Rosetta modules are prerequisites.</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/tree/main/examples/drupal-surface-query">Explore the optional proof ↗</a></article>
         </div>
@@ -161,6 +162,7 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
       </section>
 
       <section data-doc-page id="lean-responses" class="hf-proof" aria-labelledby="lean-heading">
+        <p class="measurement-note proof-scope">Historical PHP response-payload measurement. Its token reduction does not measure a JSON catalog conversation.</p>
         <div class="section-top"><div><span class="eyebrow">Same execution · smaller agent response</span><h2 id="lean-heading">Return the answer. Retain the evidence.</h2></div><span id="lean-state" class="run-state" role="status">Loading payload measurements</span></div>
         <p class="agent-intro">Successful gVisor execution returns the value. Failures return a reason and the affected tool when known. Full traces stay on the host for these proof viewers. Generated PHP requires gVisor.</p>
         <div id="lean-evidence" hidden>
@@ -174,7 +176,7 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
       <section data-doc-page id="three-way" class="hf-proof" aria-labelledby="three-way-heading">
         <div class="section-top"><div><span class="eyebrow">Same Symfony audit · three invocation paths</span><h2 id="three-way-heading">Code Mode vs PHP to JSON.</h2></div><span id="three-way-state" class="run-state" role="status">Loading captures</span></div>
         <p class="section-intro">Direct tools return each read. JSON invokes approved calls without a generated-code sandbox. Code Mode joins and filters inside isolated PHP. All three use the same approved MCP tools, permissions, model and question.</p>
-        <div class="doc-callout"><strong>A separate iteration: two tools, one stable catalog.</strong><p><code>search_tools</code> returns full contracts; <code>execute_tools</code> runs one or more literal calls. Search includes schema fields. The describe round trip disappears, while the broker and access checks stay the same. Select a catalog attempt below to inspect its live results alongside fresh direct and PHP runs.</p></div>
+        <div class="doc-callout"><strong>The current JSON catalog: two tools, one entry point.</strong><p><code>search_tools</code> returns full contracts; <code>execute_tools</code> runs one or more literal calls. Search includes schema fields. The describe round trip disappears, while the broker and access checks stay the same. Select a catalog attempt below to inspect its live results alongside fresh direct and PHP runs.</p></div>
         <div id="three-way-evidence" hidden>
           <div class="evaluation-controls"><label for="three-way-attempt">Complete experiment attempt</label><select id="three-way-attempt"></select></div>
           <p id="three-way-scope" class="measurement-note"></p>
@@ -198,6 +200,7 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
       </section>
 
       <section data-doc-page id="performance" class="hf-proof" aria-labelledby="performance-heading">
+        <p class="measurement-note proof-scope">Recorded comparison: direct tools and sandboxed PHP. JSON has not been measured on this performance task.</p>
         <div class="section-top"><div><span class="eyebrow">Symfony Profiler + redacted logs → isolated PHP</span><h2 id="performance-heading">Find the repeated work.</h2></div><span id="performance-live-state" class="run-state" role="status">Loading conversation</span></div>
         <p class="agent-intro">A real Symfony AI conversation investigates a slow request, then checks a prepared optimization. Hugging Face generates the PHP; the same isolated runner composes approved profiler and log readers. This page only displays recorded evidence.</p>
         <div id="performance-live" hidden>
@@ -268,6 +271,7 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
       </section>
 
       <section data-doc-page id="evaluation" class="hf-proof" aria-labelledby="evaluation-heading">
+        <p class="measurement-note proof-scope">This repeated five-scenario suite compares direct tools with sandboxed PHP. The JSON catalog has a separate verified audit; it has not yet run this full suite.</p>
         <div class="section-top"><div><span class="eyebrow">Five tasks · shared permissions · every attempt</span><h2 id="evaluation-heading">Follow the work. Check the result.</h2></div><span class="run-state" id="evaluation-state" role="status">Loading evaluation</span></div>
         <p id="evaluation-note" class="agent-intro">A repeatable Symfony evaluation with direct tools and isolated PHP. Conversations stay in the agent; this page reads recorded evidence.</p>
         <div class="proof-run"><code>php bin/console code-mode:evaluate --no-debug</code><span>Local reference checks · add --live for Hugging Face inference</span></div>
@@ -290,6 +294,7 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
       </section>
 
       <section data-doc-page id="live-comparison" class="hf-proof" aria-labelledby="live-heading">
+        <p class="measurement-note proof-scope">Historical comparison: direct tools and sandboxed PHP. These token totals belong to that pair. <a href="#three-way">Compare all three paths, including JSON</a>.</p>
         <div class="section-top"><div><span class="eyebrow">Hugging Face · with and without Code Mode</span><h2 id="live-heading">Same audit. Measured model work.</h2></div><span class="run-state" id="live-state" role="status">Loading comparison</span></div>
         <p id="live-note" class="agent-intro">Real provider usage with independently checked answers. Failed attempts remain visible.</p>
         <div id="live-evidence" hidden>
@@ -308,6 +313,7 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
       </section>
 
       <section data-doc-page id="huggingface-proof" class="hf-proof" aria-labelledby="hf-heading">
+        <p class="measurement-note proof-scope">Historical PHP provider capture. <a href="#three-way">The three-way audit includes the current JSON catalog and Symfony AI execution</a>.</p>
         <div class="section-top"><div><span class="eyebrow">Symfony AI → Hugging Face → Code Mode</span><h2 id="hf-heading">The model writes PHP. The host checks the work.</h2></div><span class="run-state" id="hf-state" role="status">Loading evidence</span></div>
         <p id="hf-note" class="agent-intro">A separate provider-backed execution using the same PHP runner, broker and Symfony MCP fixture.</p>
         <div class="proof-run"><code>php bin/console code-mode:huggingface-compare --no-debug</code><span>Operator CLI only · uses inference credits</span></div>
@@ -328,6 +334,7 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
       </section>
 
       <section data-doc-page id="adoption-proof" class="hf-proof" aria-labelledby="adoption-heading">
+        <p class="measurement-note proof-scope">This native Symfony tool conversation uses sandboxed PHP. The independent app also has a PHP proof; a fresh-app catalog proof without Docker remains to capture.</p>
         <div class="section-top"><div><span class="eyebrow">Existing Symfony AI tools → Code Mode</span><h2 id="adoption-heading">Your tools. Composed in PHP.</h2></div><span class="run-state" id="adoption-state" role="status">Loading evidence</span></div>
         <p class="agent-intro">Ordinary <code>#[AsTool]</code> services, an explicit allowlist and a host authorization policy. The agent reads an article containing a malicious instruction, then answers a follow-up about published content.</p>
         <div class="proof-run"><code>php bin/console code-mode:adoption-proof --live --no-debug</code><span>Operator CLI · omit --live for fixed probes without inference</span></div>
@@ -344,6 +351,7 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
       </section>
 
       <section data-doc-page id="agent-run" class="agent-run" aria-labelledby="agent-heading">
+        <p class="measurement-note proof-scope">Recorded with sandboxed PHP. This audit and follow-up predate the JSON catalog. <a href="#three-way">See the current JSON audit</a>.</p>
         <div class="section-top"><div><span class="eyebrow">Recorded agent run</span><h2 id="agent-heading">From audit to repair plan.</h2></div><span class="run-state" id="agent-state" role="status">Loading capture</span></div>
         <p class="agent-intro" id="agent-note">Read-only evidence from a live agent rehearsal. Conversations stay in your agent.</p>
         <div id="agent-evidence" hidden>
@@ -375,6 +383,7 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
       </section>
 
       <section data-doc-page id="workbench" class="reference-proof" aria-labelledby="audit-heading">
+        <p class="measurement-note proof-scope">Historical reference audit: direct reads and sandboxed PHP, with no model call. <a href="#three-way">Provider token measurements for JSON are in the three-way audit</a>.</p>
         <div class="section-top"><div><span class="eyebrow">Separate comparison</span><h2 id="audit-heading">The comparison run.</h2></div><span class="run-state" id="run-state" role="status">Waiting for a run</span></div>
         <div class="assignment"><span class="assignment-icon" aria-hidden="true">↳</span><p id="recorded-question">No comparison has been recorded yet. Run composer demo for the reference audit.</p><span class="dataset-label" id="dataset-label">Editorial fixture · read only</span></div>
         <div class="mode-note" id="mode-note" role="status">Run <code>composer demo</code> in your terminal. This page follows the latest local result.</div>
@@ -414,6 +423,7 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
       </section>
 
       <section data-doc-page id="recovery" class="recovery" aria-labelledby="recovery-heading">
+        <p class="measurement-note proof-scope">Recorded with sandboxed PHP. Catalog denial and recovery are covered by scripted MCP tests; a recorded JSON agent recovery conversation is still to capture.</p>
         <div class="section-top"><div><span class="eyebrow">Recorded agent conversation · Symfony bundle</span><h2 id="recovery-heading">A boundary. Then a useful way forward.</h2></div><span class="run-state" id="recovery-state" role="status">Loading capture</span></div>
         <p id="recovery-note" class="agent-intro">Two turns, one host-owned session. The agent proposes a permitted alternative; the user chooses the new scope.</p>
         <div id="recovery-turns" class="recovery-turns"></div>
@@ -423,6 +433,7 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
       </section>
 
       <section data-doc-page id="security-proof" class="security-proof" aria-labelledby="security-heading">
+        <p class="measurement-note proof-scope">These are gVisor execution probes. JSON control tests cover authorization and handler deadlines; a published catalog trace should show a timed-out handler, rather than a generated PHP loop.</p>
         <div class="section-top"><div><span class="eyebrow">Executed, then checked</span><h2 id="security-heading">Three probes. Real execution evidence.</h2></div><span class="run-state" id="security-state" role="status">Not run</span></div>
         <p class="security-intro">An approved read, a forbidden tool call, and an infinite loop. Each runs real PHP in gVisor against the same read-only Symfony MCP fixture.</p>
         <div class="proof-run"><code>composer demo:security</code><span>Run in your terminal · no model or API key</span></div>
@@ -436,7 +447,7 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
       <p class="security-note">This is a verified development proof. Production deployment still needs independent security review, admission limits and operational supervision. The web page only reads proof reports. Conversations stay in your agent; execution starts through MCP or the operator CLI.</p>
     </main>
     </div>
-    <footer><span>Built with Symfony AI · PHP MCP SDK · Laravel-inspired catalog · <a href="https://github.com/ronaldtebrake/symfony-hackathon" target="_blank" rel="noopener noreferrer">Source ↗</a></span><span id="updated-at">Saved execution evidence · read-only viewer</span></footer>
+    <footer><span>Built with Symfony AI · PHP MCP SDK · <a href="https://github.com/ronaldtebrake/symfony-hackathon" target="_blank" rel="noopener noreferrer">Source ↗</a></span><span id="updated-at">Saved execution evidence · read-only viewer</span></footer>
   </div>
   <dialog id="php-presentation" aria-labelledby="php-presentation-title" aria-describedby="php-presentation-note">
     <header class="php-presentation-heading"><div><span class="eyebrow">Symfony Code Mode · recorded source</span><h2 id="php-presentation-title">The PHP the agent submitted.</h2><p id="php-presentation-meta"></p></div><button type="button" id="close-php" autofocus>Close · Esc</button></header>
