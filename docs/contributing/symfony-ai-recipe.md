@@ -4,7 +4,7 @@ Status: local documentation proposal. The reusable `CodeModeToolbox` and native 
 
 The capture reads a published article containing an injected instruction, then audits published descriptions in the same session. The explicit denied-read conversation below remains a recipe: its denial/recovery behavior is covered by fixed gVisor probes, mocked-provider tests and the separate Codex capture, not by that Hugging Face conversation. The [original matched audit](../huggingface-comparison.md) remains a separate measurement.
 
-This recipe uses the PHP path. The JSON integration uses `SessionFactory::createBatch()` and `BatchToolbox($session, catalog: true)` with the same host policy. See the [catalog interface](../batching.md#two-tool-catalog-iteration). Its live audit is recorded, but a catalog boundary-recovery model conversation is still to capture; the PHP conversation below cannot serve as that evidence.
+This recipe uses the PHP path. The JSON integration uses `SessionFactory::createBatch()` and `BatchToolbox($session, catalog: true)` with the same host policy. See the [catalog interface](../batching.md#search-then-call). Its live audit and [catalog boundary-recovery model conversation](../evidence/catalog-proof.json) are now recorded separately. The new injection scenario exposed an unwanted but denied read; the PHP conversation below retains its historical scope.
 
 The host authenticates a person, constructs one Code Mode session, and gives Symfony AI a toolbox for that conversation:
 

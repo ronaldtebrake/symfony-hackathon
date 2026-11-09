@@ -94,6 +94,25 @@ final readonly class DemoController
         return $this->response($this->store->readAdoptionProof() ?? '{"status":"empty"}', 'application/json');
     }
 
+    #[Route('/demo/catalog-proof', name: 'app_demo_catalog_proof', methods: ['GET'])]
+    public function catalogProof(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+        $report = $this->store->readCatalogProof();
+        foreach ($report['attempts'] as &$attempt) {
+            if (isset($attempt['controls'])) { $attempt['controls']['verification'] = \App\Demo\CatalogControlProof::verify($attempt['controls']); }
+            foreach ($attempt['runs'] as &$run) {
+                if (!in_array($run['status'], ['complete', 'failed'], true)) { continue; }
+                $run['recordedVerification'] = $run['verification'] ?? null;
+                $run['verification'] = \App\Demo\CatalogProofVerifier::verify($run);
+                $run['status'] = $run['verification']['passed'] ? 'complete' : 'failed';
+            }
+            unset($run);
+        }
+        unset($attempt);
+        return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
+    }
+
     #[Route('/demo/evaluation-report', name: 'app_demo_evaluation_report', methods: ['GET'])]
     public function evaluationReport(Request $request): Response
     {

@@ -24,7 +24,7 @@ $reports = [
     'report' => 'report', 'security-report' => 'securityReport', 'agent-report' => 'codexReport',
     'boundary-report' => 'boundaryReport', 'huggingface-report' => 'huggingFaceReport',
     'huggingface-comparison' => 'huggingFaceComparison', 'adoption-report' => 'adoptionReport',
-    'evaluation-report' => 'evaluationReport', 'audit-three-way' => 'threeWayAudit',
+    'evaluation-report' => 'evaluationReport', 'audit-three-way' => 'threeWayAudit', 'catalog-proof' => 'catalogProof',
     'performance-report' => 'performanceReport', 'performance-conversation' => 'performanceConversation', 'performance-baseline' => 'performanceBaseline', 'response-payloads' => 'responsePayloads',
 ];
 foreach ($reports as $filename => $method) {
@@ -39,13 +39,13 @@ foreach ($reports as $filename => $method) {
     }
 }
 $html = file_get_contents($root.'/templates/demo.html');
-$html = str_replace(['data-static="false"', 'href="/demo.css"', 'src="/demo.js"', 'src="/docs.js"', 'src="/php-syntax.js"', 'src="/images/'],
-    ['data-static="true"', 'href="demo.css"', 'src="demo.js"', 'src="docs.js"', 'src="php-syntax.js"', 'src="images/'], $html);
+$html = str_replace(['data-static="false"', 'href="/demo.css"', 'src="/demo.js"', 'src="/docs.js"', 'src="/catalog-proof.js"', 'src="/php-syntax.js"', 'src="/images/'],
+    ['data-static="true"', 'href="demo.css"', 'src="demo.js"', 'src="docs.js"', 'src="catalog-proof.js"', 'src="php-syntax.js"', 'src="images/'], $html);
 $html = preg_replace('#href="/demo/([a-z-]+)"#', 'href="evidence/$1.json"', $html);
 // The static host cannot execute PHP or contact the local MCP server.
 $html = str_replace('<meta name="viewport"', '<meta http-equiv="Content-Security-Policy" content="default-src \'self\'; script-src \'self\'; style-src \'self\'; img-src \'self\' data:; connect-src \'self\'; object-src \'none\'; base-uri \'none\'; form-action \'none\'">' . "\n  " . '<meta name="viewport"', $html);
 file_put_contents($output.'/index.html', $html);
-foreach (['demo.css', 'demo.js', 'docs.js', 'php-syntax.js'] as $file) { copy($root.'/public/'.$file, $output.'/'.$file); }
+foreach (['demo.css', 'demo.js', 'docs.js', 'catalog-proof.js', 'php-syntax.js'] as $file) { copy($root.'/public/'.$file, $output.'/'.$file); }
 copy($root.'/docs/images/code-mode-value.svg', $output.'/images/code-mode-value.svg');
 file_put_contents($output.'/.nojekyll', '');
 echo "Built visual documentation in var/pages using ".count($reports)." reviewed evidence exports.\n";

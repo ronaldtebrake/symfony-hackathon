@@ -1,4 +1,6 @@
-# A live comparison with correct answers on both sides
+# The original direct-tools and sandboxed PHP comparison
+
+This 2 November capture supports the PHP explainer. It does not measure the JSON catalog; see the [matched three-way audit](batching.md#live-three-way-symfony-audit) for that comparison.
 
 On **2 November 2026, 12:39–12:40 CET**, both agents returned all **10 findings across 48 published articles**, checked against an independent fixture oracle. The [complete capture](evidence/huggingface-pair.json) retains generated PHP, exact tool responses, host calls, provider usage, request digests and every earlier attempt.
 

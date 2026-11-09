@@ -14,6 +14,8 @@ The provider maps one approved MCP tool to `$tools->drupal->search(...)` and
 derives PHP guidance from its discovered schemas. The gVisor guest receives no
 Drupal account selector, credentials, database connection or DDEV socket.
 
+The main [Symfony catalog proof](../../docs/batching.md#evidence-coverage-and-next-captures) now covers the two-tool interface, live follow-ups, denied reads and an injection failure contained by the host. This optional Drupal evidence still uses the earlier fixed JSON batch/PHP comparison. It proves its own publication, entity and field checks; it is not a catalog-specific live-model capture. Reusing the provider does not transfer Symfony's measured outcomes to Drupal automatically.
+
 ## Run it
 
 Requires the root Composer dependencies and configured gVisor runtime, plus the

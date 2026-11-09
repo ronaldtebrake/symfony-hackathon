@@ -29,6 +29,7 @@
     "scripts": {
         "test": "@php vendor/bin/phpunit --bootstrap vendor/autoload.php tests",
         "check": ["@composer validate --strict", "@php bin/console lint:container", "@test"],
-        "proof": "@php scripts/proof.php"
+        "proof": "@php scripts/proof.php",
+        "proof:catalog": "@php scripts/catalog-proof.php"
     }
 }

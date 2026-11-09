@@ -4,7 +4,7 @@ Ask the question in Codex. It discovers the approved MCP tools, writes PHP, subm
 
 ## Connect this project
 
-Set up the [gVisor runtime](../packages/php-code-mode/README.md#run-the-proof) and the project's ignored `.env.local` first. This connection uses the read-only Symfony fixture; it does not connect to Drupal or need a Hugging Face token. Codex uses its own existing sign-in and model access.
+Set up the [gVisor runtime](../packages/php-code-mode/README.md#sandboxed-php) and the project's ignored `.env.local` first. This connection uses the read-only Symfony fixture; it does not connect to Drupal or need a Hugging Face token. Codex uses its own existing sign-in and model access.
 
 Create `.codex/config.toml` in the project with your absolute paths:
 

@@ -157,6 +157,28 @@ final readonly class ReportStore
         return ['version' => 1, 'kind' => ThreeWayAuditRunner::PROTOCOL, 'attempts' => array_values($attempts), 'diagnostics' => $reviewedReport['diagnostics'] ?? []];
     }
 
+    public function readCatalogProof(): array
+    {
+        $source = $this->readPath($this->projectDir.'/docs/evidence/catalog-proof.json', 8 * 1048576);
+        $report = null === $source ? ['version' => 1, 'kind' => 'catalog-proof', 'attempts' => []] : json_decode($source, true, 64, JSON_THROW_ON_ERROR);
+        $attempts = array_column($report['attempts'], null, 'id');
+        if (!$this->reviewedOnly) {
+            $paths = glob($this->projectDir.'/var/demo/catalog-proof/*.json');
+            if (count($paths) > 40) { throw new \RuntimeException('Too many catalog captures.'); }
+            $bytes = 0;
+            foreach ($paths as $path) {
+                if (!preg_match('/\A\d{8}-\d{6}-[a-f0-9]{8}\.json\z/D', basename($path))) { continue; }
+                $source = $this->readPath($path, 4 * 1048576); $bytes += strlen($source);
+                if ($bytes > 8 * 1048576) { throw new \RuntimeException('Catalog evidence exceeds the viewer limit.'); }
+                $attempt = json_decode($source, true, 64, JSON_THROW_ON_ERROR);
+                // Reviewed annotations resolve interrupted setup status without changing the raw observations.
+                if (!isset($attempts[$attempt['id']])) { $attempts[$attempt['id']] = $attempt; }
+            }
+        }
+        ksort($attempts); $report['attempts'] = array_values($attempts);
+        return $report;
+    }
+
     private function saveFile(string $filename, array $report, int $maxBytes = 1048576): void
     {
         $directory = $this->projectDir.'/var/demo';

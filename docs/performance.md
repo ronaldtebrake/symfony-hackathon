@@ -1,5 +1,7 @@
 # Investigate a slow Symfony route with approved reads
 
+This is historical direct-tool and sandboxed-PHP evidence. The current [JSON catalog proof](batching.md#evidence-coverage-and-next-captures) covers the publishing tasks separately; a matched JSON arm has not been captured for this performance investigation. Its token results cannot be inferred from the audit.
+
 The [workbench](http://127.0.0.1:8000/demo#performance) shows a real local investigation and follow-up: **13 SQL executions → 1, with identical response content**. Twelve repeated author lookups correlate with the request's `authors.loaded_individually` log event. PHP joins the profiler and log evidence and returns a compact answer.
 
 The workbench defaults to the original verified **Symfony AI + Hugging Face conversation**: two user turns, two model-generated PHP programs and eight successful reader calls. The earlier failed capture remains inspectable. The operator-written reference remains available separately. The prepared join is part of the fixture: the agent has no code-writing or database-writing tool.
@@ -55,7 +57,7 @@ The command re-runs the existing MCP reference and denial probes before inferenc
 
 ## Reproduce or connect an agent
 
-With PHP's `pdo_sqlite` extension and the [dedicated gVisor runtime](../packages/php-code-mode/README.md#run-the-proof) configured:
+With PHP's `pdo_sqlite` extension and the [dedicated gVisor runtime](../packages/php-code-mode/README.md#sandboxed-php) configured:
 
 ```sh
 php bin/console code-mode:doctor

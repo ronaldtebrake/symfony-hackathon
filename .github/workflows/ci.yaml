@@ -31,6 +31,8 @@ jobs:
             # Install the consumer before the root app: it must own its dependencies.
             - run: composer install --no-interaction --prefer-dist --working-dir=examples/symfony
             - run: composer check --working-dir=examples/symfony
+            # The JSON consumer needs neither a runner image nor the root autoloader.
+            - run: composer proof:catalog --working-dir=examples/symfony
             - run: composer install --no-interaction --prefer-dist
             - run: composer check-platform-reqs
             - run: composer check
@@ -61,7 +63,7 @@ jobs:
             - run: composer test:sandbox --working-dir=packages/php-code-mode
             - run: php packages/php-code-mode/examples/proof.php
             # Exercise the stock bundle server, with no root vendor/autoloader present yet.
-            - run: php examples/symfony/bin/console code-mode:doctor --json
+            - run: ADOPTION_MODE=php php examples/symfony/bin/console code-mode:doctor --json
             - run: composer proof --working-dir=examples/symfony
             - run: composer install --no-interaction --prefer-dist
             - run: composer test:demo

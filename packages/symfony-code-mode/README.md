@@ -2,7 +2,7 @@
 
 Approve existing Symfony read services, then give an MCP client isolated PHP execution or bounded JSON calls. The generic runner and broker remain in `ronaldtebrake/php-code-mode`. This bundle supplies the Symfony container integration and a STDIO entry point.
 
-For a consumer with its own dependencies, native `#[AsTool]` service and authorization policy, use the [separate Symfony app](../../examples/symfony/README.md). Its recorded allowed/denied proof runs through this bundle's normal MCP server without the main demo autoloader.
+For a consumer with its own dependencies, native `#[AsTool]` service and authorization policy, use the [separate Symfony app](../../examples/symfony/README.md). It now defaults to the two-tool JSON catalog. Its clean-install proof passes 15 checks through the stock MCP server without Docker settings or the main demo autoloader; the historical PHP proof remains reproducible separately.
 
 These packages are currently installed through this repository's Composer path repositories; they are not published to Packagist. To try the integration here:
 
@@ -14,20 +14,21 @@ php bin/console code-mode:serve --no-debug
 
 The last command speaks MCP over STDIO; configure it in your agent rather than typing into its terminal. No HTTP execution endpoint is added. The audit server, `code-mode:mcp`, uses the same lean response format with its own tool catalog and limits.
 
-## Four lines to approve your tools
+## Approve tools and select the catalog
 
 Register `CodeMode\Symfony\CodeModeBundle::class` in `config/bundles.php`, then:
 
 ```yaml
 # config/packages/code_mode.yaml
 code_mode:
+    mode: catalog
     identity_provider: App\CodeMode\DemoIdentityProvider
     tools:
         - App\CodeMode\ReadArticle
         - App\CodeMode\ListPublishedArticles
 ```
 
-Normal Symfony autowiring supplies those services. Only the listed services enter the catalog; implementing an interface does not grant approval. Start from the [read service](../../src/CodeMode/ReadArticle.php) and [identity provider](../../src/CodeMode/DemoIdentityProvider.php). Both are small, executable examples, using a synthetic publishing dataset.
+The catalog advertises `search_tools` and `execute_tools`. Set `mode: php` and configure gVisor to use generated PHP instead. Normal Symfony autowiring supplies those services. Only the listed services enter the catalog; implementing an interface does not grant approval. Start from the [read service](../../src/CodeMode/ReadArticle.php) and [identity provider](../../src/CodeMode/DemoIdentityProvider.php). Both are small, executable examples, using a synthetic publishing dataset.
 
 A `ReadToolInterface` service supplies:
 
@@ -55,7 +56,7 @@ The generic provider contract and MCP adapter live in the PHP core; the Symfony 
 
 ## Runtime configuration
 
-Use the [runner setup](../php-code-mode/README.md#run-the-proof) on a dedicated Linux Docker endpoint with gVisor. On macOS a local Linux VM can supply that endpoint; ordinary Docker Desktop/OrbStack alone is insufficient. In ignored `.env.local`:
+Use the [runner setup](../php-code-mode/README.md#sandboxed-php) on a dedicated Linux Docker endpoint with gVisor. On macOS a local Linux VM can supply that endpoint; ordinary Docker Desktop/OrbStack alone is insufficient. In ignored `.env.local`:
 
 ```dotenv
 CODE_MODE_IMAGE=sha256:<64-character ID of your locally built runner>
@@ -104,7 +105,7 @@ The same option works on `code-mode:mcp` and `code-mode:performance-mcp`. Use a 
 
 ## Boundary recovery
 
-[The recorded conversation](../../docs/demo.md#optional-boundary-recovery-opening) asks for article 49, receives `tool_denied`, then audits published articles after the user changes scope. The current server returns `isError: true` with a sanitized reason and affected tool; the original capture retains its older, detailed response. Private content and exception messages never become the explanation. The permitted response is a separate successful execution under the same identity and attempt budget.
+[The recorded conversation](https://ronaldtebrake.github.io/symfony-hackathon/#recovery) asks for article 49, receives `tool_denied`, then audits published articles after the user changes scope. The current server returns `isError: true` with a sanitized reason and affected tool; the original capture retains its older, detailed response. Private content and exception messages never become the explanation. The permitted response is a separate successful execution under the same identity and attempt budget.
 
 For Symfony AI, the same `CodeModeSession` backs `CodeModeToolbox`, a `ToolboxInterface` implementation. Keep one session across user turns; see the [conversation recipe](../../docs/contributing/symfony-ai-recipe.md).
 
@@ -133,3 +134,7 @@ Calls go through the original Symfony AI toolbox, preserving its argument resolv
 Search returns candidate names and descriptions in a `tools` list, with `matched`, `returned`, `limit` and `truncated`. A truncated or empty result includes refinement guidance. All query terms must match; an exact approved name selects one tool. Search returns at most eight entries and 32 KiB. It never makes a tool callable.
 
 Call `tools_describe` for the selected tools before executing PHP. The response includes the original input/output schemas and a PHP invocation guide. The broker continues to validate arguments and results and authorize every call. Search and describe never reset execution attempts. The core's list-only `search()` API remains available for existing PHP callers.
+
+## What the current evidence establishes
+
+The [catalog capture](../../docs/evidence/catalog-proof.json) includes real Symfony AI follow-ups and denial/recovery, exact JSON calls, provider usage and control traces. All final answers are correct across five live scenarios, but the injection case attempted a restricted read and fails the agent-behavior check. The host denied it before invocation. Neither schemas nor a catalog prevent a model from following malicious data; application permissions must remain authoritative. An otherwise permitted action can still be outside the user's intent. [Coverage and limits](../../docs/batching.md#evidence-coverage-and-next-captures).

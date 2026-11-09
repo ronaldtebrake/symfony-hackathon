@@ -15,7 +15,7 @@ final class DemoPageTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('One searchable catalog.', $crawler->filterXPath('//h1')->text());
         $nav = $crawler->filterXPath('//nav[@aria-label="Documentation"]');
-        self::assertStringContainsString('HISTORICAL REFERENCE', $nav->text());
+        self::assertStringContainsString('THE DESIGN JOURNEY', $nav->text());
         self::assertSame(['#version-one', '#version-two'], $nav->filterXPath('.//a[contains(text(),"Version ")]')->extract(['href']));
         self::assertCount(0, $nav->filterXPath('.//a[@href="#lean-responses" or @href="#adoption-proof"]'));
         self::assertCount(1, $crawler->filterXPath('//*[@id="version-one"]//img[contains(@src,"code-mode-value.svg")]'));

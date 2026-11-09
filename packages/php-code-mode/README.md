@@ -4,7 +4,11 @@ A reusable Composer library for running real PHP in gVisor or dispatching approv
 
 The package has no Symfony application, Drupal or model-provider dependency. It uses the official PHP MCP SDK for an optional gateway; hosts can also register local trusted handlers. Generated PHP receives only `$tools->call($name, $arguments)` and returns a JSON-compatible value. The broker owns the identity, schema, authorization, and call budget.
 
-## Run the proof
+## Run the proofs
+
+For JSON without a generated-code runtime, the root checkout provides `php bin/console code-mode:catalog-proof --no-debug` and the [independent Symfony catalog consumer](../../examples/symfony/README.md). Both exercise real broker checks without Docker. The package unit suite covers the same JSON session and worker limits.
+
+### Sandboxed PHP
 
 The **host** needs PHP 8.2+ CLI, `pcntl`, `posix`, Composer, and access to a dedicated Linux Docker engine with gVisor `runsc`. macOS can use a Linux VM; ordinary Docker Desktop does not satisfy the runtime requirement. The **guest** uses the pinned PHP 8.4 image. Do not run the broker inside PHP-FPM or a web request; use a dedicated CLI/queue worker.
 

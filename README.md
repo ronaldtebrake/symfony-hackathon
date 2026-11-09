@@ -6,8 +6,6 @@ Expose two stable tools: `search_tools` returns approved contracts and `execute_
 
 Your application owns the tool implementations, identity, permissions and execution limits. Conversations stay in your MCP client or Symfony AI agent. Generated PHP requires gVisor. JSON batching needs no gVisor, although the current supervisor still requires Unix PHP CLI, `pcntl` and `posix`.
 
-**Latest matched audit:** direct tools **46,438 tokens**, the two-tool JSON catalog **29,798**, sandboxed PHP **12,806**. All three return the same correct findings; totals include answer review. JSON uses **35.8% fewer tokens than direct calls** in this run and requires no generated-code sandbox. PHP uses **72.4% fewer**. All 13 development attempts remain visible; this is a corrected example, not a reliability estimate. [Results, corrections and retained failures](docs/batching.md#live-three-way-symfony-audit).
-
 ![The same 48 articles and 10 findings, with 43,979 versus 12,597 provider tokens in one matched Symfony AI and Hugging Face pair.](docs/images/code-mode-value.svg)
 
 *Illustrated flow of the reviewed 2 November 2026 pair: 71.4% fewer input + output tokens and 11 → 5 model requests. Same model, question, data and permissions. One verified pair, not a billing estimate.*
@@ -20,11 +18,13 @@ The PHP audit worked: an agent could paginate, join and filter approved tool res
 
 The content-query experiment showed where we could simplify. The application already knew how to execute a query and check access, and MCP exposed its JSON Schema contracts. An agent could call that existing handler with JSON arguments. We kept the approved providers and policies, and added `search_tools` and `execute_tools` over them.
 
-We arrived at much the same conclusion as **Pushpak Chhajed**, whose [Laravel article](https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#version-one-i-handed-the-agent-tinker) describes similar tradeoffs. PHP remains useful for computation; JSON avoids hosting generated code for ordinary tool calls. The unsafe local PHP executor has been removed. The current JSON worker still requires Unix PHP CLI.
+PHP remains useful when computation can reduce what returns to the model. JSON makes ordinary tool calls easier to deploy. Both paths keep host-owned permissions and execution limits.
 
 The [visual walkthrough](https://ronaldtebrake.github.io/symfony-hackathon/#version-two) follows those decisions. The optional [Data Surface query proof](examples/drupal-surface-query/README.md#json-batch-comparison) demonstrates reuse with Drupal/Rosetta, including publication, entity and field access. It remains an experimental integration.
 
-The three-way audit includes the JSON catalog. Earlier conversations, security probes, repeated evaluations and performance measurements retain their PHP scope. [Evidence coverage and next captures](docs/batching.md#evidence-coverage-and-next-captures) separates recorded results from tests and planned work.
+The [current catalog evidence](https://ronaldtebrake.github.io/symfony-hackathon/#catalog-evidence) includes five real Symfony AI conversations, the follow-up and boundary recovery, operator control traces and a fresh Symfony consumer without Docker. All final answers match; four scenarios pass fully. In the injection scenario the agent attempted an unwanted restricted read, which the host denied. We retain that failure alongside the successful work. Earlier PHP captures remain unchanged.
+
+**Catalog size and task cost are different measurements.** In an offline four-field-tool fixture, our advertised catalog stays at **287 tokens** from 3 to 100 tools; advertising 100 directly uses **8,605**. Search results and conversation history still consume tokens. Those counts exclude model framing and are separate from provider-reported audit usage. [Measurement and scope](docs/batching.md#catalog-overhead-and-conversation-cost).
 
 ## Getting started
 
@@ -37,9 +37,21 @@ composer install
 composer start
 ```
 
-Browse the [visual documentation](https://ronaldtebrake.github.io/symfony-hackathon/) or open [the local workbench](http://127.0.0.1:8000/demo). It shows the agent conversation and follow-up, exact PHP, actual tool calls, measured model usage and security proofs. It is a read-only viewer of saved runs. To execute new PHP, choose an [execution path](#execution-paths) and connect an agent as described below.
+Browse the [visual documentation](https://ronaldtebrake.github.io/symfony-hackathon/) or open [the local workbench](http://127.0.0.1:8000/demo). It shows current JSON conversations and follow-ups, actual tool calls, measured model usage and security proofs, with generated PHP preserved in the historical chapters. It is a read-only viewer of saved runs. To run new work, choose an [execution path](#execution-paths) and connect an agent as described below.
 
-The [Symfony performance conversation](docs/performance.md) shows a real agent correlating profiler records and logs, then verifying a prepared optimization: **13 queries → 1, identical output**. Inspect generated PHP, actual calls and a matched direct-tool baseline in [the local viewer](http://127.0.0.1:8000/demo#performance). Both approaches answer correctly; this small three-reader case uses fewer model requests with Code Mode, but more tokens.
+## Reproduce the current proofs
+
+```sh
+# Actual MCP reads, control probes and fixed reference algorithms; no inference:
+php bin/console code-mode:catalog-proof --no-debug
+# Same scenarios with real Symfony AI + Hugging Face (uses inference credits):
+php bin/console code-mode:catalog-proof --live --no-debug
+# Independent consumer, own dependencies and policy; no Docker:
+composer install --working-dir=examples/symfony
+composer proof:catalog --working-dir=examples/symfony
+```
+
+Every catalog capture is retained under ignored `var/demo/catalog-proof/`. Pages publishes only reviewed evidence. [Coverage, outcomes and remaining gaps](docs/batching.md#evidence-coverage-and-next-captures).
 
 ## Use your Symfony tools
 
@@ -72,7 +84,7 @@ code_mode:
 
 This is an alternative configuration. The [adapter guide](packages/symfony-code-mode/README.md#reuse-existing-symfony-ai-tools) covers service wiring and policy contracts. Execution goes through Symfony AI's existing argument resolver and toolbox lifecycle. Tool annotations alone do not grant permission.
 
-After configuring a runtime, check prerequisites:
+Check prerequisites for the configured execution path:
 
 ```sh
 php bin/console code-mode:doctor
@@ -174,7 +186,7 @@ Against the supplied fixture, the returned `value` is:
 
 That is one PHP execution with **four broker calls**. The agent receives `{"value": ...}`. The host retains the detailed call ledger, duration and run ID for optional diagnostics; they are not repeated in the model response. The PHP return value remains untrusted program output. [Capture host evidence](packages/symfony-code-mode/README.md#agent-responses-and-host-evidence).
 
-A follow-up uses the same conversation, identity and remaining execution budget. If the agent attempts a restricted read, the broker returns `tool_denied`. The agent can explain the boundary and propose a permitted alternative. [See the recorded denial and recovery](docs/demo.md#optional-boundary-recovery-opening).
+A follow-up uses the same conversation, identity and remaining execution budget. If the agent attempts a restricted read, the broker returns `tool_denied`. The agent can explain the boundary and propose a permitted alternative. [See the recorded denial and recovery](https://ronaldtebrake.github.io/symfony-hackathon/#recovery).
 
 Code Mode is useful when a task needs pagination, branching or several related reads. A simple lookup may need less work as a direct tool call. Discovery and sandbox startup have costs too.
 
@@ -188,7 +200,7 @@ Code Mode is useful when a task needs pagination, branching or several related r
 | Historical PHP — `mode: php` (package default) | Dedicated Linux Docker endpoint with `runsc` and a pinned runner image | PHP in gVisor, with no guest network, host mounts or forwarded credentials |
 | JSON catalog — `mode: catalog` | Unix PHP CLI with `pcntl`, `posix` and a supervised worker | Existing approved tool handlers; no generated code and no gVisor |
 
-For gVisor, follow the [runtime setup](packages/php-code-mode/README.md#run-the-proof), put the image ID and Docker command in ignored `.env.local`, then run `code-mode:doctor`. macOS can use a Linux VM. Ordinary Docker alone is insufficient. There is no unsafe local PHP executor or automatic fallback.
+For gVisor, follow the [runtime setup](packages/php-code-mode/README.md#sandboxed-php), put the image ID and Docker command in ignored `.env.local`, then run `code-mode:doctor`. macOS can use a Linux VM. Ordinary Docker alone is insufficient. There is no unsafe local PHP executor or automatic fallback.
 
 For the JSON catalog, add `mode: catalog` alongside your approved tools and identity provider. `code-mode:serve` exposes `search_tools` and `execute_tools`. Each call uses the same authorization and schema checks. Results stay separate; the model combines them. The earlier `mode: batch` interface with a separate describe step remains available for reproducing its captures. [Batch format, limits and hosted Symfony requirements](docs/batching.md).
 
@@ -210,19 +222,19 @@ The latest Symfony AI + Hugging Face comparison keeps **model, question, data an
 | Elapsed time | 8.8 s | 5.8 s | 4.3 s |
 | Generated-code sandbox | None | None | gVisor |
 
-The model corrected the direct and JSON drafts; it explicitly kept PHP's correct draft. The host follows that recorded decision without consulting the expected answer. JSON made seven extra empty-page reads; their costs count too. All **13 attempts / 39 runs** remain in the workbench: **1,194,226 reported tokens**, with usage missing for three rejected requests. Protocol changes and failures are documented. This selected development result does not establish repeatable savings or financial charges. [Full methodology, drafts and costs](docs/batching.md#live-three-way-symfony-audit).
+All totals include model review, which corrected the direct and JSON drafts and kept PHP's correct draft. JSON made seven extra empty-page reads; those costs count. This is one matched example, not a reliability estimate or a promise of lower bills. [Methodology and complete capture archive](docs/batching.md#live-three-way-symfony-audit).
 
-The original two-way proof below and the animated explainer above retain their **2 November** measurements: 43,979 → 12,597 tokens, **71.4% fewer**. That is separate evidence, with all 21 historical development invocations retained in its [methodology](docs/huggingface-comparison.md).
+The animated PHP explainer uses the separate **2 November** pair: 43,979 → 12,597 tokens. Its 71.4% reduction must not be attributed to JSON. [Inspect that original comparison](https://ronaldtebrake.github.io/symfony-hackathon/#live-comparison).
 
-![Actual workbench showing both verified answers and measured provider usage.](docs/images/huggingface-matched-comparison.jpg)
+A smaller [performance investigation](docs/performance.md) gives the counterexample: both paths answer correctly, but PHP uses **14,694 tokens** versus **8,217** for direct tools. Choosing the execution path depends on the work. JSON has not been measured on that task.
 
-A separate evaluation repeats five scenarios twice per approach. Its latest live batch passes **10/10 conversations on both sides**, with **63.7% fewer reported tokens** for Code Mode, including shared answer-review costs. Earlier failed batches remain available. [Evaluation protocol and results](docs/demo.md#repeatable-evaluation).
+### When could PHP become easier to adopt?
 
-The current lean response format also reduces context overhead. Offline replay of retained responses measures **46.9% fewer response-body tokens for the recorded MCP conversation**, **69.7% for the Symfony AI adoption pair**, and **9.5% for the already compact Hugging Face audit**. All use the gpt-oss tokenizer; these are payload counts, not new provider usage or total conversation savings. Historical live captures remain unchanged. [Inspect and reproduce the measurement](docs/demo.md#lean-response-measurement).
+A managed isolated executor could keep computation close to tools without asking each application to operate gVisor. [Cloudflare's isolated-worker approach](https://github.com/cloudflare/agents/tree/main/packages/codemode) illustrates that deployment model for JavaScript. It is not a PHP runtime or an integration we ship. A PHP equivalent needs verified isolation, authenticated access, deadlines and cleanup, followed by matched cost and latency measurements. [Explore the next steps](https://ronaldtebrake.github.io/symfony-hackathon/#explore).
 
-## Run the demos
+## Additional proofs
 
-The commands below use gVisor, including when the bundle's `code-mode:serve` is configured for local development.
+These audit, performance and evaluation commands use the PHP runner and require gVisor. They are separate from the JSON catalog quickstart.
 
 | Command | What it demonstrates |
 | --- | --- |

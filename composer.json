@@ -2,7 +2,7 @@
     "name": "ronaldtebrake/symfony-hackathon",
     "type": "project",
     "license": "MIT",
-    "description": "Symfony Code Mode: isolated PHP tool composition with Symfony AI, the PHP MCP SDK and gVisor.",
+    "description": "Symfony Code Mode: approved JSON tool catalogs and sandboxed PHP with Symfony AI and the PHP MCP SDK.",
     "minimum-stability": "beta",
     "prefer-stable": true,
     "require": {

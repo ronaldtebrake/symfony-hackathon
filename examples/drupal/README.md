@@ -6,7 +6,7 @@ This first milestone uses **local STDIO** under a fixed Drupal account. The trus
 
 ## Setup
 
-Requires DDEV, Docker, and the root project's [configured gVisor runtime](../../packages/php-code-mode/README.md#run-the-proof). DDEV runs Drupal; the separate gVisor engine runs untrusted PHP. DDEV alone is not the sandbox.
+Requires DDEV, Docker, and the root project's [configured gVisor runtime](../../packages/php-code-mode/README.md#sandboxed-php). DDEV runs Drupal; the separate gVisor engine runs untrusted PHP. DDEV alone is not the sandbox.
 
 From the repository root:
 

@@ -1050,7 +1050,7 @@ function renderThreeWayAttempt() {
   byId('three-way-state').textContent = paired ? 'ALL THREE VERIFIED' : attempt.status === 'running' ? 'CAPTURE IN PROGRESS' : 'FAILURES RETAINED';
   const reference = attempt.runs.direct ?? attempt.runs.batch ?? attempt.runs.code;
   byId('three-way-question').textContent = reference?.task ?? '';
-  byId('three-way-scope').textContent = `${reference?.model ?? 'No model recorded'} · ${reference?.protocol ?? 'audit-original-v1'} · ${new Date(attempt.createdAt).toLocaleString()} · ${threeWayAttempts.length} experiment attempt(s) retained, including failures.`;
+  byId('three-way-scope').textContent = `${reference?.model ?? 'No model recorded'} · captured ${new Date(attempt.createdAt).toLocaleString()} · Symfony AI + Hugging Face`;
   const catalog = /^audit-catalog-v/.test(reference?.protocol ?? '');
   byId('three-way-review-note').textContent = /^audit-catalog-v(?:[4-9]|10)$/.test(reference?.protocol ?? '')
     ? `Dedicated text-only review on every path, with the same draft prompts, model, original question, data, permissions and 14-request ceiling. No expected findings or evaluator feedback are supplied. ${reference?.toolResultEncoding === 'literal-utf8' ? 'Every path uses literal UTF-8 tool-result text; decoded records are unchanged. ' : ''}${['audit-catalog-v8','audit-catalog-v9','audit-catalog-v10'].includes(reference?.protocol) ? 'Forced JSON output mode is omitted; exact answer checks still apply. ' : ''}${reference?.protocol === 'audit-catalog-v9' ? 'The review checks each draft finding against the actual records before looking for omissions. ' : ''}${reference?.protocol === 'audit-catalog-v10' ? 'The model explicitly keeps the draft or replaces it; the host applies that decision without consulting the expected answer. ' : ''}The full review instructions and request settings are recorded below.`
@@ -1080,7 +1080,7 @@ function renderThreeWayAttempt() {
     const direct = attempt.runs.direct.result.providerTokens.total;
     const batch = attempt.runs.batch.result.providerTokens.total;
     const code = attempt.runs.code.result.providerTokens.total;
-    byId('three-way-verdict').textContent = `All three answers and evidence checks passed. JSON batching used ${(100 * Math.abs(1 - batch / direct)).toFixed(1)}% ${batch <= direct ? 'fewer' : 'more'} tokens than direct tools, without a generated-code sandbox. Code Mode used ${(100 * Math.abs(1 - code / direct)).toFixed(1)}% ${code <= direct ? 'fewer' : 'more'} than direct tools, and ${(100 * Math.abs(1 - code / batch)).toFixed(1)}% ${code <= batch ? 'fewer' : 'more'} than JSON batching. This is one matched attempt.`;
+    byId('three-way-verdict').textContent = `All three answers and evidence checks passed. JSON ${catalog ? 'catalog' : 'batching'} used ${(100 * Math.abs(1 - batch / direct)).toFixed(1)}% ${batch <= direct ? 'fewer' : 'more'} tokens than direct tools, without a generated-code sandbox. Code Mode used ${(100 * Math.abs(1 - code / direct)).toFixed(1)}% ${code <= direct ? 'fewer' : 'more'} than direct tools, and ${(100 * Math.abs(1 - code / batch)).toFixed(1)}% ${code <= batch ? 'fewer' : 'more'} than JSON. This is one matched attempt, not a prediction for every task.`;
   } else {
     byId('three-way-verdict').textContent = 'This is not a verified three-way savings comparison. Observed costs remain visible, including incorrect and unfinished answers. An inexpensive wrong answer does not establish a saving.';
   }

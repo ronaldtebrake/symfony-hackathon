@@ -21,6 +21,7 @@ return static function (ContainerConfigurator $container): void {
         '$eventDispatcher' => service('event_dispatcher'),
     ]);
     $container->extension('code_mode', [
+        'mode' => getenv('ADOPTION_MODE') ?: 'catalog',
         'identity_provider' => LocalReader::class,
         'ai_toolbox' => 'app.toolbox',
         'ai_tools' => ['publication_read'],

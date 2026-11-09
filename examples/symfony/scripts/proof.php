@@ -27,7 +27,7 @@ $verify = static function (string $name, bool $passed) use (&$checks): void {
 };
 
 // Pass only trusted runtime connection settings to the local MCP server, never model tokens.
-$environment = [];
+$environment = ['ADOPTION_MODE' => 'php'];
 foreach (['PATH', 'HOME', 'DOCKER_HOST', 'DOCKER_CONTEXT', 'DOCKER_CONFIG', 'SSH_AUTH_SOCK', 'XDG_RUNTIME_DIR', 'TMPDIR', 'CODE_MODE_IMAGE', 'CODE_MODE_DOCKER_COMMAND'] as $key) {
     $value = $_SERVER[$key] ?? $_ENV[$key] ?? getenv($key);
     if (is_string($value)) { $environment[$key] = $value; }

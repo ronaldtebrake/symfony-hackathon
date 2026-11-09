@@ -1,0 +1,27 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+// Offline serialization only. No MCP handler, model, worker or runtime is started.
+require dirname(__DIR__).'/vendor/autoload.php';
+
+use CodeMode\{BatchSession, ExecutionIdentity, ToolBroker, ToolCatalog, ToolDefinition};
+use Mcp\Schema\Result\ListToolsResult;
+use Mcp\Schema\Tool;
+
+$samples = [];
+foreach ([3, 10, 20, 40, 100] as $count) {
+    $definitions = [];
+    for ($i = 1; $i <= $count; ++$i) {
+        $definitions[] = new ToolDefinition(sprintf('record_read_%03d', $i), 'Read approved public records using the supplied filters.',
+            json_decode('{"type":"object","properties":{"id":{"type":"integer","minimum":1},"locale":{"type":"string"},"offset":{"type":"integer","minimum":0},"limit":{"type":"integer","minimum":1,"maximum":12}},"required":["id","locale","offset","limit"],"additionalProperties":false}'));
+    }
+    $session = new BatchSession(new ToolCatalog($definitions), new ToolBroker([]), new ExecutionIdentity('offline-measurement', []));
+    foreach (['direct' => $definitions, 'catalog' => $session->catalogToolDefinitions()] as $mode => $tools) {
+        $result = new ListToolsResult(array_map(static fn ($tool) => Tool::fromArray(['name' => $tool->name, 'description' => $tool->description, 'inputSchema' => get_object_vars($tool->inputSchema)]), $tools));
+        $text = json_encode($result, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        $samples[] = ['catalogTools' => $count, 'mode' => $mode, 'advertisedTools' => count($tools), 'bytes' => strlen($text), 'sha256' => hash('sha256', $text), 'text' => $text];
+    }
+}
+echo json_encode(['scope' => 'Offline PHP MCP SDK tools/list result serialization. Synthetic tools have four input fields each. Counts exclude search results, task data, prompts, conversation history, output and provider framing. No inference or billing measurement.', 'samples' => $samples], JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n";
