@@ -54,7 +54,7 @@ try {
     $doctor->run();
     $prerequisites = json_decode($doctor->getOutput(), true, flags: JSON_THROW_ON_ERROR);
     $verify('prerequisites_ready', $doctor->isSuccessful() && true === ($prerequisites['ready'] ?? false));
-    $verify('bounded_defaults', ['wallTimeMs' => 5000, 'toolTimeMs' => 1000, 'memoryMiB' => 128, 'phpMemoryMiB' => 32, 'maxToolCalls' => 10, 'executionAttempts' => 2] === $prerequisites['limits']);
+    $verify('bounded_defaults', ['wallTimeMs' => 5000, 'toolTimeMs' => 1000, 'memoryMiB' => 128, 'phpMemoryMiB' => 32, 'brokerMemoryMiB' => 64, 'maxToolCalls' => 10, 'executionAttempts' => 2] === $prerequisites['limits']);
     $verify('gvisor_profile', \CodeMode\ExecutionProfile::Gvisor->metadata() === ($prerequisites['runtime'] ?? null));
     $docker = new DockerEngine(json_decode($environment['CODE_MODE_DOCKER_COMMAND'] ?? '["docker"]', true, flags: JSON_THROW_ON_ERROR));
 
