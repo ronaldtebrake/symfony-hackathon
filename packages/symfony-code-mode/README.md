@@ -37,6 +37,22 @@ A `ReadToolInterface` service supplies:
 
 The identity provider is trusted application code. Our example selects a local CLI demonstration account, which is **not remote authentication**. A production host must authenticate its operator/user and supply the appropriate capabilities. Never take the identity, permissions, service IDs or Docker command from agent input. The read-only interface/annotations describe a trusted operator contract; they cannot make an arbitrary PHP handler read-only. Review approved handlers.
 
+## Compose tool providers
+
+To combine approved Symfony AI tools and an MCP service, register providers explicitly:
+
+```yaml
+code_mode:
+    identity_provider: App\CodeMode\DemoIdentityProvider
+    providers: [app.catalog_provider, app.media_provider]
+```
+
+`SymfonyAiProvider` wraps an `ApprovedToolbox`; `McpProvider` wraps a host-configured `McpGateway`. Each takes a namespace and an explicit map from PHP method aliases to approved original tool names. `ReadToolsProvider` adapts existing `ReadToolInterface` services. The [independent composition app](../../examples/composition/README.md) includes complete service wiring and a real allowed/denied execution proof. It does not replace the main demo or its configuration.
+
+Discovery still returns full schemas. Selected calls can use `$tools->catalog->getArticles(['ids' => [1]])` or `$tools->call('catalog.getArticles', ['ids' => [1]])`. Both reach the same broker. Host policy, input validation, the disclosed-tool allowlist and execution budgets are unchanged. The generated PHPDoc interfaces describe supported schema shapes; they do not prove program correctness or confer permission. Unknown/complex shapes stay broad.
+
+The generic provider contract and MCP adapter live in the PHP core; the Symfony AI adapter stays in this bundle. Drupal/Rosetta integration can use that core without adopting this demo's UI or fixtures.
+
 ## Runtime configuration
 
 Use the [runner setup](../php-code-mode/README.md#run-the-proof) on a dedicated Linux Docker endpoint with gVisor. On macOS a local Linux VM can supply that endpoint; ordinary Docker Desktop/OrbStack alone is insufficient. In ignored `.env.local`:

@@ -1,0 +1,26 @@
+$audited = 0;
+$findings = [];
+$images = [];
+$offset = 0;
+do {
+    $page = $tools->catalog->listArticles(['offset' => $offset, 'limit' => 12]);
+    $ids = array_map(static fn ($item) => $item->id, $page->items);
+    $articles = $tools->catalog->getArticles(['ids' => $ids])->items;
+    $missingImages = [];
+    foreach ($articles as $article) {
+        if (!isset($images[$article->image_id])) { $missingImages[$article->image_id] = $article->image_id; }
+    }
+    if ($missingImages) {
+        foreach ($tools->media->getMedia(['ids' => array_values($missingImages)])->items as $image) { $images[$image->id] = $image; }
+    }
+    foreach ($articles as $article) {
+        ++$audited;
+        $issues = [];
+        if ('' === trim($article->meta_description)) { $issues[] = 'missing_description'; }
+        if ('' === trim($images[$article->image_id]->alt)) { $issues[] = 'missing_alt'; }
+        if ($issues) { $findings[] = ['id' => $article->id, 'title' => $article->title, 'issues' => $issues]; }
+    }
+    $offset = $page->next_offset;
+} while (null !== $offset);
+usort($findings, static fn ($a, $b) => $a['id'] <=> $b['id']);
+return ['audited' => $audited, 'findings' => $findings];

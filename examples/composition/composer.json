@@ -1,0 +1,51 @@
+{
+    "name": "symfony-code-mode/composition-example",
+    "description": "Independent Symfony application composing native AI and MCP tools through Code Mode providers.",
+    "type": "project",
+    "license": "MIT",
+    "minimum-stability": "beta",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=8.2",
+        "ronaldtebrake/symfony-code-mode": "^0.1",
+        "symfony/ai-agent": "^1.0@beta",
+        "symfony/dotenv": "7.4.*",
+        "symfony/framework-bundle": "7.4.*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Composition\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "platform": {
+            "php": "8.2.0"
+        }
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../packages/*",
+            "options": {
+                "symlink": false,
+                "versions": {
+                    "ronaldtebrake/php-code-mode": "0.1.0",
+                    "ronaldtebrake/symfony-code-mode": "0.1.0"
+                }
+            }
+        }
+    ],
+    "scripts": {
+        "test": "@php vendor/bin/phpunit --bootstrap vendor/autoload.php tests",
+        "check": [
+            "@composer validate --strict",
+            "@php bin/console lint:container",
+            "@test"
+        ],
+        "proof": "@php bin/console composition:proof"
+    }
+}

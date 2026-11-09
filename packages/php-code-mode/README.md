@@ -116,3 +116,13 @@ The root Symfony app supplies an editorial audit, batched direct-call baseline, 
 Search returns candidate names and descriptions in a `tools` list, with `matched`, `returned`, `limit` and `truncated`. A truncated or empty result includes refinement guidance. All query terms must match; an exact approved name selects one tool. Search returns at most eight entries and 32 KiB. It never makes a tool callable.
 
 Call `tools_describe` for the selected tools before executing PHP. The response includes the original input/output schemas and a PHP invocation guide. The broker continues to validate arguments and results and authorize every call. Search and describe never reset execution attempts. The core's list-only `search()` API remains available for existing PHP callers.
+
+## Composable providers
+
+`CodeMode\Provider\ToolProviderInterface` supplies a host-selected namespace and explicit `ToolBinding` objects. `ProviderRegistry` builds a bounded catalog and broker from those bindings, rejects collisions, and retains host-only provenance. `McpProvider` adapts an existing `McpGateway` with its original connection factory and per-tool policies. The Symfony package supplies `SymfonyAiProvider` and `ReadToolsProvider`.
+
+Pass the registry's catalog and broker to `CodeModeSession`, with `phpInterface: $registry->php()`. After full discovery, PHP can use `$tools->catalog->read(['id' => 1])`; it resolves to the canonical broker name `catalog.read`. The existing `call()` form remains available. Every call follows the same host authorization and validation path. Namespaces are not permissions.
+
+`php()->stubs()` emits editor-only PHP interfaces with conservative schema-derived PHPDoc. Complex schemas remain broad; full JSON Schema stays authoritative. Never load the stubs as runtime code. `CodeModeSession::executionCode()` exposes the full guest source, including the fixed proxy, for host diagnostics. The entire program is checked against the original source-byte limit. No image changes, additional network access or new state channel are required.
+
+See the [standalone Symfony/MCP composition proof](../../examples/composition/README.md) for registration, exact PHP, host call traces and denied reads. Its reference program is operator-written; it makes no model-token claim.

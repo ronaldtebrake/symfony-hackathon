@@ -20,6 +20,7 @@ final class CodeModeSession
         private readonly ExecutionLimits $limits = new ExecutionLimits(),
         private readonly int $maxExecutions = 2,
         private readonly DiscoveryMode $discovery = DiscoveryMode::Full,
+        private readonly ?\CodeMode\Provider\PhpToolInterface $phpInterface = null,
     ) {
         if ($maxExecutions < 1 || $maxExecutions > 3) {
             throw new \InvalidArgumentException('A session permits between one and three execution attempts.');
@@ -44,7 +45,8 @@ final class CodeModeSession
     public function describe(array $names): array
     {
         $definitions = $this->catalog->describe($names);
-        $descriptions = array_map(static fn (ToolDefinition $tool) => $tool->jsonSerialize() + ['php' => (new PhpToolGuide())->describe($tool)], $definitions);
+        $descriptions = array_map(fn (ToolDefinition $tool) => $tool->jsonSerialize() + ['php' => (new PhpToolGuide())->describe($tool)]
+            + ([] === ($interface = $this->phpInterface?->describe($tool) ?? []) ? [] : ['phpInterface' => $interface]), $definitions);
         foreach ($definitions as $definition) {
             $this->described[$definition->name] = true;
         }
@@ -60,8 +62,11 @@ final class CodeModeSession
             throw new SandboxException('discovery_required', 'Discover the required tool contracts before executing PHP.');
         }
         ++$this->executions;
-        return $this->sandbox->execute($code, $this->broker, $this->identity, array_keys($this->described), $this->limits);
+        return $this->sandbox->execute($this->executionCode($code), $this->broker, $this->identity, array_keys($this->described), $this->limits);
     }
+
+    /** Full guest source for host traces. Preparing code neither executes it nor grants capabilities. */
+    public function executionCode(string $code): string { return '' === $code ? '' : ($this->phpInterface?->wrap($code) ?? $code); }
 
     public function profile(): ExecutionProfile
     {

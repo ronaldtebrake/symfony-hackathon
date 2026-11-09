@@ -68,6 +68,8 @@ php bin/console code-mode:serve --no-debug
 
 It speaks MCP over STDIO; no web server is needed. For another Symfony application, register `CodeMode\Symfony\CodeModeBundle` and follow the [integration guide](packages/symfony-code-mode/README.md). The [independent Symfony example](examples/symfony/README.md) has its own Composer install, native AI tool and policy. Both packages currently use Composer path repositories and are **not yet published to Packagist**.
 
+The [provider composition example](examples/composition/README.md) runs beside this demo with its own Composer install. It joins native Symfony AI and MCP tools in one isolated PHP program, with schema-derived PHP interfaces and a separate read-only proof viewer. Drupal can reuse the same core provider contract.
+
 ## Discover, then execute
 
 Here is a small task using the checkout's two read services:

@@ -1,0 +1,24 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use CodeMode\Symfony\Ai\ApprovedToolbox;
+use Composition\{AuditDataset, Readers, ReadPolicy, LocalReader};
+use Mcp\Schema\Result\CallToolResult;
+use Mcp\Schema\ToolAnnotations;
+use Mcp\Server;
+use Symfony\AI\Agent\Toolbox\Toolbox;
+
+require dirname(__DIR__).'/vendor/autoload.php';
+// The upstream MCP service uses the same native Symfony AI definition and policy.
+$approved = new ApprovedToolbox(new Toolbox([new Readers(new AuditDataset())]), ['cms_get_media'], new ReadPolicy());
+$tool = $approved->tools()[0]; $definition = $tool->definition(); $identity = (new LocalReader())->identity();
+Server::builder()->setServerInfo('Symfony media provider', '1.0')
+    ->addTool(static function (array $ids) use ($tool, $identity): CallToolResult {
+        try { return new CallToolResult([], structuredContent: $tool->invoke((object) ['ids'=>$ids], $identity)); }
+        catch (\Throwable) { return new CallToolResult([], isError:true); }
+    }, name:$definition->name, description:$definition->description,
+        inputSchema:get_object_vars($definition->inputSchema), outputSchema:get_object_vars($definition->outputSchema),
+        annotations:new ToolAnnotations(readOnlyHint:true, destructiveHint:false))
+    ->build()->run(new Mcp\Server\Transport\StdioTransport());

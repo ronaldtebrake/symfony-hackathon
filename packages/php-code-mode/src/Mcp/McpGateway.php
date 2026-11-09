@@ -90,6 +90,12 @@ final readonly class McpGateway
 
     public function broker(ToolCatalog $catalog): ToolBroker
     {
+        return new ToolBroker($this->approvedTools($catalog));
+    }
+
+    /** Host-only bindings, preserving the gateway's per-call policies and supervised invocation. @return list<Tool> */
+    public function approvedTools(ToolCatalog $catalog): array
+    {
         $tools = [];
         foreach ($catalog->all() as $definition) {
             $authorize = $this->policies[$definition->name] ?? null;
@@ -100,7 +106,7 @@ final readonly class McpGateway
                 fn (\stdClass $arguments): mixed => $this->invoke($definition->name, $arguments),
             );
         }
-        return new ToolBroker($tools);
+        return $tools;
     }
 
     private function invoke(string $name, \stdClass $arguments): mixed

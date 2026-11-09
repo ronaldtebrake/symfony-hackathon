@@ -1,0 +1,551 @@
+{
+    "version": 1,
+    "kind": "provider-composition",
+    "createdAt": "2026-11-08T08:48:45+00:00",
+    "modelCalled": false,
+    "programOrigin": "Operator-written reference PHP; no model request or token comparison.",
+    "runtime": {
+        "executor": "gvisor",
+        "isolation": "gvisor",
+        "label": "gVisor sandbox",
+        "warning": null
+    },
+    "image": "sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b",
+    "limits": {
+        "wallTimeMs": 15000,
+        "toolTimeMs": 3000,
+        "memoryMiB": 128,
+        "phpMemoryMiB": 32,
+        "brokerMemoryMiB": 64,
+        "maxToolCalls": 30,
+        "maxCodeBytes": 32768,
+        "maxFrameBytes": 16384,
+        "maxOutputBytes": 65536,
+        "maxToolResultBytes": 16384
+    },
+    "fixtureSha256": "9630fc83895f46d09f320a15f588698b783d8c4662a1c7eb2002663c7437ece1",
+    "origins": {
+        "catalog.listArticles": {
+            "provider": "catalog",
+            "method": "listArticles",
+            "source": "symfony-ai",
+            "upstreamTool": "cms_list_articles"
+        },
+        "catalog.getArticles": {
+            "provider": "catalog",
+            "method": "getArticles",
+            "source": "symfony-ai",
+            "upstreamTool": "cms_get_articles"
+        },
+        "media.getMedia": {
+            "provider": "media",
+            "method": "getMedia",
+            "source": "mcp",
+            "upstreamTool": "cms_get_media"
+        }
+    },
+    "contracts": [
+        {
+            "name": "catalog.listArticles",
+            "description": "List published article IDs and titles. Paginate with offset and limit, maximum 12. Returns items, total and next_offset.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "offset": {
+                        "type": "integer"
+                    },
+                    "limit": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "offset",
+                    "limit"
+                ],
+                "additionalProperties": false
+            },
+            "outputSchema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "items",
+                    "total",
+                    "next_offset"
+                ],
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                                "id",
+                                "title"
+                            ],
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "title": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "total": {
+                        "type": "integer"
+                    },
+                    "next_offset": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    }
+                }
+            },
+            "php": {
+                "example": "$result = $tools->call('catalog.listArticles', ['offset' => 1, 'limit' => 1]);",
+                "arguments": "array{\"offset\": int, \"limit\": int}",
+                "returns": "stdClass{\"items\": list<stdClass{\"id\": int, \"title\": string}>, \"total\": int, \"next_offset\": int|null}",
+                "notes": "Illustrative placeholders; pass arguments as an associative PHP array and obey inputSchema. Tool-result JSON objects become stdClass (->field); JSON lists become PHP arrays. Shapes are documentation, not PHP declarations or permission grants. Unknown/referenced schemas remain mixed; no external references are fetched."
+            },
+            "phpInterface": {
+                "call": "$tools->catalog->listArticles($arguments)",
+                "arguments": "array{offset: int, limit: int}",
+                "returns": "object{items: list<object{id: int, title: string}>, total: int, next_offset: mixed}",
+                "notes": "PHPDoc guidance only. Full schemas and host policy remain authoritative. Constraints, normalization and dependent choices are not implied by these types. Objects in results use ->field; lists use array syntax."
+            }
+        },
+        {
+            "name": "catalog.getArticles",
+            "description": "Read metadata for up to twelve published IDs. Drafts are denied. Empty meta_description needs review; join image_id with media id.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "required": [
+                    "ids"
+                ],
+                "additionalProperties": false
+            },
+            "outputSchema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "items"
+                ],
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                                "id",
+                                "title",
+                                "status",
+                                "language",
+                                "path",
+                                "updated",
+                                "meta_description",
+                                "image_id"
+                            ],
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "title": {
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "type": "string"
+                                },
+                                "language": {
+                                    "type": "string"
+                                },
+                                "path": {
+                                    "type": "string"
+                                },
+                                "updated": {
+                                    "type": "string"
+                                },
+                                "meta_description": {
+                                    "type": "string"
+                                },
+                                "image_id": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "php": {
+                "example": "$result = $tools->call('catalog.getArticles', ['ids' => []]);",
+                "arguments": "array{\"ids\": list<int>}",
+                "returns": "stdClass{\"items\": list<stdClass{\"id\": int, \"title\": string, \"status\": string, \"language\": string, \"path\": string, \"updated\": string, \"meta_description\": string, \"image_id\": int}>}",
+                "notes": "Illustrative placeholders; pass arguments as an associative PHP array and obey inputSchema. Tool-result JSON objects become stdClass (->field); JSON lists become PHP arrays. Shapes are documentation, not PHP declarations or permission grants. Unknown/referenced schemas remain mixed; no external references are fetched."
+            },
+            "phpInterface": {
+                "call": "$tools->catalog->getArticles($arguments)",
+                "arguments": "array{ids: list<int>}",
+                "returns": "object{items: list<object{id: int, title: string, status: string, language: string, path: string, updated: string, meta_description: string, image_id: int}>}",
+                "notes": "PHPDoc guidance only. Full schemas and host policy remain authoritative. Constraints, normalization and dependent choices are not implied by these types. Objects in results use ->field; lists use array syntax."
+            }
+        },
+        {
+            "name": "media.getMedia",
+            "description": "Read up to twelve public media records. Empty alt needs review. Join id to article image_id.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "required": [
+                    "ids"
+                ],
+                "additionalProperties": false
+            },
+            "outputSchema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "items"
+                ],
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                                "id",
+                                "alt",
+                                "file_name",
+                                "width",
+                                "height"
+                            ],
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "alt": {
+                                    "type": "string"
+                                },
+                                "file_name": {
+                                    "type": "string"
+                                },
+                                "width": {
+                                    "type": "integer"
+                                },
+                                "height": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "php": {
+                "example": "$result = $tools->call('media.getMedia', ['ids' => []]);",
+                "arguments": "array{\"ids\": list<int>}",
+                "returns": "stdClass{\"items\": list<stdClass{\"id\": int, \"alt\": string, \"file_name\": string, \"width\": int, \"height\": int}>}",
+                "notes": "Illustrative placeholders; pass arguments as an associative PHP array and obey inputSchema. Tool-result JSON objects become stdClass (->field); JSON lists become PHP arrays. Shapes are documentation, not PHP declarations or permission grants. Unknown/referenced schemas remain mixed; no external references are fetched."
+            },
+            "phpInterface": {
+                "call": "$tools->media->getMedia($arguments)",
+                "arguments": "array{ids: list<int>}",
+                "returns": "object{items: list<object{id: int, alt: string, file_name: string, width: int, height: int}>}",
+                "notes": "PHPDoc guidance only. Full schemas and host policy remain authoritative. Constraints, normalization and dependent choices are not implied by these types. Objects in results use ->field; lists use array syntax."
+            }
+        }
+    ],
+    "interfaces": "<?php\n\nnamespace CodeMode\\Generated;\n\n// Generated from approved schemas. Documentation only; not whole-program verification.\ninterface CatalogTools\n{\n    /** @param array{offset: int, limit: int} $arguments\n     * @return object{items: list<object{id: int, title: string}>, total: int, next_offset: mixed} */\n    public function listArticles(array $arguments = []): mixed;\n    /** @param array{ids: list<int>} $arguments\n     * @return object{items: list<object{id: int, title: string, status: string, language: string, path: string, updated: string, meta_description: string, image_id: int}>} */\n    public function getArticles(array $arguments = []): mixed;\n}\n\ninterface MediaTools\n{\n    /** @param array{ids: list<int>} $arguments\n     * @return object{items: list<object{id: int, alt: string, file_name: string, width: int, height: int}>} */\n    public function getMedia(array $arguments = []): mixed;\n}\n\n/**\n * @property-read CatalogTools $catalog\n * @property-read MediaTools $media\n */\ninterface Tools\n{\n    public function call(string $name, array $arguments = []): mixed;\n}\n",
+    "executions": {
+        "audit": {
+            "php": "$audited = 0;\n$findings = [];\n$images = [];\n$offset = 0;\ndo {\n    $page = $tools->catalog->listArticles(['offset' => $offset, 'limit' => 12]);\n    $ids = array_map(static fn ($item) => $item->id, $page->items);\n    $articles = $tools->catalog->getArticles(['ids' => $ids])->items;\n    $missingImages = [];\n    foreach ($articles as $article) {\n        if (!isset($images[$article->image_id])) { $missingImages[$article->image_id] = $article->image_id; }\n    }\n    if ($missingImages) {\n        foreach ($tools->media->getMedia(['ids' => array_values($missingImages)])->items as $image) { $images[$image->id] = $image; }\n    }\n    foreach ($articles as $article) {\n        ++$audited;\n        $issues = [];\n        if ('' === trim($article->meta_description)) { $issues[] = 'missing_description'; }\n        if ('' === trim($images[$article->image_id]->alt)) { $issues[] = 'missing_alt'; }\n        if ($issues) { $findings[] = ['id' => $article->id, 'title' => $article->title, 'issues' => $issues]; }\n    }\n    $offset = $page->next_offset;\n} while (null !== $offset);\nusort($findings, static fn ($a, $b) => $a['id'] <=> $b['id']);\nreturn ['audited' => $audited, 'findings' => $findings];",
+            "executedPhp": "return (static function ($tools) {\n$audited = 0;\n$findings = [];\n$images = [];\n$offset = 0;\ndo {\n    $page = $tools->catalog->listArticles(['offset' => $offset, 'limit' => 12]);\n    $ids = array_map(static fn ($item) => $item->id, $page->items);\n    $articles = $tools->catalog->getArticles(['ids' => $ids])->items;\n    $missingImages = [];\n    foreach ($articles as $article) {\n        if (!isset($images[$article->image_id])) { $missingImages[$article->image_id] = $article->image_id; }\n    }\n    if ($missingImages) {\n        foreach ($tools->media->getMedia(['ids' => array_values($missingImages)])->items as $image) { $images[$image->id] = $image; }\n    }\n    foreach ($articles as $article) {\n        ++$audited;\n        $issues = [];\n        if ('' === trim($article->meta_description)) { $issues[] = 'missing_description'; }\n        if ('' === trim($images[$article->image_id]->alt)) { $issues[] = 'missing_alt'; }\n        if ($issues) { $findings[] = ['id' => $article->id, 'title' => $article->title, 'issues' => $issues]; }\n    }\n    $offset = $page->next_offset;\n} while (null !== $offset);\nusort($findings, static fn ($a, $b) => $a['id'] <=> $b['id']);\nreturn ['audited' => $audited, 'findings' => $findings];\n})(new class($tools) {\n    public function __construct(private object $broker) {}\n    public function call(string $name, array $arguments = []): mixed { return $this->broker->call($name, $arguments); }\n    public function __get(string $namespace): object {\n        $map = array (\n  'catalog' => \n  array (\n    'listArticles' => 'catalog.listArticles',\n    'getArticles' => 'catalog.getArticles',\n  ),\n  'media' => \n  array (\n    'getMedia' => 'media.getMedia',\n  ),\n);\n        if (!isset($map[$namespace])) { throw new \\RuntimeException('Unknown provider.'); }\n        return new class($this->broker, $map[$namespace]) {\n            public function __construct(private object $broker, private array $methods) {}\n            public function __call(string $method, array $arguments): mixed {\n                if (!isset($this->methods[$method]) || !array_is_list($arguments) || count($arguments) > 1 || (array_key_exists(0, $arguments) && !is_array($arguments[0]))) { throw new \\RuntimeException('Invalid provider call.'); }\n                return $this->broker->call($this->methods[$method], $arguments[0] ?? []);\n            }\n        };\n    }\n});",
+            "sourceSha256": "a995cb105599965f4c1680f82a8a882826fef517e7625214c233d60609e34a95",
+            "status": "succeeded",
+            "reason": null,
+            "value": {
+                "audited": 48,
+                "findings": [
+                    {
+                        "id": 7,
+                        "title": "Repairing the things we keep \u00b7 1",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    },
+                    {
+                        "id": 11,
+                        "title": "Making room for slower travel \u00b7 2",
+                        "issues": [
+                            "missing_description"
+                        ]
+                    },
+                    {
+                        "id": 14,
+                        "title": "What a library can become \u00b7 2",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    },
+                    {
+                        "id": 21,
+                        "title": "A practical guide to local energy \u00b7 3",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    },
+                    {
+                        "id": 22,
+                        "title": "What a library can become \u00b7 3",
+                        "issues": [
+                            "missing_description"
+                        ]
+                    },
+                    {
+                        "id": 31,
+                        "title": "Repairing the things we keep \u00b7 4",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    },
+                    {
+                        "id": 33,
+                        "title": "Designing accessible navigation \u00b7 5",
+                        "issues": [
+                            "missing_description"
+                        ]
+                    },
+                    {
+                        "id": 38,
+                        "title": "What a library can become \u00b7 5",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    },
+                    {
+                        "id": 44,
+                        "title": "The people behind the workshop \u00b7 6",
+                        "issues": [
+                            "missing_description"
+                        ]
+                    },
+                    {
+                        "id": 45,
+                        "title": "A practical guide to local energy \u00b7 6",
+                        "issues": [
+                            "missing_alt"
+                        ]
+                    }
+                ]
+            },
+            "toolCalls": [
+                {
+                    "name": "catalog.listArticles",
+                    "status": "succeeded",
+                    "durationMs": 4.292957950383425,
+                    "resultBytes": 744
+                },
+                {
+                    "name": "catalog.getArticles",
+                    "status": "succeeded",
+                    "durationMs": 1.5607090317644179,
+                    "resultBytes": 3485
+                },
+                {
+                    "name": "media.getMedia",
+                    "status": "succeeded",
+                    "durationMs": 76.48079097270966,
+                    "resultBytes": 1609
+                },
+                {
+                    "name": "catalog.listArticles",
+                    "status": "succeeded",
+                    "durationMs": 1.5177089953795075,
+                    "resultBytes": 747
+                },
+                {
+                    "name": "catalog.getArticles",
+                    "status": "succeeded",
+                    "durationMs": 1.1411249870434403,
+                    "resultBytes": 3504
+                },
+                {
+                    "name": "media.getMedia",
+                    "status": "succeeded",
+                    "durationMs": 62.51374998828396,
+                    "resultBytes": 1563
+                },
+                {
+                    "name": "catalog.listArticles",
+                    "status": "succeeded",
+                    "durationMs": 1.5217080363072455,
+                    "resultBytes": 753
+                },
+                {
+                    "name": "catalog.getArticles",
+                    "status": "succeeded",
+                    "durationMs": 1.5209169941954315,
+                    "resultBytes": 3501
+                },
+                {
+                    "name": "catalog.listArticles",
+                    "status": "succeeded",
+                    "durationMs": 1.5264159883372486,
+                    "resultBytes": 749
+                },
+                {
+                    "name": "catalog.getArticles",
+                    "status": "succeeded",
+                    "durationMs": 1.5380840050056577,
+                    "resultBytes": 3499
+                }
+            ],
+            "runId": "code-mode-729fb5f094ef8887f7fa29a91b6ca427",
+            "runtime": "gvisor",
+            "executionMs": 378.3284170203842,
+            "outputBytes": 1964,
+            "elapsedMs": 592.19,
+            "containerRemoved": true
+        },
+        "restricted-article": {
+            "php": "return $tools->catalog->getArticles([\"ids\" => [49]]);",
+            "executedPhp": "return (static function ($tools) {\nreturn $tools->catalog->getArticles([\"ids\" => [49]]);\n})(new class($tools) {\n    public function __construct(private object $broker) {}\n    public function call(string $name, array $arguments = []): mixed { return $this->broker->call($name, $arguments); }\n    public function __get(string $namespace): object {\n        $map = array (\n  'catalog' => \n  array (\n    'listArticles' => 'catalog.listArticles',\n    'getArticles' => 'catalog.getArticles',\n  ),\n  'media' => \n  array (\n    'getMedia' => 'media.getMedia',\n  ),\n);\n        if (!isset($map[$namespace])) { throw new \\RuntimeException('Unknown provider.'); }\n        return new class($this->broker, $map[$namespace]) {\n            public function __construct(private object $broker, private array $methods) {}\n            public function __call(string $method, array $arguments): mixed {\n                if (!isset($this->methods[$method]) || !array_is_list($arguments) || count($arguments) > 1 || (array_key_exists(0, $arguments) && !is_array($arguments[0]))) { throw new \\RuntimeException('Invalid provider call.'); }\n                return $this->broker->call($this->methods[$method], $arguments[0] ?? []);\n            }\n        };\n    }\n});",
+            "sourceSha256": "c768095bc33f9b9d6a19b361a7b8f3bc4e619265257ee0da65a7384df4deeb81",
+            "status": "failed",
+            "reason": "tool_denied",
+            "value": null,
+            "toolCalls": [
+                {
+                    "name": "catalog.getArticles",
+                    "status": "denied",
+                    "reason": "tool_denied",
+                    "durationMs": 1.6717499820515513
+                }
+            ],
+            "runId": "code-mode-9d749570ca4dbe1031628408bbe4fe62",
+            "runtime": "gvisor",
+            "elapsedMs": 287.63,
+            "containerRemoved": true
+        },
+        "attempt-budget": {
+            "php": "return 1;",
+            "executedPhp": "return (static function ($tools) {\nreturn 1;\n})(new class($tools) {\n    public function __construct(private object $broker) {}\n    public function call(string $name, array $arguments = []): mixed { return $this->broker->call($name, $arguments); }\n    public function __get(string $namespace): object {\n        $map = array (\n  'catalog' => \n  array (\n    'listArticles' => 'catalog.listArticles',\n    'getArticles' => 'catalog.getArticles',\n  ),\n  'media' => \n  array (\n    'getMedia' => 'media.getMedia',\n  ),\n);\n        if (!isset($map[$namespace])) { throw new \\RuntimeException('Unknown provider.'); }\n        return new class($this->broker, $map[$namespace]) {\n            public function __construct(private object $broker, private array $methods) {}\n            public function __call(string $method, array $arguments): mixed {\n                if (!isset($this->methods[$method]) || !array_is_list($arguments) || count($arguments) > 1 || (array_key_exists(0, $arguments) && !is_array($arguments[0]))) { throw new \\RuntimeException('Invalid provider call.'); }\n                return $this->broker->call($this->methods[$method], $arguments[0] ?? []);\n            }\n        };\n    }\n});",
+            "sourceSha256": "70a9dde77efffe3e0d4a0034375974957a476ce259d7201347279445fae59a82",
+            "status": "failed",
+            "reason": "execution_limit",
+            "value": null,
+            "toolCalls": [],
+            "runId": null,
+            "runtime": "unknown",
+            "elapsedMs": 0.02,
+            "containerRemoved": null
+        },
+        "restricted-media": {
+            "php": "return $tools->media->getMedia([\"ids\" => [25]]);",
+            "executedPhp": "return (static function ($tools) {\nreturn $tools->media->getMedia([\"ids\" => [25]]);\n})(new class($tools) {\n    public function __construct(private object $broker) {}\n    public function call(string $name, array $arguments = []): mixed { return $this->broker->call($name, $arguments); }\n    public function __get(string $namespace): object {\n        $map = array (\n  'catalog' => \n  array (\n    'listArticles' => 'catalog.listArticles',\n    'getArticles' => 'catalog.getArticles',\n  ),\n  'media' => \n  array (\n    'getMedia' => 'media.getMedia',\n  ),\n);\n        if (!isset($map[$namespace])) { throw new \\RuntimeException('Unknown provider.'); }\n        return new class($this->broker, $map[$namespace]) {\n            public function __construct(private object $broker, private array $methods) {}\n            public function __call(string $method, array $arguments): mixed {\n                if (!isset($this->methods[$method]) || !array_is_list($arguments) || count($arguments) > 1 || (array_key_exists(0, $arguments) && !is_array($arguments[0]))) { throw new \\RuntimeException('Invalid provider call.'); }\n                return $this->broker->call($this->methods[$method], $arguments[0] ?? []);\n            }\n        };\n    }\n});",
+            "sourceSha256": "538a8155be1450122012ba40b7b7d78335dd7d18d2803048845dc26ab6c987e0",
+            "status": "failed",
+            "reason": "tool_denied",
+            "value": null,
+            "toolCalls": [
+                {
+                    "name": "media.getMedia",
+                    "status": "denied",
+                    "reason": "tool_denied",
+                    "durationMs": 1.1427499703131616
+                }
+            ],
+            "runId": "code-mode-4c114a2425940fdbd51e710dd4b44460",
+            "runtime": "gvisor",
+            "elapsedMs": 313.81,
+            "containerRemoved": true
+        },
+        "raw-upstream-name": {
+            "php": "return $tools->call(\"cms_get_media\", [\"ids\" => [1]]);",
+            "executedPhp": "return (static function ($tools) {\nreturn $tools->call(\"cms_get_media\", [\"ids\" => [1]]);\n})(new class($tools) {\n    public function __construct(private object $broker) {}\n    public function call(string $name, array $arguments = []): mixed { return $this->broker->call($name, $arguments); }\n    public function __get(string $namespace): object {\n        $map = array (\n  'catalog' => \n  array (\n    'listArticles' => 'catalog.listArticles',\n    'getArticles' => 'catalog.getArticles',\n  ),\n  'media' => \n  array (\n    'getMedia' => 'media.getMedia',\n  ),\n);\n        if (!isset($map[$namespace])) { throw new \\RuntimeException('Unknown provider.'); }\n        return new class($this->broker, $map[$namespace]) {\n            public function __construct(private object $broker, private array $methods) {}\n            public function __call(string $method, array $arguments): mixed {\n                if (!isset($this->methods[$method]) || !array_is_list($arguments) || count($arguments) > 1 || (array_key_exists(0, $arguments) && !is_array($arguments[0]))) { throw new \\RuntimeException('Invalid provider call.'); }\n                return $this->broker->call($this->methods[$method], $arguments[0] ?? []);\n            }\n        };\n    }\n});",
+            "sourceSha256": "e566cdc64a099771a4e921cca8f47db2747cf7a1b25ff8e79e2e886cb5728a05",
+            "status": "failed",
+            "reason": "tool_denied",
+            "value": null,
+            "toolCalls": [
+                {
+                    "name": "cms_get_media",
+                    "status": "denied",
+                    "reason": "tool_denied",
+                    "durationMs": 1.570416963659227
+                }
+            ],
+            "runId": "code-mode-90b17b18ad7c11f4d5962528f9ccfb6d",
+            "runtime": "gvisor",
+            "elapsedMs": 320.55,
+            "containerRemoved": true
+        },
+        "undiscovered-tool": {
+            "php": "return $tools->media->getMedia([\"ids\" => [1]]);",
+            "executedPhp": "return (static function ($tools) {\nreturn $tools->media->getMedia([\"ids\" => [1]]);\n})(new class($tools) {\n    public function __construct(private object $broker) {}\n    public function call(string $name, array $arguments = []): mixed { return $this->broker->call($name, $arguments); }\n    public function __get(string $namespace): object {\n        $map = array (\n  'catalog' => \n  array (\n    'listArticles' => 'catalog.listArticles',\n    'getArticles' => 'catalog.getArticles',\n  ),\n  'media' => \n  array (\n    'getMedia' => 'media.getMedia',\n  ),\n);\n        if (!isset($map[$namespace])) { throw new \\RuntimeException('Unknown provider.'); }\n        return new class($this->broker, $map[$namespace]) {\n            public function __construct(private object $broker, private array $methods) {}\n            public function __call(string $method, array $arguments): mixed {\n                if (!isset($this->methods[$method]) || !array_is_list($arguments) || count($arguments) > 1 || (array_key_exists(0, $arguments) && !is_array($arguments[0]))) { throw new \\RuntimeException('Invalid provider call.'); }\n                return $this->broker->call($this->methods[$method], $arguments[0] ?? []);\n            }\n        };\n    }\n});",
+            "sourceSha256": "97ea84524f17c10fa995c0f936bd37d7e32e2a2a6fe2d0f5106e86fc8f60644d",
+            "status": "failed",
+            "reason": "tool_denied",
+            "value": null,
+            "toolCalls": [
+                {
+                    "name": "media.getMedia",
+                    "status": "denied",
+                    "reason": "tool_denied",
+                    "durationMs": 1.569500018376857
+                }
+            ],
+            "runId": "code-mode-27cb827bf52c8da1ca6f0b270f9adc87",
+            "runtime": "gvisor",
+            "elapsedMs": 319.17,
+            "containerRemoved": true
+        },
+        "infinite-loop": {
+            "php": "while (true) {}",
+            "executedPhp": "return (static function ($tools) {\nwhile (true) {}\n})(new class($tools) {\n    public function __construct(private object $broker) {}\n    public function call(string $name, array $arguments = []): mixed { return $this->broker->call($name, $arguments); }\n    public function __get(string $namespace): object {\n        $map = array (\n  'catalog' => \n  array (\n    'listArticles' => 'catalog.listArticles',\n    'getArticles' => 'catalog.getArticles',\n  ),\n  'media' => \n  array (\n    'getMedia' => 'media.getMedia',\n  ),\n);\n        if (!isset($map[$namespace])) { throw new \\RuntimeException('Unknown provider.'); }\n        return new class($this->broker, $map[$namespace]) {\n            public function __construct(private object $broker, private array $methods) {}\n            public function __call(string $method, array $arguments): mixed {\n                if (!isset($this->methods[$method]) || !array_is_list($arguments) || count($arguments) > 1 || (array_key_exists(0, $arguments) && !is_array($arguments[0]))) { throw new \\RuntimeException('Invalid provider call.'); }\n                return $this->broker->call($this->methods[$method], $arguments[0] ?? []);\n            }\n        };\n    }\n});",
+            "sourceSha256": "d7cef78f3fd013bc503eaf5f2910d3121f21702dc4566f3aa93733ff5b001b64",
+            "status": "failed",
+            "reason": "wall_timeout",
+            "value": null,
+            "toolCalls": [],
+            "runId": "code-mode-15f58370774e8cb6612921f1a4e91fa0",
+            "runtime": "gvisor",
+            "elapsedMs": 15220.73,
+            "containerRemoved": true
+        }
+    },
+    "verification": {
+        "referenceNotModelClaim": true,
+        "fixtureUnchanged": true,
+        "pinnedImageAndLimits": true,
+        "auditCorrect": true,
+        "bothProvidersExecuted": true,
+        "providerProvenance": true,
+        "restricted-article": true,
+        "restricted-media": true,
+        "raw-upstream-name": true,
+        "undiscovered-tool": true,
+        "attempt-budget": true,
+        "infinite-loop": true,
+        "gvisorAndCleanup": true,
+        "interfacesMatchSchemas": true,
+        "sourceAndMetrics": true
+    },
+    "status": "complete"
+}

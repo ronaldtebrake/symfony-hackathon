@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Composition\Kernel;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Component\Dotenv\Dotenv;
+
+require dirname(__DIR__).'/vendor/autoload.php';
+if (is_file(dirname(__DIR__).'/.env.local')) {
+    (new Dotenv())->load(dirname(__DIR__).'/.env.local');
+}
+// CLI-only app: no cookies or signed URLs persist between processes.
+$_SERVER['APP_SECRET'] ??= bin2hex(random_bytes(32));
+
+exit((new Application(new Kernel('dev', !in_array('--no-debug', $argv, true))))->run());
