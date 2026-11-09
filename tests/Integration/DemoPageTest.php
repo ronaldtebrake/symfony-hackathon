@@ -13,11 +13,14 @@ final class DemoPageTest extends WebTestCase
         $client = self::createClient();
         $crawler = $client->request('GET', '/demo');
         self::assertResponseIsSuccessful();
-        self::assertStringContainsString('Let PHP do', $crawler->filterXPath('//h1')->text());
+        self::assertStringContainsString('Give your agents', $crawler->filterXPath('//h1')->text());
         self::assertResponseHeaderSame('x-content-type-options', 'nosniff');
         self::assertStringContainsString("script-src 'self'", $client->getResponse()->headers->get('Content-Security-Policy'));
         self::assertCount(0, $crawler->filterXPath('//textarea'));
-        self::assertCount(0, $crawler->filterXPath('//form|//input'));
+        self::assertCount(0, $crawler->filterXPath('//form'));
+        // Only local price arithmetic accepts input; there is no prompt or execution form.
+        self::assertSame(['cost-input-rate', 'cost-output-rate'], $crawler->filterXPath('//input')->extract(['id']));
+        self::assertCount(2, $crawler->filterXPath('//input[@type="number" and @min="0"]'));
         self::assertCount(1, $crawler->filterXPath('//*[@id="agent-run"]'));
         self::assertCount(1, $crawler->filterXPath('//*[@id="security-proof"]'));
         $client->request('GET', '/demo/questions');

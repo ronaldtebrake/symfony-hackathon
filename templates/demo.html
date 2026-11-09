@@ -6,6 +6,7 @@
   <meta name="description" content="Symfony Code Mode: compose approved MCP tools in isolated PHP with Symfony AI.">
   <title>Symfony Code Mode — Visual documentation</title>
   <link rel="stylesheet" href="/demo.css">
+  <script src="/php-syntax.js" defer></script>
   <script src="/demo.js" defer></script>
   <script src="/docs.js" defer></script>
 </head>
@@ -21,7 +22,8 @@
     <nav class="docs-nav" aria-label="Documentation">
       <span class="nav-label">SYMFONY CODE MODE</span>
       <a href="#overview">Overview <span>01</span></a>
-      <a href="#quickstart">Use it in Symfony <span>02</span></a>
+      <a href="#demo-tour">The 90-second demo <span>02</span></a>
+      <a href="#quickstart">Use it in Symfony <span>03</span></a>
       <span class="nav-label">SEE IT WORK</span>
       <a href="#agent-run">An agent conversation</a>
       <a href="#recovery">Recover from a boundary</a>
@@ -32,6 +34,7 @@
       <a href="#lean-responses">Lean responses</a>
       <a href="#evaluation">Evaluation &amp; timelines</a>
       <span class="nav-label">EXPLORE FURTHER</span>
+      <a href="#explore">What comes next</a>
       <a href="#adoption-proof">Independent app adoption</a>
       <a href="#performance">Investigate performance</a>
       <a href="#workbench">Reference audit</a>
@@ -40,16 +43,50 @@
     </nav>
     <main id="documentation">
       <section id="overview" class="overview doc-page" aria-labelledby="page-title">
-        <div class="intro">
-          <div><div class="eyebrow">Symfony AI × PHP MCP SDK</div>
-            <h1 id="page-title">Let PHP do <br><span class="headline-accent">the busywork.</span></h1>
-            <p class="lede">Your agent writes a small program. Symfony supplies the approved tools. Code Mode runs the PHP and returns the useful result.</p>
-            <div class="hero-actions"><a class="primary-link" href="#quickstart">Build with Code Mode →</a><a href="#agent-run">Inspect a real conversation ↗</a></div>
+        <div class="product-hero">
+          <div class="product-copy"><div class="eyebrow">Built with Symfony AI + the PHP MCP SDK</div>
+            <h1 id="page-title">Give your agents<br><span>PHP to work with.</span></h1>
+            <p>Let an agent compose your approved tools in isolated PHP. Loops, joins and filtering run close to the data. The model gets the result.</p>
+            <div class="hero-actions"><a class="primary-link" href="#demo-tour">Explore the 90-second demo <span aria-hidden="true">↗</span></a><a href="#quickstart">Use it in Symfony →</a></div>
+            <div class="hero-footnote">Your MCP client or Symfony AI agent. Your application’s permissions.</div>
           </div>
-          <div class="hero-note"><span class="eyebrow">Your agent. Your Symfony app.</span><p>Fewer intermediate results.<br>More work done in PHP.</p><div class="command"><code>discover → compose → execute</code></div><span>Conversations stay in your MCP client or Symfony AI agent. This site explains the package through recorded execution evidence.</span></div>
+          <div class="hero-code"><div class="code-window-bar"><span><i></i><i></i><i></i></span><span>PHP · approved tools</span></div>
+            <pre><code data-php><span class="syntax-comment">// Read through an approved MCP provider.</span>
+<span class="syntax-var">$images</span> = <span class="syntax-var">$tools</span>->media->getMedia([
+    <span class="syntax-string">'ids'</span> => [7, 14, 21],
+]);
+
+<span class="syntax-comment">// Keep filtering out of the model loop.</span>
+<span class="syntax-keyword">return</span> array_values(array_filter(
+    <span class="syntax-var">$images</span>->items,
+    <span class="syntax-keyword">static fn</span> (<span class="syntax-var">$image</span>) =>
+        <span class="syntax-string">''</span> === trim(<span class="syntax-var">$image</span>->alt),
+));</code></pre>
+            <div class="code-window-note">Illustrative provider syntax · <a href="https://github.com/ronaldtebrake/symfony-hackathon/tree/main/examples/composition">Working composition example ↗</a></div>
+          </div>
         </div>
-        <figure class="value-explainer"><img src="/images/code-mode-value.svg" width="960" height="740" alt="Animated reference audit: both approaches find the same 10 issues in 48 articles. Code Mode returns 85 percent less tool-result payload by filtering and joining in isolated PHP."><figcaption>Measured reference run · no model called · payload bytes, not provider tokens. <a href="#workbench">Inspect the source evidence →</a></figcaption></figure>
+        <div class="section-explainer"><span class="eyebrow">Why code mode?</span><h2>Let PHP handle the intermediate work.</h2><p>A program can fetch, join and filter tool data before returning a result to the model. The broker still checks every call. Here is what that meant for one verified Symfony audit.</p></div>
+        <figure class="value-explainer"><img src="/images/code-mode-value.svg" width="960" height="825" alt="Animated Symfony audit: both paths find 10 issues in 48 articles. The matched Symfony AI and Hugging Face pair uses 43,979 tokens with direct tools and 12,597 with Code Mode: 71.4 percent fewer provider tokens, with 11 versus 5 model requests."><figcaption>Illustrated flow · reviewed 2 November 2026 pair · provider-reported input + output tokens. Same model, question, data and permissions. <a href="#live-comparison">Inspect the breakdown, earlier attempts and cost estimate →</a></figcaption></figure>
         <div class="feature-grid"><a href="#agent-run"><span>01 / COMPOSE</span><h3>One task, then a follow-up.</h3><p>Read the conversation, generated PHP and every actual tool call.</p></a><a href="#security-proof"><span>02 / CONSTRAIN</span><h3>Useful work. Enforced limits.</h3><p>An allowed read, a denied call and an infinite loop terminated in gVisor.</p></a><a href="#live-comparison"><span>03 / MEASURE</span><h3>Compare correct answers.</h3><p>Inspect measured provider usage, matched conditions and retained failures.</p></a></div>
+        <div class="explore-strip"><div><span class="eyebrow">Build on the proof</span><h3>More providers. More useful work.</h3><p>Composable Symfony tools today. Mate investigations and upstream contributions next. Drupal is an optional example of reuse.</p></div><a href="#explore">Explore the opportunities →</a></div>
+      </section>
+
+      <section id="demo-tour" class="doc-page" aria-labelledby="tour-heading">
+        <div class="eyebrow">The Symfony story · 90-second recording guide</div><h2 id="tour-heading">Ask. Reshape. Inspect the work.</h2>
+        <p class="lede">Start in your agent, then follow the evidence here. This walkthrough reads saved captures; it does not run a model or execute PHP.</p>
+        <div class="tour-layout"><div id="tour-steps" class="tour-steps" role="group" aria-label="Choose a demo moment"></div><div class="tour-stage"><div class="tour-stage-heading"><span id="tour-source" class="eyebrow"></span><span id="tour-time" class="tour-time"></span></div><h3 id="tour-title"></h3><div id="tour-content"></div><div class="tour-controls"><a id="tour-evidence" href="#agent-run">Inspect the full evidence ↗</a><div><button type="button" id="tour-back">← Back</button><button type="button" id="tour-next">Next →</button></div></div></div></div>
+        <details class="tour-narration"><summary>Suggested voice-over for this shot</summary><p id="tour-narration"></p></details>
+        <p class="measurement-note">Three labelled sources: an MCP client conversation, a separate matched Symfony AI + Hugging Face comparison, and fixed security probes. <a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/demo.md">Recording instructions ↗</a> · Drupal is outside this 90-second cut.</p>
+      </section>
+
+      <section id="explore" class="doc-page" aria-labelledby="explore-heading">
+        <div class="eyebrow">Built on Symfony. Open to more.</div><h2 id="explore-heading">Where this can go next.</h2><p class="lede">Use the same runner and authorization boundary with more tools. These are separate proofs and proposals, with their current status made explicit.</p>
+        <div class="opportunity-grid">
+          <article><span class="status-pill">Working proof</span><h3>Compose your own providers</h3><p>Combine native Symfony AI tools and an MCP server in one PHP program. An independent Symfony app proves approved reads and denied calls with its own policy.</p><p class="next-question">Next question: where do schema-derived PHP interfaces help agents compose more complex tools?</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/tree/main/examples/composition">Try the composition example ↗</a></article>
+          <article><span class="status-pill proposed">Next experiment</span><h3>Investigate with Symfony Mate</h3><p>The performance proof already joins approved profiler and log readers. A Mate provider could make that useful in an existing Symfony app.</p><p class="next-question">The current three-reader task costs more tokens with Code Mode. Test broader investigations before claiming a saving. A Mate adapter is not implemented.</p><a href="#performance">Inspect the current results →</a> <a href="https://ai.symfony.com/#mate">About Symfony Mate ↗</a></article>
+          <article><span class="status-pill proposed">Prepared proposals</span><h3>Contribute to Symfony AI &amp; MCP</h3><p>A conversation-scoped toolbox recipe, structured MCP results, and repeatable evaluations for tool design. Small examples maintainers can run and discuss.</p><p class="next-question">Proposals are documented. No upstream submission or acceptance is implied.</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/tree/main/docs/contributing">Review contribution notes ↗</a></article>
+          <article><span class="status-pill optional">Optional · Drupal / Rosetta</span><h3>Reuse the boundary in Drupal</h3><p>Tool API, MCP Server and a separate Data Surface query proof reuse the provider contract. Published results, field access, empty results and permission revocation are checked.</p><p class="next-question">The live client conversation is captured separately. The Hugging Face capture is still pending; experimental Rosetta modules are prerequisites.</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/tree/main/examples/drupal-surface-query">Explore the optional proof ↗</a></article>
+        </div>
       </section>
 
       <section id="quickstart" class="quickstart doc-page" aria-labelledby="quickstart-heading">
@@ -177,6 +214,7 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
           <p class="agent-provenance" id="live-provenance"></p>
           <div class="inspector live-inspector"><div class="table-scroll"><table class="live-table"><caption class="sr-only">Observed live inference: direct tools and Code Mode</caption><thead><tr><th>Recorded observation</th><th>Without Code Mode</th><th>With Code Mode</th></tr></thead><tbody id="live-metrics"></tbody></table></div></div>
           <p id="live-verdict" class="live-verdict"></p>
+          <details class="cost-estimator"><summary>What could this mean for inference cost?</summary><p>Apply your provider’s rates to the measured input and output tokens. Both paths use the same rates. No price is assumed.</p><div class="cost-inputs"><label for="cost-input-rate">USD per 1M input tokens<input id="cost-input-rate" type="number" min="0" step="any" inputmode="decimal" placeholder="Enter input price"></label><label for="cost-output-rate">USD per 1M output tokens<input id="cost-output-rate" type="number" min="0" step="any" inputmode="decimal" placeholder="Enter output price"></label></div><p id="cost-estimate" role="status">Enter both rates to estimate the token charge for this pair.</p><p class="measurement-note">Estimate = (input tokens × input rate + output tokens × output rate) ÷ 1,000,000. Excludes cache discounts, inference credits, minimum charges and runner hosting. Hugging Face auto-routing did not identify the serving provider; this is not recorded spend.</p></details>
           <p id="live-attempt-totals" class="measurement-note"></p>
           <details class="proof-details"><summary>Inspect the direct baseline · actual calls and answer</summary><p id="live-direct-provenance" class="agent-provenance"></p><div class="table-scroll"><table><caption class="sr-only">Actual direct baseline calls</caption><thead><tr><th>#</th><th>Tool</th><th>Status</th><th>Result</th><th>Time</th></tr></thead><tbody id="live-direct-calls"></tbody></table></div><h3>Final model answer · verbatim</h3><pre id="live-direct-answer" tabindex="0"></pre><div id="live-direct-checks" class="hf-checks"></div><h3>Exact tool requests and responses</h3><div id="live-direct-requests"></div></details>
           <details class="proof-details"><summary>Matched protocol and per-request usage</summary><div id="live-protocol"></div></details>

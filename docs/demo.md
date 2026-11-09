@@ -1,55 +1,55 @@
-# Run and record the Symfony demo
+# Record the 90-second Symfony demo
 
-The judge story: ask an agent to audit content, reshape the question, inspect the PHP and authorized MCP calls, then show measured Symfony AI inference and enforced security boundaries. Keep the recording Symfony-only.
+One story: audit published content, reshape it into a repair plan, inspect the generated PHP and actual calls, then show measured tokens and enforced boundaries. **Drupal stays outside the main cut.** Its separate proof is an optional follow-up for interested judges.
 
-The [Adoption section](http://127.0.0.1:8000/demo#adoption-proof) adds a second recording option: existing Symfony AI tools, a live Hugging Face article read and follow-up, and a separate fixed probe that attempts an injected instruction and is denied. Generate it with `php bin/console code-mode:adoption-proof --live --no-debug`; omit `--live` for fixed probes only. The exact captured questions and answers are in the viewer. Label the fixed probe separately from model-generated PHP. The new capture is not the matched token comparison below.
+The [local 90-second guide](http://127.0.0.1:8000/demo#demo-tour) walks through the saved evidence and suggested narration. It is a recording aid, not a video or an execution interface. Conversations stay in the agent.
 
-## Prepare
+## The edit and voice-over
 
-1. Run `composer install` and `composer start`. The [workbench](http://127.0.0.1:8000/demo) displays committed evidence without inference or a running sandbox. New local reports take precedence, including failures.
-2. For fresh execution, configure the [gVisor runtime](../packages/php-code-mode/README.md#run-the-proof), immutable `CODE_MODE_IMAGE` and trusted `CODE_MODE_DOCKER_COMMAND` in ignored `.env.local`. Run `php bin/console code-mode:doctor`.
-3. Connect the fixture server using the [Codex setup](codex.md). Codex uses its own model access. Start a fresh operator-authorized MCP process and retain it for both turns; two sandbox attempts are available, including failed executions. A new chat alone does not prove the server restarted.
-4. Record at 1080p or higher, 30 fps. Leave a few seconds around actions and keep the full original take in ignored `var/demo-recording/`. Hide credentials and unrelated chats. Cut waiting time in the edit, not the underlying evidence.
+| Time | Capture | Suggested narration |
+| --- | --- | --- |
+| 00:00–00:10 | Actual agent footage: audit prompt, discovery, PHP submission and answer. | Symfony Code Mode lets an agent use your approved tools through PHP. Here, I ask it to audit the published articles for missing descriptions and image alt text. |
+| 00:10–00:20 | Same chat: follow-up, new PHP execution, repair-plan answer. | Now I ask which shared image fixes help the most articles. The agent writes a new program and checks the data again, with the same permissions. |
+| 00:20–00:35 | Workbench: follow-up → Generated PHP → Present PHP. Hold on grouping and ranking. | This is the PHP it actually submitted. It fetches approved data, groups shared images and ranks the fixes. That work happens inside the runner, before the result goes back to the model. |
+| 00:35–00:48 | Workbench: follow-up → Tool calls. Show the host ledger and an expanded MCP result. | These are the actual calls, recorded by the host. The broker validates the arguments and checks authorization on every invocation. Generated PHP cannot grant itself more access. |
+| 00:48–01:00 | Workbench: Direct tools vs. Code Mode. Hold on total tokens, requests and both answer checks. | In a separate matched Symfony AI run, both paths find all ten issues. Code Mode uses 12,597 tokens instead of 43,979: 71.4 percent fewer in this recorded pair. |
+| 01:00–01:22 | Workbench: Security proofs. Allowed read → denied call → timeout trace and checked cleanup. | These separate security probes run real PHP. An authorized read succeeds. An unauthorized tool call is denied. An infinite loop is terminated, and container removal is checked. The model controls the program; the host controls its permissions and execution budget. |
+| 01:22–01:30 | Workbench: Use it in Symfony. Show the bundle configuration, doctor command and repository. | Register your Symfony AI tools and policy, check prerequisites, and connect your agent. The packages and reproducible evidence are in the repository. |
 
-The workbench displays a reviewed capture; it does not synchronize fresh chats automatically. For a new take, enable [host trace recording](../packages/symfony-code-mode/README.md#agent-responses-and-host-evidence) and retain that file with the exact submitted `php_execute.code`, lean tool results, prompts and final answers before updating the viewer. Never substitute an earlier program or model-written trace summary for that take's actual tool records.
+Keep three source labels visible: **recorded MCP client conversation**, **separate Symfony AI + Hugging Face comparison**, and **fixed security probes**. The measured token reduction belongs to the comparison, not the two-turn client chat. These are separate executions using the same package; do not edit them into an apparent single trace.
 
-## Audit and follow-up
+The comparison reports 40,133 → 9,578 input tokens and 3,846 → 3,019 output tokens: 43,979 → 12,597 total, or 71.4% fewer in this pair. Input and output can have different prices. Say “fewer tokens,” not “71.4% cheaper.” The workbench estimator accepts the viewer’s rates and labels the result as an estimate, excluding discounts, credits and runner hosting. The animation now illustrates this reviewed pair, with provider-token bars beneath the tool-composition flow. Its animation does not represent execution timing.
 
-These are the exact prompts from the [recorded desktop conversation](evidence/codex-conversation-2026-11-01.json), **1 November 2026, 12:42 CET**, chat `01a196eb-12bd-7412-9fad-4d279e2cbcf8`.
+## Prepare the recording
 
-These historical prompts asked Codex to show the full ledger, which the current lean responses no longer send. For a new take, ask it to show the submitted PHP and returned value; inspect actual tool calls using the separately recorded host trace.
+1. Run `composer install` and `composer start`. The workbench reads saved reports without inference or a running sandbox. For a stable recording, use `composer docs:build` and serve `var/pages/`: this exports only reviewed captures. The local workbench otherwise prefers newer local reports, including failed attempts.
+2. For a fresh conversation, configure the [gVisor runtime](../packages/php-code-mode/README.md#run-the-proof) and run `php bin/console code-mode:doctor`. Connect the fixture server with `code-mode:mcp --no-debug` in your MCP client. The [desktop connection guide](codex.md) is one client example. Keep one freshly started MCP process for both turns; the session permits two PHP attempts, including failures.
+3. Enable [host trace recording](../packages/symfony-code-mode/README.md#agent-responses-and-host-evidence). Retain the trace, exact `php_execute.code`, returned values, prompts and final answers. Lean responses do not send the full host ledger to the agent.
+4. Record at 1080p or higher, 30 fps. Capture a few spare seconds before and after each action. Keep the original take in ignored `var/demo-recording/`. Keep credentials and unrelated chats off screen. Cut waiting time, while preserving the order and provenance of the evidence.
+
+The viewer does not automatically synchronize a fresh chat. **Only pair new agent footage with its matching PHP and host trace.** If recording the saved conversation, use the [1 November source capture](evidence/codex-conversation-2026-11-01.json), recorded at 12:42 CET. The viewer reproduces its exact prompts, source, tool records and results; that desktop export does not identify its model or MCP process.
+
+## Prompts for a fresh take
+
+These prompts fit the current lean responses. They are not replacements for the historical prompts stored in the evidence.
 
 First message:
 
 ```text
-Use Symfony Code Mode to audit every published article in the Symfony fixture for missing meta descriptions or missing hero-image alt text. Return the affected article IDs and titles with their issues, and the total number audited. Use the MCP tools rather than repository files. Keep this read-only. Show the PHP you actually submit and summarize the host-recorded tool calls. Use one php_execute call so we retain the second execution for a follow-up.
-
-This is a fresh rehearsal for our judge recording. Keep the actual MCP request and result visible, including the submitted code, returned value and toolCalls. If the Symfony Code Mode MCP tools are unavailable, stop and report that connection problem; do not substitute a repository script or saved proof.
+Use Symfony Code Mode to audit every published article in the Symfony fixture for missing meta descriptions or missing hero-image alt text. Return the affected article IDs and titles with their issues, and the total number audited. Use MCP tools rather than repository files. Keep this read-only. Show the exact PHP you submit and the returned result. Use one php_execute call so we retain the second execution for a follow-up. If the MCP tools are unavailable, stop and report that connection problem.
 ```
 
-After the execution completes, in the same chat:
+Then, in the same conversation:
 
 ```text
-Reshape that into an editor repair plan. Group the issues by type and identify shared hero images whose missing alt text affects more than one published article. Rank those image fixes by how many published articles they help and include the affected IDs. Recompute the impact through Symfony Code Mode using the remaining execution; do not merely reformat the previous answer. Keep it read-only and show the new PHP and actual tool calls.
+Reshape that into an editor repair plan. Group the issues by type and identify shared hero images whose missing alt text affects more than one published article. Rank those image fixes by how many published articles they help and include the affected IDs. Recompute through Symfony Code Mode using the remaining execution. Keep it read-only and show the new PHP and returned result.
 ```
 
-Capture the submitted question, discovery calls, each `php_execute` request/result and the answers. The recorded run checked 48 articles and produced ten findings; its follow-up identified three shared-image fixes, each helping two articles. Each turn made ten upstream calls. These are observations, not expected answers to feed a new model run.
+Record discovery, each PHP submission/result and both answers. In the saved run, the audit checked 48 articles and found ten affected articles; the follow-up identified three shared-image fixes helping six articles. Each turn made ten underlying calls. These are observations to verify, not answers to feed the model.
 
-For readable inserts, open [Codex run](http://127.0.0.1:8000/demo#codex-run), select the follow-up, then **Generated PHP → Present PHP**. Use **Group images**, **Rank fixes** and **Return plan** to navigate the exact source; the highlight is navigation, not line-level execution tracing. **Tool calls** shows the host ledger and full outer MCP requests/results. The desktop export does not identify the model or MCP process.
+For readable inserts, open [the agent conversation](http://127.0.0.1:8000/demo#agent-run), choose the follow-up, then **Generated PHP → Present PHP**. The source-navigation highlights are not line-by-line execution tracing. **Tool calls** shows the actual host records. The security section separately records an allowed read, a denied tool and a terminated loop, including checked container removal.
 
-## The 90-second edit
-
-| Time | Picture and point |
-| --- | --- |
-| 00:00–00:10 | Actual Codex: audit prompt, discovery, PHP call and answer. Introduce Symfony Code Mode. |
-| 00:10–00:20 | Same chat: follow-up, new PHP execution, repair-plan answer. Same permissions, changed computation. |
-| 00:20–00:35 | Matching program in **Present PHP**: grouping, ranking, compact return. |
-| 00:35–00:48 | Matching host ledger and expanded MCP result. Show actual authorized calls. |
-| 00:48–01:00 | **Live comparison**: Symfony AI + Hugging Face, both answers verified, 11 → 5 requests and 43,979 → 12,597 tokens. Say “in this recorded pair,” not a general performance promise. |
-| 01:00–01:22 | **Security**: authorized read, denied tool, terminated loop; expand the timeout trace and checked container removal. Label these separate fixed probes. |
-| 01:22–01:30 | Symfony bundle configuration, `code-mode:doctor`, repository URL. End on adoption and Symfony AI + PHP MCP SDK. |
-
-Use hard cuts, readable holds and matching footage. The comparison and security probes are separate executions from the Codex chat. Record narration and align captions after choosing the shots. Export exactly 90 seconds at 1080p/30 fps (2,700 frames). Manual footage and the final video remain pending; no submission has been made.
+Export exactly 90 seconds at 1080p/30 fps (2,700 frames). Manual agent footage, the final edit and submission remain pending. No replacement video is generated by this guide.
 
 ## Optional boundary-recovery opening
 

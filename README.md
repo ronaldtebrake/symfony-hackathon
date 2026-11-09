@@ -6,9 +6,11 @@ An article audit might need to read several pages, join image metadata and colle
 
 The default runner executes generated PHP in gVisor. Your Symfony application owns the tool implementations, permissions and execution limits. Conversations stay in your MCP client or Symfony AI agent.
 
-![Code Mode returns the same findings with 85% less tool-result payload in the model-free reference run.](docs/images/code-mode-value.svg)
+**Measured with Symfony AI + Hugging Face:** 43,979 → 12,597 provider tokens (**71.4% fewer**) and 11 → 5 model requests in one matched article audit. Both answers are correct. [Inspect the input/output breakdown, conditions and earlier attempts](docs/huggingface-comparison.md). Actual cost depends on provider pricing.
 
-*The animation illustrates a measured reference run: 20,154 → 3,014 tool-result bytes. It excludes prompts, initial schemas and generated code; no model was called.*
+![The same 48 articles and 10 findings, with 43,979 versus 12,597 provider tokens in one matched Symfony AI and Hugging Face pair.](docs/images/code-mode-value.svg)
+
+*Illustrated flow of the reviewed 2 November 2026 pair: 71.4% fewer input + output tokens and 11 → 5 model requests. Same model, question, data and permissions. One verified pair, not a billing estimate.*
 
 Built for the [Symfony AI & MCP Hackathon](https://symfony.com/hackathon), using **Symfony AI**, the **PHP MCP SDK** and **Hugging Face Inference Providers**. The runner and Symfony integration are reusable Composer packages.
 

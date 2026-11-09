@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="740" viewBox="0 0 960 740" role="img" aria-labelledby="title description">
-  <title id="title">Symfony Code Mode: same audit, less data returned to the agent.</title>
-  <desc id="description">Animated explanation of a verified reference run. Direct tool calling and Code Mode both check 48 published articles and return the same 10 findings using 10 batched MCP calls. Direct calls return 20,154 bytes of tool-result payload; Code Mode returns 3,014 bytes including discovery, about 85 percent less. PHP processes intermediate data inside gVisor; the host authorizes every tool call. No model was called and no model-token savings are claimed. With reduced motion, the complete comparison stays visible.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="825" viewBox="0 0 960 825" role="img" aria-labelledby="title description">
+  <title id="title">Symfony Code Mode: same audit, 71.4 percent fewer provider tokens in one verified pair.</title>
+  <desc id="description">Illustrated flow of the verified Symfony AI and Hugging Face audit captured on 2 November 2026. Both paths check 48 published articles and return the same 10 findings, using 10 underlying MCP calls each. Direct tool calling uses 43,979 provider tokens and 11 model requests. Code Mode uses 12,597 tokens and 5 model requests: 71.4 percent fewer tokens in this pair. Counts include input and output tokens; both paths use the same model, question, data and permissions. PHP processes intermediate data in gVisor; the host authorizes every call. This is not a billing estimate or an animation of actual execution timing. Reduced motion keeps the complete comparison visible.</desc>
   <!-- Palette adapted from ai.symfony.com: #5a55a5, #4c1d95, #db2777, #1d4ed8, #7f5bff. -->
   <defs>
     <linearGradient id="brand" x2="1" y2="0"><stop stop-color="#4c1d95"/><stop offset="1" stop-color="#db2777"/></linearGradient>
@@ -31,13 +31,13 @@
     @keyframes saving{0%,60%,84%,100%{opacity:0}65%,73%{opacity:.7}}
     @media(prefers-reduced-motion:reduce){.batch-flash,.tool-dot,.packet,.branch-left,.branch-right,.scan,.return-packet,.findings-flash,.saving-ring{animation:none!important}.tool-dot{opacity:1}}
   </style>
-  <rect x=".5" y=".5" width="959" height="739" rx="22" fill="url(#paper)" stroke="#e4dfee"/>
+  <rect x=".5" y=".5" width="959" height="824" rx="22" fill="url(#paper)" stroke="#e4dfee"/>
   <g aria-hidden="true">
     <rect x="36" y="29" width="28" height="28" rx="8" fill="url(#brand)"/>
     <text x="50" y="49" text-anchor="middle" class="mono" style="fill:#ffffff;font-size:16px;font-weight:700">{ }</text>
     <text x="73" y="49" font-size="20" font-weight="750" letter-spacing="-.8">Symfony Code Mode</text>
     <text x="923" y="46" text-anchor="end" class="eyebrow" style="fill:#5a55a5">SYMFONY AI × PHP MCP SDK</text>
-    <text x="480" y="118" text-anchor="middle" font-size="54" font-weight="750" letter-spacing="-2.3">Same audit. <tspan fill="url(#brand)">Less data.</tspan></text>
+    <text x="480" y="118" text-anchor="middle" font-size="50" font-weight="750" letter-spacing="-2.3">Same audit. <tspan fill="url(#brand)">Fewer tokens.</tspan></text>
     <text x="480" y="151" text-anchor="middle" font-size="17" class="muted">Let PHP do the work between tool calls.</text>
 
     <rect x="160" y="182" width="640" height="72" rx="13" fill="#d8cfea" opacity=".4"/>
@@ -54,8 +54,8 @@
     <circle r="3" fill="#1d4ed8" class="branch-left"/>
     <circle r="3" fill="#4c1d95" class="branch-right"/>
 
-    <rect x="36" y="284" width="432" height="352" rx="16" fill="#fff" stroke="#e3e4ec"/>
-    <rect x="492" y="284" width="432" height="352" rx="16" fill="url(#smart)" stroke="#d3c2f2"/>
+    <rect x="36" y="284" width="432" height="252" rx="16" fill="#fff" stroke="#e3e4ec"/>
+    <rect x="492" y="284" width="432" height="252" rx="16" fill="url(#smart)" stroke="#d3c2f2"/>
     <text x="60" y="318" font-size="21" font-weight="700" letter-spacing="-.6">Direct tool calling</text>
     <rect x="343" y="299" width="101" height="23" rx="5" fill="#eef2ff"/>
     <text x="393.5" y="314" text-anchor="middle" font-size="9" font-weight="650" letter-spacing=".7" style="fill:#1d4ed8">10 MCP CALLS</text>
@@ -158,8 +158,8 @@
     <circle cx="874" cy="379" r="2" class="tool-dot" style="--delay:1.76s"/>
     <circle cx="883" cy="379" r="2" class="tool-dot" style="--delay:1.98s"/>
     <g clip-path="url(#php-clip)"><rect x="516" y="396" width="384" height="20" fill="url(#scan)" class="scan"/></g>
-    <text x="530" y="414" class="mono" font-size="11" style="fill:#f5f0ff">foreach ($articles as $article) {</text>
-    <text x="530" y="432" class="mono" font-size="11" style="fill:#f5f0ff">  $image = $media[$article-&gt;image_id];</text>
+    <text x="530" y="414" class="mono" font-size="11" style="fill:#f5f0ff"><tspan fill="#ec9cba">foreach</tspan> (<tspan fill="#dfbeff">$articles</tspan> <tspan fill="#ec9cba">as</tspan> <tspan fill="#dfbeff">$article</tspan>) {</text>
+    <text x="530" y="432" class="mono" font-size="11" style="fill:#f5f0ff">  <tspan fill="#dfbeff">$image</tspan> = <tspan fill="#dfbeff">$media</tspan>[<tspan fill="#dfbeff">$article</tspan>-&gt;image_id];</text>
     <text x="530" y="450" class="mono" font-size="11" style="fill:#bca9dc">  // Keep only the audit findings.</text>
     <text x="530" y="468" class="mono" font-size="11" style="fill:#f5f0ff">}</text>
     <path d="M708 478v12m-3-3 3 3 3-3" stroke="#7f5bff" fill="none"/>
@@ -170,19 +170,26 @@
     <text x="549" y="515" font-size="12" font-weight="650" class="accent">10 findings</text>
     <text x="886" y="515" text-anchor="end" class="mono small accent">compact JSON → agent</text>
 
-    <path d="M60 544H444M516 544H900" stroke="#e7e1ef"/>
-    <text x="60" y="566" class="small muted">Tool-result payload returned to the agent</text>
-    <text x="516" y="566" class="small muted">Tool-result payload, including discovery</text>
-    <text x="60" y="614" font-size="45" font-weight="700" letter-spacing="-1.8">20.15<tspan font-size="16" font-weight="400" letter-spacing="0" class="muted"> kB</tspan></text>
-    <text x="516" y="614" font-size="45" font-weight="700" letter-spacing="-1.8" class="accent">3.01<tspan font-size="16" font-weight="400" letter-spacing="0" class="muted"> kB</tspan></text>
-    <text x="444" y="608" text-anchor="end" class="small muted">Full tool results</text>
-    <rect x="794" y="589" width="106" height="27" rx="6" fill="#e9ddff"/>
-    <rect x="790" y="585" width="114" height="35" rx="9" fill="none" stroke="#7f5bff" class="saving-ring"/>
-    <text x="847" y="607" text-anchor="middle" font-size="12" font-weight="650" class="accent">85% less data</text>
+    <!-- Provider-reported totals from docs/evidence/huggingface-pair.json, coverage-v9. -->
+    <rect x="36" y="556" width="888" height="180" rx="16" fill="url(#smart)" stroke="#e1d9ed"/>
+    <text x="60" y="622" font-size="57" font-weight="750" letter-spacing="-2.5" class="accent">71.4%</text>
+    <text x="60" y="650" font-size="16" font-weight="600">fewer provider tokens</text>
+    <text x="60" y="685" class="small muted">48 articles · 10 findings on both paths</text>
 
-    <path d="m267 669 4 4 8-9" fill="none" stroke="#4c1d95" stroke-width="1.8"/>
-    <text x="488" y="675" text-anchor="middle" font-size="16" font-weight="600" letter-spacing="-.3" class="accent">Same 48 articles checked. Same 10 findings.</text>
-    <text x="480" y="704" text-anchor="middle" font-size="9.5" class="muted">Measured tool-result bytes. Prompts, initial schemas and generated PHP are excluded.</text>
-    <text x="480" y="721" text-anchor="middle" font-size="9.5" class="muted">Illustrated reference run · No model called · Payload bytes are not model tokens</text>
+    <text x="420" y="587" class="small">Direct tool calls</text>
+    <text x="900" y="587" text-anchor="end" class="small" font-weight="700">43,979 tokens</text>
+    <rect x="420" y="599" width="480" height="12" rx="3" fill="#eee7f3"/>
+    <rect x="420" y="599" width="480" height="12" rx="3" fill="#c5aed7"/>
+    <text x="420" y="642" class="small">With Code Mode</text>
+    <text x="900" y="642" text-anchor="end" class="small" font-weight="700">12,597 tokens</text>
+    <rect x="420" y="654" width="480" height="12" rx="3" fill="#eee7f3"/>
+    <rect x="420" y="654" width="137.49" height="12" rx="3" fill="url(#brand)"/>
+    <rect x="416" y="650" width="145.49" height="20" rx="6" fill="none" stroke="#7f5bff" class="saving-ring"/>
+    <text x="420" y="705" font-size="10.5" class="muted">11 → 5 model requests · 31,382 fewer tokens in this pair</text>
+
+    <path d="m267 764 4 4 8-9" fill="none" stroke="#4c1d95" stroke-width="1.8"/>
+    <text x="488" y="770" text-anchor="middle" font-size="16" font-weight="600" letter-spacing="-.3" class="accent">Same 48 articles checked. Same 10 findings.</text>
+    <text x="480" y="794" text-anchor="middle" font-size="9.5" class="muted">Same model, question, data and permissions · Symfony AI + Hugging Face · 2 November 2026</text>
+    <text x="480" y="811" text-anchor="middle" font-size="9.5" class="muted">Illustrated flow · One verified pair · Provider-reported input + output tokens · Not a billing estimate</text>
   </g>
 </svg>

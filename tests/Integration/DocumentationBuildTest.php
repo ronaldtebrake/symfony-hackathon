@@ -11,6 +11,27 @@ use Symfony\Component\Process\Process;
 
 final class DocumentationBuildTest extends TestCase
 {
+    public function testAnimationNumbersMatchTheReviewedProviderEvidence(): void
+    {
+        $root = dirname(__DIR__, 2);
+        $report = json_decode((new ReportStore($root, reviewedOnly: true))->readHuggingFaceComparison(), true, flags: JSON_THROW_ON_ERROR);
+        self::assertTrue($report['verifiedComparison']);
+        $direct = $report['direct']['result'];
+        $code = $report['code']['result'];
+        $svg = new \DOMDocument();
+        self::assertTrue($svg->load($root.'/docs/images/code-mode-value.svg', LIBXML_NONET));
+        $labels = [];
+        foreach ((new \DOMXPath($svg))->query('//*[local-name()="text"]') as $text) { $labels[] = $text->textContent; }
+        foreach ([$direct, $code] as $run) {
+            self::assertContains(number_format($run['providerTokens']['total']).' tokens', $labels);
+            self::assertContains(count($run['brokerCalls']).' MCP CALLS', $labels);
+        }
+        $saved = $direct['providerTokens']['total'] - $code['providerTokens']['total'];
+        self::assertContains(number_format(100 * $saved / $direct['providerTokens']['total'], 1).'%', $labels);
+        self::assertContains($direct['modelRequests'].' → '.$code['modelRequests'].' model requests · '.number_format($saved).' fewer tokens in this pair', $labels);
+        self::assertStringContainsString('prefers-reduced-motion', file_get_contents($root.'/docs/images/code-mode-value.svg'));
+    }
+
     public function testReviewedStoreCannotReadLocalReports(): void
     {
         $root = sys_get_temp_dir().'/code-mode-pages-'.bin2hex(random_bytes(6));
@@ -54,7 +75,7 @@ final class DocumentationBuildTest extends TestCase
             self::assertStringNotContainsString('unused-build-sentinel', file_get_contents($file->getPathname()));
         }
         sort($files);
-        $expected = ['.nojekyll', 'index.html', 'demo.css', 'demo.js', 'docs.js', 'images/code-mode-value.svg'];
+        $expected = ['.nojekyll', 'index.html', 'demo.css', 'demo.js', 'docs.js', 'php-syntax.js', 'images/code-mode-value.svg'];
         foreach (['report', 'security-report', 'agent-report', 'boundary-report', 'huggingface-report', 'huggingface-comparison', 'adoption-report', 'evaluation-report', 'performance-report', 'performance-conversation', 'performance-baseline', 'response-payloads'] as $name) { $expected[] = 'evidence/'.$name.'.json'; }
         sort($expected); self::assertSame($expected, $files);
         self::assertFileDoesNotExist($root.'/var/pages/evidence/discovery-report.json');
