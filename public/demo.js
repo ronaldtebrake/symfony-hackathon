@@ -810,6 +810,155 @@ async function refreshPerformance() {
 }
 refreshPerformance();
 
+let performanceLiveAttempts = [];
+let performanceLiveCurrent = null;
+const prettyEvidence = value => { try { return JSON.stringify(JSON.parse(value), null, 2); } catch { return value; } };
+function renderPerformanceLiveTurn() {
+  const report = performanceLiveCurrent;
+  const turn = report?.turns?.[Number(byId('performance-live-turn').value)];
+  const trace = report?.trace ?? {};
+  byId('performance-live-question').textContent = turn?.question ?? 'No completed turn.';
+  byId('performance-live-answer').textContent = prettyEvidence(turn?.answer ?? 'No final answer was returned. This attempt remains incomplete.');
+  const runs = (trace.executions ?? []).slice(turn?.executionStart ?? 0, turn?.executionEnd ?? trace.executions?.length ?? 0);
+  byId('performance-live-php').textContent = runs.map(run => trace.programs?.[run.programIndex] ?? '').join('\n\n');
+  renderCallRows(byId('performance-live-calls'), runs.flatMap(run => run.toolCalls ?? []));
+  byId('performance-live-run').textContent = runs.map(run => run.runId == null && run.reason === 'execution_limit' ? 'execution_limit · rejected before container allocation' : `${run.runId ?? 'No container'} · ${run.status} · container removed: ${run.containerRemoved ? 'yes' : 'not verified'}`).join('\n');
+  byId('performance-live-agent-calls').textContent = JSON.stringify((trace.agentCalls ?? []).slice(turn?.agentCallStart ?? 0, turn?.agentCallEnd ?? trace.agentCalls?.length ?? 0), null, 2);
+}
+function renderPerformanceLiveAttempt() {
+  const report = performanceLiveAttempts[Number(byId('performance-live-attempt').value)];
+  if (!report) return;
+  performanceLiveCurrent = report;
+  const trace = report.trace ?? {};
+  const passed = report.status === 'complete' && report.verification?.passed === true;
+  byId('performance-live-state').textContent = passed ? 'VERIFIED LIVE CONVERSATION' : `${report.status.toUpperCase()} ATTEMPT · RETAINED`;
+  byId('performance-live-scope').textContent = `${report.model} via ${report.provider} · ${report.protocol} · ${new Date(report.createdAt).toLocaleString()} · automatic provider routing. ${trace.executions?.length ?? 0} PHP submissions · ${trace.brokerCalls?.length ?? 0} host calls · ${performanceLiveAttempts.length} attempt(s) retained.`;
+  const comparison = passed ? JSON.parse(report.turns[1].answer) : null;
+  byId('performance-live-queries').textContent = passed ? `${comparison.before.profile.queryCount} → ${comparison.after.profile.queryCount}` : 'Not verified';
+  byId('performance-live-tokens').textContent = trace.providerTokens?.total != null ? number(trace.providerTokens.total) : 'Not reported';
+  byId('performance-live-requests').textContent = number(trace.modelRequests ?? 0);
+  byId('performance-live-denials').textContent = report.verification?.checks?.realMcpSecurityProof ? '2 / 2 denied' : 'Not verified';
+  byId('performance-live-outcome').textContent = passed
+    ? 'The agent correlated 12 repeated author lookups with the logs. Its follow-up verified 13 → 1 queries and identical response hashes. Both answers match the captured measurements.'
+    : report.errorType?.endsWith('\\RateLimitExceededException')
+      ? 'The provider rate-limited this attempt. No complete conversation was captured; token usage is not assumed to be zero. The security preflight and any observed requests remain inspectable.'
+      : `This attempt did not complete all checks. ${report.error ? `Recorded error: ${report.error}. ` : ''}Its generated PHP, calls and observed costs remain available below.`;
+  const turns = byId('performance-live-turn'); turns.replaceChildren();
+  (report.turns ?? []).forEach((turn, i) => { const option = node('option', `${i + 1} · ${i === 0 ? 'Investigate the slow request' : 'Compare the prepared join'}${turn.answer ? '' : ' · incomplete'}`); option.value = i; turns.append(option); });
+  const usage = byId('performance-live-usage'); usage.replaceChildren();
+  (report.turns ?? []).forEach((turn, i) => {
+    const end = turn.requestEnd ?? trace.modelRequests ?? 0;
+    const responses = (trace.providerResponses ?? []).filter(r => r.request > turn.requestStart && r.request <= end);
+    const complete = responses.length === end - turn.requestStart && responses.every(r => r.tokens != null);
+    const sum = key => complete ? number(responses.reduce((n, r) => n + r.tokens[key], 0)) : 'Not fully reported';
+    const row = node('tr'); row.append(node('td', `${i + 1} · ${i ? 'Follow-up' : 'Investigation'}${turn.answer ? '' : ' · incomplete'}`), node('td', end - turn.requestStart), node('td', sum('prompt')), node('td', sum('completion')), node('td', sum('total'))); usage.append(row);
+  });
+  const payloads = byId('performance-live-payloads'); payloads.replaceChildren();
+  const measured = report.payloadMeasurement;
+  if (measured?.status === 'verified') {
+    const max = Math.max(1, ...measured.groups.map(g => g.tokens));
+    for (const group of measured.groups) {
+      const card = node('div', undefined, 'performance-payload'); const meter = node('meter');
+      meter.min = 0; meter.max = max; meter.value = group.tokens; meter.setAttribute('aria-label', `${group.category}: ${group.tokens} standalone tokens`);
+      card.append(node('strong', group.category), node('span', `${number(group.tokens)} tokens`), meter, node('small', `${group.items} captured item(s) · ${number(group.bytes)} bytes`)); payloads.append(card);
+    }
+  }
+  byId('performance-live-token-scope').textContent = measured?.status === 'verified'
+    ? 'Payload sizes counted locally with tiktoken 0.12.0 / o200k_harmony: one copy of the canonical tool interface, each discovery response, generated PHP body and returned result. Source hashes are checked. Excludes prompts, final answers, reasoning, framing and repeated context. These bars do not add up to provider usage.'
+    : `Local payload count: ${measured?.status ?? 'missing'}. Provider-reported usage above remains separate.`;
+  byId('performance-live-context-cost').textContent = measured?.status === 'verified'
+    ? `Repeated tool-result text in model input: ${(measured.replayedResults ?? []).map(g => `${g.category.toLowerCase()} · ${number(g.tokens)} locally counted tokens across ${g.occurrences} occurrences`).join('; ')}. Matched to observed request digests; excludes all other input and framing, so this is not a breakdown of billed usage.` : '';
+  byId('performance-live-checks').textContent = JSON.stringify({checks: report.verification, sourceCaptureSha256: report.sourceCaptureSha256, replayVerification: report.replayVerification, limits: report.limits, identity: report.identity, liveAttemptLimit: report.liveAttemptLimit, security: {verification: report.securityProof?.verification, denials: report.securityProof?.denials, exhausted: report.securityProof?.exhausted}}, null, 2);
+  renderPerformanceLiveTurn();
+}
+byId('performance-live-attempt').addEventListener('change', renderPerformanceLiveAttempt);
+byId('performance-live-turn').addEventListener('change', renderPerformanceLiveTurn);
+let lastPerformanceLiveBody = '';
+async function refreshPerformanceConversation() {
+  try {
+    const response = await fetch(evidenceUrl('/demo/performance-conversation'), {cache:'no-store', credentials:'same-origin'});
+    if (!response.ok) throw new Error('Conversation unavailable');
+    const body = await response.text();
+    if (body !== lastPerformanceLiveBody) {
+      const report = JSON.parse(body);
+      byId('performance-live').hidden = report.status === 'empty';
+      if (report.status === 'empty') { byId('performance-live-state').textContent = 'LIVE CONVERSATION NOT CAPTURED'; }
+      else {
+        performanceLiveAttempts = [...(report.previousAttempts ?? []), report];
+        const select = byId('performance-live-attempt'); select.replaceChildren();
+        performanceLiveAttempts.forEach((attempt, i) => { const option = node('option', `${i + 1} · ${attempt.protocol} · ${attempt.status}${i === report.defaultAttempt ? ' · original pair' : i === performanceLiveAttempts.length - 1 ? ' · latest' : ''}`); option.value = i; select.append(option); });
+        select.value = report.defaultAttempt ?? performanceLiveAttempts.length - 1; renderPerformanceLiveAttempt();
+      }
+      lastPerformanceLiveBody = body;
+    }
+  } catch { byId('performance-live-state').textContent = 'LIVE CAPTURE UNAVAILABLE'; }
+  finally { poll(refreshPerformanceConversation, 5000); }
+}
+refreshPerformanceConversation();
+
+let performanceBaselineAttempts = [];
+let performanceBaselineCurrent = null;
+function renderPerformanceBaselineTurn() {
+  const report = performanceBaselineCurrent;
+  const turn = report?.turns?.[Number(byId('performance-baseline-turn').value)];
+  const trace = report?.trace ?? {};
+  byId('performance-baseline-question').textContent = turn?.question ?? 'This turn was not reached.';
+  byId('performance-baseline-answer').textContent = prettyEvidence(turn?.answer ?? 'No final answer was returned. This attempt remains incomplete.');
+  const start = turn?.agentCallStart ?? 0, end = turn?.agentCallEnd ?? trace.agentCalls?.length ?? 0;
+  renderCallRows(byId('performance-baseline-calls'), (trace.brokerCalls ?? []).slice(start, end));
+  byId('performance-baseline-results').textContent = JSON.stringify((trace.agentCalls ?? []).slice(start, end), null, 2);
+}
+function renderPerformanceBaselineAttempt() {
+  const report = performanceBaselineAttempts[Number(byId('performance-baseline-attempt').value)];
+  if (!report) return;
+  performanceBaselineCurrent = report;
+  const comparison = report.comparison ?? {}, paired = comparison.paired === true;
+  byId('performance-baseline-state').textContent = paired ? 'ORIGINAL PAIR VERIFIED' : `${report.status.toUpperCase()} · NOT A VERIFIED PAIR`;
+  byId('performance-baseline-scope').textContent = `${report.model} · ${report.protocol} · ${new Date(report.createdAt).toLocaleString()} · ${performanceBaselineAttempts.length} direct attempt(s) retained. Original paired captures, independently of the attempt selected above.`;
+  const saved = comparison.totalTokensSavedByCodeMode, requestsSaved = comparison.modelRequestsSavedByCodeMode;
+  byId('performance-baseline-verdict').textContent = paired
+    ? `Original pair: both investigations and follow-ups are correct. Code Mode used ${number(Math.abs(saved))} ${saved < 0 ? 'more' : 'fewer'} tokens (${Math.abs(comparison.tokenReductionPercent)}%) and ${Math.abs(requestsSaved)} ${requestsSaved < 0 ? 'more' : 'fewer'} model request${Math.abs(requestsSaved) === 1 ? '' : 's'}.`
+    : 'This attempt is retained with its observed costs. Savings are withheld until both answers, provenance and usage pass verification.';
+  const totals = byId('performance-baseline-totals'), usage = byId('performance-baseline-usage'); totals.replaceChildren(); usage.replaceChildren();
+  const n = value => value == null ? 'Not reported' : number(value);
+  byId('performance-token-diagnosis').textContent = paired ? `Original provider usage: ${number(comparison.codeMode.input - comparison.directTools.input)} extra input tokens and ${number(comparison.codeMode.output - comparison.directTools.output)} extra output tokens. The selected Code Mode attempt above shows how discovery text repeats in later input. Those local text counts exclude framing and cannot be treated as an exact allocation of provider usage.` : '';
+  for (const [label, metrics, verified] of [['Code Mode · original', comparison.codeMode, comparison.codeModeVerification?.passed], ['Direct tools', comparison.directTools, comparison.directVerification?.passed]]) {
+    if (!metrics) continue;
+    const tr = node('tr');
+    for (const cell of [label, n(metrics.input), n(metrics.output), n(metrics.total), n(metrics.requests), n(metrics.readerCalls), verified ? '2 / 2 verified' : 'Not fully verified']) tr.append(node('td', cell));
+    totals.append(tr);
+    (metrics.turns ?? []).forEach((turn, i) => { const row = node('tr'); for (const cell of [label, `${i + 1} · ${i ? 'Follow-up' : 'Investigation'}${turn.complete ? '' : ' · incomplete'}`, n(turn.requests), n(turn.input), n(turn.output), n(turn.total)]) row.append(node('td', cell)); usage.append(row); });
+  }
+  byId('performance-baseline-method').textContent = comparison.method ?? '';
+  const turns = byId('performance-baseline-turn'); turns.replaceChildren();
+  (report.turns ?? []).forEach((turn, i) => { const option = node('option', `${i + 1} · ${i ? 'Compare the prepared join' : 'Investigate the slow request'}${turn.answer ? '' : ' · incomplete'}`); option.value = i; turns.append(option); });
+  byId('performance-baseline-checks').textContent = JSON.stringify({verification: report.verification, sourceCaptureSha256: report.sourceCaptureSha256, datasetSha256: report.datasetSha256, identity: report.identity, limits: report.limits, security: report.securityProof}, null, 2);
+  renderPerformanceBaselineTurn();
+}
+byId('performance-baseline-attempt').addEventListener('change', renderPerformanceBaselineAttempt);
+byId('performance-baseline-turn').addEventListener('change', renderPerformanceBaselineTurn);
+let lastPerformanceBaselineBody = '';
+async function refreshPerformanceBaseline() {
+  try {
+    const response = await fetch(evidenceUrl('/demo/performance-baseline'), {cache:'no-store', credentials:'same-origin'});
+    if (!response.ok) throw new Error('Baseline unavailable');
+    const body = await response.text();
+    if (body !== lastPerformanceBaselineBody) {
+      const report = JSON.parse(body); byId('performance-baseline').hidden = report.status === 'empty';
+      if (report.status === 'empty') { byId('performance-baseline-state').textContent = 'DIRECT BASELINE NOT CAPTURED'; }
+      else {
+        performanceBaselineAttempts = [...(report.previousAttempts ?? []), report];
+        const select = byId('performance-baseline-attempt'); select.replaceChildren();
+        performanceBaselineAttempts.forEach((attempt, i) => { const option = node('option', `${i + 1} · ${attempt.protocol} · ${attempt.status}${i === performanceBaselineAttempts.length - 1 ? ' · latest' : ''}`); option.value = i; select.append(option); });
+        select.value = performanceBaselineAttempts.length - 1; renderPerformanceBaselineAttempt();
+      }
+      lastPerformanceBaselineBody = body;
+    }
+  } catch { byId('performance-baseline-state').textContent = 'DIRECT BASELINE UNAVAILABLE'; }
+  finally { poll(refreshPerformanceBaseline, 5000); }
+}
+refreshPerformanceBaseline();
+
 async function loadResponsePayloads() {
   try {
     const response = await fetch(evidenceUrl('/demo/response-payloads'), {cache:'no-store', credentials:'same-origin'});

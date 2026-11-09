@@ -2,7 +2,56 @@
 
 The [workbench](http://127.0.0.1:8000/demo#performance) shows a real local investigation and follow-up: **13 SQL executions → 1, with identical response content**. Twelve repeated author lookups correlate with the request's `authors.loaded_individually` log event. PHP joins the profiler and log evidence and returns a compact answer.
 
-This capture uses operator-written PHP, not model-generated code. It makes no model-token claim. The prepared join is part of the fixture: the agent has no code-writing or database-writing tool.
+The workbench defaults to the original verified **Symfony AI + Hugging Face conversation**: two user turns, two model-generated PHP programs and eight successful reader calls. The earlier failed capture remains inspectable. The operator-written reference remains available separately. The prepared join is part of the fixture: the agent has no code-writing or database-writing tool.
+
+## Live conversation and measured usage
+
+The [live capture](evidence/performance-conversation.json) uses `openai/gpt-oss-120b` through Symfony AI, the native approved-tool adapter and the same gVisor runner. The first turn identifies repeated author lookups; the follow-up compares the prepared join. Both final answers match the captured public profiler/log projections, including timings and output hashes. The follow-up retains the first turn in its model context.
+
+| Turn | Model requests | Input tokens | Output tokens | Total |
+| --- | ---: | ---: | ---: | ---: |
+| Investigation | 4 | 6,139 | 1,113 | 7,252 |
+| Follow-up | 2 | 6,154 | 1,288 | 7,442 |
+| Total | 6 | 12,293 | 2,401 | 14,694 |
+
+These are provider-reported counts, including repeated context and the completion usage reported by the provider. Auto-routing does not identify the serving provider.
+
+### Direct-tool comparison
+
+The [direct capture](evidence/performance-baseline.json) replays the exact public snapshot from the Code Mode capture, including recorded timings. Both use `openai/gpt-oss-120b`, identical generation settings, questions, approved Symfony readers, schemas and permissions. The task and JSON answer requirements stay the same; instructions for calling tools differ. Neither agent receives expected answers. Both retain their first turn in context.
+
+| Interface | Input tokens | Output tokens | Total | Model requests | Reader calls | Correct turns |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Code Mode | 12,293 | 2,401 | 14,694 | 6 | 8 | 2 / 2 |
+| Direct tools | 6,379 | 1,838 | 8,217 | 7 | 5 | 2 / 2 |
+
+Code Mode used **one fewer model request and 6,477 more tokens (78.8%)**. The direct investigation used 3,535 tokens over four requests; its follow-up used 4,682 over three. With only three small readers, discovery and PHP generation add overhead. The direct follow-up reused the earlier profile and logs, reading only the joined implementation. The generated PHP reread both implementations. This fixture demonstrates safe composition and correct investigation; it does not demonstrate token savings. This is one development pair, not a repeated benchmark or a claim about every workload.
+
+The direct baseline passed on its first attempt. The earlier failed Code Mode attempt remains available above the comparison, with its 20,439 tokens excluded from the successful pair. Every subsequent baseline attempt is retained, including failures; the viewer withholds savings claims for an unverified pair. The baseline binds the original Code Mode file by SHA-256. Preserve that file's bytes when retaining this pair.
+
+Direct readers run in the same supervised broker workers, with the same capability, input/output validation, one-second call timeout, 64 MiB worker limit and 16 KiB result limit. Each turn permits ten reads and five seconds of active reader time. Direct calls execute no model-written PHP; Code Mode additionally enforces its gVisor PHP limits. Both conversations have a twelve-request model ceiling. Preflight checks prove an authorized read, denied private profile/log reads, an unapproved-tool denial and call-budget exhaustion, separately from model usage.
+
+To capture another baseline against the current saved conversation:
+
+```sh
+php bin/console code-mode:performance-baseline --no-debug
+```
+
+Capture and optionally measure the Code Mode report first. The baseline freezes its public data and uses its model, rather than recapturing traffic or selecting a different model from the environment. Results and prior attempts are saved in ignored `var/demo/performance-baseline.json`; the workbench is read-only. The reviewed pair is exported by `composer docs:build` without inference or access to local reports.
+
+The workbench also shows standalone payload counts with the gpt-oss tokenizer: **386** for the canonical three-tool interface, **1,233** for discovery responses, **552** for generated PHP and **498** for returned execution evidence. Each captured item is counted once. Prompts, final answers, reasoning, provider framing and repeated context are excluded; these counts do not sum to provider usage. Source hashes bind the measurements to the captured payloads. Python is only needed to reproduce this optional offline measurement, not to run the PHP packages or viewer.
+
+The first live attempt is retained: it used 12 requests and 20,439 reported tokens on a correct investigation, leaving no request budget for the follow-up. Its search queries were too broad or restrictive, and it attempted direct calls to readers available only inside PHP. Those calls were rejected. Protocol v2 clarifies the `perf` namespace and the three agent-callable tools; it changes no schema, policy or execution limit. This is a development retry, not a controlled performance comparison.
+
+To capture a new conversation, set `HUGGINGFACE_API_KEY` in ignored `.env.local`, then run:
+
+```sh
+php bin/console code-mode:performance-conversation --no-debug
+# Optional offline payload measurement, using a virtualenv with tiktoken==0.12.0:
+python bin/measure-performance-tokens.py var/demo/performance-conversation.json
+```
+
+The command re-runs the existing MCP reference and denial probes before inference. It then creates one bounded native Symfony AI session for both turns, and checks that a third PHP attempt is denied. The model request ceiling is 12 across the conversation. Failed attempts and partial usage stay in the single local report; four retained attempts require operator review before another capture. No HTTP route starts inference or executes PHP.
 
 ## Reproduce or connect an agent
 
@@ -53,4 +102,4 @@ The [single capture](evidence/performance-proof.json) retains the first failed a
 
 The viewer rechecks recorded values, call order, hashes, timings, denials, attempt exhaustion and cleanup. Local failures in ignored `var/demo/performance.json` take precedence over committed evidence. The command retains up to four attempts before requiring operator review. No raw profiles, databases, recordings or extra screenshots are committed.
 
-A real agent conversation against this new performance server has not yet been captured. The existing live Symfony AI/Hugging Face evidence remains available. Conversations belong in the MCP client; the workbench stays a proof viewer.
+The live conversation uses the native Symfony AI adapter; the fixed reference verifies the separate MCP transport. Both use the same approved readers, policy and gVisor limits. Conversations belong in the client or Symfony AI agent; the workbench stays a proof viewer.

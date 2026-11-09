@@ -30,7 +30,7 @@ final readonly class ReadTools
         'requestId' => self::ID, 'events' => ['type' => 'array', 'maxItems' => 16, 'items' => ['type' => 'object', 'additionalProperties' => false,
             'required' => ['event', 'level', 'count'], 'properties' => ['event' => ['enum' => ['authors.loaded_individually', 'catalog.rendered', 'health.ok']],
                 'level' => ['enum' => ['info', 'warning']], 'count' => ['type' => 'integer', 'minimum' => 0, 'maximum' => 100]]]]]];
-    public function __construct(private Dataset $data) {}
+    public function __construct(private ReadDataset $data) {}
     public function requests(): array { return $this->data->requests(); }
     public function profile(string $requestId): array { return $this->data->profile($requestId); }
     public function logs(string $requestId): array { return $this->data->logs($requestId); }

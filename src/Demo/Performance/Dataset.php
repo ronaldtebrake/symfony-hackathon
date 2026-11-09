@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Demo\Performance;
 
 /** Allowlisted projections only. Raw headers, SQL, parameters, bodies and log context never leave the host. */
-final readonly class Dataset
+final readonly class Dataset implements ReadDataset
 {
     private array $profiles;
     private array $events;

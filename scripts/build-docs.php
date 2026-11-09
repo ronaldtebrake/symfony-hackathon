@@ -25,7 +25,7 @@ $reports = [
     'boundary-report' => 'boundaryReport', 'huggingface-report' => 'huggingFaceReport',
     'huggingface-comparison' => 'huggingFaceComparison', 'adoption-report' => 'adoptionReport',
     'evaluation-report' => 'evaluationReport',
-    'performance-report' => 'performanceReport', 'response-payloads' => 'responsePayloads',
+    'performance-report' => 'performanceReport', 'performance-conversation' => 'performanceConversation', 'performance-baseline' => 'performanceBaseline', 'response-payloads' => 'responsePayloads',
 ];
 foreach ($reports as $filename => $method) {
     $response = $controller->$method($request);

@@ -25,6 +25,8 @@ composer start
 
 Browse the [visual documentation](https://ronaldtebrake.github.io/symfony-hackathon/) or open [the local workbench](http://127.0.0.1:8000/demo). It shows the agent conversation and follow-up, exact PHP, actual tool calls, measured model usage and security proofs. It is a read-only viewer of saved runs. To execute new PHP, choose an [execution profile](#execution-profiles) and connect an agent as described below.
 
+The [Symfony performance conversation](docs/performance.md) shows a real agent correlating profiler records and logs, then verifying a prepared optimization: **13 queries → 1, identical output**. Inspect generated PHP, actual calls and a matched direct-tool baseline in [the local viewer](http://127.0.0.1:8000/demo#performance). Both approaches answer correctly; this small three-reader case uses fewer model requests with Code Mode, but more tokens.
+
 ## Use your Symfony tools
 
 The Symfony bundle exposes three MCP tools: `tools_search`, `tools_describe` and `php_execute`. Your approved application tools remain behind the broker.

@@ -79,7 +79,53 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
       </section>
 
       <section data-doc-page id="performance" class="hf-proof" aria-labelledby="performance-heading">
-        <div class="section-top"><div><span class="eyebrow">Symfony Profiler + redacted logs → isolated PHP</span><h2 id="performance-heading">Find the repeated work.</h2></div><span id="performance-state" class="run-state" role="status">Loading performance proof</span></div>
+        <div class="section-top"><div><span class="eyebrow">Symfony Profiler + redacted logs → isolated PHP</span><h2 id="performance-heading">Find the repeated work.</h2></div><span id="performance-live-state" class="run-state" role="status">Loading conversation</span></div>
+        <p class="agent-intro">A real Symfony AI conversation investigates a slow request, then checks a prepared optimization. Hugging Face generates the PHP; the same isolated runner composes approved profiler and log readers. This page only displays recorded evidence.</p>
+        <div id="performance-live" hidden>
+          <div class="evaluation-controls"><label for="performance-live-attempt">Recorded attempt</label><select id="performance-live-attempt"></select></div>
+          <p id="performance-live-scope" class="measurement-note"></p>
+          <div class="hf-metrics"><div><span>SQL executions · before → after</span><strong id="performance-live-queries">—</strong></div><div><span>Provider tokens · both turns</span><strong id="performance-live-tokens">—</strong></div><div><span>Model requests</span><strong id="performance-live-requests">—</strong></div><div><span>Restricted reads</span><strong id="performance-live-denials">—</strong></div></div>
+          <p id="performance-live-outcome" class="live-verdict"></p>
+          <p class="measurement-note">Real SQLite queries in a synthetic Symfony fixture, with 2 ms simulated latency per query. The joined implementation was prepared beforehand. The agent can only read and compare. These timings are not a production speed benchmark.</p>
+          <div class="evaluation-controls"><label for="performance-live-turn">Conversation turn</label><select id="performance-live-turn"></select></div>
+          <blockquote id="performance-live-question"></blockquote>
+          <div class="inspector"><div class="inspector-heading"><div class="tabs" role="tablist" aria-label="Inspect the live performance conversation"><button role="tab" id="performance-live-tab-answer" aria-selected="true" aria-controls="performance-live-panel-answer">Agent answer</button><button role="tab" id="performance-live-tab-php" aria-selected="false" aria-controls="performance-live-panel-php" tabindex="-1">Generated PHP</button><button role="tab" id="performance-live-tab-calls" aria-selected="false" aria-controls="performance-live-panel-calls" tabindex="-1">Actual tool calls</button></div></div>
+            <div role="tabpanel" id="performance-live-panel-answer" aria-labelledby="performance-live-tab-answer"><pre id="performance-live-answer" tabindex="0"></pre></div>
+            <div role="tabpanel" id="performance-live-panel-php" aria-labelledby="performance-live-tab-php" hidden><p class="code-caption">Exact model-generated source submitted to the gVisor runner</p><pre id="performance-live-php" tabindex="0"></pre></div>
+            <div role="tabpanel" id="performance-live-panel-calls" aria-labelledby="performance-live-tab-calls" hidden><div class="table-scroll"><table><caption class="sr-only">Host-observed calls for the selected turn</caption><thead><tr><th>#</th><th>Tool</th><th>Status</th><th>Result</th><th>Time</th></tr></thead><tbody id="performance-live-calls"></tbody></table></div><p id="performance-live-run" class="measurement-note"></p><details class="proof-details"><summary>Discovery and agent tool calls</summary><pre id="performance-live-agent-calls" tabindex="0"></pre></details></div>
+          </div>
+          <h3>Where the tokens go</h3>
+          <p class="measurement-note">Provider-reported input includes repeated conversation history. Output includes whatever completion and reasoning usage the provider reports. The follow-up keeps the first turn in context.</p>
+          <div class="inspector"><div class="table-scroll"><table><caption>Actual Hugging Face usage for this attempt</caption><thead><tr><th>Turn</th><th>Requests</th><th>Input tokens</th><th>Output tokens</th><th>Total</th></tr></thead><tbody id="performance-live-usage"></tbody></table></div></div>
+          <div class="performance-payloads" id="performance-live-payloads"></div>
+          <p id="performance-live-token-scope" class="measurement-note"></p>
+          <p id="performance-live-context-cost" class="measurement-note"></p>
+          <details class="proof-details"><summary>Security checks and verification</summary><pre id="performance-live-checks" tabindex="0"></pre></details>
+          <p class="measurement-note"><a href="/demo/performance-conversation">Inspect the complete capture, including every attempt</a></p>
+        </div>
+        <div class="proof-run"><code>php bin/console code-mode:performance-conversation --no-debug</code><span>Operator-only capture · gVisor + Hugging Face inference credits</span></div>
+        <div class="performance-comparison">
+          <div class="section-top"><div><span class="eyebrow">Same questions · same captured data · same permissions</span><h3>Does composition save tokens here?</h3></div><span id="performance-baseline-state" class="run-state" role="status">Loading baseline</span></div>
+          <div id="performance-baseline" hidden>
+            <div class="evaluation-controls"><label for="performance-baseline-attempt">Direct-tool attempt</label><select id="performance-baseline-attempt"></select></div>
+            <p id="performance-baseline-scope" class="measurement-note"></p>
+            <p id="performance-baseline-verdict" class="live-verdict"></p>
+            <div class="inspector"><div class="table-scroll"><table><caption>Provider-reported usage across both turns</caption><thead><tr><th>Interface</th><th>Input tokens</th><th>Output tokens</th><th>Total tokens</th><th>Model requests</th><th>Reader calls</th><th>Correctness</th></tr></thead><tbody id="performance-baseline-totals"></tbody></table></div></div>
+            <p class="measurement-note">With three small readers, discovery and PHP generation add overhead. The original Code Mode prompt required the full answer from fresh PHP; direct tools could reuse earlier results. Fewer requests do not guarantee fewer tokens.</p>
+            <p id="performance-token-diagnosis" class="measurement-note"></p>
+            <details class="proof-details"><summary>Usage per turn and comparison conditions</summary><div class="table-scroll"><table><caption>Investigation and follow-up</caption><thead><tr><th>Interface</th><th>Turn</th><th>Requests</th><th>Input tokens</th><th>Output tokens</th><th>Total</th></tr></thead><tbody id="performance-baseline-usage"></tbody></table></div><p id="performance-baseline-method" class="measurement-note"></p></details>
+            <div class="evaluation-controls"><label for="performance-baseline-turn">Inspect direct-tool turn</label><select id="performance-baseline-turn"></select></div>
+            <blockquote id="performance-baseline-question"></blockquote>
+            <div class="inspector"><div class="inspector-heading"><div class="tabs" role="tablist" aria-label="Inspect the direct performance baseline"><button role="tab" id="performance-baseline-tab-answer" aria-selected="true" aria-controls="performance-baseline-panel-answer">Direct agent answer</button><button role="tab" id="performance-baseline-tab-calls" aria-selected="false" aria-controls="performance-baseline-panel-calls" tabindex="-1">Direct tool calls</button></div></div>
+              <div role="tabpanel" id="performance-baseline-panel-answer" aria-labelledby="performance-baseline-tab-answer"><pre id="performance-baseline-answer" tabindex="0"></pre></div>
+              <div role="tabpanel" id="performance-baseline-panel-calls" aria-labelledby="performance-baseline-tab-calls" hidden><div class="table-scroll"><table><caption class="sr-only">Actual direct reader invocations</caption><thead><tr><th>#</th><th>Tool</th><th>Status</th><th>Result</th><th>Time</th></tr></thead><tbody id="performance-baseline-calls"></tbody></table></div><details class="proof-details"><summary>Exact arguments and returned results</summary><pre id="performance-baseline-results" tabindex="0"></pre></details></div>
+            </div>
+            <details class="proof-details"><summary>Direct reader denials, limits and verification</summary><pre id="performance-baseline-checks" tabindex="0"></pre></details>
+            <p class="measurement-note"><a href="/demo/performance-baseline">Inspect all direct attempts and source hashes</a> · Failed Code Mode attempts remain in the recorded-attempt selector above. Failed direct attempts remain in this selector and are excluded from savings claims.</p>
+          </div>
+          <div class="proof-run"><code>php bin/console code-mode:performance-baseline --no-debug</code><span>Operator-only · frozen public snapshot · Hugging Face inference credits</span></div>
+        </div>
+        <details class="proof-details"><summary>Fixed reference investigation and MCP security proof <span id="performance-state" class="run-state">Loading proof</span></summary>
         <p id="performance-note" class="agent-intro">A reference investigation and follow-up over real synthetic Symfony requests. Operator-written PHP; no model called. Conversations stay in the agent.</p>
         <div class="proof-run"><code>php bin/console code-mode:performance-mcp --no-debug</code><span>Separate STDIO server for your agent · approved reads only</span></div>
         <div id="performance-evidence" hidden>
@@ -99,6 +145,7 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
           <p id="performance-date" class="measurement-note"></p>
         </div>
         <div class="proof-run"><code>php bin/console code-mode:performance-proof --no-debug</code><span>Capture fresh local evidence · needs pdo_sqlite + gVisor · no inference credits</span></div>
+        </details>
       </section>
 
       <section data-doc-page id="evaluation" class="hf-proof" aria-labelledby="evaluation-heading">

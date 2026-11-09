@@ -9,7 +9,7 @@ use CodeMode\Symfony\Ai\ToolAuthorizationInterface;
 
 final readonly class ReadPolicy implements ToolAuthorizationInterface
 {
-    public function __construct(private Dataset $data) {}
+    public function __construct(private ReadDataset $data) {}
     public function isGranted(ExecutionIdentity $identity, string $tool, \stdClass $arguments): bool
     {
         if (!$identity->allows('performance.read_public')) { return false; }

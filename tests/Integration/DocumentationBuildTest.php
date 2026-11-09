@@ -16,15 +16,15 @@ final class DocumentationBuildTest extends TestCase
         $root = sys_get_temp_dir().'/code-mode-pages-'.bin2hex(random_bytes(6));
         $fs = new Filesystem();
         $fs->mkdir([$root.'/docs/evidence', $root.'/var/demo']);
-        foreach (['compact-discovery.json', 'evaluation.json', 'adoption-proof.json', 'huggingface-proof.json', 'security-proof-2026-11-01.json', 'performance-proof.json', 'reference-comparison-2026-10-31.json'] as $file) {
+        foreach (['compact-discovery.json', 'evaluation.json', 'adoption-proof.json', 'huggingface-proof.json', 'security-proof-2026-11-01.json', 'performance-proof.json', 'performance-conversation.json', 'performance-baseline.json', 'reference-comparison-2026-10-31.json'] as $file) {
             file_put_contents($root.'/docs/evidence/'.$file, '{"source":"reviewed"}');
         }
-        foreach (['discovery.json', 'evaluation.json', 'adoption.json', 'huggingface.json', 'huggingface-pair.json', 'security.json', 'performance.json', 'latest.json'] as $file) {
+        foreach (['discovery.json', 'evaluation.json', 'adoption.json', 'huggingface.json', 'huggingface-pair.json', 'security.json', 'performance.json', 'performance-conversation.json', 'performance-baseline.json', 'latest.json'] as $file) {
             file_put_contents($root.'/var/demo/'.$file, '{"source":"PRIVATE_LOCAL_SENTINEL"}');
         }
         try {
             $store = new ReportStore($root, reviewedOnly: true);
-            foreach (['readDiscoveryComparison', 'readEvaluation', 'readAdoptionProof', 'readHuggingFaceProof', 'readSecurityProof', 'readPerformanceProof', 'read'] as $method) {
+            foreach (['readDiscoveryComparison', 'readEvaluation', 'readAdoptionProof', 'readHuggingFaceProof', 'readSecurityProof', 'readPerformanceProof', 'readPerformanceConversation', 'readPerformanceBaseline', 'read'] as $method) {
                 self::assertSame('{"source":"reviewed"}', $store->$method());
             }
             self::assertNull($store->readHuggingFacePair());
@@ -55,7 +55,7 @@ final class DocumentationBuildTest extends TestCase
         }
         sort($files);
         $expected = ['.nojekyll', 'index.html', 'demo.css', 'demo.js', 'docs.js', 'images/code-mode-value.svg'];
-        foreach (['report', 'security-report', 'agent-report', 'boundary-report', 'huggingface-report', 'huggingface-comparison', 'adoption-report', 'evaluation-report', 'performance-report', 'response-payloads'] as $name) { $expected[] = 'evidence/'.$name.'.json'; }
+        foreach (['report', 'security-report', 'agent-report', 'boundary-report', 'huggingface-report', 'huggingface-comparison', 'adoption-report', 'evaluation-report', 'performance-report', 'performance-conversation', 'performance-baseline', 'response-payloads'] as $name) { $expected[] = 'evidence/'.$name.'.json'; }
         sort($expected); self::assertSame($expected, $files);
         self::assertFileDoesNotExist($root.'/var/pages/evidence/discovery-report.json');
         self::assertStringNotContainsString('compact-discovery', $html);

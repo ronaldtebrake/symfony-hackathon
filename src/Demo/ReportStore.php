@@ -43,6 +43,26 @@ final readonly class ReportStore
         $this->saveFile('performance.json', $report);
     }
 
+    public function savePerformanceConversation(array $report): void { $this->saveFile('performance-conversation.json', $report, 4 * 1048576); }
+
+    public function savePerformanceBaseline(array $report): void { $this->saveFile('performance-baseline.json', $report, 4 * 1048576); }
+
+    public function readPerformanceBaseline(): ?string
+    {
+        $local = $this->projectDir.'/var/demo/performance-baseline.json';
+        return $this->readPath(!$this->reviewedOnly && is_file($local) ? $local : $this->projectDir.'/docs/evidence/performance-baseline.json', 4 * 1048576);
+    }
+
+    public function readPerformanceConversation(): ?string
+    {
+        return $this->readLocalPerformanceConversation() ?? $this->readPath($this->projectDir.'/docs/evidence/performance-conversation.json', 4 * 1048576);
+    }
+
+    public function readLocalPerformanceConversation(): ?string
+    {
+        return $this->reviewedOnly ? null : $this->readPath($this->projectDir.'/var/demo/performance-conversation.json', 4 * 1048576);
+    }
+
     public function readPerformanceProof(): ?string
     {
         return $this->readLocalPerformanceProof() ?? $this->readPath($this->projectDir.'/docs/evidence/performance-proof.json');

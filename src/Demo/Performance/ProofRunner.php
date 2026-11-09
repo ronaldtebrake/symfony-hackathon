@@ -103,15 +103,9 @@ PHP;
     {
         $search = $client->callTool('tools_search', ['query' => 'perf']);
         if ($search->isError) { throw new \RuntimeException('Discovery failed.'); }
-        $ready = array_column(array_filter($search->structuredContent['tools'], static fn ($tool) => false === ($tool['requiresDescribe'] ?? null)), 'name');
-        $missing = array_values(array_diff(ReadTools::NAMES, $ready));
-        $describe = [];
-        if ([] !== $missing) {
-            $result = $client->callTool('tools_describe', ['names' => $missing]);
-            if ($result->isError) { throw new \RuntimeException('Discovery failed.'); }
-            $describe = $result->structuredContent;
-        }
-        return ['mode' => 'compact', 'search' => $search->structuredContent['tools'], 'searchMetadata' => array_diff_key($search->structuredContent, ['tools' => true]), 'describe' => $describe];
+        $result = $client->callTool('tools_describe', ['names' => ReadTools::NAMES]);
+        if ($result->isError) { throw new \RuntimeException('Discovery failed.'); }
+        return ['mode' => 'full', 'search' => $search->structuredContent['tools'], 'searchMetadata' => array_diff_key($search->structuredContent, ['tools' => true]), 'describe' => $result->structuredContent];
     }
 
     private function execute(Client $client, DockerEngine $docker, string $traceFile, string $php): array

@@ -105,6 +105,44 @@ final readonly class DemoController
         return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
     }
 
+    #[Route('/demo/performance-conversation', name: 'app_demo_performance_conversation', methods: ['GET'])]
+    public function performanceConversation(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+        $source = $this->store->readPerformanceConversation() ?? '{"status":"empty"}';
+        $report = json_decode($source, true, flags: JSON_THROW_ON_ERROR);
+        if ('empty' !== $report['status']) {
+            $verify = static function (array $attempt) use ($source): array {
+                $attempt['verification'] = (new \App\Demo\Performance\ConversationVerifier())->verify($attempt);
+                $attempt['payloadMeasurement'] = (new \App\Demo\Performance\TokenBreakdown())->summarize($attempt);
+                if ('complete' === $attempt['status'] && !$attempt['verification']['passed']) { $attempt['status'] = 'failed'; }
+                return $attempt;
+            };
+            $report = $verify($report);
+            $report['previousAttempts'] = array_map($verify, $report['previousAttempts'] ?? []);
+        }
+        return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
+    }
+
+    #[Route('/demo/performance-baseline', name: 'app_demo_performance_baseline', methods: ['GET'])]
+    public function performanceBaseline(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+        $report = json_decode($this->store->readPerformanceBaseline() ?? '{"status":"empty"}', true, flags: JSON_THROW_ON_ERROR);
+        if ('empty' !== $report['status']) {
+            $source = $this->store->readPerformanceConversation() ?? '{}';
+            $verify = static function (array $attempt) use ($source): array {
+                $attempt['comparison'] = (new \App\Demo\Performance\PerformanceComparison())->summarize($attempt, $source);
+                $attempt['verification'] = $attempt['comparison']['directVerification'];
+                if ('complete' === $attempt['status'] && !$attempt['verification']['passed']) { $attempt['status'] = 'failed'; }
+                return $attempt;
+            };
+            $report = $verify($report);
+            $report['previousAttempts'] = array_map($verify, $report['previousAttempts'] ?? []);
+        }
+        return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
+    }
+
     #[Route('/demo/response-payloads', name: 'app_demo_response_payloads', methods: ['GET'])]
     public function responsePayloads(Request $request): Response
     {

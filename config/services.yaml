@@ -28,6 +28,8 @@ services:
     App\Demo\AdoptionProofRunner: ~
     App\Demo\EvaluationRunner: ~
     App\Demo\Performance\ProofRunner: ~
+    App\Demo\Performance\ConversationRunner: ~
+    App\Demo\Performance\BaselineRunner: ~
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
