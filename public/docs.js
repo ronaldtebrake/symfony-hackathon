@@ -24,14 +24,13 @@ if (document.documentElement.dataset.static === 'true') {
 // This guide consumes the same reviewed evidence as the detailed inspectors.
 // It never invokes a model, MCP endpoint or PHP executor.
 const demoShots = [
-  {kind:3, time:'00:00–00:12', label:'See where we started', title:'PHP worked. Deployment took work.', source:'Version one · exact generated PHP', href:'#version-one', narration:"This is Symfony Code Mode. Our first approach lets an agent write PHP to combine approved tool results. It runs inside gVisor, with every tool call checked."},
-  {kind:4, time:'00:12–00:22', label:'Move to JSON', title:'Two tools. Existing handlers.', source:'Current conversation · actual catalog calls', href:'#version-two', narration:"Operating that sandbox complicates adoption. So we kept the providers and access checks, exposing search and execution through JSON. No generated program."},
-  {kind:0, time:'00:22–00:34', label:'Start with the task', title:'An audit, through an agent.', source:'Current JSON catalog · real Symfony AI conversation', href:'#catalog-conversation', narration:"Here, Symfony AI uses Hugging Face to audit published articles through the PHP MCP SDK. Forty-eight articles checked; four descriptions missing. These are recorded executions."},
-  {kind:1, time:'00:34–00:44', label:'Reshape the question', title:'Same session. A useful follow-up.', source:'Same catalog conversation · follow-up', href:'#catalog-conversation', narration:"Now reshape the question: group those findings by language. The agent continues in the same session, with the same permissions."},
-  {kind:5, time:'00:44–00:57', label:'Measure all three', title:'Correctness comes before savings.', source:'Matched Symfony AI + Hugging Face audit', href:'#three-way', narration:"Same task and permissions; ten correct findings each. JSON uses about thirty-six percent fewer tokens than direct calls. PHP saves more. These totals include review."},
-  {kind:2, time:'00:57–01:07', label:'Recover from a boundary', title:'Denied, then useful again.', source:'Separate live catalog recovery conversation', href:'#catalog-recovery', narration:"A restricted article is denied. The user chooses a published-content audit instead, and the agent continues without gaining permissions."},
-  {kind:6, time:'01:07–01:22', label:'Inspect the boundaries', title:'The host must still say no.', source:'Current JSON controls and live injection failure', href:'#catalog-security', narration:"The host also terminates a blocking handler. In the injection test, the agent attempted a restricted read and was denied. Correct answers alone do not prove safe behavior."},
-  {kind:7, time:'01:22–01:30', label:'Adopt in Symfony', title:'Own tools. Own policy. No Docker.', source:'Independent Composer app · stock MCP server', href:'#catalog-adoption', narration:"A fresh Symfony app uses the same package with its own tools and policy. No Docker; Unix PHP CLI remains required."},
+  {kind:8, time:'00:00–00:12', label:'Ask in your agent', title:'A real Symfony tool, from your chat.', source:'Native MCP rehearsal · published article lookup', href:'#native-rehearsal', narration:"This is Symfony Code Mode. In Codex, I ask a separate Symfony application for a published article. The application exposes its approved tools through MCP."},
+  {kind:9, time:'00:12–00:23', label:'Open the JSON call', title:'Search. Send arguments. Get a result.', source:'Native MCP rehearsal · actual JSON calls', href:'#native-rehearsal', narration:"The agent discovers the contract, then sends a tool name and JSON arguments. Symfony runs the installed handler and returns the article."},
+  {kind:10, time:'00:23–00:37', label:'Show the code', title:'Your Symfony service. Your policy.', source:'Installed Symfony source · handler and policy', href:'#native-rehearsal', narration:"Here is that handler, registered with Symfony AI. The application owns the permission check and publication rule. The catalog reuses its schemas and existing toolbox."},
+  {kind:11, time:'00:37–00:50', label:'Test the boundary', title:'The follow-up cannot grant access.', source:'Native MCP rehearsal · same connection, denied read', href:'#native-rehearsal', narration:"Now I ask for a restricted article. The host denies it before the handler runs. The agent can offer the published article we already retrieved."},
+  {kind:6, time:'00:50–01:01', label:'Inspect the controls', title:'The host enforces execution limits.', source:'Separate operator controls and live injection test', href:'#catalog-security', narration:"Execution has limits too: this blocking handler was terminated. JSON does not prevent prompt injection; access checks remain essential."},
+  {kind:5, time:'01:01–01:17', label:'Compare tokens', title:'Measure the whole task.', source:'Separate matched Symfony AI + Hugging Face audit', href:'#three-way', narration:"In a separate matched audit, all three paths found the same ten issues. JSON used thirty-six percent fewer tokens than direct tools. Isolated PHP saved more."},
+  {kind:7, time:'01:17–01:30', label:'Use it in Symfony', title:'Choose the catalog. Keep your application.', source:'Configuration · independent Composer application', href:'#catalog-adoption', narration:"Choose catalog mode, register approved tools and a policy, then connect your agent. JSON needs no gVisor. Our supervised worker still needs Unix PHP CLI."},
 ];
 function latestVerifiedCatalog() {
   return [...threeWayAttempts].reverse().find(attempt => /^audit-catalog-v/.test(attempt.protocol ?? '') && attempt.verification?.passed === true);
@@ -39,12 +38,6 @@ function latestVerifiedCatalog() {
 let demoShot = 0;
 function proofLink(href, text) { const link = node('a', text); link.href = href; return link; }
 function sourceBlock(text, php = false) { const pre = node('pre', text, 'tour-code'); pre.tabIndex = 0; if (php) PhpSyntax.render(pre, text); return pre; }
-function captureTurn(index) {
-  if (!agentCapture || agentCapture.verification?.[index === 0 ? 'auditMatchesIndependentOracle' : 'impactMatchesIndependentOracle'] !== true) return null;
-  const turn = agentCapture.turns[index];
-  const execution = turn.items.find((item) => item.type === 'mcpToolCall' && item.tool === 'php_execute');
-  return {turn, execution, result:execution.result.structuredContent};
-}
 function showCostEstimate() {
   const output = byId('cost-estimate');
   const input = byId('cost-input-rate'); const completion = byId('cost-output-rate');
@@ -69,23 +62,23 @@ function showDemoShot() {
   byId('tour-back').disabled = demoShot === 0;
   byId('tour-next').disabled = demoShot === demoShots.length - 1;
   [...byId('tour-steps').children].forEach((button, index) => button.setAttribute('aria-pressed', String(index === demoShot)));
-  if (kind <= 2 || kind === 4) {
-    const run = typeof catalogRun === 'function' ? catalogRun(kind === 2 ? 'boundary' : 'follow_up') : null;
-    if (!run?.verification?.passed) { content.append(node('p', 'Verified catalog evidence is loading or unavailable. Inspect the full capture.')); return; }
-    if (kind === 4) {
-      const search = run.trace.agentCalls.find(call => call.name === 'search_tools');
-      const execute = run.trace.agentCalls.find(call => call.name === 'execute_tools');
-      content.append(node('span', 'ACTUAL SEARCH', 'tour-label'), sourceBlock(JSON.stringify(search.arguments, null, 2)), node('span', 'ACTUAL JSON SUBMISSION', 'tour-label'), sourceBlock(JSON.stringify(execute.arguments, null, 2)), proofLink('#catalog-conversation', 'Inspect all calls and responses →'));
-    } else {
-      const turn = run.turns[kind === 1 ? 1 : 0];
-      content.append(node('span', 'USER → AGENT', 'tour-label'), node('blockquote', turn.question, 'tour-question'), node('span', 'RECORDED FINAL ANSWER', 'tour-label'), sourceBlock(JSON.stringify(JSON.parse(turn.answer), null, 2)));
-      if (kind === 2) content.append(node('p', 'Next user turn: '+run.turns[1].question), sourceBlock(JSON.stringify(JSON.parse(run.turns[1].answer), null, 2)));
-      content.append(node('p', 'Real Symfony AI generation. Drafts, text-only reviews, provider usage and actual calls are retained.', 'measurement-note'));
+  if ([8, 9, 11].includes(kind)) {
+    const report = typeof nativeCatalogEvidence !== 'undefined' ? nativeCatalogEvidence : null;
+    if (kind === 8 || kind === 11) {
+      content.append(node('span', 'PROMPT TO RECORD IN YOUR CLIENT', 'tour-label'), node('blockquote', kind === 8
+        ? 'Use only the symfony_catalog MCP server to read published article 101 and tell me its title. Discover its contract first. Do not read workspace files or use shell commands.'
+        : 'Now try article 202 once through the same tool. If access is denied, explain that and suggest a permitted alternative from what we already retrieved. Do not retry or use another access path.', 'tour-question'));
     }
-  } else if (kind === 3) {
-    const capture = captureTurn(0);
-    if (!capture) { content.append(node('p', 'Historical PHP evidence unavailable.')); return; }
-    content.append(node('p', 'Exact generated PHP from the original audit. It reads approved tools, joins the results and returns findings inside gVisor. Adoption requires a dedicated runtime and runner image.', 'measurement-note'), sourceBlock(capture.execution.arguments.code, true));
+    content.append(node('p', 'Actual native MCP calls from the 10 November rehearsal. Prompts above are recording cues, not an exported chat transcript.', 'measurement-note'));
+    if (report?.verification?.passed !== true) { content.append(node('p', 'Verified native MCP evidence is loading or unavailable.')); return; }
+    const indexes = kind === 9 ? [0, 1] : [kind === 8 ? 1 : 2];
+    for (const index of indexes) content.append(nativeCallCard(report.capture.calls[index], index));
+  } else if (kind === 10) {
+    if (typeof nativeCatalogEvidence === 'undefined' || nativeCatalogEvidence?.verification?.passed !== true) { content.append(node('p', 'Verified application source is loading or unavailable.')); return; }
+    for (const [role, label] of [['handler','INSTALLED HANDLER'], ['policy','HOST POLICY']]) {
+      content.append(node('span', label, 'tour-label'), sourceBlock(nativeSourceExcerpt(role), true));
+    }
+    content.append(proofLink('#native-rehearsal', 'Inspect full source and native calls →'), node('p', 'Source from this documentation build. Symfony AI registers publication_read through AsTool; the explicit allowlist selects it. The agent supplies JSON arguments.', 'measurement-note'));
   } else if (kind === 5) {
     const attempt = latestVerifiedCatalog();
     if (!attempt) { content.append(node('p', 'No fully verified catalog triplet is available. Failed attempts remain inspectable.')); return; }

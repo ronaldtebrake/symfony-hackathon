@@ -129,3 +129,53 @@ async function loadCatalogEvidence() {
 }
 byId('catalog-attempt').addEventListener('change', renderCatalogAttempt);
 loadCatalogEvidence();
+
+// Reviewed native MCP messages, separate from operator probes and provider benchmarks.
+let nativeCatalogEvidence = null;
+function nativeCallCard(call, index) {
+  const card = node('article', undefined, 'catalog-turn');
+  const heading = node('div', undefined, 'native-call-heading');
+  heading.append(node('h3', `${index + 1}. ${['Discover the approved tool', 'Read published article 101', 'Request restricted article 202'][index]}`), node('span', call.response.isError ? 'DENIED' : 'SUCCEEDED', 'status-pill'));
+  const columns = node('div', undefined, 'native-call-grid');
+  const request = node('div'), response = node('div');
+  request.append(node('span', `ACTUAL REQUEST · ${call.tool}`, 'tour-label'), catalogJson(call.arguments));
+  response.append(node('span', 'ACTUAL RESPONSE · structuredContent', 'tour-label'));
+  if (index === 0) {
+    response.append(node('p', 'publication_read · required integer id'), catalogDetails('Full discovered contract', catalogJson(call.response.structuredContent)));
+  } else response.append(catalogJson(call.response.structuredContent));
+  columns.append(request, response); card.append(heading, columns);
+  card.append(catalogDetails('Complete MCP response envelope', catalogJson(call.response)));
+  return card;
+}
+function nativeSourceExcerpt(role) {
+  const source = nativeCatalogEvidence.implementation[role].source;
+  const start = source.indexOf(role === 'handler' ? 'final class ArticleTool' : 'final readonly class ReadPolicy');
+  return start < 0 ? source : source.slice(start);
+}
+function renderNativeRehearsal() {
+  const report = nativeCatalogEvidence, body = byId('native-rehearsal-body'), implementation = byId('native-implementation-body');
+  body.replaceChildren(); implementation.replaceChildren();
+  if (report?.verification?.passed !== true) { body.append(node('p', 'The native rehearsal did not pass verification. Inspect the raw report before using it as evidence.')); return; }
+  body.append(node('p', `Verified MCP messages · 10 November 2026 · ${report.capture.calls.length} requests · 2 execution attempts`, 'mode-note'));
+  report.capture.calls.forEach((call, index) => body.append(nativeCallCard(call, index)));
+  body.append(node('p', 'The restricted request returned tool_denied and no article data. A permitted alternative is article 101, already retrieved.', 'measurement-note'), catalogDetails('Provenance and message verification', catalogJson({client:report.capture.client, capturedAfterExecutionAt:report.capture.capturedAfterExecutionAt, scope:report.capture.scope, captureSha256:report.captureSha256, verification:report.verification})));
+  const columns = node('div', undefined, 'native-call-grid native-implementation');
+  for (const [role, title] of [['handler','The registered handler'], ['policy','The application policy']]) {
+    const source = report.implementation[role], card = node('article');
+    card.append(node('h3', title), node('span', `${source.path} · excerpt`, 'tour-label'), sourceBlock(nativeSourceExcerpt(role), true), proofLink(`https://github.com/ronaldtebrake/symfony-hackathon/blob/main/${source.path}`, 'Open source ↗'), catalogDetails('Full PHP source', sourceBlock(source.source, true)));
+    columns.append(card);
+  }
+  implementation.append(columns);
+}
+async function loadNativeRehearsal() {
+  try {
+    const response = await fetch(evidenceUrl('/demo/native-catalog'), {cache:'no-store'});
+    if (!response.ok) throw new Error('Native rehearsal unavailable');
+    nativeCatalogEvidence = await response.json();
+    renderNativeRehearsal(); evidenceChanged();
+  } catch {
+    byId('native-rehearsal-body').textContent = 'Native MCP evidence could not be loaded. Open the retained JSON report.';
+    byId('native-implementation-body').textContent = 'Application source unavailable.';
+  }
+}
+loadNativeRehearsal();

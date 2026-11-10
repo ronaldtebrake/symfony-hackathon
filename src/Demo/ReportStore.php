@@ -179,6 +179,12 @@ final readonly class ReportStore
         return $report;
     }
 
+    public function readNativeCatalogRehearsal(): ?string
+    {
+        // Only this reviewed capture is publishable. No query path or ignored local fallback.
+        return $this->readPath($this->projectDir.'/docs/evidence/native-catalog-rehearsal.json');
+    }
+
     private function saveFile(string $filename, array $report, int $maxBytes = 1048576): void
     {
         $directory = $this->projectDir.'/var/demo';

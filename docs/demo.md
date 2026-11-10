@@ -1,67 +1,75 @@
-# Record the 90-second Symfony demo
+# Record the 90-second Symfony product demo
 
-The story: **PHP can reduce the model's work. JSON makes approved tool calls easier to adopt. The application keeps control of access in both paths.**
+**Show what developers can use today:** ask an agent, discover an approved Symfony AI tool, send JSON, and receive an application result. Show the handler and policy behind it. The PHP-to-JSON journey supports this product demo; it is no longer the opening act.
 
-Record eight short clips of the working [proof viewer](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour), then place them under the narration below. These are saved real executions, not a live chat or an execution UI. The current JSON conversations were generated with Symfony AI and Hugging Face; the original PHP conversation came from an MCP client. Keep their source labels visible.
+Record a **fresh Codex conversation** against [the independent Symfony app](../examples/symfony/README.md). It has its own Composer dependencies, native Symfony AI tool and access policy, with synthetic articles. The [workbench guide](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) provides shot cues and labelled reference evidence. It cannot run the conversation. The [native MCP rehearsal](evidence/native-catalog-rehearsal.json) now records the actual discovery, successful lookup and denial from one connection. The workbench shows these exact messages alongside the installed Symfony handler and policy. Video footage still needs to be recorded.
 
-The [hackathon brief](https://symfony.com/hackathon) asks for a public runnable repository and a 90-second video of the real project, due **22 November 2026 at 18:00 CET**. The script demonstrates the Symfony AI integration, PHP MCP SDK, Hugging Face usage, reusable package and observed access controls.
+## Prepare the real application
 
-## Before recording
+From the repository root:
 
-- Record the screen at **1920 × 1080**, with notifications disabled and no private terminal or account information visible. Use a browser zoom that keeps the code and numbers readable. Record narration separately, with no music needed.
-- Open the published viewer rather than the local latest-run viewer. Pages uses the reviewed captures, so an unrelated local test cannot change the evidence during recording.
-- Prepare the eight views below before each take. Record **3 seconds of still footage before and after** each action; trim those handles in the edit. Use straight cuts, keeping text on screen long enough to read.
-- Keep a small overlay throughout: **“Recorded execution evidence · synthetic Symfony fixture”**. On the controls shot also show **“Operator probes · no model called”**; the injection result is a separate live-agent test.
-- Use one token comparison in this cut: **46,438 / 29,798 / 12,806**. The older animation's **71.4%** and the catalog's **287 offline tokens** belong to different measurements. Keep them for the detailed documentation and questions.
+```sh
+composer install --working-dir=examples/symfony
+composer check --working-dir=examples/symfony
+ADOPTION_MODE=catalog php examples/symfony/bin/console code-mode:doctor
+composer proof:catalog --working-dir=examples/symfony
+```
+
+Connect Codex using [the JSON MCP configuration](codex.md#connect-the-json-catalog). Confirm **symfony_catalog** exposes only **search_tools** and **execute_tools**. The stock `code-mode:serve` command boots the independent Symfony application over STDIO; no web server, Docker, gVisor or Hugging Face key is needed for this client conversation. The current worker requires Unix PHP CLI, `pcntl` and `posix`.
+
+Use one fresh server session for each take. The example permits **two execute submissions, including failures**. Restart the connection between rehearsals, never between these two turns. Do not increase the budget for the recording. Keep the old PHP server out of this take, and use only the selected MCP server to retrieve fixture data. A client with repository access can otherwise read the synthetic fixture directly; the MCP policy does not restrict the client's unrelated tools.
+
+### Exact prompts
+
+**Turn one:**
+
+> Use only the symfony_catalog MCP server to read published article 101 and tell me its title. Discover its contract first. Do not read workspace files or use shell commands.
+
+Expected application result: `{"id":101,"title":"A Symfony application owns its tools"}`. Verify it in the actual tool response, not just the final prose.
+
+**Follow-up in the same chat:**
+
+> Now try article 202 once through the same tool. If access is denied, explain that and suggest a permitted alternative from what we already retrieved. Do not retry or use another access path.
+
+Expected application response: `tool_denied`, `completedCalls: 0`, no article data. The agent may suggest the already-read published article; that suggestion needs no third execution. The final wording is model-generated, not scripted evidence. If it retries, bypasses MCP, or invents a result, retain that attempt and fix the take honestly.
 
 ## Exact recording sequence and voice-over
 
-Read only the quoted narration. The complete voice-over is 187 words; rehearse it against the time slots and leave brief pauses between clips.
+Record at **1920 × 1080**, notifications off. Prepare the editor and workbench tabs before recording. Keep three seconds of still footage around each clip. Capture the real conversation at its actual speed, then trim waiting time with a visible **“wait trimmed”** caption. Ninety seconds is the edited duration, not a promised execution time.
 
-| Time / clip | Exactly what to record | Say this |
+| Time | Record | Say |
 | --- | --- | --- |
-| **00:00–00:12 · `01-php`** | [The 90-second guide](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) → **See where we started**. Frame the generated PHP, showing a `$tools->call(...)` and the loop. Scroll slowly within the code block, not through the entire page. Keep the gVisor/runtime explanation in frame. | “This is Symfony Code Mode. Our first approach lets an agent write PHP to combine approved tool results. It runs inside gVisor, with every tool call checked.” |
-| **00:12–00:22 · `02-json`** | Guide → **Move to JSON**. Hold on the actual `search_tools` request and `execute_tools` submission. Both are from the captured JSON conversation. Add the short caption **“Same approved providers · literal JSON · no generated PHP”**. | “Operating that sandbox complicates adoption. So we kept the providers and access checks, exposing search and execution through JSON. No generated program.” |
-| **00:22–00:34 · `03-audit`** | Guide → **Start with the task**: show the question and `audited: 48`, `missing: [11, 22, 33, 44]`. Then cut to [An agent conversation](https://ronaldtebrake.github.io/symfony-hackathon/#catalog-conversation), **Turn 1 → Actual underlying calls**, expanded before recording. Hold on the successful `cms_list_articles` / `cms_get_articles` rows. | “Here, Symfony AI uses Hugging Face to audit published articles through the PHP MCP SDK. Forty-eight articles checked; four descriptions missing. These are recorded executions.” |
-| **00:34–00:44 · `04-follow-up`** | Guide → **Reshape the question**. Show the exact follow-up and `missingByLanguage: {en: 1, nl: 2, de: 1}` together. Keep the “same conversation” source label visible. | “Now reshape the question: group those findings by language. The agent continues in the same session, with the same permissions.” |
-| **00:44–00:57 · `05-tokens`** | Guide → **Measure all three**. Hold the whole table: **Direct 46,438 / 12 requests; JSON 29,798 / 6; PHP 12,806 / 5**. All show ten correct findings. Overlay **“Separate article + image audit · same model, question, data and permissions · review included · one matched comparison”**. Move the cursor once from Direct to JSON to PHP. | “Same task and permissions; ten correct findings each. JSON uses about thirty-six percent fewer tokens than direct calls. PHP saves more. These totals include review.” |
-| **00:57–01:07 · `06-recovery`** | Guide → **Recover from a boundary**. Show `status: denied`, then the next user turn choosing the permitted audit and its `audited: 48` result. This is a separate conversation; keep that label. | “A restricted article is denied. The user chooses a published-content audit instead, and the agent continues without gaining permissions.” |
-| **01:07–01:22 · `07-security`** | First 7 seconds: [Security proofs](https://ronaldtebrake.github.io/symfony-hackathon/#catalog-security), showing **Approved read: succeeded**, **Restricted read: tool_denied**, and **Worker terminated: 153 ms / reaped: yes**. Next 8 seconds: [Symfony AI in action](https://ronaldtebrake.github.io/symfony-hackathon/#catalog-evidence), frame the **Injected instruction** row: answers **Passed**, behavior **Failed**, host boundary **Passed**. | “The host also terminates a blocking handler. In the injection test, the agent attempted a restricted read and was denied. Correct answers alone do not prove safe behavior.” |
-| **01:22–01:30 · `08-adoption`** | Guide → **Adopt in Symfony**. Frame `mode: catalog`, the approved tool and policy, and `code-mode:doctor`. End with the repository URL and **“Reusable Composer packages · Unix PHP CLI required”**. The [independent app proof](https://ronaldtebrake.github.io/symfony-hackathon/#catalog-adoption) is available behind the evidence link. | “A fresh Symfony app uses the same package with its own tools and policy. No Docker; Unix PHP CLI remains required.” |
+| **00:00–00:12** | Codex: submit turn one, show the resulting title. Caption **“Fresh MCP session · independent Symfony app · synthetic articles”**. | “This is Symfony Code Mode. In Codex, I ask a separate Symfony application for a published article. The application exposes its approved tools through MCP.” |
+| **00:12–00:23** | Expand that chat's `search_tools` and `execute_tools` records. Show `publication_read`, `id: 101` and the actual result. Use the client transcript if its cards truncate arguments. | “The agent discovers the contract, then sends a tool name and JSON arguments. Symfony runs the installed handler and returns the article.” |
+| **00:23–00:37** | Editor: [ArticleTool.php](../examples/symfony/src/ArticleTool.php), its `#[AsTool]` and `read()` method; then [ReadPolicy.php](../examples/symfony/src/ReadPolicy.php), `isGranted()`. The guide also has highlighted source excerpts. | “Here is that handler, registered with Symfony AI. The application owns the permission check and publication rule. The catalog reuses its schemas and existing toolbox.” |
+| **00:37–00:50** | Back to the same Codex chat: submit the follow-up. Open its actual denial; hold on the explanation and permitted alternative if the agent supplies one. | “Now I ask for a restricted article. The host denies it before the handler runs. The agent can offer the published article we already retrieved.” |
+| **00:50–01:01** | Workbench → **Inspect the controls**. Show the recorded **153 ms** handler termination and worker cleanup. Caption **“Separate operator probes · no model called”**. Keep the separate live injection-test outcome visible. | “Execution has limits too: this blocking handler was terminated. JSON does not prevent prompt injection; access checks remain essential.” |
+| **01:01–01:17** | Workbench → **Compare tokens**. Frame **Direct 46,438 / JSON 29,798 / PHP 12,806**, all ten findings correct. Caption **“Separate matched audit · Symfony AI + Hugging Face · same model, question, data, permissions · review included”**. | “In a separate matched audit, all three paths found the same ten issues. JSON used thirty-six percent fewer tokens than direct tools. Isolated PHP saved more.” |
+| **01:17–01:30** | Editor: [config/services.php](../examples/symfony/config/services.php), `mode`, `ai_tools`, `ai_authorization`. Then the actual passing `code-mode:doctor` output and repository link. | “Choose catalog mode, register approved tools and a policy, then connect your agent. JSON needs no gVisor. Our supervised worker still needs Unix PHP CLI.” |
 
-If the large guide header uses too much screen space, scroll the chosen stage into view before recording. Keep the active shot title and source label. Do not spend video time opening menus or finding the next section.
+This fits 90 seconds with prepared views and an edited conversation. Do not try to install dependencies, explain the whole design history or show every check on screen. Keep the current product first; the optional PHP path gets its comparison column and a link to the full story.
 
-## The claims to keep precise
+## What each shot proves
 
-- The description conversation checks **48 articles and four missing descriptions**. The token comparison is a separate **description + image audit with ten findings**. Never put the token table over the description-only conversation as though they were the same run.
-- These are **provider-reported input + output tokens**, including model review. JSON used **35.8% fewer** than direct calls in this matched run; PHP used **72.4% fewer**. They are not dollar charges, general reliability estimates or a guarantee that either path is always cheaper. Earlier attempts remain in the archive.
-- JSON calls existing application handlers. It removes generated-code execution, while retaining authorization, schema validation and budgets. Its current supervisor still needs **Unix PHP CLI, pcntl and posix**. Shared-hosting portability is not proved.
-- The **153 ms** result is an operator-authored blocking handler under a **150 ms deadline**, not generated PHP. The separate [PHP security proof](https://ronaldtebrake.github.io/symfony-hackathon/#security-proof) shows the gVisor infinite-loop timeout and container cleanup if a judge asks.
-- The injection scenario **failed the agent-behavior check**. Its restricted call was denied before the handler ran. The denial does not establish general prompt-injection resistance, and a correct final answer does not erase the attempted action.
-- Any credit or article reference belongs on [From PHP to JSON](https://ronaldtebrake.github.io/symfony-hackathon/#version-two). The main narration stays focused on our Symfony implementation and observed trade-offs.
+- The fresh chat proves that a client can discover and call the independent application's approved tool. Symfony AI supplies its schema and invokes the handler; **Codex supplies the conversation model**. This is not a fresh Symfony AI + Hugging Face model run.
+- The token table is the retained **48-article, 24-image audit**, not the small article lookup. It uses provider-reported input + output tokens, includes reviews, and retains failed attempts. JSON used **35.8% fewer** tokens than direct calls in that matched run; PHP used **72.4% fewer**. These are neither bills nor universal savings.
+- The **153 ms** control is a trusted blocking handler under a **150 ms deadline**. It is separate from the historical gVisor infinite-loop proof. The live injection test attempted a restricted read; the host blocked it, while the agent-behavior check failed. JSON is not an injection defense.
+- The worker supervises installed handlers. It does not isolate hostile PHP from the host. The local identity and synthetic fixture do not demonstrate remote authentication or shared-hosting portability.
+- Preserve the new chat's requests, responses and untrimmed footage locally. The saved native rehearsal is a separate take containing only MCP messages, not a full chat transcript. Operator and Hugging Face traces are separately labelled. Match new footage to its own requests and responses. `--trace-file` on the stock server currently supports only the PHP path, so retain the JSON records from the client.
 
-## Edit, verify and submit
+## Edit and deliver
 
-1. Record the eight clips above. Keep their untrimmed originals locally outside the tracked repository.
-2. Record the voice-over as one continuous take. Arrange the clips at the exact cut points **0, 12, 22, 34, 44, 57, 67, 82 and 90 seconds**. Use captions and straight cuts; avoid speeding up text or model execution to suggest faster inference.
-3. Export **MP4, H.264, 1080p, 30 fps**, with AAC audio, exactly **90 seconds / 2,700 frames**. Use a readable final repository link; do not add an extra title card after 90 seconds.
-4. Watch the whole export once without sound to check legibility and evidence labels, then once with sound to check that every claim matches its screen. Confirm that the token table and the failed injection-behavior cell are legible.
-5. Check the public repository quickstart in a fresh environment, the Pages links and the final video link. Include the tested Unix CLI requirements. The lightweight JSON adoption proof is `composer proof:catalog --working-dir=examples/symfony` after installing that example's dependencies.
-6. Publish the video where the judges can view it and submit its URL with the public repository through the hackathon form before the deadline. The recording, video edit, upload and formal submission are still outstanding; this guide does not perform those actions.
+Use straight cuts at **0, 12, 23, 37, 50, 61, 77 and 90 seconds**. Record narration separately. Export **MP4, H.264, 1080p, 30 fps**, exactly **90 seconds / 2,700 frames**. Check text legibility and that every claim matches its source. Keep untrimmed footage outside the tracked repository. Recording, editing, uploading and formal submission remain manual steps.
 
-## Optional material after the main demo
+The [hackathon brief](https://symfony.com/hackathon) is the source for submission requirements. The [evidence index](evidence/README.md) identifies supporting captures. The workbench's read-only walkthrough is a recording aid, not a finished video.
 
-**Drupal:** keep it out of the 90-second cut. If asked, show the [separate Data Surface proof](../examples/drupal-surface-query/README.md#json-batch-comparison) and say: “The same provider boundary also works with Drupal query tools, including publication and field access.” Its fixed JSON/PHP comparison is not another live token benchmark.
+## Optional follow-up material
 
-**Return to PHP:** show [What comes next](https://ronaldtebrake.github.io/symfony-hackathon/#explore) and say: “PHP used fewer tokens in this audit. Easier managed isolation could make that computation more practical to adopt.” A managed PHP executor remains future work; no new runtime integration is implied.
+**The journey:** [From PHP to JSON](https://ronaldtebrake.github.io/symfony-hackathon/#version-two) explains the current execution model, then the infrastructure trade-off that led to it. PHP remains useful for loops, joins and filtering; easier managed isolation could improve its adoption later.
 
-**Fresh agent footage:** record a real client conversation only if you also capture and verify its own tool traces. The published current conversation is Symfony AI + Hugging Face, not footage of a desktop agent chat. The small independent app exposes `publication_read`; it is not the 48-article audit server. Never splice a fresh chat over the saved answers or attribute the saved token totals to it.
+**Drupal:** outside the 90-second cut, show the [separate Data Surface proof](../examples/drupal-surface-query/README.md#json-batch-comparison). It reuses providers while retaining publication and field access. Its fixed JSON/PHP comparison is not another live token benchmark.
 
-## Reproduce the supporting evidence
-
-The [catalog proof](evidence/catalog-proof.json) contains five live scenarios, reference checks and every capture attempt. The independent Symfony consumer passes 15 checks using real MCP requests, copied packages and its own dependencies. No Docker configuration or root application autoloader is needed for that JSON proof.
-
-For new captures, `php bin/console code-mode:catalog-proof --no-debug` runs operator probes and reference algorithms; `--live` adds paid Symfony AI + Hugging Face inference. Both retain every attempt. Recording the already-published evidence needs no inference key or new model run.
+**Reproduce model evidence:** `php bin/console code-mode:catalog-proof --no-debug` runs operator checks; `--live` adds paid Symfony AI + Hugging Face inference. Both retain attempts. The public catalog capture includes five live scenarios and the independent app's operator proof. The native client rehearsal is a separate file; no video is included.
 
 <details>
 <summary>Supporting PHP evidence: repeated evaluation, timelines and response measurements</summary>

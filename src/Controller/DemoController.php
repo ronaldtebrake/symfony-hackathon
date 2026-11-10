@@ -113,6 +113,28 @@ final readonly class DemoController
         return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
     }
 
+    #[Route('/demo/native-catalog', name: 'app_demo_native_catalog', methods: ['GET'])]
+    public function nativeCatalog(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+        $raw = $this->store->readNativeCatalogRehearsal();
+        if (null === $raw) { return $this->response('{"status":"empty"}', 'application/json'); }
+        $capture = json_decode($raw, true, flags: JSON_THROW_ON_ERROR);
+        $verification = \App\Demo\NativeCatalogRehearsal::verify($capture);
+        $implementation = [];
+        // Current application source, not a claim that source bytes were captured at execution.
+        foreach (['handler' => 'ArticleTool.php', 'policy' => 'ReadPolicy.php'] as $role => $file) {
+            $path = 'examples/symfony/src/'.$file;
+            $source = file_get_contents($this->projectDir.'/'.$path);
+            $implementation[$role] = ['path' => $path, 'source' => $source, 'sha256' => hash('sha256', $source)];
+        }
+        return $this->response(json_encode([
+            'status' => $verification['passed'] ? 'passed' : 'failed', 'capture' => $capture,
+            'captureSha256' => hash('sha256', $raw), 'verification' => $verification,
+            'implementation' => $implementation,
+        ], JSON_THROW_ON_ERROR), 'application/json');
+    }
+
     #[Route('/demo/evaluation-report', name: 'app_demo_evaluation_report', methods: ['GET'])]
     public function evaluationReport(Request $request): Response
     {

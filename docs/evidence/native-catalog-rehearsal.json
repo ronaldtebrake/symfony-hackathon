@@ -1,0 +1,132 @@
+{
+  "format": "native-catalog-rehearsal/v1",
+  "capturedAfterExecutionAt": "2026-11-10 08:56:20 UTC",
+  "client": "Codex native symfony_catalog MCP tools",
+  "scope": "One connection, discovery followed by authorized and restricted article reads. Exact MCP requests and responses; not an internal worker trace or a provider token benchmark.",
+  "verification": {
+    "discoveredApprovedTool": true,
+    "publishedReadReturned": true,
+    "restrictedReadDenied": true
+  },
+  "calls": [
+    {
+      "tool": "search_tools",
+      "arguments": {
+        "query": "publication"
+      },
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"tools\":[{\"name\":\"publication_read\",\"description\":\"Read the ID and title of a published article by integer ID.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"}},\"required\":[\"id\"],\"additionalProperties\":false},\"outputSchema\":{\"type\":\"object\",\"required\":[\"id\",\"title\"],\"additionalProperties\":false,\"properties\":{\"id\":{\"type\":\"integer\"},\"title\":{\"type\":\"string\"}}}}],\"matched\":1,\"returned\":1,\"limit\":8,\"truncated\":false}"
+          }
+        ],
+        "structuredContent": {
+          "tools": [
+            {
+              "name": "publication_read",
+              "description": "Read the ID and title of a published article by integer ID.",
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "additionalProperties": false
+              },
+              "outputSchema": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "title"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "title": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ],
+          "matched": 1,
+          "returned": 1,
+          "limit": 8,
+          "truncated": false
+        },
+        "isError": false
+      }
+    },
+    {
+      "tool": "execute_tools",
+      "arguments": {
+        "calls": [
+          {
+            "name": "publication_read",
+            "arguments": {
+              "id": 101
+            }
+          }
+        ]
+      },
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"results\":[{\"name\":\"publication_read\",\"value\":{\"id\":101,\"title\":\"A Symfony application owns its tools\"}}]}"
+          }
+        ],
+        "structuredContent": {
+          "results": [
+            {
+              "name": "publication_read",
+              "value": {
+                "id": 101,
+                "title": "A Symfony application owns its tools"
+              }
+            }
+          ]
+        },
+        "isError": false
+      }
+    },
+    {
+      "tool": "execute_tools",
+      "arguments": {
+        "calls": [
+          {
+            "name": "publication_read",
+            "arguments": {
+              "id": 202
+            }
+          }
+        ]
+      },
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"publication_read\",\"index\":0},\"completedCalls\":0}"
+          }
+        ],
+        "structuredContent": {
+          "error": {
+            "reason": "tool_denied",
+            "tool": "publication_read",
+            "index": 0
+          },
+          "completedCalls": 0
+        },
+        "isError": true
+      }
+    }
+  ]
+}
+

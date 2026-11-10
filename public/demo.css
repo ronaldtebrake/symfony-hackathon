@@ -1590,6 +1590,12 @@ h1,h2,h3 { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 .journey-choices h3,.journey-extra h3 { font-size:21px; letter-spacing:-.5px; }
 .journey-choices pre { background:#170f29; color:#dfbeff; border:0; border-radius:10px; padding:20px; font:11px/1.9 var(--mono); white-space:pre-wrap; overflow-wrap:anywhere; }
 .journey-choices p,.journey-extra p { font-size:13px; line-height:1.8; color:var(--muted); }
+.catalog-flow { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; padding:0; margin:30px 0; list-style:none; }
+.catalog-flow li { border:1px solid var(--line); border-radius:10px; padding:22px; background:var(--surface-muted); }
+.catalog-flow span { display:block; font:10px var(--mono); color:var(--brand); margin-bottom:14px; }
+.catalog-flow strong { font-size:17px; }
+.catalog-flow p { font-size:13px; line-height:1.8; color:var(--muted); margin-bottom:0; }
+@media(max-width:760px) { .catalog-flow { grid-template-columns:1fr; } }
 .journey-extra { margin-top:34px; padding:26px; border:1px solid var(--line); border-radius:12px; }
 @media(max-width:760px) { .journey-choices { grid-template-columns:1fr; } .journey-signpost p { font-size:16px; line-height:1.8; } }
 .value-explainer { margin-top:26px; }
@@ -1688,4 +1694,12 @@ pre.proof-source.php-highlight { font-size:11px; padding:14px; white-space:pre-w
 .catalog-controls article > strong { color:var(--brand); font-size:24px; }
 #catalog-attempt { max-width:100%; margin:16px 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:white; color:var(--ink); }
 .catalog-turn .tour-code { max-height:400px; }
+.native-call-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.native-call-grid > div { min-width:0; }
+.native-call-grid .tour-code { white-space:pre-wrap; overflow-wrap:anywhere; }
+.native-call-heading { display:flex; gap:14px; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.native-call-heading h3 { margin:0; font-size:19px; }
+.native-implementation > article { min-width:0; }
+.native-implementation .tour-code { max-height:420px; font-size:11px; white-space:pre-wrap; overflow-wrap:anywhere; }
+@media(max-width:900px) { .native-call-grid { grid-template-columns:1fr; } }
 @media(max-width:760px) { .catalog-controls { grid-template-columns:1fr; } .catalog-turn { padding:16px; } }

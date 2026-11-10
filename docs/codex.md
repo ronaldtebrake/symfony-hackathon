@@ -1,30 +1,45 @@
-# Use Symfony Code Mode from Codex
+# Use the Symfony JSON catalog from Codex
 
-Ask the question in Codex. It discovers the approved MCP tools, writes PHP, submits it to the isolated runner and answers from the result. Follow-up questions stay in that conversation. The workbench is a read-only viewer for the recorded Codex rehearsal, comparison and security proofs.
+The current product demo connects Codex to the [independent Symfony application](../examples/symfony/README.md). Codex manages the conversation; Symfony AI supplies the registered tool schema and handler execution. The agent sends literal JSON to `search_tools` and `execute_tools`. This connection does not execute generated PHP or use gVisor.
 
-## Connect this project
+## Connect the JSON catalog
 
-Set up the [gVisor runtime](../packages/php-code-mode/README.md#sandboxed-php) and the project's ignored `.env.local` first. This connection uses the read-only Symfony fixture; it does not connect to Drupal or need a Hugging Face token. Codex uses its own existing sign-in and model access.
+Install and check the example from the repository root:
 
-Create `.codex/config.toml` in the project with your absolute paths:
+```sh
+composer install --working-dir=examples/symfony
+ADOPTION_MODE=catalog php examples/symfony/bin/console code-mode:doctor
+composer proof:catalog --working-dir=examples/symfony
+```
+
+Add this server to the project's ignored `.codex/config.toml`, replacing the paths with your absolute paths. It has a distinct name so it cannot be confused with the historical PHP server.
 
 ```toml
-[mcp_servers.symfony_code_mode]
+[mcp_servers.symfony_catalog]
 command = "/absolute/path/to/php"
-args = ["/absolute/path/symfony-hackathon/bin/console", "code-mode:mcp", "--backend=fixture", "--no-debug"]
-cwd = "/absolute/path/symfony-hackathon"
-enabled_tools = ["tools_search", "tools_describe", "php_execute"]
+args = ["/absolute/path/symfony-hackathon/examples/symfony/bin/console", "code-mode:serve", "--no-debug"]
+cwd = "/absolute/path/symfony-hackathon/examples/symfony"
+env = { ADOPTION_MODE = "catalog" }
+enabled_tools = ["search_tools", "execute_tools"]
 startup_timeout_sec = 20
-tool_timeout_sec = 45
+tool_timeout_sec = 15
 required = true
 ```
 
-The local config is ignored by Git. Keep runtime credentials in `.env.local`, outside tool arguments and generated PHP. The 45-second client timeout allows for setup and cleanup; it does not change the runner's 15-second execution limit.
+Run `codex mcp get symfony_catalog` from the repository. Restart the connection in MCP settings, then inspect `/mcp` in the client. Project settings require a trusted project. The desktop app and CLI share MCP configuration; see [OpenAI's MCP documentation](https://developers.openai.com/codex/mcp/). The client timeout does not increase the server's execution budgets.
 
-Run `codex mcp get symfony_code_mode` from this project to check registration. Restart the MCP connection in the desktop client's MCP settings, or launch `codex` from this directory. Use `/mcp` to inspect the connected server. Codex loads project MCP configuration for trusted projects; the CLI and desktop share the configuration. See [OpenAI's MCP documentation](https://developers.openai.com/codex/mcp/).
+The server uses Unix PHP CLI with `pcntl` and `posix`. It starts the example's Symfony kernel over STDIO, so no HTTP server is needed. It loads the example's own configuration, not the root demo's `.env.local`. No model token is needed in this application: Codex uses its existing model access. No connection changes are made just by reading this guide.
 
-## Ask and inspect
+## Record the actual conversation
 
-Use the [audit and follow-up prompts](demo.md#audit-and-follow-up) in one chat. The human can reshape the task; agreement cannot grant permissions. The fixture server retains its two-execution budget, 15-second wall limit, 128 MiB memory, 30-call limit and per-call broker authorization. Exhaustion requires an operator-started process; no reset tool is exposed to the agent.
+Use the [two exact prompts and shot list](demo.md#exact-prompts). First read published article **101**, then request **202** once in the same chat. Confirm the actual responses: the public title and a sanitized `tool_denied`, with no restricted data. A permitted alternative can reuse the public result already retrieved.
 
-Inspect the actual `php_execute.code` and returned `value` in Codex. Current responses omit detailed host ledgers. For a new recording, add an operator-selected `--trace-file` argument following the [trace setup](../packages/symfony-code-mode/README.md#agent-responses-and-host-evidence); retain that private file alongside the conversation export. The [workbench](http://127.0.0.1:8000/demo#codex-run) displays the reviewed 1 November desktop capture, not a live feed from your chat. **Generated PHP → Present PHP** provides a large source view and exact-source copying. Keep the new take's tool records before replacing the saved proof. See the [recording guide](demo.md) for the timeline and optional denied-read conversation.
+Keep the server process alive between turns. It permits **two execute submissions, including failures**; discovery does not consume these attempts. Restart the connection before another take. Do not ask the agent to restart it or bypass a denial. Use only this MCP connection to retrieve demo data; its policy cannot control a client's separate shell or filesystem access.
+
+Expand the client's tool records to show exact JSON arguments and responses. Save the conversation/tool export and original footage privately before editing. The stock catalog command does **not** support `--trace-file`; that option is PHP-only. The [workbench rehearsal](https://ronaldtebrake.github.io/symfony-hackathon/#native-rehearsal) shows the native MCP calls captured on 10 November, alongside the installed handler and policy. It is a saved take, not a live mirror of your chat. Operator probes and Hugging Face comparisons remain separately labelled. Save new takes separately.
+
+## Historical generated-PHP connection
+
+The original root-demo connection uses `code-mode:mcp --backend=fixture --no-debug`, exposing `tools_search`, `tools_describe` and `php_execute`. It requires the dedicated [gVisor runtime](../packages/php-code-mode/README.md#sandboxed-php). Keep it separate from `symfony_catalog`; the root demo and the small independent application have different tools and data.
+
+The retained [original conversation](evidence/codex-conversation-2026-11-01.json) shows that earlier PHP path. It is not the JSON recording above. Its generated source and execution evidence remain available under Version one in the workbench.

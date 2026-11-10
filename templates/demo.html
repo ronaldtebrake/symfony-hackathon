@@ -26,7 +26,7 @@
       <a href="#demo-tour">The 90-second demo <span>02</span></a>
       <a href="#quickstart">Use it in Symfony <span>03</span></a>
       <span class="nav-label">SEE IT WORK</span>
-      <a href="#catalog-conversation">An agent conversation</a>
+      <a href="#native-rehearsal">An agent conversation</a>
       <a href="#catalog-recovery">Recover from a boundary</a>
       <a href="#catalog-security">Security proofs</a>
       <a href="#catalog-evidence">Symfony AI in action</a>
@@ -101,25 +101,45 @@
 
       <section id="version-two" class="doc-page" aria-labelledby="journey-heading">
         <div class="eyebrow">Version two · simpler adoption</div><h2 id="journey-heading">From PHP to JSON.</h2>
-        <p class="lede">The sandboxed PHP audit worked. The next challenge was making it practical to use in an ordinary Symfony application.</p>
-        <div class="design-story">
+        <p class="lede">The agent discovers an approved tool and sends JSON arguments. Your Symfony application runs its existing handler and returns the result.</p>
+        <div class="doc-callout"><strong>What runs now?</strong><p>In <code>mode: catalog</code>, the PHP MCP SDK serves two entry tools: <code>search_tools</code> and <code>execute_tools</code>. Symfony AI provides the application tool contracts and invokes the installed PHP services. The agent supplies data; it supplies no PHP program. <strong>This path does not start Docker or gVisor.</strong></p></div>
+        <ol class="catalog-flow" aria-label="JSON request execution">
+          <li><span>01 / DISCOVER</span><strong>Find the contract</strong><p><code>search_tools</code> returns approved names and full JSON schemas. Search does not grant access.</p></li>
+          <li><span>02 / CHECK</span><strong>Validate each call</strong><p><code>execute_tools</code> accepts literal arguments. The broker checks discovery, host identity, policy and schema.</p></li>
+          <li><span>03 / RUN</span><strong>Call your service</strong><p>A supervised PHP CLI child invokes the trusted handler through Symfony AI. The agent receives its result.</p></li>
+        </ol>
+        <div class="section-explainer"><span class="eyebrow">A working Symfony application</span><h3>Read an article through its existing tool.</h3><p>The separate Composer example owns its articles, Symfony AI toolbox and publication policy. It exposes <code>publication_read</code>; another annotated tool, <code>publication_count</code>, remains outside the approved catalog. These are synthetic records in a real Symfony CLI application.</p></div>
+        <div class="journey-choices">
+          <article><h3>The agent sends JSON.</h3><pre><code>// search_tools
+{"query": "publication"}
+
+// execute_tools, after discovery
+{"calls": [{
+  "name": "publication_read",
+  "arguments": {"id": 101}
+}]}</code></pre><p>One call is enough. Multiple independent calls may share a submission; calls needing earlier results wait for another submission.</p></article>
+          <article><h3>Symfony runs installed PHP.</h3><pre id="catalog-handler-code"><code data-php>// ArticleTool::read — the registered Symfony AI handler
+public function read(int $id): array
+{
+    return $this->articles->readPublished($id);
+}
+
+// ReadPolicy::isGranted — checked before invocation
+return $identity->allows('publication.read_published')
+    &amp;&amp; 'publication_read' === $tool
+    &amp;&amp; ['id'] === array_keys(get_object_vars($arguments))
+    &amp;&amp; is_int($arguments->id)
+    &amp;&amp; $this->articles->isPublished($arguments->id);</code></pre><p>Source excerpts: <a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/examples/symfony/src/ArticleTool.php">tool service</a> · <a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/examples/symfony/src/ReadPolicy.php">application policy</a>. The data service also checks publication before returning a record.</p></article>
+        </div>
+        <p>The permitted read returns article <code>101</code> and its title. Reading <code>202</code> returns <code>tool_denied</code>, without invoking the article handler. <a href="#native-rehearsal">Inspect the native MCP rehearsal →</a></p>
+        <details class="proof-details"><summary>The worker, the sandbox, and hosted Symfony</summary><p>The catalog still uses a separate PHP CLI process to supervise trusted handlers: deadlines, call and output budgets, and process cleanup. It uses <code>pcntl</code> and <code>posix</code> on Unix. This worker has host capabilities; it is <strong>not a sandbox for hostile PHP</strong>. Only installed, approved handlers may run.</p><p>The optional <code>mode: php</code> path accepts generated PHP and therefore requires the separate gVisor runtime. The catalog never constructs that sandbox. Both paths use the same provider contracts and broker checks.</p><p>A Symfony deployment can run the JSON server as a CLI service where those extensions and child processes are available. Shared hosting that only permits web requests is not yet supported by this worker. A portable worker adapter remains future work. The example’s fixed local identity is not remote authentication.</p><p>JSON removes arbitrary program execution, but tool output can still contain prompt injection. The application must enforce access on every call, regardless of what the agent asks.</p></details>
+        <details class="proof-details"><summary>How we arrived here</summary><div class="design-story">
           <p>Running generated code meant operating a separate environment for it. Our gVisor setup enforced the boundaries we tested, but it also needed a dedicated Linux runtime and a pinned runner image. Installing a Composer package could not take care of that infrastructure.</p>
           <p>The content-query experiment made another option clearer. The application could run the query itself, check access and return a defined result. Its inputs and outputs already had JSON Schema contracts exposed through MCP. For that kind of task, the agent could supply the arguments directly.</p>
           <p>While exploring that route, we found <strong>Pushpak Chhajed’s</strong> <a href="https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#version-one-i-handed-the-agent-tinker">story of building MCP servers with Laravel</a>. His move from generated PHP to a searchable JSON catalog helped clarify our own direction: keep discovery and the application’s existing handlers, and make generated-code execution optional.</p>
-        </div>
-        <div class="section-explainer"><span class="eyebrow">What we built in Symfony</span><h3>Two tools. Your existing application checks.</h3><p><code>search_tools</code> finds approved names, descriptions and schema fields, returning full contracts with explicit truncation. <code>execute_tools</code> invokes one or more approved calls with literal JSON arguments. Independent calls can share a submission; dependent calls wait for their inputs. Both reuse Symfony AI schemas and Symfony/MCP providers.</p></div>
+        </div></details>
         <div class="journey-boundary"><strong>The same checks in both paths</strong><span>Approved providers</span><span>Host-owned identity</span><span>Argument validation</span><span>Authorization per call</span><span>Execution budgets</span></div>
         <p class="measurement-note">JSON removes the generated program, not the need to trust and supervise tool handlers. There are no expressions, loops or result-reference language to interpret. Calls stop on the first failure; completed calls are not rolled back.</p>
-        <div class="journey-choices">
-          <article><h3>Choose PHP for computation.</h3><pre><code data-php>$a = $tools->call('articles_read', ['id' => 7]);
-$b = $tools->call('articles_read', ['id' => 14]);
-return ['sameImage' => $a->image_id === $b->image_id];</code></pre><p>Generated loops, joins and filtering run inside gVisor. The model receives the computed value.</p></article>
-          <article><h3>Choose JSON for approved calls.</h3><pre><code>{"calls": [
-  {"name": "articles_read", "arguments": {"id": 7}},
-  {"name": "articles_read", "arguments": {"id": 14}}
-]}</code></pre><p>Literal inputs, ordered results. No loops, expressions or references between calls. The model receives both records.</p></article>
-        </div>
-        <p class="measurement-note">Illustrative calls after discovering the full contract. Both paths reuse Symfony AI schemas and the same Symfony/MCP providers. Use <code>mode: catalog</code> for search + execute, or <code>mode: php</code> for computation in gVisor. The current JSON worker still needs Unix PHP CLI, <code>pcntl</code> and <code>posix</code>. A portable Symfony Process/Messenger adapter remains future work.</p>
         <div class="doc-callout"><strong>Simpler deployment is a reason to choose JSON. Token savings need evidence.</strong><p>The three-way audit keeps the model, question, data and permissions fixed. It records failed attempts and includes the shared answer-review cost. Fewer dependencies can justify JSON even when computation in PHP uses fewer tokens.</p><a href="#three-way">Read the live comparison →</a></div>
         <details class="proof-details"><summary>Which evidence covers the JSON catalog?</summary><div class="table-scroll"><table><thead><tr><th>Evidence</th><th>What is available</th></tr></thead><tbody><tr><td>Live Symfony audit</td><td>Direct tools, JSON catalog and sandboxed PHP: a verified matched triplet, with matching answers and review costs included. <a href="#three-way">Inspect the captures</a>.</td></tr><tr><td>Current catalog proof</td><td><a href="#catalog-evidence">Five live Symfony AI scenarios</a>, a real follow-up and boundary recovery, operator controls and a fresh Symfony consumer without Docker. All final answers match; four scenarios pass fully. The injection scenario includes an unauthorized attempt that the host blocked.</td></tr><tr><td>Earlier demo captures</td><td>The conversation, recovery, security probes, repeated evaluation and performance comparison use sandboxed PHP. Their original measurements remain intact.</td></tr><tr><td>Still unmeasured</td><td>Repeated three-way evaluation under one fixed protocol and a JSON performance arm. The catalog suite is one development sample, not a reliability estimate.</td></tr></tbody></table></div><p class="measurement-note"><a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/batching.md#evidence-coverage-and-next-captures">Evidence coverage and the next captures</a>.</p></details>
         <div class="journey-extra"><span class="status-pill optional">Optional · Drupal / Rosetta</span><h3>A typed query is a useful adoption example.</h3><p>A Data Surface can expose an approved query through Tool API and MCP. JSON supplies the query arguments; Drupal keeps publication, entity and field-access checks. PHP remains available when the agent needs to combine several query results.</p><p>The separate reference proof exercises both paths, including empty results and revoked permissions. It is an experimental Rosetta integration, not a Drupal Core feature or a live model benchmark.</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/tree/main/examples/drupal-surface-query#json-batch-comparison">Inspect the separate proof ↗</a></div>
@@ -127,11 +147,22 @@ return ['sameImage' => $a->image_id === $b->image_id];</code></pre><p>Generated 
       </section>
 
       <section id="demo-tour" class="doc-page" aria-labelledby="tour-heading">
-        <div class="eyebrow">The Symfony story · 90-second recording guide</div><h2 id="tour-heading">From working code to easier adoption.</h2>
-        <p class="lede">Start with the generated PHP and its adoption trade-off. Follow the move to JSON, then show a real conversation, the matched comparison and the access boundary. The walkthrough reads saved captures; it starts no execution.</p>
+        <div class="eyebrow">The product demo · 90-second recording guide</div><h2 id="tour-heading">Ask your agent. Run your Symfony tools.</h2>
+        <p class="lede">Record a fresh conversation in your MCP client, then show the JSON request, the Symfony handler and its access policy. Finish with the measured comparison. This walkthrough supplies recording cues and labelled reference evidence; it does not run a chat.</p>
         <div class="tour-layout"><div id="tour-steps" class="tour-steps" role="group" aria-label="Choose a demo moment"></div><div class="tour-stage"><div class="tour-stage-heading"><span id="tour-source" class="eyebrow"></span><span id="tour-time" class="tour-time"></span></div><h3 id="tour-title"></h3><div id="tour-content"></div><div class="tour-controls"><a id="tour-evidence" href="#agent-run">Inspect the full evidence ↗</a><div><button type="button" id="tour-back">← Back</button><button type="button" id="tour-next">Next →</button></div></div></div></div>
         <details class="tour-narration"><summary>Suggested voice-over for this shot</summary><p id="tour-narration"></p></details>
-        <p class="measurement-note">Separate labelled captures: current Symfony AI catalog conversations, operator control probes, independent app adoption, and the earlier matched three-way comparison. <a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/demo.md">Recording instructions ↗</a> · Drupal is outside this 90-second cut.</p>
+        <p class="measurement-note">The native MCP rehearsal is captured: exact discovery, lookup and denial messages from one connection. The prompts are recording cues; the capture is not a full chat transcript or video. Security controls and the Symfony AI + Hugging Face token comparison are separate captures. <a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/demo.md">Exact recording instructions ↗</a> · <a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/codex.md">Connect your MCP client ↗</a> · Drupal is optional, outside this cut.</p>
+      </section>
+
+      <section id="native-rehearsal" class="doc-page" aria-labelledby="native-rehearsal-heading">
+        <div class="eyebrow">Native MCP rehearsal · independent Symfony application</div><h2 id="native-rehearsal-heading">One lookup. One boundary.</h2>
+        <p class="lede">The agent discovers a Symfony AI tool, reads a published article, then requests a restricted one through the same connection. Inspect the exact JSON and the application code behind it.</p>
+        <div id="native-rehearsal-body"><p>Loading the reviewed native MCP calls…</p></div>
+        <div class="section-explainer"><span class="eyebrow">Installed application code</span><h3>The Symfony handler and its access policy.</h3><p>Symfony AI registers the service through <code>#[AsTool]</code>. The catalog selects <code>publication_read</code>; the application checks access before invoking its handler. This PHP is installed code, not model output.</p></div>
+        <div id="native-implementation-body"><p>Loading the application source…</p></div>
+        <p class="measurement-note">Source from this documentation build, shown separately from the captured MCP messages. The data service also checks publication before returning a record. The capture contains no internal worker ledger, provider token usage or full chat transcript.</p>
+        <div class="doc-callout"><strong>Record with the same boundary.</strong><p>This rehearsal used the example’s two execution attempts, including the denial. Restart the connection before a new take, then keep it running across the lookup and follow-up. A permitted alternative can use article 101 already returned.</p><a href="#demo-tour">Follow the 90-second recording guide →</a></div>
+        <p class="measurement-note"><a href="/demo/native-catalog">Capture, verification and source (JSON)</a> · <a href="#catalog-conversation">Separate Symfony AI + Hugging Face conversation</a> · <a href="#catalog-adoption">Independent install proof</a> · <a href="#three-way">Separate matched token comparison</a>.</p>
       </section>
 
       <section id="catalog-conversation" class="doc-page" aria-labelledby="catalog-conversation-heading">

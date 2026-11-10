@@ -14,7 +14,7 @@ use Symfony\Component\Process\Process;
 
 final class HttpMcpAdapterTest extends TestCase
 {
-    public function testConfiguredHttpAdapterSpeaksMcpAndKeepsTokenOutOfDiscovery(): void
+    public function testLocalServerServesScriptsAndMcpWithoutLeakingToken(): void
     {
         $socket = stream_socket_server('tcp://127.0.0.1:0', $errno, $error);
         self::assertIsResource($socket);
@@ -38,6 +38,14 @@ final class HttpMcpAdapterTest extends TestCase
                 }
             } while (!$ready && microtime(true) < $deadline && $server->isRunning());
             self::assertTrue($ready, 'The local HTTP MCP fixture did not start.');
+            // Every script referenced by the workbench must bypass the PHP router intact.
+            preg_match_all('~src="(/[^"?]+\.js)"~', file_get_contents(dirname(__DIR__, 2).'/templates/demo.html'), $scripts);
+            foreach ($scripts[1] as $asset) {
+                $response = $http->request('GET', 'http://'.$address.$asset);
+                self::assertSame(200, $response->getStatusCode(), $asset);
+                self::assertStringContainsString('javascript', $response->getHeaders()['content-type'][0]);
+                self::assertSame(file_get_contents(dirname(__DIR__, 2).'/public'.$asset), $response->getContent());
+            }
             $_SERVER['DRUPAL_MCP_URL'] = 'http://'.$address.'/mcp';
             $_SERVER['DRUPAL_MCP_ALLOWED_TOOLS'] = '["app_status"]';
             $_SERVER['DRUPAL_MCP_TOKEN'] = 'test-only-token';
