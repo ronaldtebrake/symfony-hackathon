@@ -107,7 +107,7 @@ function renderCatalogFootprint() {
     const row = node('tr'); row.append(node('td', size), node('td', number(direct.tokens)), node('td', number(catalog.tokens))); body.append(row);
   }
   table.append(head, body); const scroll = node('div', undefined, 'table-scroll'); scroll.append(table);
-  container.append(scroll, node('p', `Offline ${report.encoding} tokenization, ${report.library}. Synthetic four-field tools; one serialized SDK tools/list result. No model, framing, search results, task data or history. Separate from provider usage and billing.`, 'measurement-note'));
+  container.append(scroll, node('p', `Offline ${report.encoding} tokenization, ${report.library}. Synthetic four-field tools; one serialized SDK tools/list result from the retained STDIO catalog. HTTP entry-tool descriptions differ; these are not HTTP schema counts. No model, framing, search results, task data or history. Separate from provider usage and billing.`, 'measurement-note'));
 }
 async function loadCatalogEvidence() {
   try {
