@@ -1,5 +1,7 @@
+# Historical root PHP demo; the independent HTTP application uses the JSON default.
 # Only these trusted read services enter Code Mode. Autowiring does not approve other services.
 code_mode:
+    mode: php
     identity_provider: App\CodeMode\DemoIdentityProvider
     tools:
         - App\CodeMode\ReadArticle
