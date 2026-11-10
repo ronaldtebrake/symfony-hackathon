@@ -2,7 +2,7 @@
 
 **Show what developers can use today:** ask an agent, discover an approved Symfony AI tool, send JSON, and receive an application result. Show the handler and policy behind it. The PHP-to-JSON journey supports this product demo; it is no longer the opening act.
 
-Record a **fresh Codex conversation** against [the independent Symfony app](../examples/symfony/README.md). It has its own Composer dependencies, native Symfony AI tool and access policy, with synthetic articles. The [workbench guide](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) provides shot cues and labelled reference evidence. It cannot run the conversation. The [native MCP rehearsal](evidence/native-catalog-rehearsal.json) now records the actual discovery, successful lookup and denial from one connection. The workbench shows these exact messages alongside the installed Symfony handler and policy. Video footage still needs to be recorded.
+Record a **fresh Codex conversation** against [the independent Symfony app](../examples/symfony/README.md). It has its own Composer dependencies, native Symfony AI tool and access policy, with synthetic articles. The [workbench guide](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) provides shot cues and labelled reference evidence. It cannot run the conversation. The [fresh HTTP proof](evidence/http-catalog-proof.json) records actual discovery, successful lookup, denial and persistent budgets. The workbench shows these operator-authored messages alongside the installed Symfony handler and policy. The earlier [native MCP rehearsal](evidence/native-catalog-rehearsal.json) is retained separately; it predates HTTP. Video footage still needs to be recorded.
 
 ## Prepare the real application
 
@@ -12,12 +12,12 @@ From the repository root:
 composer install --working-dir=examples/symfony
 composer check --working-dir=examples/symfony
 ADOPTION_MODE=catalog php examples/symfony/bin/console code-mode:doctor
-composer proof:catalog --working-dir=examples/symfony
+composer proof:http --working-dir=examples/symfony
 ```
 
-Connect Codex using [the JSON MCP configuration](codex.md#connect-the-json-catalog). Confirm **symfony_catalog** exposes only **search_tools** and **execute_tools**. The stock `code-mode:serve` command boots the independent Symfony application over STDIO; no web server, Docker, gVisor or Hugging Face key is needed for this client conversation. The current worker requires Unix PHP CLI, `pcntl` and `posix`.
+Connect Codex using [the JSON MCP configuration](codex.md#connect-the-json-catalog). Confirm **symfony_catalog** exposes only **search_tools** and **execute_tools**. Start the example with `composer start --working-dir=examples/symfony`. The authenticated `/mcp` endpoint runs normal Symfony requests, with no worker, Docker, gVisor or Hugging Face key. The client and server need the same local bearer token; keep it off screen.
 
-Use one fresh server session for each take. The example permits **two execute submissions, including failures**. Restart the connection between rehearsals, never between these two turns. Do not increase the budget for the recording. Keep the old PHP server out of this take, and use only the selected MCP server to retrieve fixture data. A client with repository access can otherwise read the synthetic fixture directly; the MCP policy does not restrict the client's unrelated tools.
+Before each take, the operator runs `php examples/symfony/bin/console code-mode:reset-budget demo-reader`. The example permits **two execute submissions per authenticated user, including failures**. Reconnecting or restarting the server does not reset them. Never reset between the two turns. Do not increase the budget for the recording. Keep the old PHP server out of this take, and use only the selected MCP server to retrieve fixture data. A client with repository access can otherwise read the synthetic fixture directly; the MCP policy does not restrict the client's unrelated tools.
 
 ### Exact prompts
 
@@ -39,22 +39,22 @@ Record at **1920 × 1080**, notifications off. Prepare the editor and workbench 
 
 | Time | Record | Say |
 | --- | --- | --- |
-| **00:00–00:12** | Codex: submit turn one, show the resulting title. Caption **“Fresh MCP session · independent Symfony app · synthetic articles”**. | “This is Symfony Code Mode. In Codex, I ask a separate Symfony application for a published article. The application exposes its approved tools through MCP.” |
+| **00:00–00:12** | Codex: submit turn one, show the resulting title. Caption **“Authenticated HTTP · independent Symfony app · synthetic articles”**. | “This is Symfony Code Mode. In Codex, I ask a separate Symfony application for a published article. The application exposes its approved tools through MCP.” |
 | **00:12–00:23** | Expand that chat's `search_tools` and `execute_tools` records. Show `publication_read`, `id: 101` and the actual result. Use the client transcript if its cards truncate arguments. | “The agent discovers the contract, then sends a tool name and JSON arguments. Symfony runs the installed handler and returns the article.” |
 | **00:23–00:37** | Editor: [ArticleTool.php](../examples/symfony/src/ArticleTool.php), its `#[AsTool]` and `read()` method; then [ReadPolicy.php](../examples/symfony/src/ReadPolicy.php), `isGranted()`. The guide also has highlighted source excerpts. | “Here is that handler, registered with Symfony AI. The application owns the permission check and publication rule. The catalog reuses its schemas and existing toolbox.” |
 | **00:37–00:50** | Back to the same Codex chat: submit the follow-up. Open its actual denial; hold on the explanation and permitted alternative if the agent supplies one. | “Now I ask for a restricted article. The host denies it before the handler runs. The agent can offer the published article we already retrieved.” |
-| **00:50–01:01** | Workbench → **Inspect the controls**. Show the recorded **153 ms** handler termination and worker cleanup. Caption **“Separate operator probes · no model called”**. Keep the separate live injection-test outcome visible. | “Execution has limits too: this blocking handler was terminated. JSON does not prevent prompt injection; access checks remain essential.” |
-| **01:01–01:17** | Workbench → **Compare tokens**. Frame **Direct 46,438 / JSON 29,798 / PHP 12,806**, all ten findings correct. Caption **“Separate matched audit · Symfony AI + Hugging Face · same model, question, data, permissions · review included”**. | “In a separate matched audit, all three paths found the same ten issues. JSON used thirty-six percent fewer tokens than direct tools. Isolated PHP saved more.” |
-| **01:17–01:30** | Editor: [config/services.php](../examples/symfony/config/services.php), `mode`, `ai_tools`, `ai_authorization`. Then the actual passing `code-mode:doctor` output and repository link. | “Choose catalog mode, register approved tools and a policy, then connect your agent. JSON needs no gVisor. Our supervised worker still needs Unix PHP CLI.” |
+| **00:50–01:01** | Workbench → **Inspect the controls**. Show the denied read, third execution refused, and exhausted budget after a server restart. Caption **“Separate operator probes · no model called”**. Label the capture as the fresh HTTP adoption proof. | “The same user cannot reset the budget by reconnecting. Even after a server restart, the next execution is refused. Application access checks stay in charge.” |
+| **01:01–01:17** | Workbench → **Compare tokens**. Frame **Direct 46,438 / JSON 29,798 / PHP 12,806**, all ten findings correct. Caption **“Historical matched audit · Symfony AI + Hugging Face · review included · not a new HTTP benchmark”**. | “In a separate matched audit, all three paths found the same ten issues. JSON used thirty-six percent fewer tokens than direct tools. Isolated PHP saved more.” |
+| **01:17–01:30** | Editor: [config/services.php](../examples/symfony/config/services.php), `http`, `ai_tools`, `ai_authorization`. Then the actual passing `code-mode:doctor` output and repository link. | “Register approved tools and a policy, then connect your agent over HTTP. This is ordinary Symfony: no worker, Docker or gVisor for JSON.” |
 
 This fits 90 seconds with prepared views and an edited conversation. Do not try to install dependencies, explain the whole design history or show every check on screen. Keep the current product first; the optional PHP path gets its comparison column and a link to the full story.
 
 ## What each shot proves
 
 - The fresh chat proves that a client can discover and call the independent application's approved tool. Symfony AI supplies its schema and invokes the handler; **Codex supplies the conversation model**. This is not a fresh Symfony AI + Hugging Face model run.
-- The token table is the retained **48-article, 24-image audit**, not the small article lookup. It uses provider-reported input + output tokens, includes reviews, and retains failed attempts. JSON used **35.8% fewer** tokens than direct calls in that matched run; PHP used **72.4% fewer**. These are neither bills nor universal savings.
-- The **153 ms** control is a trusted blocking handler under a **150 ms deadline**. It is separate from the historical gVisor infinite-loop proof. The live injection test attempted a restricted read; the host blocked it, while the agent-behavior check failed. JSON is not an injection defense.
-- The worker supervises installed handlers. It does not isolate hostile PHP from the host. The local identity and synthetic fixture do not demonstrate remote authentication or shared-hosting portability.
+- The token table predates the HTTP migration. It is the retained **48-article, 24-image audit**, not the small article lookup. It uses provider-reported input + output tokens, includes reviews, and retains failed attempts. JSON used **35.8% fewer** tokens than direct calls in that matched run; PHP used **72.4% fewer**. These are neither bills nor universal savings.
+- The current controls prove authentication, denial and persisted execution/call budgets. They do **not** prove forced handler termination. In-process deadlines are cooperative; hosting and downstream clients must enforce hard timeouts.
+- The fresh capture ran with process creation disabled. It tests a local bearer authenticator and one persistent host, not every hosting platform or a multi-host deployment. JSON is not a prompt-injection defense. Older injection and forced-termination captures remain historical.
 - Preserve the new chat's requests, responses and untrimmed footage locally. The saved native rehearsal is a separate take containing only MCP messages, not a full chat transcript. Operator and Hugging Face traces are separately labelled. Match new footage to its own requests and responses. `--trace-file` on the stock server currently supports only the PHP path, so retain the JSON records from the client.
 
 ## Edit and deliver
@@ -146,7 +146,7 @@ The tokenizer may download its public vocabulary on first use. No credentials, m
 | Command | What it runs |
 | --- | --- |
 | `php bin/console code-mode:catalog-proof --no-debug` | Current JSON control probes and fixed five-scenario reference suite; no Docker or model. Add `--live` for separately recorded catalog conversations. |
-| `composer proof:catalog --working-dir=examples/symfony` | Independent Symfony consumer: own native tool, denied read, permitted recovery and attempt exhaustion over MCP. |
+| `composer proof:http --working-dir=examples/symfony` | Fresh HTTP consumer: authentication, own native tool, allowed/denied reads, call limits and budget persistence after restart. |
 | `php bin/console code-mode:huggingface-compare --no-debug` | Both live Symfony AI approaches; requires a host-only Hugging Face token. [Protocol and retained failures](huggingface-comparison.md). |
 | `composer demo` | Model-free reference comparison: real MCP and gVisor, checked-in PHP. |
 | `composer demo:security` | Three fixed PHP probes: approved read, denied delete, infinite loop. No model called. |

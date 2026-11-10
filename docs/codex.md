@@ -9,34 +9,34 @@ Install and check the example from the repository root:
 ```sh
 composer install --working-dir=examples/symfony
 ADOPTION_MODE=catalog php examples/symfony/bin/console code-mode:doctor
-composer proof:catalog --working-dir=examples/symfony
+composer proof:http --working-dir=examples/symfony
 ```
 
-Add this server to the project's ignored `.codex/config.toml`, replacing the paths with your absolute paths. It has a distinct name so it cannot be confused with the historical PHP server.
+Start the example as described in its [HTTP quickstart](../examples/symfony/README.md#start-the-application). Make its bearer token available to the Codex process as `SYMFONY_CATALOG_TOKEN`. The example's `.env.local` is loaded by Symfony, **not by Codex**. Keep the token out of tracked configuration and screenshots.
+
+Add this to the project's ignored `.codex/config.toml`:
 
 ```toml
 [mcp_servers.symfony_catalog]
-command = "/absolute/path/to/php"
-args = ["/absolute/path/symfony-hackathon/examples/symfony/bin/console", "code-mode:serve", "--no-debug"]
-cwd = "/absolute/path/symfony-hackathon/examples/symfony"
-env = { ADOPTION_MODE = "catalog" }
+url = "http://127.0.0.1:8001/mcp"
+bearer_token_env_var = "SYMFONY_CATALOG_TOKEN"
 enabled_tools = ["search_tools", "execute_tools"]
 startup_timeout_sec = 20
 tool_timeout_sec = 15
 required = true
 ```
 
-Run `codex mcp get symfony_catalog` from the repository. Restart the connection in MCP settings, then inspect `/mcp` in the client. Project settings require a trusted project. The desktop app and CLI share MCP configuration; see [OpenAI's MCP documentation](https://developers.openai.com/codex/mcp/). The client timeout does not increase the server's execution budgets.
+The Codex process must inherit that environment variable; restart the app from an environment that supplies it if needed. Run `codex mcp get symfony_catalog`, reconnect in MCP settings, and inspect `/mcp`. Project settings require a trusted project. The desktop app and CLI share configuration; the `url` and `bearer_token_env_var` settings are documented in [OpenAI's MCP guide](https://developers.openai.com/codex/mcp/). Client timeouts do not increase server budgets.
 
-The server uses Unix PHP CLI with `pcntl` and `posix`. It starts the example's Symfony kernel over STDIO, so no HTTP server is needed. It loads the example's own configuration, not the root demo's `.env.local`. No model token is needed in this application: Codex uses its existing model access. No connection changes are made just by reading this guide.
+The server runs ordinary Symfony HTTP requests with its own dependencies. No worker, Docker, gVisor or Hugging Face key is involved. Codex uses its existing model access. This guide does not automatically change your client configuration.
 
 ## Record the actual conversation
 
 Use the [two exact prompts and shot list](demo.md#exact-prompts). First read published article **101**, then request **202** once in the same chat. Confirm the actual responses: the public title and a sanitized `tool_denied`, with no restricted data. A permitted alternative can reuse the public result already retrieved.
 
-Keep the server process alive between turns. It permits **two execute submissions, including failures**; discovery does not consume these attempts. Restart the connection before another take. Do not ask the agent to restart it or bypass a denial. Use only this MCP connection to retrieve demo data; its policy cannot control a client's separate shell or filesystem access.
+The authenticated user has **two execute submissions, including failures**; discovery does not consume them. The budget survives new connections and server restarts. Before another take, the operator runs `php examples/symfony/bin/console code-mode:reset-budget demo-reader`. Do not ask the agent to restart it or bypass a denial. Use only this MCP connection to retrieve demo data; its policy cannot control a client's separate shell or filesystem access.
 
-Expand the client's tool records to show exact JSON arguments and responses. Save the conversation/tool export and original footage privately before editing. The stock catalog command does **not** support `--trace-file`; that option is PHP-only. The [workbench rehearsal](https://ronaldtebrake.github.io/symfony-hackathon/#native-rehearsal) shows the native MCP calls captured on 10 November, alongside the installed handler and policy. It is a saved take, not a live mirror of your chat. Operator probes and Hugging Face comparisons remain separately labelled. Save new takes separately.
+Expand the client's tool records to show exact JSON arguments and responses. Save the conversation/tool export and original footage privately before editing. The stock catalog command does **not** support `--trace-file`; that option is PHP-only. The [workbench proof](https://ronaldtebrake.github.io/symfony-hackathon/#native-rehearsal) shows the new HTTP operator capture alongside the installed handler and policy. It is not a live mirror of your chat. The earlier native client rehearsal and Hugging Face comparisons remain separately labelled; they predate the HTTP migration. Save new takes separately.
 
 ## Historical generated-PHP connection
 

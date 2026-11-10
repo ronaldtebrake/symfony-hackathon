@@ -6,7 +6,7 @@ generated code runs. Use Code Mode when PHP needs to paginate, branch or combine
 intermediate results before the agent receives them.
 
 Both paths reuse the same approved providers, host identity, broker authorization,
-JSON Schema validation and supervised tool handlers. Batching does not add
+JSON Schema validation and approved application handlers. Batching does not add
 permissions. The optional Drupal Data Surface proof exercises the same core
 through MCP; it does not change the main Symfony demo.
 
@@ -33,8 +33,8 @@ counts and narrowing guidance. It never cuts a schema in half. Only contracts
 actually returned become eligible for execution; search does not grant access.
 Every invocation still checks host approval, authorization and arguments.
 
-Set `mode: catalog` explicitly in your app, as the independent Symfony example does. The package default remains `mode: php`; the earlier `mode: batch` is retained for reproducing its captures. All JSON modes reuse `BatchSession`
-and its existing limits, supervisor and failure behavior. In Symfony AI, use
+Set `mode: catalog` explicitly in your app, as the independent Symfony example does. The package default is now `mode: catalog`; the earlier `mode: batch` is retained for reproducing its captures. All JSON modes reuse `BatchSession`
+with argument/result bounds, cooperative deadlines and stop-on-error behavior. In Symfony AI, use
 `new BatchToolbox($session, catalog: true)`; for a standalone MCP server use
 `BatchMcpServerFactory::create($session, catalog: true)`.
 
@@ -42,23 +42,21 @@ The agent may submit one call or several. A smaller interface does not move join
 
 ## Symfony configuration
 
-Add `mode: catalog` to your existing approved-tool configuration:
+Use the [Symfony HTTP integration](../packages/symfony-code-mode/README.md#enable-http) with your existing authenticator and approved toolbox:
 
 ```yaml
 code_mode:
     mode: catalog
-    identity_provider: App\CodeMode\DemoIdentityProvider
-    tools:
-        - App\CodeMode\ReadArticle
-        - App\CodeMode\ListPublishedArticles
+    http:
+        enabled: true
+        permissions:
+            publication.read_published: ROLE_READER
+    ai_toolbox: app.toolbox
+    ai_tools: [publication_read]
+    ai_authorization: App\ReadPolicy
 ```
 
-Existing `providers` or `ai_toolbox`/`ai_tools`/`ai_authorization` registration
-works too. Run `php bin/console code-mode:doctor`, then configure your MCP client
-to start `php bin/console code-mode:serve --no-debug`. Catalog mode exposes
-`search_tools` and `execute_tools`. It never resolves runner
-configuration or exposes `php_execute`. The default `mode: php` still requires
-gVisor. There is no unsafe local PHP executor or automatic fallback.
+Existing `tools` and composable `providers` registration work too. Symfony's MCP bundle exposes the catalog over HTTP. Register only the catalog entry tools in that MCP server; do not expose underlying handlers around the broker. Run `code-mode:doctor` to check prerequisites. JSON mode never resolves runner configuration or exposes `php_execute`. Explicit `mode: php` still requires gVisor; there is no unsafe local PHP executor or automatic fallback.
 
 After `search_tools` returns the contract for `articles_read`, submit:
 
@@ -84,14 +82,13 @@ accepts an optional host observer for success and failure evidence.
 ## Limits and failure behavior
 
 Defaults are two batch attempts, ten calls per batch, five seconds per batch,
-one second per tool, twenty underlying calls per session, a 64 MiB broker PHP heap, 32 KiB aggregate request input,
+one second per tool (cooperative), twenty submitted calls per user budget, 32 KiB aggregate request input,
 16 KiB per tool request/result and 64 KiB aggregate result output. Host
 `ExecutionLimits` supplies the configurable bounds; the Symfony bundle exposes
 the same time and call settings as Code Mode. No guest/container memory limit
-applies because there is no guest. PHP heap limits do not bound all native memory.
+applies because there is no guest. The package sets no per-tool PHP heap limit; hosting owns memory limits.
 Host code can configure `BatchSession` with up to twenty submissions and a separate
-`maxSessionToolCalls` ceiling (at most one hundred). Attempted calls, including
-denials, consume that ceiling. An oversized next batch is rejected before any
+`maxSessionToolCalls` ceiling (at most one hundred). All submitted calls reserve that ceiling before dispatch, including calls skipped after an earlier failure. An oversized next batch is rejected before any
 of its calls run. The live audit experiment uses fourteen submissions and sixty
 underlying calls; it does not change the package defaults.
 
@@ -105,55 +102,17 @@ read-only handlers for these examples; JSON and annotations do not enforce that.
 
 ## Hosted Symfony applications
 
-Installing gVisor requires control over the Linux runtime; it is not a Composer
-dependency an ordinary managed PHP application can install. See the
-[gVisor installation requirements](https://gvisor.dev/docs/user_guide/install/).
+The JSON catalog runs as ordinary Symfony service calls in the HTTP request. There is no JSON worker setting, `pcntl`/`posix` requirement, process creation or Docker dependency. The [fresh Symfony example](../examples/symfony/README.md) uses the existing Symfony MCP bundle, Symfony Security, Symfony AI schemas and the same per-call authorization broker.
 
-The current batch adapter needs **Unix PHP CLI, `pcntl`, `posix` and a supervised
-worker process**. It needs no Docker socket, runsc or runner image. A managed
-host that permits these workers is a candidate, but no hosted deployment has
-been verified. Platforms such as Upsun document [background workers](https://fixed.docs.upsun.com/create-apps/workers.html);
-provider-specific extension/process support still needs checking. This package
-does not provide a PHP-FPM HTTP executor, remote authentication or a Messenger
-transport adapter. Do not fork the broker inside a web request. Shared hosting
-without worker support is not supported by this implementation.
+HTTP discovery and budgets are persisted per authenticated user under `var/code-mode`, outside the compiled-container cache. A lock protects each update; attempts and submitted-call reservations are saved **before** a handler runs. Failures consume attempts. All submitted calls reserve capacity even if an earlier call fails. New MCP sessions, HTTP requests and server restarts cannot reset the budget. The operator runs `code-mode:reset-budget USER` before a new demo take. No reset tool is advertised.
 
-### Could the Unix CLI worker be replaced?
+The default filesystem state and lock are for one host with persistent storage. All its PHP request workers share the same state. Multiple hosts require a shared cache pool and compatible shared lock, supplied as the `code_mode.http.cache` and `code_mode.http.lock_factory` services. Keep the state namespace stable across deploys. Deleting this state is an operator budget reset. Never derive the user identifier or permission mapping from tool arguments.
 
-Yes, but this is an adapter change, not a configuration switch today.
-`BatchSession` currently creates `BrokerWorker` directly. The forked worker
-inherits the approved handlers and identity, while its parent enforces deadlines
-and terminates blocked calls. JSON batching itself does not require `pcntl`.
+The host must enforce hard request deadlines, request-body limits, database deadlines, outbound HTTP timeouts and memory limits. The package checks elapsed time between calls and after a handler returns; **it cannot interrupt a blocked in-process handler**. `tool_deadline_exceeded` means a late return was rejected and later calls did not start. It does not mean a worker was killed or completed side effects were rolled back. There is no package-controlled per-tool heap limit on this path.
 
-The next adoption step would be an injectable handler-supervisor interface, with
-the existing worker as the default. A [Symfony Process](https://symfony.com/doc/current/components/process.html)
-adapter could launch a fixed console command that boots the application's
-container. It would exchange bounded JSON operation IDs and arguments, resolve
-identity from trusted host context and recheck authorization at execution time.
-It must never accept a model-supplied command, executable path or serialized PHP
-closure. Process still requires PHP CLI and `proc_open`; termination of child
-process trees and parent-death behavior would need explicit verification.
+The fresh HTTP capture verifies authentication, authorization, origin checks, persistent budgets and installation with process creation disabled. It does not certify every hosting provider, OAuth deployment or multi-host store. The example uses local synthetic data and a small bearer-token authenticator; real applications reuse their own Symfony Security setup. Use HTTPS outside loopback.
 
-For hosts already running [Symfony Messenger](https://symfony.com/doc/current/messenger.html),
-a queue adapter is another option. It needs result correlation, authenticated
-identity propagation, expiry, cancellation and deliberate retry/idempotency
-rules. A worker lifetime limit alone does not enforce a deadline on a blocked
-handler. Running approved handlers inside a web request could retain application
-access checks, but would not preserve the current supervision guarantees. There
-is no automatic fallback to that behavior.
-
-Neither adapter is implemented or a sandbox for generated PHP. Making batch-only
-installation more portable also requires separating the core package's current
-`ext-pcntl` and `ext-posix` requirements. Keep these deployment changes separate
-from the token comparison so its execution conditions remain stable.
-
-Generated PHP should run on a **separate dedicated sandbox host/service** when
-the application platform cannot provide gVisor. A trusted Docker SSH context is
-supported by the existing runner. A public authenticated sandbox-service client,
-tenant quotas, callback authentication, cancellation and durable supervision are
-future work. Do not expose the Docker daemon publicly, give it to the model, or
-send application credentials into the guest. A normal app worker/container that
-inherits application secrets is not a substitute for a hostile-code sandbox.
+The 153 ms forced-termination capture and all model token comparisons predate this migration. They remain historical evidence, with their original runtime conditions; they are not new HTTP guarantees or measurements. Generated PHP remains in the separate gVisor proof and must never be evaluated by the HTTP catalog.
 
 ## What the comparison proves
 
@@ -337,12 +296,16 @@ The injected editorial note reached the model as requested. The agent tried to r
 | --- | --- | --- |
 | Matched three-way audit | Direct, catalog and PHP; all 13 attempts retained | Fixed-protocol repetitions before reliability claims |
 | JSON conversation and recovery | Live follow-up and a separate denied-read/permitted-audit conversation | Manual footage and final video edit |
-| JSON controls | Actual authorized, restricted, unapproved and invalid calls; recovery, attempt exhaustion and a terminated handler | Independent security review; broader adversarial scenarios |
-| Independent Symfony app | Clean copied-package installation, sources detached, no root autoloader or Docker configuration; 15 checks pass | Hosted-worker portability and remote authentication |
+| Current HTTP controls | Authorized/denied reads, authentication, origin rejection, and persisted execution/call budgets; no hard-termination claim | Independent security review; hosting timeouts and multi-host storage |
+| Independent Symfony app | Detached Composer installation; 23 HTTP checks pass with process creation disabled | Additional deployment environments |
 | Five-scenario catalog coverage | One live run each; four fully pass, injection failure retained | Repeated matched direct/catalog/PHP evaluation under one protocol |
 | Performance investigation | Historical direct/PHP evidence | Fresh matched JSON arm |
 | Optional Data Surface | Fixed JSON/PHP comparison with real Drupal access checks | Catalog-specific live model comparison if promoted to the main demo |
 
-Reproduce the new coverage with `php bin/console code-mode:catalog-proof --no-debug`; add `--live` for inference, or `--scenario=boundary` for one predeclared scenario. It writes unique, bounded reports under ignored `var/demo/catalog-proof/`, uses an exclusive capture lock and stops on authentication or quota rejection. No automatic retries or success-only selection. `composer proof:catalog --working-dir=examples/symfony` runs the independent consumer; its default is now `mode: catalog`, with historical PHP reproduction kept separately.
+The retained model suite used the previous supervisor. Run the current cooperative-runtime reference checks with `php bin/console code-mode:catalog-proof --no-debug`; add `--live` for inference, or `--scenario=boundary` for one predeclared scenario. It writes unique, bounded reports under ignored `var/demo/catalog-proof/`, uses an exclusive capture lock and stops on authentication or quota rejection. No automatic retries or success-only selection. `composer proof:http --working-dir=examples/symfony` runs the authenticated HTTP consumer; its default is now `mode: catalog`, with historical PHP reproduction kept separately.
 
 The original PHP animation, conversations, security probes, repeated evaluation and performance captures retain their original bytes and labels. Catalog proof replay tests verify fixture values, exact submitted calls, host observations, provider answer hashes, review history and usage. Neither the new evidence nor those tests establish general production safety.
+
+## Current HTTP adoption proof
+
+[http-catalog-proof.json](evidence/http-catalog-proof.json) records 23 passing operator checks from a detached install. [HTTP setup](../examples/symfony/README.md) and the workbench show actual JSON-RPC, the application handler, its policy, denial and exhausted budgets. Earlier attempts and token measurements are unchanged; no paid inference was repeated for this runtime migration.

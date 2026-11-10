@@ -24,13 +24,13 @@ if (document.documentElement.dataset.static === 'true') {
 // This guide consumes the same reviewed evidence as the detailed inspectors.
 // It never invokes a model, MCP endpoint or PHP executor.
 const demoShots = [
-  {kind:8, time:'00:00–00:12', label:'Ask in your agent', title:'A real Symfony tool, from your chat.', source:'Native MCP rehearsal · published article lookup', href:'#native-rehearsal', narration:"This is Symfony Code Mode. In Codex, I ask a separate Symfony application for a published article. The application exposes its approved tools through MCP."},
-  {kind:9, time:'00:12–00:23', label:'Open the JSON call', title:'Search. Send arguments. Get a result.', source:'Native MCP rehearsal · actual JSON calls', href:'#native-rehearsal', narration:"The agent discovers the contract, then sends a tool name and JSON arguments. Symfony runs the installed handler and returns the article."},
+  {kind:8, time:'00:00–00:12', label:'Ask in your agent', title:'A real Symfony tool, from your chat.', source:'Authenticated HTTP proof · published article lookup', href:'#native-rehearsal', narration:"This is Symfony Code Mode. In Codex, I ask a separate Symfony application for a published article. The application exposes its approved tools through MCP."},
+  {kind:9, time:'00:12–00:23', label:'Open the JSON call', title:'Search. Send arguments. Get a result.', source:'Authenticated HTTP proof · actual JSON calls', href:'#native-rehearsal', narration:"The agent discovers the contract, then sends a tool name and JSON arguments. Symfony runs the installed handler and returns the article."},
   {kind:10, time:'00:23–00:37', label:'Show the code', title:'Your Symfony service. Your policy.', source:'Installed Symfony source · handler and policy', href:'#native-rehearsal', narration:"Here is that handler, registered with Symfony AI. The application owns the permission check and publication rule. The catalog reuses its schemas and existing toolbox."},
-  {kind:11, time:'00:37–00:50', label:'Test the boundary', title:'The follow-up cannot grant access.', source:'Native MCP rehearsal · same connection, denied read', href:'#native-rehearsal', narration:"Now I ask for a restricted article. The host denies it before the handler runs. The agent can offer the published article we already retrieved."},
-  {kind:6, time:'00:50–01:01', label:'Inspect the controls', title:'The host enforces execution limits.', source:'Separate operator controls and live injection test', href:'#catalog-security', narration:"Execution has limits too: this blocking handler was terminated. JSON does not prevent prompt injection; access checks remain essential."},
+  {kind:11, time:'00:37–00:50', label:'Test the boundary', title:'The follow-up cannot grant access.', source:'Authenticated HTTP proof · same connection, denied read', href:'#native-rehearsal', narration:"Now I ask for a restricted article. The host denies it before the handler runs. The agent can offer the published article we already retrieved."},
+  {kind:6, time:'00:50–01:01', label:'Inspect the controls', title:'The host enforces execution limits.', source:'Fresh HTTP proof · access checks and persistent budgets', href:'#catalog-security', narration:"Execution has limits too: the call budget survives reconnects and server restarts. JSON does not prevent prompt injection; access checks remain essential."},
   {kind:5, time:'01:01–01:17', label:'Compare tokens', title:'Measure the whole task.', source:'Separate matched Symfony AI + Hugging Face audit', href:'#three-way', narration:"In a separate matched audit, all three paths found the same ten issues. JSON used thirty-six percent fewer tokens than direct tools. Isolated PHP saved more."},
-  {kind:7, time:'01:17–01:30', label:'Use it in Symfony', title:'Choose the catalog. Keep your application.', source:'Configuration · independent Composer application', href:'#catalog-adoption', narration:"Choose catalog mode, register approved tools and a policy, then connect your agent. JSON needs no gVisor. Our supervised worker still needs Unix PHP CLI."},
+  {kind:7, time:'01:17–01:30', label:'Use it in Symfony', title:'Choose the catalog. Keep your application.', source:'Configuration · independent Composer application', href:'#catalog-adoption', narration:"Choose catalog mode, register approved tools and a policy, then connect your agent. JSON needs no gVisor. The catalog runs as ordinary Symfony services over authenticated HTTP."},
 ];
 function latestVerifiedCatalog() {
   return [...threeWayAttempts].reverse().find(attempt => /^audit-catalog-v/.test(attempt.protocol ?? '') && attempt.verification?.passed === true);
@@ -63,22 +63,22 @@ function showDemoShot() {
   byId('tour-next').disabled = demoShot === demoShots.length - 1;
   [...byId('tour-steps').children].forEach((button, index) => button.setAttribute('aria-pressed', String(index === demoShot)));
   if ([8, 9, 11].includes(kind)) {
-    const report = typeof nativeCatalogEvidence !== 'undefined' ? nativeCatalogEvidence : null;
+    const report = typeof httpCatalogEvidence !== 'undefined' ? httpCatalogEvidence : null;
     if (kind === 8 || kind === 11) {
       content.append(node('span', 'PROMPT TO RECORD IN YOUR CLIENT', 'tour-label'), node('blockquote', kind === 8
         ? 'Use only the symfony_catalog MCP server to read published article 101 and tell me its title. Discover its contract first. Do not read workspace files or use shell commands.'
         : 'Now try article 202 once through the same tool. If access is denied, explain that and suggest a permitted alternative from what we already retrieved. Do not retry or use another access path.', 'tour-question'));
     }
-    content.append(node('p', 'Actual native MCP calls from the 10 November rehearsal. Prompts above are recording cues, not an exported chat transcript.', 'measurement-note'));
-    if (report?.verification?.passed !== true) { content.append(node('p', 'Verified native MCP evidence is loading or unavailable.')); return; }
+    content.append(node('p', 'Actual operator-authored HTTP requests from a detached Symfony install. Prompts above are recording cues; record the real conversation in your client.', 'measurement-note'));
+    if (report?.verification?.passed !== true) { content.append(node('p', 'Verified HTTP evidence is loading or unavailable.')); return; }
     const indexes = kind === 9 ? [0, 1] : [kind === 8 ? 1 : 2];
-    for (const index of indexes) content.append(nativeCallCard(report.capture.calls[index], index));
+    for (const index of indexes) content.append(nativeCallCard(httpMainCalls()[index], index));
   } else if (kind === 10) {
-    if (typeof nativeCatalogEvidence === 'undefined' || nativeCatalogEvidence?.verification?.passed !== true) { content.append(node('p', 'Verified application source is loading or unavailable.')); return; }
+    if (typeof httpCatalogEvidence === 'undefined' || httpCatalogEvidence?.verification?.passed !== true) { content.append(node('p', 'Verified application source is loading or unavailable.')); return; }
     for (const [role, label] of [['handler','INSTALLED HANDLER'], ['policy','HOST POLICY']]) {
       content.append(node('span', label, 'tour-label'), sourceBlock(nativeSourceExcerpt(role), true));
     }
-    content.append(proofLink('#native-rehearsal', 'Inspect full source and native calls →'), node('p', 'Source from this documentation build. Symfony AI registers publication_read through AsTool; the explicit allowlist selects it. The agent supplies JSON arguments.', 'measurement-note'));
+    content.append(proofLink('#native-rehearsal', 'Inspect full source and HTTP calls →'), node('p', 'Source from this documentation build. Symfony AI registers publication_read through AsTool; the explicit allowlist selects it. The agent supplies JSON arguments.', 'measurement-note'));
   } else if (kind === 5) {
     const attempt = latestVerifiedCatalog();
     if (!attempt) { content.append(node('p', 'No fully verified catalog triplet is available. Failed attempts remain inspectable.')); return; }
@@ -90,19 +90,19 @@ function showDemoShot() {
       row.append(node('td', label), node('td', number(run.result.providerTokens.total)), node('td', number(run.result.modelRequests)), node('td', '10 / 10 findings, exact titles')); body.append(row);
     }
     table.append(head, body); const scroll = node('div', undefined, 'table-scroll'); scroll.append(table);
-    content.append(scroll, node('p', `Captured ${new Date(attempt.createdAt).toLocaleDateString()}. Same 48 published articles, model, original question and permissions. One matched triplet; the archive retains earlier attempts.`, 'measurement-note'), node('p', 'JSON reduces deployment requirements. PHP can reduce intermediate data returned to the model. Actual charges depend on provider input/output pricing.', 'measurement-note'));
+    content.append(scroll, node('p', `Captured ${new Date(attempt.createdAt).toLocaleDateString()}. Same 48 published articles, model, original question and permissions. Historical supervised-runtime capture; the HTTP runtime has not been re-benchmarked. All attempts remain retained.`, 'measurement-note'), node('p', 'JSON reduces deployment requirements. PHP can reduce intermediate data returned to the model. Actual charges depend on provider input/output pricing.', 'measurement-note'));
   } else if (kind === 6) {
-    const controls = typeof catalogLatest === 'function' ? catalogLatest()?.controls : null;
-    if (!controls?.verification?.passed) { content.append(node('p', 'Current control evidence unavailable.')); return; }
+    const report = typeof httpCatalogEvidence === 'undefined' ? null : httpCatalogEvidence?.capture;
+    if (!report) { content.append(node('p', 'Current HTTP evidence is loading.')); return; }
     const list = node('div', undefined, 'tour-security');
-    for (const key of ['authorized', 'restricted', 'recovery']) {
-      const probe = controls.cases.find(item => item.case === key), item = node('article');
-      item.append(node('h4', key), node('strong', probe.response.error?.reason ?? 'succeeded')); list.append(item);
+    for (const label of ['restricted', 'exhausted', 'after_restart']) {
+      const call = report.calls.find(row => row.label === label), item = node('article');
+      item.append(node('h4', label.replaceAll('_', ' ')), node('strong', call.response.result.structuredContent.error.reason)); list.append(item);
     }
-    content.append(list, node('p', `Blocking handler terminated after ${Math.round(controls.timeout.elapsedMs)} ms; worker reaped: ${controls.timeout.workerReaped}.`), node('p', 'Live injection test: an unwanted restricted read was attempted and denied. Correct final answers alone do not establish correct agent behavior.', 'measurement-note'));
+    content.append(list, node('p', 'Failures consume attempts. The server persists reservations before calling a handler. New HTTP requests, MCP sessions and server restarts do not reset the budget.'), node('p', 'Hard timeouts belong to the hosting and downstream services. JSON does not prevent prompt injection.', 'measurement-note'));
 
   } else {
-    content.append(node('p','Symfony AI supplies the schemas and existing tool execution. The catalog exposes search and literal JSON calls, with host authorization and supervised handlers.'), sourceBlock("code_mode:\n    mode: catalog\n    ai_toolbox: app.toolbox\n    ai_tools: ['publication_read']\n    ai_authorization: Adoption\\ReadPolicy\n    identity_provider: Adoption\\LocalReader"), sourceBlock('php bin/console code-mode:doctor\nphp bin/console code-mode:serve --no-debug'), node('p','Composer path packages today; not yet on Packagist. JSON requires Unix PHP CLI, pcntl and posix. The sandboxed PHP path remains available separately; it requires gVisor.', 'measurement-note'));
+    content.append(node('p','Symfony AI supplies the schemas and existing tool execution. The catalog exposes search and literal JSON calls, with Symfony Security, per-call authorization and persistent user budgets.'), sourceBlock("code_mode:\n    mode: catalog\n    ai_toolbox: app.toolbox\n    ai_tools: ['publication_read']\n    ai_authorization: Adoption\\ReadPolicy\n    http:\n        enabled: true\n        permissions:\n            publication.read_published: ROLE_READER"), sourceBlock('php bin/console code-mode:doctor\nHTTP MCP endpoint: /mcp'), node('p','Composer path packages today; not yet on Packagist. JSON runs in the application process with ordinary PHP and Symfony dependencies. The historical generated-PHP path has separate gVisor requirements.', 'measurement-note'));
   }
 }
 for (const [index, shot] of demoShots.entries()) {

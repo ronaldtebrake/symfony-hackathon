@@ -135,6 +135,13 @@ final readonly class DemoController
         ], JSON_THROW_ON_ERROR), 'application/json');
     }
 
+    #[Route('/demo/http-catalog', name: 'app_demo_http_catalog', methods: ['GET'])]
+    public function httpCatalog(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+        return $this->response(json_encode(\App\Demo\HttpCatalogProof::load($this->projectDir), JSON_THROW_ON_ERROR), 'application/json');
+    }
+
     #[Route('/demo/evaluation-report', name: 'app_demo_evaluation_report', methods: ['GET'])]
     public function evaluationReport(Request $request): Response
     {

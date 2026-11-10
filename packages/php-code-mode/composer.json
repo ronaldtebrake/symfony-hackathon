@@ -6,8 +6,6 @@
     "require": {
         "php": ">=8.2",
         "ext-json": "*",
-        "ext-pcntl": "*",
-        "ext-posix": "*",
         "mcp/sdk": "^0.9",
         "opis/json-schema": "^2.6",
         "symfony/process": "^7.4"

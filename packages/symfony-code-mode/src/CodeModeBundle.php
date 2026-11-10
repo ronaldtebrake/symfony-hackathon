@@ -25,11 +25,14 @@ final class CodeModeBundle extends AbstractBundle
     {
         $definition->rootNode()->children()
             ->enumNode('executor')->values(['gvisor'])->defaultValue('gvisor')->end()
-            ->enumNode('mode')->values(['php', 'batch', 'catalog'])->defaultValue('php')->end()
+            ->enumNode('mode')->values(['php', 'batch', 'catalog'])->defaultValue('catalog')->end()
             ->enumNode('discovery')->values(['full'])->defaultValue('full')->end()
             ->scalarNode('image')->defaultValue('%env(CODE_MODE_IMAGE)%')->end()
             ->variableNode('docker_command')->defaultValue('%env(json:CODE_MODE_DOCKER_COMMAND)%')->end()
-            ->scalarNode('identity_provider')->isRequired()->cannotBeEmpty()->end()
+            ->scalarNode('identity_provider')->defaultValue(\CodeMode\Symfony\Http\SecurityIdentityProvider::class)->cannotBeEmpty()->end()
+            ->arrayNode('http')->canBeEnabled()->children()
+                ->arrayNode('permissions')->useAttributeAsKey('permission')->scalarPrototype()->cannotBeEmpty()->end()->end()
+            ->end()->end()
             ->arrayNode('tools')->scalarPrototype()->cannotBeEmpty()->end()->end()
             ->arrayNode('providers')->scalarPrototype()->cannotBeEmpty()->end()->end()
             ->scalarNode('ai_toolbox')->defaultNull()->end()
@@ -47,6 +50,25 @@ final class CodeModeBundle extends AbstractBundle
         $builder->setParameter('env(CODE_MODE_IMAGE)', '');
         $builder->setParameter('env(CODE_MODE_DOCKER_COMMAND)', '["docker"]');
         $services = $container->services();
+        if ($config['http']['enabled']) {
+            if ('catalog' !== $config['mode']) { throw new \InvalidArgumentException('The HTTP integration exposes the JSON catalog only.'); }
+            $services->set(\CodeMode\Symfony\Http\SecurityIdentityProvider::class)->args([
+                new Reference('security.token_storage'), new Reference('security.authorization_checker'), $config['http']['permissions'],
+            ]);
+            // Separate from kernel.cache_dir: rebuilding the container must not reset budgets.
+            $services->set('code_mode.http.cache', \Symfony\Component\Cache\Adapter\FilesystemAdapter::class)
+                ->args(['code_mode', 0, '%kernel.project_dir%/var/code-mode/budgets']);
+            $services->set('code_mode.http.lock_store', \Symfony\Component\Lock\Store\FlockStore::class)
+                ->args(['%kernel.project_dir%/var/code-mode/locks']);
+            $services->set('code_mode.http.lock_factory', \Symfony\Component\Lock\LockFactory::class)->args([new Reference('code_mode.http.lock_store')]);
+            $services->set(\CodeMode\Symfony\Http\CatalogStateStore::class)->args([new Reference('code_mode.http.cache'), new Reference('code_mode.http.lock_factory')]);
+            $services->set(\CodeMode\Symfony\Http\CatalogTools::class)->autoconfigure()->args([
+                new Reference(SessionFactory::class), new Reference(\CodeMode\Symfony\Http\SecurityIdentityProvider::class), new Reference(\CodeMode\Symfony\Http\CatalogStateStore::class),
+            ]);
+            $services->set(\CodeMode\Symfony\Command\ResetBudgetCommand::class)->args([new Reference(\CodeMode\Symfony\Http\CatalogStateStore::class)])->tag('console.command');
+        } elseif (\CodeMode\Symfony\Http\SecurityIdentityProvider::class === $config['identity_provider']) {
+            throw new \InvalidArgumentException('Enable HTTP with Symfony Security, or configure an explicit identity_provider for STDIO.');
+        }
         $hasAi = null !== $config['ai_toolbox'] || null !== $config['ai_authorization'] || [] !== $config['ai_tools'];
         if ($hasAi) {
             if (null === $config['ai_toolbox'] || null === $config['ai_authorization'] || [] === $config['ai_tools']) {

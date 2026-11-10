@@ -6,11 +6,11 @@ The package has no Symfony application, Drupal or model-provider dependency. It 
 
 ## Run the proofs
 
-For JSON without a generated-code runtime, the root checkout provides `php bin/console code-mode:catalog-proof --no-debug` and the [independent Symfony catalog consumer](../../examples/symfony/README.md). Both exercise real broker checks without Docker. The package unit suite covers the same JSON session and worker limits.
+For JSON without a generated-code runtime, the root checkout provides `php bin/console code-mode:catalog-proof --no-debug` and the [independent Symfony catalog consumer](../../examples/symfony/README.md). Both exercise real broker checks without Docker. The package unit suite covers JSON authorization, call/result bounds and cooperative deadlines.
 
 ### Sandboxed PHP
 
-The **host** needs PHP 8.2+ CLI, `pcntl`, `posix`, Composer, and access to a dedicated Linux Docker engine with gVisor `runsc`. macOS can use a Linux VM; ordinary Docker Desktop does not satisfy the runtime requirement. The **guest** uses the pinned PHP 8.4 image. Do not run the broker inside PHP-FPM or a web request; use a dedicated CLI/queue worker.
+For the **historical generated-PHP path only**, the host needs PHP 8.2+ CLI, `pcntl`, `posix`, Composer, and access to a dedicated Linux Docker engine with gVisor `runsc`. macOS can use a Linux VM; ordinary Docker Desktop does not satisfy the runtime requirement. The **guest** uses the pinned PHP 8.4 image. Do not run the broker inside PHP-FPM or a web request; use a dedicated CLI/queue worker.
 
 On a dedicated Ubuntu 24.04 host, review and run `sudo bash scripts/install-gvisor-ubuntu.sh`. It installs the signed, pinned gVisor package and restarts Docker. For other systems, follow the [official gVisor installation instructions](https://gvisor.dev/docs/user_guide/install/). Never expose the Docker socket to the guest or an HTTP client.
 
@@ -68,13 +68,13 @@ $result = (new GvisorSandbox($trustedImageId))->execute(
 
 The PHP body has no `<?php` tag. `ExecutionResult::value` is untrusted guest output; it is never proof that an action occurred. Only `toolCalls` is recorded by the host, with names, statuses, timings and serialized result sizes. Catch `SandboxException` and use its stable `reason` for rejection reporting; its `toolCalls` retains work before a failed execution. An `incomplete` call may already have caused upstream effects. Output from guest `echo`/STDERR is counted and discarded.
 
-Handlers run in a supervised fork of the CLI host. Open database/MCP/HTTP connections **inside the handler**; do not capture already-open connections or use parent-memory mutation for state. Check object/tenant access in the authorization callback and again at the upstream service. Timeouts do not undo completed side effects. Start with read-only tools.
+In the historical generated-PHP path, handlers run in a supervised fork of the CLI host: open connections inside that handler and do not use parent-memory mutation for state. JSON handlers run normally in the application and can reuse ordinary injected clients. Check object/tenant access in the authorization callback and again at the upstream service. Timeouts do not undo completed side effects. Start with read-only tools.
 
 For opt-in host timing, pass an `ExecutionTimeline` as the third `GvisorSandbox` constructor argument and read `snapshot()` after execution, including after a caught failure. It records container setup, PHP execution, broker calls and cleanup on a monotonic clock, capped at 512 spans. Broker spans include **tool arguments**, result byte counts and result digests, so treat the trace as application data and review it before sharing. No tool-result bodies, credentials or exception messages are added by this observer. It grants no capabilities and is not sent to the guest. Spans nest; broker time is already included in execution time. Tracing is disabled by default.
 
 ## MCP and progressive discovery
 
-`McpGateway` accepts a factory that opens a **fresh connected** `Mcp\Client`, plus explicit authorization callbacks keyed by approved upstream tool name. It filters discovery by this local configuration, retains input/output schemas, and creates broker handlers. Upstream annotations never grant access. Both discovery and invocation run in supervised CLI child processes; the factory must set transport byte/time limits too.
+`McpGateway` accepts a factory that opens a **fresh connected** `Mcp\Client`, plus explicit authorization callbacks keyed by approved upstream tool name. It filters discovery by this local configuration, retains input/output schemas, and creates broker handlers. Upstream annotations never grant access. Discovery and invocation use the configured SDK client directly; the factory must set transport byte/time limits. No discovery worker is created.
 
 ```php
 use CodeMode\{CodeModeSession, ExecutionIdentity, ExecutionLimits};
@@ -95,12 +95,12 @@ Adapt the example to the discovered tool's required arguments. Only locally appr
 
 At the agent boundary, `AgentResponse::execute($session, $code, $record)` returns only `value` for successful gVisor execution. Its optional trusted callback receives the PHP and full sanitized trace. On failure it records the trace and rethrows; `AgentResponse::failure($error, $session->profile())` produces the compact error reason and affected tool. Unknown runtime warnings are preserved. Direct session/executor calls still return the full `ExecutionResult`; authorization, schemas, limits and cleanup are unchanged. The [Symfony adapter](../symfony-code-mode/README.md#agent-responses-and-host-evidence) supplies MCP and toolbox integration. The Drupal proof uses this same PHP formatter.
 
-Discovery permits 128 upstream tools, 8 continuation cursors, a 64 KiB result and a 3-second worker deadline. Search returns at most 8 name/description matches; describe accepts at most 16 names. Large catalogs must be narrowed upstream. Tool results must be structured JSON or a single text item; media/resource results are rejected. The gateway preserves envelopes such as Drupal Tool API's `success`, `message`, `data`. Output schemas are metadata, not proof of valid or trusted output.
+Discovery permits 128 upstream tools, 8 continuation cursors, a 64 KiB result and a cooperative 3-second discovery deadline checked after each returned page. Search returns at most 8 name/description matches; describe accepts at most 16 names. Large catalogs must be narrowed upstream. Tool results must be structured JSON or a single text item; media/resource results are rejected. The gateway preserves envelopes such as Drupal Tool API's `success`, `message`, `data`. Output schemas are metadata, not proof of valid or trusted output.
 
 ## JSON batches without a sandbox dependency
 
 `BatchSession` invokes only approved handlers through the existing `ToolBroker`
-and supervised `BrokerWorker`. It does not evaluate code or instantiate Docker:
+in the application process. It creates no worker, evaluates no code and does not instantiate Docker:
 
 ```php
 $session = new \CodeMode\BatchSession(
@@ -127,15 +127,12 @@ exactly which tools were disclosed. `catalogToolDefinitions()` supplies the fixe
 `search_tools` / `execute_tools` interface. Symfony's adapters expose it with
 `mode: catalog`; the executor, authorization and limits are shared with batches.
 
-This requires Unix PHP CLI with `pcntl` and `posix`. It is supervised execution
-of trusted handlers, not a sandbox for arbitrary PHP. Generated PHP has only the
-gVisor implementation; an unavailable runtime never falls back. Custom executor
-metadata remains unverified unless independently established.
+This path needs ordinary PHP and JSON; it works inside a web request. There is no worker option. Time checks happen between calls and after a handler returns; a blocked handler cannot be interrupted. Configure hard timeouts and memory limits in the host and downstream clients. HTTP authentication and persistent user budgets are supplied by the Symfony integration. The historical generated-PHP path retains gVisor and its separate Unix supervisor.
 [Batch contract and hosting limits](../../docs/batching.md).
 
 ## Demo for judges
 
-The root Symfony app supplies an editorial audit, batched direct-call baseline, inspectable PHP/MCP trace, and separate reference/live modes. It also exposes Code Mode to external MCP clients over STDIO. See [the walkthrough](../../docs/demo.md). A separate [Drupal DDEV proof](../../examples/drupal/README.md) verifies real published/restricted node reads through **Tool API → MCP Server Tool Bridge → MCP Server**, using local STDIO and this package. Drupal HTTP authentication remains unverified. No token-saving claim is inferred from the reference run.
+The independent Symfony app provides the current authenticated HTTP product demo. The root workbench retains the editorial audit, direct/JSON/PHP comparison, and inspectable historical PHP/MCP traces. See [the walkthrough](../../docs/demo.md). A separate [Drupal DDEV proof](../../examples/drupal/README.md) verifies real published/restricted node reads through **Tool API → MCP Server Tool Bridge → MCP Server**, using local STDIO and this package. Drupal HTTP authentication remains unverified. No token-saving claim is inferred from the reference run.
 
 ## Full schema discovery
 

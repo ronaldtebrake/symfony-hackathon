@@ -76,25 +76,25 @@ function renderCatalogAttempt() {
   }
 }
 function renderCatalogControls() {
-  const controls = [...catalogEvidence.attempts].reverse().find(attempt => attempt.controls?.verification?.passed)?.controls;
+  const report = typeof httpCatalogEvidence === 'undefined' ? null : httpCatalogEvidence?.capture;
   const container = byId('catalog-controls-body'); container.replaceChildren();
-  if (!controls) { container.append(node('p', 'No verified control capture is available.')); return; }
-  container.append(node('p', `${Object.values(controls.verification.checks).filter(Boolean).length} control checks passed · operator probes · no model called`, 'mode-note'));
+  if (!report) { container.append(node('p', 'Current HTTP control evidence is loading.')); return; }
   const cards = node('div', undefined, 'catalog-controls');
-  for (const [key, title] of [['authorized', 'Approved read'], ['restricted', 'Restricted read'], ['recovery', 'Permitted recovery']]) {
-    const probe = controls.cases.find(item => item.case === key), card = node('article');
-    card.append(node('span', 'ACTUAL EXECUTION', 'eyebrow'), node('h3', title), node('strong', probe.response.error?.reason ?? 'succeeded'), catalogDetails('Request, result and host trace', catalogJson(probe))); cards.append(card);
+  for (const [label,title] of [['authorized','Approved read'],['restricted','Restricted read'],['after_restart','Budget survives restart'],['call_budget','Call budget']]) {
+    const call = report.calls.find(call => call.label === label), card = node('article');
+    card.append(node('span', 'ACTUAL HTTP EXECUTION', 'eyebrow'), node('h3', title), node('strong', call.response.result.structuredContent.error?.reason ?? 'succeeded'), catalogDetails('Actual JSON-RPC', catalogJson(call))); cards.append(card);
   }
-  const timeout = controls.timeout, card = node('article');
-  card.append(node('span', 'BLOCKING HANDLER', 'eyebrow'), node('h3', 'Worker terminated'), node('strong', `${Math.round(timeout.elapsedMs)} ms`), node('p', `${timeout.toolTimeMs} ms deadline · worker reaped: ${timeout.workerReaped ? 'yes' : 'no'}`), catalogDetails('Actual timeout trace', catalogJson(timeout))); cards.append(card);
-  container.append(cards, catalogDetails('All controls, including schema and attempt limits', catalogJson(controls)));
+  container.append(cards, node('p', 'Authentication, permissions and budgets are enforced by Symfony. A blocked handler is not forcibly terminated: hosting and downstream clients must enforce hard timeouts.', 'measurement-note'), catalogDetails('Authentication, origin and per-user checks', catalogJson(report.httpChecks)));
+  const historical = catalogLatest()?.controls;
+  if (historical) container.append(catalogDetails('Historical worker controls · not the current HTTP runtime', catalogJson(historical)));
 }
 function renderCatalogAdoption() {
-  const report = catalogEvidence.adoption, container = byId('catalog-adoption-body'); container.replaceChildren();
-  if (!report) { container.append(node('p', 'No independent-app capture is available.')); return; }
-  container.append(node('p', `${report.status.toUpperCase()} · ${Object.values(report.checks).filter(Boolean).length} checks · ${new Date(report.capturedAt).toLocaleDateString()}`, 'mode-note'));
-  for (const call of report.calls) container.append(catalogDetails(`${call.name} · ${call.result.error?.reason ?? 'succeeded'} · ${Math.round(call.elapsedMs)} ms`, catalogJson(call)));
-  container.append(catalogDetails('Doctor, package installation and proof checks', catalogJson(report)));
+  const report = typeof httpCatalogEvidence === 'undefined' ? null : httpCatalogEvidence?.capture;
+  const container = byId('catalog-adoption-body'); container.replaceChildren();
+  if (!report) { container.append(node('p', 'Fresh HTTP proof is loading.')); return; }
+  container.append(node('p', `${report.status.toUpperCase()} · ${Object.values(report.checks).filter(Boolean).length} checks · detached Composer install · authenticated MCP HTTP`, 'mode-note'));
+  for (const [name, passed] of Object.entries(report.checks)) container.append(node('p', `${passed ? '✓' : '✗'} ${name.replaceAll('_', ' ')}`));
+  container.append(catalogDetails('Actual HTTP calls, doctor and installation', catalogJson(report)));
 }
 function renderCatalogFootprint() {
   const report = catalogEvidence.discoveryFootprint, container = byId('catalog-footprint-body'); container.replaceChildren();
@@ -130,8 +130,14 @@ async function loadCatalogEvidence() {
 byId('catalog-attempt').addEventListener('change', renderCatalogAttempt);
 loadCatalogEvidence();
 
-// Reviewed native MCP messages, separate from operator probes and provider benchmarks.
-let nativeCatalogEvidence = null;
+// Reviewed HTTP messages from a detached install, separate from native chat and model benchmarks.
+let httpCatalogEvidence = null;
+function httpMainCalls() {
+  return ['discovery','authorized','restricted'].map(label => {
+    const row = httpCatalogEvidence.capture.calls.find(call => call.label === label);
+    return {tool:row.request.params.name, arguments:row.request.params.arguments, response:row.response.result};
+  });
+}
 function nativeCallCard(call, index) {
   const card = node('article', undefined, 'catalog-turn');
   const heading = node('div', undefined, 'native-call-heading');
@@ -148,17 +154,19 @@ function nativeCallCard(call, index) {
   return card;
 }
 function nativeSourceExcerpt(role) {
-  const source = nativeCatalogEvidence.implementation[role].source;
-  const start = source.indexOf(role === 'handler' ? 'final class ArticleTool' : 'final readonly class ReadPolicy');
+  const source = httpCatalogEvidence.implementation[role].source;
+  const start = source.indexOf(role === 'handler' ? "#[AsTool('publication_read'" : 'final readonly class ReadPolicy');
   return start < 0 ? source : source.slice(start);
 }
 function renderNativeRehearsal() {
-  const report = nativeCatalogEvidence, body = byId('native-rehearsal-body'), implementation = byId('native-implementation-body');
+  const report = httpCatalogEvidence, body = byId('native-rehearsal-body'), implementation = byId('native-implementation-body');
   body.replaceChildren(); implementation.replaceChildren();
-  if (report?.verification?.passed !== true) { body.append(node('p', 'The native rehearsal did not pass verification. Inspect the raw report before using it as evidence.')); return; }
-  body.append(node('p', `Verified MCP messages · 10 November 2026 · ${report.capture.calls.length} requests · 2 execution attempts`, 'mode-note'));
-  report.capture.calls.forEach((call, index) => body.append(nativeCallCard(call, index)));
-  body.append(node('p', 'The restricted request returned tool_denied and no article data. A permitted alternative is article 101, already retrieved.', 'measurement-note'), catalogDetails('Provenance and message verification', catalogJson({client:report.capture.client, capturedAfterExecutionAt:report.capture.capturedAfterExecutionAt, scope:report.capture.scope, captureSha256:report.captureSha256, verification:report.verification})));
+  if (report?.verification?.passed !== true) { body.append(node('p', 'The HTTP proof did not pass verification. Inspect the raw report before using it as evidence.')); return; }
+  body.append(node('p', `Verified HTTP requests · ${new Date(report.capture.capturedAt).toLocaleDateString()} · fresh Symfony app · process creation disabled`, 'mode-note'));
+  httpMainCalls().forEach((call, index) => body.append(nativeCallCard(call, index)));
+  body.append(node('p', 'The next execution is blocked, even after restarting the server and reconnecting. Budgets belong to the authenticated user.', 'doc-callout'));
+  for (const label of ['exhausted', 'after_restart', 'call_budget']) body.append(catalogDetails(label.replaceAll('_', ' '), catalogJson(report.capture.calls.find(call => call.label === label))));
+  body.append(node('p', 'The restricted request returned tool_denied and no article data. A permitted alternative is article 101, already retrieved.', 'measurement-note'), catalogDetails('Provenance and message verification', catalogJson({scope:report.capture.scope, captureSha256:report.captureSha256, verification:report.verification, installation:report.capture.installation, httpChecks:report.capture.httpChecks})));
   const columns = node('div', undefined, 'native-call-grid native-implementation');
   for (const [role, title] of [['handler','The registered handler'], ['policy','The application policy']]) {
     const source = report.implementation[role], card = node('article');
@@ -169,12 +177,12 @@ function renderNativeRehearsal() {
 }
 async function loadNativeRehearsal() {
   try {
-    const response = await fetch(evidenceUrl('/demo/native-catalog'), {cache:'no-store'});
-    if (!response.ok) throw new Error('Native rehearsal unavailable');
-    nativeCatalogEvidence = await response.json();
-    renderNativeRehearsal(); evidenceChanged();
+    const response = await fetch(evidenceUrl('/demo/http-catalog'), {cache:'no-store'});
+    if (!response.ok) throw new Error('HTTP proof unavailable');
+    httpCatalogEvidence = await response.json();
+    renderNativeRehearsal(); renderCatalogAdoption(); renderCatalogControls(); evidenceChanged();
   } catch {
-    byId('native-rehearsal-body').textContent = 'Native MCP evidence could not be loaded. Open the retained JSON report.';
+    byId('native-rehearsal-body').textContent = 'HTTP MCP evidence could not be loaded. Open the retained JSON report.';
     byId('native-implementation-body').textContent = 'Application source unavailable.';
   }
 }

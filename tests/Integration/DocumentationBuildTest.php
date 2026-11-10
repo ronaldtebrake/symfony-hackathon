@@ -80,7 +80,7 @@ final class DocumentationBuildTest extends TestCase
         }
         sort($files);
         $expected = ['.nojekyll', 'index.html', 'demo.css', 'demo.js', 'docs.js', 'catalog-proof.js', 'php-syntax.js', 'images/code-mode-value.svg'];
-        foreach (['report', 'security-report', 'agent-report', 'boundary-report', 'huggingface-report', 'huggingface-comparison', 'adoption-report', 'evaluation-report', 'performance-report', 'performance-conversation', 'performance-baseline', 'response-payloads', 'audit-three-way', 'catalog-proof', 'native-catalog'] as $name) { $expected[] = 'evidence/'.$name.'.json'; }
+        foreach (['report', 'security-report', 'agent-report', 'boundary-report', 'huggingface-report', 'huggingface-comparison', 'adoption-report', 'evaluation-report', 'performance-report', 'performance-conversation', 'performance-baseline', 'response-payloads', 'audit-three-way', 'catalog-proof', 'native-catalog', 'http-catalog'] as $name) { $expected[] = 'evidence/'.$name.'.json'; }
         sort($expected); self::assertSame($expected, $files);
         self::assertFileDoesNotExist($root.'/var/pages/evidence/discovery-report.json');
         self::assertStringNotContainsString('compact-discovery', $html);

@@ -1,49 +1,71 @@
-# Adopt the catalog in a separate Symfony app
+# Adopt the catalog in a Symfony application
 
-This CLI-only app owns its dependencies, synthetic articles, native `#[AsTool]` service, identity and policy. It defaults to `mode: catalog` and uses the bundle's normal `code-mode:serve` command. It imports no main-demo code and requires no model token or Docker configuration.
+This small application owns its Composer dependencies, synthetic articles, native Symfony AI `#[AsTool]` service and access policy. It exposes **two MCP tools over authenticated HTTP**: `search_tools` and `execute_tools`. Approved JSON calls run as normal Symfony services. There is no Unix worker, process-control extension, Docker or model-token requirement.
+
+## Install and verify
+
+From the repository root:
 
 ```sh
 composer install --working-dir=examples/symfony
 composer check --working-dir=examples/symfony
 php examples/symfony/bin/console code-mode:doctor
-composer proof:catalog --working-dir=examples/symfony
+composer proof:http --working-dir=examples/symfony
 ```
 
-The [current capture](../../docs/evidence/catalog-proof.json) contains the `adoption` proof: **15 checks passed**, including only the approved contract appearing in search, restricted article 202 denied, permitted article 101 returned in the same session, stable entry tools and attempt exhaustion. These are operator-authored requests over real MCP, not model-generated answers. The capture came from a clean temporary install with package sources detached and no root autoloader. It proves independent consumption, not a Packagist release or remote authentication. Unix PHP CLI, `pcntl` and `posix` are still required.
+The [fresh-install capture](../../docs/evidence/http-catalog-proof.json) passes **23 checks**. It records actual HTTP JSON-RPC: article 101 returned, article 202 denied, missing/invalid authentication rejected, an unauthorized origin rejected, oversized calls refused, and attempts still exhausted after a server restart and a new MCP connection. A second authenticated user cannot inherit the reader's permissions or discovery state.
 
-Point an MCP client at `php bin/console code-mode:serve --no-debug` with this directory as its working directory. Search for `publication_read`, then use `execute_tools` with literal calls. Keep the same server process for follow-ups.
+The capture used its own `vendor/`, with package sources detached and no root autoloader. Process creation and Unix process-control functions were disabled **in the HTTP application**. The test harness starts a temporary PHP development server and uses ephemeral credentials; it never writes tokens to the report. These are operator-authored checks, not a model conversation or a new token benchmark. The harness requires Composer's ordinary development dependencies, not a container runtime.
 
-## Reproduce the historical PHP proof
+## Start the application
 
-Configure the [dedicated gVisor endpoint and pinned image](../../packages/php-code-mode/README.md#sandboxed-php) in this app's ignored `.env.local` or process environment; the root `.env.local` is never loaded. Do not copy model tokens.
+Generate a local token with `php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'`. Store it in this example's ignored `.env.local`:
+
+```dotenv
+ADOPTION_MCP_TOKEN=<your random token, at least 32 characters>
+```
+
+Do not commit the token. Run:
 
 ```sh
-ADOPTION_MODE=php php bin/console code-mode:doctor
-composer proof
-# For a client using PHP instead of catalog JSON:
-ADOPTION_MODE=php php bin/console code-mode:serve --no-debug
+composer start --working-dir=examples/symfony
 ```
 
-Run these commands from `examples/symfony`. `composer proof` explicitly selects PHP. The two modes have separate compiled container caches. The [original 24-check capture](../../docs/evidence/fresh-symfony-app.json) remains unchanged: operator-written PHP, authorized/denied reads, container cleanup and exhausted attempts. New JSON evidence does not replace it.
+Connect your MCP client to `http://127.0.0.1:8001/mcp`, sending `Authorization: Bearer <your token>`. [Codex configuration](../../docs/codex.md) uses a host environment variable, not a token in TOML. The built-in PHP server is for local development; deploy the same front controller through normal Symfony hosting, with HTTPS and your application's Symfony Security authentication.
 
-## What the consuming application supplies
+Search for `publication_read`, execute with `{"id":101}`, then try `{"id":202}`. The second read must return `tool_denied`, without restricted data. There are two execution attempts per authenticated user, including failures. Discovery and submitted-call reservations persist in `var/code-mode`; reconnecting cannot reset them. Before a new recording take, the **operator** runs:
 
-The integration selects the catalog plus four application settings in [config/services.php](config/services.php):
+```sh
+php examples/symfony/bin/console code-mode:reset-budget demo-reader
+```
+
+There is no reset tool. Preserve that state directory across requests and deploys. The default filesystem storage and lock support one application host. Multiple hosts need a shared store and compatible lock; [integration and hosting limits](../../packages/symfony-code-mode/README.md#http-state-and-limits).
+
+## What the application supplies
+
+[config/services.php](config/services.php) connects the existing toolbox and policy:
 
 ```php
 $container->extension('code_mode', [
     'mode' => 'catalog',
-    'identity_provider' => LocalReader::class,
     'ai_toolbox' => 'app.toolbox',
     'ai_tools' => ['publication_read'],
     'ai_authorization' => ReadPolicy::class,
+    'http' => ['enabled' => true, 'permissions' => [
+        'publication.read_published' => 'ROLE_READER',
+    ]],
 ]);
 ```
 
-- [ArticleTool](src/ArticleTool.php) is a normal Symfony AI tool. Its existing toolbox and argument resolver execute it. `publication_count` is deliberately not approved, despite its read-only annotation.
-- [ReadPolicy](src/ReadPolicy.php) checks the host permission, tool name, argument shape and publication status before invocation. The data service rechecks publication at the read boundary. Private and missing IDs both produce a sanitized denial. Unit tests confirm denied calls never reach the handler.
-- [LocalReader](src/LocalReader.php) represents the local operator. Agent arguments cannot select its identity or permissions. This fixed CLI identity does not implement remote authentication.
+- [ArticleTool](src/ArticleTool.php) uses Symfony AI's schema and argument resolver. `publication_count` is deliberately not approved, despite its read-only annotation.
+- [ReadPolicy](src/ReadPolicy.php) checks identity, permission, name, argument shape and publication status before invocation. The data service rechecks access at the read boundary. Private and missing IDs both produce a sanitized denial; denied calls never reach the handler.
+- [DemoTokenHandler](src/DemoTokenHandler.php) maps a local bearer token to `demo-reader`. An optional separate viewer token has no read grant. Real applications reuse their own authentication and user identifiers. Identity and permissions never come from tool arguments.
+- [config/routes.php](config/routes.php) and Symfony's MCP bundle expose `/mcp`. The registry contains only `CatalogTools`; application tools cannot bypass the broker through a separate MCP registration.
 
-Both proofs use the bundle's stock MCP STDIO server and the same tool, identity and policy. The catalog does not execute generated code. Its two submission attempts include failures. The PHP path uses gVisor and retains the original container limits and cleanup checks.
+Deadlines are **cooperative**: late results are rejected and later calls do not start. The package cannot terminate a blocked in-process handler. Configure hosting request limits, memory limits and downstream timeouts. Installed handlers remain trusted application code; JSON is not a defense against prompt injection.
 
-Both packages remain unpublished Composer path packages. Composer copies them into this app's own `vendor/` (`symlink: false`), with its own lockfile. Refresh copies after package changes with `composer reinstall ronaldtebrake/php-code-mode ronaldtebrake/symfony-code-mode`. CI installs and proves the catalog consumer before the root app on PHP 8.2–8.4; the historical PHP proof still runs in the gVisor job.
+Both packages remain unpublished Composer path packages, copied into this app's own `vendor/` with `symlink: false`. After package edits, refresh copies with `composer reinstall --working-dir=examples/symfony ronaldtebrake/php-code-mode ronaldtebrake/symfony-code-mode`. The HTTP CI job exercises Linux and Windows without Unix process extensions; the local reviewed capture was made on macOS.
+
+## Historical PHP proof
+
+The [original 24-check capture](../../docs/evidence/fresh-symfony-app.json) remains unchanged. To reproduce it, configure the [dedicated gVisor endpoint and pinned image](../../packages/php-code-mode/README.md#sandboxed-php) in this app's ignored `.env.local`, then run `composer proof --working-dir=examples/symfony`. It explicitly selects PHP mode and uses a separate container cache. Its runtime dependencies and isolation guarantees apply only to generated PHP. The HTTP catalog never executes that code or selects a worker fallback.

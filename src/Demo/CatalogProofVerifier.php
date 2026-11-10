@@ -128,7 +128,7 @@ final class CatalogProofVerifier
             }
         }
         $checks = [
-            'noCaptureError' => !isset($run['error']), 'fixedManifest' => CatalogProofRunner::manifest() === $run['manifest'] && CatalogProofRunner::PROMPT === $run['systemPrompt'],
+            'noCaptureError' => !isset($run['error']), 'fixedManifest' => CatalogProofRunner::manifest($run['manifest']['protocol'] ?? '') === $run['manifest'] && CatalogProofRunner::PROMPT === $run['systemPrompt'],
             'answersCorrect' => $answers, 'historyAndReviewsLinked' => $history, 'twoToolContracts' => $contracts,
             'hostCallsMatchFixture' => $linked && $ledger === $trace['brokerCalls'] && EvaluationVerifier::same($observed, $run['upstream']),
             'completeReadCoverage' => array_keys($listed) === range(1, 48) && ('pagination' === $run['scenario'] || array_keys($articles) === range(1, 48)) && ('join' !== $run['scenario'] || array_keys($media) === range(1, 24)),

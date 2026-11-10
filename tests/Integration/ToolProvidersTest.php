@@ -80,7 +80,7 @@ final class ToolProvidersTest extends TestCase
         $container->register('native.identity', DemoIdentityProvider::class);
         $container->register('approved', ApprovedToolbox::class)->setArguments([new Reference('native.toolbox'), ['publishing_list'], new Reference('native.policy')]);
         $container->register('provider', SymfonyAiProvider::class)->setArguments(['articles', new Reference('approved'), ['page'=>'publishing_list']]);
-        (new CodeModeBundle())->getContainerExtension()->load([['identity_provider'=>'native.identity','providers'=>['provider'], 'image'=>'sha256:'.str_repeat('a',64),'docker_command'=>['docker']]], $container);
+        (new CodeModeBundle())->getContainerExtension()->load([['identity_provider'=>'native.identity','providers'=>['provider'], 'mode'=>'php', 'image'=>'sha256:'.str_repeat('a',64),'docker_command'=>['docker']]], $container);
         $container->getDefinition(SessionFactory::class)->setPublic(true); $container->compile();
         $factory = $container->get(SessionFactory::class);
         $identity = new ExecutionIdentity('reader',['articles.read_published']);

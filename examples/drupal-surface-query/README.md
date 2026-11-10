@@ -122,7 +122,7 @@ php examples/drupal-surface-query/batch-mcp.php
 For the separate two-tool interface, append `--catalog`. It advertises only
 `search_tools` and `execute_tools`. Search returns complete `drupal.search`
 contracts, so the describe step is unnecessary; the same JSON below goes to
-`execute_tools`. Provider approval, Drupal entity/field access, supervision and
+`execute_tools`. Provider approval, Drupal entity/field access, input validation and
 limits are unchanged. The retained reference comparison below used the original
 three-tool interface; it is not a live measurement of this catalog iteration.
 The two-tool server was also checked against the real DDEV site on 9 November:
@@ -258,3 +258,5 @@ This uses the existing demo's observation helpers without booting its applicatio
 kernel or changing its workbench, reports, MCP connection or provider configuration.
 The reference proof above remains an operator-written execution proof; a live
 capture is a separate artifact and makes no token-saving claim.
+
+The current JSON package runs approved handlers in-process, with no Unix worker. Its deadlines are cooperative; configure transport/database timeouts in Drupal. The retained JSON/PHP comparison was captured with the earlier supervisor and is not a new HTTP or token benchmark. Symfony HTTP authentication is demonstrated separately; it does not configure Drupal authentication.

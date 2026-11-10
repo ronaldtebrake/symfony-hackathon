@@ -24,7 +24,7 @@ $reports = [
     'report' => 'report', 'security-report' => 'securityReport', 'agent-report' => 'codexReport',
     'boundary-report' => 'boundaryReport', 'huggingface-report' => 'huggingFaceReport',
     'huggingface-comparison' => 'huggingFaceComparison', 'adoption-report' => 'adoptionReport',
-    'evaluation-report' => 'evaluationReport', 'audit-three-way' => 'threeWayAudit', 'catalog-proof' => 'catalogProof', 'native-catalog' => 'nativeCatalog',
+    'evaluation-report' => 'evaluationReport', 'audit-three-way' => 'threeWayAudit', 'catalog-proof' => 'catalogProof', 'native-catalog' => 'nativeCatalog', 'http-catalog' => 'httpCatalog',
     'performance-report' => 'performanceReport', 'performance-conversation' => 'performanceConversation', 'performance-baseline' => 'performanceBaseline', 'response-payloads' => 'responsePayloads',
 ];
 foreach ($reports as $filename => $method) {
@@ -34,7 +34,7 @@ foreach ($reports as $filename => $method) {
     if (200 !== $response->getStatusCode() || 'empty' === ($report['status'] ?? null)) {
         throw new RuntimeException('Missing reviewed evidence: '.$filename);
     }
-    if ('native-catalog' === $filename && true !== ($report['verification']['passed'] ?? null)) {
+    if (in_array($filename, ['native-catalog', 'http-catalog'], true) && true !== ($report['verification']['passed'] ?? null)) {
         throw new RuntimeException('Native catalog rehearsal failed verification.');
     }
     if (false === file_put_contents($output.'/evidence/'.$filename.'.json', $body)) {

@@ -76,7 +76,7 @@ final class BatchSessionTest extends TestCase
             self::assertSame("1\n", file_get_contents($path));
             self::assertSame(['succeeded', 'denied'], array_column($error->toolCalls, 'status'));
             self::assertSame(1, BatchResult::failure($error)['completedCalls']);
-            // A permission change made after discovery is visible to the worker at execution.
+            // A permission change made after discovery is visible at execution.
             $session = $this->session(authorize: static fn () => file_get_contents($path) === 'allowed');
             file_put_contents($path, 'denied');
             $this->fails($session, [$this->call()], 'tool_denied');
@@ -113,21 +113,21 @@ final class BatchSessionTest extends TestCase
         self::assertSame(2, BatchResult::failure($error)['completedCalls']);
     }
 
-    public function testTimeoutKillsTheWorkerAndNeverStartsTheNextCall(): void
+    public function testCooperativeDeadlineWaitsForReturnAndNeverStartsTheNextCall(): void
     {
-        $path = tempnam(sys_get_temp_dir(), 'batch-worker-');
-        try {
-            $session = $this->session(invoke: static function () use ($path) { file_put_contents($path, (string) getmypid()); usleep(900000); return 1; }, limits: new ExecutionLimits(wallTimeMs: 500, toolTimeMs: 100));
-            $this->fails($session, [$this->call(), $this->call()], 'tool_timeout');
-            $pid = (int) file_get_contents($path);
-            self::assertGreaterThan(0, $pid);
-            self::assertFalse(posix_kill($pid, 0), 'The broker worker must be reaped.');
-        } finally { unlink($path); }
+        $calls = 0; $finished = false;
+        $session = $this->session(invoke: static function () use (&$calls, &$finished) {
+            ++$calls; usleep(150000); $finished = true; return 1;
+        }, limits: new ExecutionLimits(wallTimeMs: 500, toolTimeMs: 100));
+        $this->fails($session, [$this->call(), $this->call()], 'tool_deadline_exceeded');
+        self::assertTrue($finished, 'An in-process deadline cannot interrupt a handler.');
+        self::assertSame(1, $calls);
+        self::assertFalse(BatchResult::runtime()['hardTermination']);
     }
 
     public function testAggregateDeadlineIncludesAllCalls(): void
     {
-        $error = $this->fails($this->session(invoke: static function () { usleep(180000); return 1; }, limits: new ExecutionLimits(wallTimeMs: 300, toolTimeMs: 250)), [$this->call(), $this->call()], 'tool_timeout');
+        $error = $this->fails($this->session(invoke: static function () { usleep(180000); return 1; }, limits: new ExecutionLimits(wallTimeMs: 300, toolTimeMs: 250)), [$this->call(), $this->call()], 'tool_deadline_exceeded');
         self::assertSame(['succeeded', 'incomplete'], array_column($error->toolCalls, 'status'));
     }
 

@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CodeMode\Mcp;
 
 use CodeMode\ExecutionIdentity;
-use CodeMode\ExecutionLimits;
-use CodeMode\BrokerWorker;
 use CodeMode\SandboxException;
 use CodeMode\Tool;
 use CodeMode\ToolBroker;
@@ -33,23 +31,14 @@ final readonly class McpGateway
 
     public function discover(): ToolCatalog
     {
-        // Discovery also handles untrusted upstream data: supervise its time, heap and result size.
-        $broker = new ToolBroker([new Tool('catalog.read', (object) ['type' => 'object', 'additionalProperties' => false],
-            static fn (): bool => true, fn (): array => $this->collectDefinitions(),
-        )]);
-        $limits = new ExecutionLimits(toolTimeMs: 3000, maxFrameBytes: 65536, maxOutputBytes: 65536, maxToolResultBytes: 65536);
-        $worker = new BrokerWorker($broker, new ExecutionIdentity('catalog-reader'), ['catalog.read'], $limits);
-        try {
-            $data = $worker->call('catalog.read', new \stdClass(), BrokerWorker::now() + 5);
-            return new ToolCatalog(array_map(static fn (\stdClass $item): ToolDefinition => new ToolDefinition($item->name, $item->description, $item->inputSchema, $item->outputSchema ?? null), $data));
-        } finally {
-            $worker->close();
-        }
+        // Transport deadlines belong to the host-configured client. No worker is created.
+        return new ToolCatalog($this->collectDefinitions());
     }
 
     /** @return list<ToolDefinition> */
     private function collectDefinitions(): array
     {
+        $started = hrtime(true);
         $client = ($this->connect)();
         try {
             $definitions = [];
@@ -74,6 +63,8 @@ final readonly class McpGateway
                         null === $tool->outputSchema ? null : json_decode(json_encode((object) $tool->outputSchema, JSON_THROW_ON_ERROR, 32), false, 32, JSON_THROW_ON_ERROR),
                     );
                 }
+                if ((hrtime(true) - $started) / 1e6 > 3000) { throw new SandboxException('catalog_deadline_exceeded', 'Catalog returned after its cooperative deadline.'); }
+                if (strlen(json_encode($definitions, JSON_THROW_ON_ERROR, 32)) > 65536) { throw new SandboxException('tool_result_limit', 'Catalog exceeds its byte limit.'); }
                 $cursor = $page->nextCursor;
                 if (null !== $cursor) {
                     if (isset($seenCursors[$cursor]) || count($seenCursors) >= 8 || strlen($cursor) > 1024) {
@@ -93,7 +84,7 @@ final readonly class McpGateway
         return new ToolBroker($this->approvedTools($catalog));
     }
 
-    /** Host-only bindings, preserving the gateway's per-call policies and supervised invocation. @return list<Tool> */
+    /** Host-only bindings preserving per-call policies. @return list<Tool> */
     public function approvedTools(ToolCatalog $catalog): array
     {
         $tools = [];
@@ -111,7 +102,7 @@ final readonly class McpGateway
 
     private function invoke(string $name, \stdClass $arguments): mixed
     {
-        // This executes in the supervised broker child. Connections are opened after fork.
+        // A fresh bounded client; the application owns transport timeouts.
         $client = ($this->connect)();
         try {
             $result = $client->callTool($name, get_object_vars($arguments));

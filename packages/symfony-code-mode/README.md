@@ -1,18 +1,48 @@
 # Symfony Code Mode integration
 
-Approve existing Symfony read services, then give an MCP client isolated PHP execution or bounded JSON calls. The generic runner and broker remain in `ronaldtebrake/php-code-mode`. This bundle supplies the Symfony container integration and a STDIO entry point.
+Register approved Symfony tools and expose a stable JSON catalog through **normal Symfony HTTP requests**. Symfony AI supplies existing schemas and handler execution; Symfony Security supplies the authenticated user. The broker checks permissions and schemas on every call. No worker, Docker or process-control extensions are needed for JSON.
 
-For a consumer with its own dependencies, native `#[AsTool]` service and authorization policy, use the [separate Symfony app](../../examples/symfony/README.md). It now defaults to the two-tool JSON catalog. Its clean-install proof passes 15 checks through the stock MCP server without Docker settings or the main demo autoloader; the historical PHP proof remains reproducible separately.
+The [independent Symfony application](../../examples/symfony/README.md) is the runnable quickstart. Its detached fresh-install capture passes **23 HTTP checks**, including authorized/denied reads and budgets that survive reconnects and restarts. Packages currently use Composer path repositories; they are not published to Packagist.
 
-These packages are currently installed through this repository's Composer path repositories; they are not published to Packagist. To try the integration here:
+## Enable HTTP
 
-```bash
-composer install
-php bin/console code-mode:doctor
-php bin/console code-mode:serve --no-debug
+Register `CodeMode\Symfony\CodeModeBundle`, `Symfony\Bundle\SecurityBundle\SecurityBundle` and `Symfony\AI\McpBundle\McpBundle`. Install a PSR-7/17 implementation such as `nyholm/psr7`, and reuse your application's Symfony Security authenticator for `/mcp`.
+
+```yaml
+# config/packages/code_mode.yaml
+code_mode:
+    mode: catalog
+    http:
+        enabled: true
+        permissions:
+            publication.read_published: ROLE_READER
+    ai_toolbox: app.toolbox
+    ai_tools: [publication_read]
+    ai_authorization: App\ReadPolicy
+
+# config/packages/mcp.yaml
+mcp:
+    servers:
+        catalog:
+            name: 'Approved application tools'
+            transports: { http: true }
+            http: { path: /mcp }
+            registry: [CodeMode\Symfony\Http\CatalogTools]
 ```
 
-The last command speaks MCP over STDIO; configure it in your agent rather than typing into its terminal. No HTTP execution endpoint is added. The audit server, `code-mode:mcp`, uses the same lean response format with its own tool catalog and limits.
+Import the MCP route loader (`resource: .`, `type: mcp`) in `config/routes.yaml`, and require a fully authenticated user on `/mcp` in `security.yaml`. The [example's configuration](../../examples/symfony/config/services.php) includes a local bearer-token authenticator. Real applications keep their existing authentication; use HTTPS outside loopback. Do not also register underlying handlers as directly callable MCP tools, which would bypass this catalog's broker.
+
+`search_tools` returns full approved contracts; `execute_tools` accepts literal JSON calls. Only the HTTP adapter reads Symfony's current security token. Agent arguments cannot select identity, permissions or server configuration. `code-mode:doctor` checks the selected mode's prerequisites without invoking handlers or calling a model.
+
+## HTTP state and limits
+
+Attempts, discovered contracts and submitted-call counts are stored per authenticated user. Reservations are persisted **before** dispatch and guarded by a lock. Failures consume attempts; calls after the first failure are not executed, but their reserved capacity is not refunded. A new request or MCP session cannot mint a fresh budget. The default is two attempts, at most ten submitted calls per attempt and twenty across the user budget.
+
+The default filesystem state lives under `var/code-mode`, outside the container cache, with no automatic expiry. Preserve it across deploys. The operator can run `code-mode:reset-budget USER`; no agent-facing reset tool exists. This demonstration budget is deliberately small. Plan operator-controlled quotas/reset policy for your application rather than treating reconnects as new authorization.
+
+The default store and lock support one host with multiple PHP request workers. For multiple hosts, replace `code_mode.http.cache` and `code_mode.http.lock_factory` with a shared persistent store and compatible shared lock. All hosts must use the same identity namespace and budget state. Cache deletion is a budget reset, not routine cleanup.
+
+JSON handlers execute **in process**. Time limits are checked between calls and after each handler returns; a late result is rejected. A blocked handler cannot be interrupted by this package. Configure hard request and memory limits in your hosting, plus database and outbound HTTP timeouts. There is no worker option or per-tool heap isolation. Approved handlers are trusted application code. [Full contract and hosting boundaries](../../docs/batching.md).
 
 ## Approve tools and select the catalog
 
@@ -34,7 +64,7 @@ A `ReadToolInterface` service supplies:
 
 - `definition()`: one bounded `ToolDefinition`, including its input schema.
 - `authorize(identity, arguments)`: a host-side capability and resource check, performed on every call **before invocation**. This runs before schema validation, so malformed arguments must fail closed.
-- `invoke(arguments, identity)`: JSON data, with mutable resource/field permissions rechecked at the read. Open database/network connections inside the supervised worker; do not reuse a connection inherited across its fork.
+- `invoke(arguments, identity)`: JSON data, with mutable resource/field permissions rechecked at the read. Normal injected database and HTTP clients can be reused in the JSON request. Keep resource and field access checks at the read boundary.
 
 The identity provider is trusted application code. Our example selects a local CLI demonstration account, which is **not remote authentication**. A production host must authenticate its operator/user and supply the appropriate capabilities. Never take the identity, permissions, service IDs or Docker command from agent input. The read-only interface/annotations describe a trusted operator contract; they cannot make an arbitrary PHP handler read-only. Review approved handlers.
 
@@ -54,7 +84,7 @@ Discovery still returns full schemas. Selected calls can use `$tools->catalog->g
 
 The generic provider contract and MCP adapter live in the PHP core; the Symfony AI adapter stays in this bundle. Drupal/Rosetta integration can use that core without adopting this demo's UI or fixtures.
 
-## Runtime configuration
+## Historical generated-PHP runtime
 
 Use the [runner setup](../php-code-mode/README.md#sandboxed-php) on a dedicated Linux Docker endpoint with gVisor. On macOS a local Linux VM can supply that endpoint; ordinary Docker Desktop/OrbStack alone is insufficient. In ignored `.env.local`:
 
@@ -81,11 +111,10 @@ The server will not expose
 PHP execution, resolve runner configuration or require Docker/gVisor. The
 existing providers, identity and per-call policies are reused.
 
-The batch path requires Unix PHP CLI with `pcntl` and `posix`; it is not a
-PHP-FPM adapter. Use `SessionFactory::createBatch($identity)` and
+The JSON path runs in the current PHP process; it does not require CLI, `pcntl`, `posix` or Docker. The HTTP adapter adds authenticated identity and persistent budgets. The retained STDIO transport uses an explicit trusted local identity. Use `SessionFactory::createBatch($identity)` and
 `CodeMode\Symfony\Ai\BatchToolbox` for a Symfony AI conversation. Ordered
-results reach the agent without automatic filtering or joining. The default
-`mode: php` keeps gVisor. No unsafe local PHP executor is available.
+results reach the agent without automatic filtering or joining. Explicit
+`mode: php` keeps gVisor; the default mode is `catalog`. No unsafe local PHP executor is available.
 [Full batch contract, limits and hosted Symfony guidance](../../docs/batching.md).
 
 ## Agent responses and host evidence
@@ -135,6 +164,8 @@ Search returns candidate names and descriptions in a `tools` list, with `matched
 
 Call `tools_describe` for the selected tools before executing PHP. The response includes the original input/output schemas and a PHP invocation guide. The broker continues to validate arguments and results and authorize every call. Search and describe never reset execution attempts. The core's list-only `search()` API remains available for existing PHP callers.
 
-## What the current evidence establishes
+## Evidence scope
 
-The [catalog capture](../../docs/evidence/catalog-proof.json) includes real Symfony AI follow-ups and denial/recovery, exact JSON calls, provider usage and control traces. All final answers are correct across five live scenarios, but the injection case attempted a restricted read and fails the agent-behavior check. The host denied it before invocation. Neither schemas nor a catalog prevent a model from following malicious data; application permissions must remain authoritative. An otherwise permitted action can still be outside the user's intent. [Coverage and limits](../../docs/batching.md#evidence-coverage-and-next-captures).
+The current [HTTP capture](../../docs/evidence/http-catalog-proof.json) verifies fresh adoption, authentication, authorization and persistent budgets. It contains operator requests, not a live agent conversation.
+
+The retained pre-HTTP [catalog capture](../../docs/evidence/catalog-proof.json) includes real Symfony AI follow-ups and denial/recovery, exact JSON calls, provider usage and control traces. All final answers are correct across five live scenarios, but the injection case attempted a restricted read and fails the agent-behavior check. The host denied it before invocation. Neither schemas nor a catalog prevent a model from following malicious data; application permissions must remain authoritative. An otherwise permitted action can still be outside the user's intent. [Coverage and limits](../../docs/batching.md#evidence-coverage-and-next-captures).

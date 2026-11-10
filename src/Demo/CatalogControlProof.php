@@ -8,7 +8,7 @@ use CodeMode\{BatchSession, ExecutionIdentity, ExecutionLimits, Tool, ToolBroker
 use CodeMode\Symfony\Ai\BatchToolbox;
 use Symfony\AI\Platform\Result\ToolCall;
 
-/** Fixed operator probes with actual workers; no provider call or generated program. */
+/** Fixed operator probes with ordinary application calls; no provider call or generated program. */
 final class CatalogControlProof
 {
     public static function run(string $projectDir): array
@@ -35,13 +35,11 @@ final class CatalogControlProof
         }
         $forged = $invoke('execute_tools', ['calls' => [['name' => 'cms_get_articles', 'arguments' => ['ids' => [1]]]], 'identity' => 'admin', 'code' => 'return 1;']);
 
-        // A deliberately blocking trusted fixture handler, never offered to the live agent.
-        $pidFile = tmpfile();
-        if (false === $pidFile) { throw new \RuntimeException('Cannot allocate the private timeout observation.'); }
+        // Finite slow handler: proves a cooperative check, never forced termination.
+        $finished = false;
         $schema = (object) ['type' => 'object', 'properties' => new \stdClass(), 'additionalProperties' => false];
-        $slow = new Tool('probe_wait', $schema, static fn (ExecutionIdentity $id) => $id->allows('content.audit'), static function () use ($pidFile): never {
-            fwrite($pidFile, (string) getmypid()); fflush($pidFile);
-            while (true) { usleep(10000); }
+        $slow = new Tool('probe_wait', $schema, static fn (ExecutionIdentity $id) => $id->allows('content.audit'), static function () use (&$finished): int {
+            usleep(220000); $finished = true; return 1;
         });
         $slowTrace = new RunTrace(); $slowTrace->captureDetails = true;
         $slowToolbox = new RecordingBatchToolbox(new BatchToolbox(new BatchSession(new ToolCatalog([new ToolDefinition('probe_wait', 'Operator timeout fixture.', $schema)]),
@@ -50,12 +48,10 @@ final class CatalogControlProof
         $start = hrtime(true);
         $timeout = json_decode($slowToolbox->execute(new ToolCall('timeout', 'execute_tools', ['calls' => [['name' => 'probe_wait', 'arguments' => []]]]))->getResult(), true, flags: JSON_THROW_ON_ERROR);
         $elapsed = (hrtime(true) - $start) / 1e6;
-        rewind($pidFile); $pid = (int) stream_get_contents($pidFile); fclose($pidFile);
-        $reaped = $pid > 0 && !posix_kill($pid, 0) && -1 === pcntl_waitpid($pid, $status, WNOHANG);
-        $report = ['kind' => 'catalog-controls', 'capturedAt' => gmdate(DATE_ATOM), 'mode' => 'operator', 'generatedCode' => false,
-            'scope' => 'Authorized, denied, invalid and recovery reads use the real Symfony MCP fixture. The timeout is a separate trusted blocking fixture handler in the same broker supervisor. No model, Docker or gVisor is called.',
+        $report = ['kind' => 'catalog-controls', 'capturedAt' => gmdate(DATE_ATOM), 'mode' => 'operator', 'generatedCode' => false, 'execution' => 'in-process',
+            'scope' => 'Authorized, denied, invalid and recovery reads use the real Symfony MCP fixture. A finite slow handler proves deadlines are checked after return, without hard termination. The fixture MCP transport starts an installed PHP server. No model, JSON execution worker, Docker or gVisor is called.',
             'cases' => $cases, 'forgedConfiguration' => $forged, 'trace' => CatalogProofRunner::snapshot($trace), 'upstream' => $journal->events(),
-            'timeout' => ['response' => $timeout, 'trace' => CatalogProofRunner::snapshot($slowTrace), 'elapsedMs' => $elapsed, 'toolTimeMs' => 150, 'workerPid' => $pid, 'workerReaped' => $reaped]];
+            'timeout' => ['response' => $timeout, 'trace' => CatalogProofRunner::snapshot($slowTrace), 'elapsedMs' => $elapsed, 'toolTimeMs' => 150, 'handlerReturned' => $finished, 'hardTermination' => false]];
         $report = json_decode(json_encode($report, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
         $report['verification'] = self::verify($report);
         return $report;
@@ -72,7 +68,9 @@ final class CatalogControlProof
             'attemptBudgetEnforced' => 'execution_limit' === ($cases['attempt_limit']['response']['error']['reason'] ?? null),
             'hostConfigurationRejected' => 'invalid_arguments' === ($report['forgedConfiguration']['error']['reason'] ?? null),
             'onlyAllowedCallsReachHandler' => array_column(array_column($report['upstream'] ?? [], 'arguments'), 'ids') === [[1], [2]],
-            'handlerTerminated' => 'tool_timeout' === ($report['timeout']['response']['error']['reason'] ?? null) && true === ($report['timeout']['workerReaped'] ?? null)
+            'deadlineObserved' => 'in-process' === ($report['execution'] ?? null)
+                ? ('tool_deadline_exceeded' === ($report['timeout']['response']['error']['reason'] ?? null) && true === ($report['timeout']['handlerReturned'] ?? null) && false === ($report['timeout']['hardTermination'] ?? null))
+                : 'tool_timeout' === ($report['timeout']['response']['error']['reason'] ?? null) && true === ($report['timeout']['workerReaped'] ?? null)
                 && ($report['timeout']['elapsedMs'] ?? 0) >= 150 && $report['timeout']['elapsedMs'] < 2000,
             'noGeneratedCode' => false === ($report['generatedCode'] ?? null) && 0 === ($report['trace']['modelRequests'] ?? null)];
         return ['passed' => !in_array(false, $checks, true), 'checks' => $checks];

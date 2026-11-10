@@ -1,5 +1,10 @@
 # Optional proof integration: ordinary Symfony AI tools, separate from the existing MCP demo.
 services:
+    # Historical PHP proof owns its runtime; the default JSON bundle never resolves it.
+    app.publishing_docker:
+        class: CodeMode\DockerEngine
+        arguments:
+            $command: '%env(json:CODE_MODE_DOCKER_COMMAND)%'
     app.publishing_toolbox:
         class: Symfony\AI\Agent\Toolbox\Toolbox
         arguments:
@@ -16,6 +21,6 @@ services:
         arguments:
             $tools: []
             $image: '%env(CODE_MODE_IMAGE)%'
-            $docker: '@code_mode.docker'
+            $docker: '@app.publishing_docker'
             $limits: '@code_mode.limits'
             $aiToolbox: '@app.publishing_approved_toolbox'

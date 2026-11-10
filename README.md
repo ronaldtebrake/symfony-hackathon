@@ -4,7 +4,7 @@ A searchable catalog for approved Symfony AI and MCP tools, with JSON calls and 
 
 Expose two stable tools: `search_tools` returns approved contracts and `execute_tools` invokes them with literal JSON arguments. Reuse Symfony AI schemas, Symfony/MCP providers and application access checks. There is no generated program in this path. The earlier sandboxed PHP implementation remains available as a historical reference and a computation option.
 
-Your application owns the tool implementations, identity, permissions and execution limits. Conversations stay in your MCP client or Symfony AI agent. Generated PHP requires gVisor. JSON batching needs no gVisor, although the current supervisor still requires Unix PHP CLI, `pcntl` and `posix`.
+Your application owns the tool implementations, identity, permissions and execution limits. Conversations stay in your MCP client or Symfony AI agent. Generated PHP requires gVisor. The JSON catalog runs as normal Symfony services over authenticated HTTP, with no worker, Docker or process-control extensions.
 
 ![The same 48 articles and 10 findings, with 43,979 versus 12,597 provider tokens in one matched Symfony AI and Hugging Face pair.](docs/images/code-mode-value.svg)
 
@@ -28,7 +28,7 @@ The [current catalog evidence](https://ronaldtebrake.github.io/symfony-hackathon
 
 ## Getting started
 
-You can inspect the recorded executions with Unix PHP 8.2+ CLI, `pcntl`, `posix` and Composer 2. Viewing the evidence requires no Docker or API key:
+You can inspect the recorded executions with PHP 8.2+ and Composer 2. Viewing the evidence requires no Docker or API key:
 
 ```sh
 git clone https://github.com/ronaldtebrake/symfony-hackathon.git
@@ -57,46 +57,31 @@ Every catalog capture is retained under ignored `var/demo/catalog-proof/`. Pages
 
 With `mode: catalog`, the Symfony bundle exposes two MCP tools: `search_tools` and `execute_tools`. Your approved application tools remain behind the broker.
 
-This checkout includes two read services and a local demonstration identity. To expose them through the JSON catalog, use:
+Start with the [independent Symfony HTTP application](examples/symfony/README.md). It has its own dependencies, native Symfony AI tool and access policy:
 
-```yaml
-# config/packages/code_mode.yaml
-code_mode:
-    mode: catalog
-    identity_provider: App\CodeMode\DemoIdentityProvider
-    tools:
-        - App\CodeMode\ReadArticle
-        - App\CodeMode\ListPublishedArticles
+```sh
+composer install --working-dir=examples/symfony
+php examples/symfony/bin/console code-mode:doctor
+composer proof:http --working-dir=examples/symfony
 ```
 
-Each service defines its schema, checks access and performs the read. Start from [ReadArticle](src/CodeMode/ReadArticle.php), [ListPublishedArticles](src/CodeMode/ListPublishedArticles.php) and the [identity provider](src/CodeMode/DemoIdentityProvider.php). Only explicitly registered tools enter the catalog. The demonstration identity grants published-content reads; it is not remote authentication.
-
-Already using Symfony AI's `#[AsTool]` services? Connect their existing toolbox and an authorization policy instead:
+Register approved tools and map host permissions to Symfony Security attributes:
 
 ```yaml
 code_mode:
     mode: catalog
-    identity_provider: App\CodeMode\DemoIdentityProvider
-    ai_toolbox: app.publishing_toolbox
-    ai_tools: [publishing_read, publishing_list]
-    ai_authorization: App\CodeMode\PublishingAuthorization
+    http:
+        enabled: true
+        permissions:
+            publication.read_published: ROLE_READER
+    ai_toolbox: app.toolbox
+    ai_tools: [publication_read]
+    ai_authorization: App\ReadPolicy
 ```
 
-This is an alternative configuration. The [adapter guide](packages/symfony-code-mode/README.md#reuse-existing-symfony-ai-tools) covers service wiring and policy contracts. Execution goes through Symfony AI's existing argument resolver and toolbox lifecycle. Tool annotations alone do not grant permission.
+Expose `/mcp` through Symfony's MCP bundle and protect it with your normal authenticator. The [integration guide](packages/symfony-code-mode/README.md#enable-http) supplies the routing and registry configuration. For the local example, set its ignored bearer token and run `composer start --working-dir=examples/symfony`; connect your agent to `http://127.0.0.1:8001/mcp`. [Client setup](docs/codex.md).
 
-Check prerequisites for the configured execution path:
-
-```sh
-php bin/console code-mode:doctor
-```
-
-Configure your MCP client to launch the following command with this checkout as its working directory:
-
-```sh
-php bin/console code-mode:serve --no-debug
-```
-
-It speaks MCP over STDIO; no web server is needed. For another Symfony application, register `CodeMode\Symfony\CodeModeBundle` and follow the [integration guide](packages/symfony-code-mode/README.md). The [independent Symfony example](examples/symfony/README.md) has its own Composer install, native AI tool and policy. Both packages currently use Composer path repositories and are **not yet published to Packagist**.
+The application controls identity and access. Symfony AI's existing argument resolver and toolbox execute each approved handler; annotations alone do not grant permission. Budgets persist across HTTP requests and reconnects. No worker is involved. Both packages use Composer path repositories and are **not yet published to Packagist**.
 
 The [provider composition example](examples/composition/README.md) runs beside this demo with its own Composer install. It joins native Symfony AI and MCP tools in one isolated PHP program, with schema-derived PHP interfaces and a separate read-only proof viewer. Drupal can reuse the same core provider contract.
 
@@ -193,18 +178,31 @@ Code Mode is useful when a task needs pagination, branching or several related r
 
 </details>
 
+## Connect a Symfony application over HTTP
+
+The [independent application](examples/symfony/README.md) exposes `search_tools` and `execute_tools` at `/mcp`. Register native Symfony AI tools, approve their names, and map Symfony roles to application permissions. The agent connects using the URL and its application bearer token.
+
+The [fresh HTTP proof](docs/evidence/http-catalog-proof.json) passes **23 checks** with process creation disabled: published article 101 returned, restricted article 202 denied, authentication and origin checks, and budgets preserved after reconnecting and restarting the server. Its own Composer install had no root autoloader or package sources. This is an operator proof; retained model-token comparisons are separate historical measurements.
+
+```sh
+composer install --working-dir=examples/symfony
+composer proof:http --working-dir=examples/symfony
+```
+
+No worker option exists for the JSON path. A third execution is refused after the example's two attempts, including failures. Only the operator can reset the authenticated user's budget. [Setup, authentication and recording](examples/symfony/README.md).
+
 ## Execution paths
 
 | Path | What you need | What executes |
 | --- | --- | --- |
-| Historical PHP — `mode: php` (package default) | Dedicated Linux Docker endpoint with `runsc` and a pinned runner image | PHP in gVisor, with no guest network, host mounts or forwarded credentials |
-| JSON catalog — `mode: catalog` | Unix PHP CLI with `pcntl`, `posix` and a supervised worker | Existing approved tool handlers; no generated code and no gVisor |
+| Historical PHP — explicit `mode: php` | Dedicated Linux Docker endpoint with `runsc` and a pinned runner image | PHP in gVisor, with no guest network, host mounts or forwarded credentials |
+| JSON catalog — `mode: catalog` (default) | Normal PHP/Symfony hosting; Symfony Security and persistent budget storage | Approved application services; no generated code, worker or Docker |
 
 For gVisor, follow the [runtime setup](packages/php-code-mode/README.md#sandboxed-php), put the image ID and Docker command in ignored `.env.local`, then run `code-mode:doctor`. macOS can use a Linux VM. Ordinary Docker alone is insufficient. There is no unsafe local PHP executor or automatic fallback.
 
 For the JSON catalog, add `mode: catalog` alongside your approved tools and identity provider. `code-mode:serve` exposes `search_tools` and `execute_tools`. Each call uses the same authorization and schema checks. Results stay separate; the model combines them. The earlier `mode: batch` interface with a separate describe step remains available for reproducing its captures. [Batch format, limits and hosted Symfony requirements](docs/batching.md).
 
-A hosted application needs a compatible CLI worker for batches. Generated PHP needs a dedicated sandbox host when the platform cannot provide gVisor. A public hosted executor and PHP-FPM batch adapter are not implemented.
+The JSON HTTP endpoint uses Symfony MCP and Security. It enforces permissions, argument validation and per-user call budgets across requests and restarts. Deadlines are cooperative; hosting and downstream clients must enforce hard timeouts. The default persistent state/lock works on one application host. Generated PHP remains a separate historical gVisor path.
 
 The bundle defaults to **5 seconds per execution/batch, 1 second per tool, 10 tool calls and two attempts**, including failures. gVisor adds a 128 MiB container limit. The separate editorial-audit harness uses a larger bounded profile, documented in its [demo guide](docs/demo.md).
 

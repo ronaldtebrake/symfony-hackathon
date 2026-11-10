@@ -20,11 +20,29 @@ return static function (ContainerConfigurator $container): void {
         '$tools' => [service(ArticleTool::class)],
         '$eventDispatcher' => service('event_dispatcher'),
     ]);
+    $container->parameters()->set('env(ADOPTION_MCP_TOKEN)', '');
+    $container->parameters()->set('env(ADOPTION_VIEWER_TOKEN)', '');
+    $services->set(Adoption\DemoTokenHandler::class)->args(['%env(ADOPTION_MCP_TOKEN)%', '%env(ADOPTION_VIEWER_TOKEN)%']);
+    $container->extension('security', [
+        'providers' => ['unused' => ['memory' => null]],
+        'firewalls' => ['mcp' => ['pattern' => '^/mcp$', 'stateless' => true,
+            'access_token' => ['token_handler' => Adoption\DemoTokenHandler::class]]],
+        'access_control' => [['path' => '^/mcp$', 'roles' => 'IS_AUTHENTICATED_FULLY']],
+    ]);
+    $http = 'php' !== getenv('ADOPTION_MODE');
+    if ($http) {
+        $container->extension('mcp', ['servers' => ['catalog' => [
+            'name' => 'Symfony approved catalog', 'transports' => ['http' => true],
+            'http' => ['path' => '/mcp'],
+            'registry' => [CodeMode\Symfony\Http\CatalogTools::class],
+        ]]]);
+    }
     $container->extension('code_mode', [
         'mode' => getenv('ADOPTION_MODE') ?: 'catalog',
         'identity_provider' => LocalReader::class,
         'ai_toolbox' => 'app.toolbox',
         'ai_tools' => ['publication_read'],
         'ai_authorization' => ReadPolicy::class,
+        'http' => ['enabled' => $http, 'permissions' => ['publication.read_published' => 'ROLE_READER']],
     ]);
 };

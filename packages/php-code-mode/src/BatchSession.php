@@ -14,12 +14,35 @@ final class BatchSession
 
     public function __construct(private readonly ToolCatalog $catalog, private readonly ToolBroker $broker,
         private readonly ExecutionIdentity $identity, private readonly ExecutionLimits $limits = new ExecutionLimits(),
-        private readonly int $maxBatches = 2, ?int $maxSessionToolCalls = null)
+        private readonly int $maxBatches = 2, ?int $maxSessionToolCalls = null,
+        array $state = [], private readonly ?\Closure $checkpoint = null)
     {
         if ($maxBatches < 1 || $maxBatches > 20) { throw new \InvalidArgumentException('A session permits between one and twenty batches.'); }
         $this->maxSessionToolCalls = $maxSessionToolCalls ?? min(100, $maxBatches * $limits->maxToolCalls);
         if ($this->maxSessionToolCalls < 0 || $this->maxSessionToolCalls > 100) { throw new \InvalidArgumentException('A session permits at most one hundred underlying calls.'); }
+        if ([] !== $state) {
+            if (array_keys($state) !== ['described', 'executions', 'toolCalls'] || !is_array($state['described'])
+                || !array_is_list($state['described']) || count($state['described']) > 4096
+                || !is_int($state['executions']) || $state['executions'] < 0 || $state['executions'] > 20
+                || !is_int($state['toolCalls']) || $state['toolCalls'] < 0 || $state['toolCalls'] > 100) {
+                throw new \InvalidArgumentException('Invalid host catalog state.');
+            }
+            foreach ($state['described'] as $name) {
+                if (!is_string($name) || !preg_match('/\A[a-zA-Z][a-zA-Z0-9_.-]{0,63}\z/D', $name)) { throw new \InvalidArgumentException('Invalid stored tool name.'); }
+                $this->described[$name] = true;
+            }
+            $this->executions = $state['executions']; $this->toolCalls = $state['toolCalls'];
+        }
     }
+
+    /** Host-only state. Never hydrate from MCP arguments or client session metadata. */
+    public function state(): array
+    {
+        return ['described' => array_keys($this->described), 'executions' => $this->executions, 'toolCalls' => $this->toolCalls];
+    }
+
+    private function checkpoint(): void { $this->checkpoint?->__invoke($this->state()); }
+    private static function now(): float { return hrtime(true) / 1_000_000_000; }
 
     public function searchResult(string $query): array
     {
@@ -31,6 +54,7 @@ final class BatchSession
         $definitions = $this->catalog->describe($names);
         $result = $this->boundedDiscovery(array_map(static fn ($tool) => $tool->jsonSerialize(), $definitions));
         foreach ($definitions as $definition) { $this->described[$definition->name] = true; }
+        $this->checkpoint();
         return $result;
     }
 
@@ -39,6 +63,7 @@ final class BatchSession
     {
         $result = $this->boundedDiscovery($this->catalog->searchContracts($query));
         foreach ($result['tools'] as $definition) { $this->described[$definition['name']] = true; }
+        $this->checkpoint();
         return $result;
     }
 
@@ -58,44 +83,52 @@ final class BatchSession
         if ($this->executions >= $this->maxBatches) { throw new SandboxException('execution_limit', 'The session has used its batch attempts.'); }
         if ([] === $this->described) { throw new SandboxException('discovery_required', 'Describe approved contracts before submitting a batch.'); }
         ++$this->executions;
+        // Persist before parsing or invoking: errors and interrupted requests consume an attempt.
+        $this->checkpoint();
         // Preflight the entire envelope before invoking anything. Per-tool policy/schema checks
         // still run at each call through the same broker used by isolated PHP.
         $requests = $this->requests($calls);
         if ($this->toolCalls + count($requests) > $this->maxSessionToolCalls) { throw new SandboxException('tool_call_limit', 'The batch exceeds the remaining session call budget.'); }
-        $started = BrokerWorker::now();
+        // Reserve all submitted calls before dispatch. Failure cannot refund a reservation.
+        $this->toolCalls += count($requests);
+        $this->checkpoint();
+        $started = self::now();
         $deadline = $started + $this->limits->wallTimeMs / 1000;
         $runId = 'batch-'.bin2hex(random_bytes(16));
-        $worker = null;
         $ledger = $results = [];
         try {
-            $worker = new BrokerWorker($this->broker, $this->identity, array_keys($this->described), $this->limits);
             foreach ($requests as $request) {
-                if (BrokerWorker::now() >= $deadline) { throw new SandboxException('wall_timeout', 'Batch exceeded its deadline.'); }
+                if (self::now() >= $deadline) { throw new SandboxException('wall_timeout', 'Batch exceeded its cooperative deadline.'); }
                 $index = count($ledger);
                 $ledger[] = ['name' => $request->name, 'status' => 'incomplete'];
-                ++$this->toolCalls;
-                $callStarted = BrokerWorker::now();
+                $callStarted = self::now();
                 try {
-                    $value = $worker->call($request->name, $request->arguments, $deadline);
+                    $value = $this->broker->call($request->name, $request->arguments, $this->identity, array_keys($this->described));
+                    // Ordinary application execution cannot interrupt a blocked handler. Check
+                    // after it returns; hosting and downstream clients own hard timeouts.
+                    if (self::now() >= min($deadline, $callStarted + $this->limits->toolTimeMs / 1000)) {
+                        throw new SandboxException('tool_deadline_exceeded', 'Handler returned after its cooperative deadline.');
+                    }
+                    $json = json_encode($value, JSON_THROW_ON_ERROR, 32);
+                    if (strlen($json) > $this->limits->maxToolResultBytes) { throw new SandboxException('tool_result_limit', 'Tool result exceeded its byte limit.'); }
+                    $value = json_decode($json, false, 32, JSON_THROW_ON_ERROR);
                 } catch (\Throwable $error) {
                     $reason = $error instanceof SandboxException ? $error->reason : 'tool_failed';
-                    $ledger[$index] += ['reason' => $reason, 'durationMs' => (BrokerWorker::now() - $callStarted) * 1000];
+                    $ledger[$index] += ['reason' => $reason, 'durationMs' => (self::now() - $callStarted) * 1000];
                     if ('tool_denied' === $reason) { $ledger[$index]['status'] = 'denied'; }
                     throw $error;
                 }
                 $ledger[$index] = ['name' => $request->name, 'status' => 'succeeded',
-                    'durationMs' => (BrokerWorker::now() - $callStarted) * 1000,
+                    'durationMs' => (self::now() - $callStarted) * 1000,
                     'resultBytes' => strlen(json_encode($value, JSON_THROW_ON_ERROR, 32))];
                 $results[] = ['name' => $request->name, 'value' => $value];
                 $bytes = strlen(json_encode(['results' => $results], JSON_THROW_ON_ERROR, 32));
                 if ($bytes > $this->limits->maxOutputBytes) { throw new SandboxException('output_limit', 'Batch results exceeded their aggregate byte limit.'); }
             }
-            return new BatchResult($results, $ledger, (BrokerWorker::now() - $started) * 1000, $bytes, $runId);
+            return new BatchResult($results, $ledger, (self::now() - $started) * 1000, $bytes, $runId);
         } catch (\Throwable $error) {
             throw new SandboxException($error instanceof SandboxException ? $error->reason : 'tool_failed',
                 'Batch stopped; earlier calls are not rolled back.', $ledger, $error, runId: $runId);
-        } finally {
-            $worker?->close();
         }
     }
 

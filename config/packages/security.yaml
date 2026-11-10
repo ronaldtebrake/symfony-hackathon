@@ -1,0 +1,8 @@
+security:
+    providers:
+        users_in_memory: { memory: null }
+    firewalls:
+        main:
+            security: false
+# The read-only workbench remains local. The independent HTTP example configures
+# bearer authentication in examples/symfony/config/services.php.

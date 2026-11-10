@@ -13,7 +13,8 @@ final readonly class BatchResult
 
     public static function runtime(): array
     {
-        return ['executor' => 'json-batch', 'generatedCode' => false, 'label' => 'Approved tool batch'];
+        return ['executor' => 'json-batch', 'generatedCode' => false, 'label' => 'Approved application calls',
+            'execution' => 'in-process', 'deadlineEnforcement' => 'cooperative', 'hardTermination' => false];
     }
 
     public function trace(): array

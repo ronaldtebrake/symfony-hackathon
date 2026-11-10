@@ -11,7 +11,7 @@ require dirname(__DIR__).'/vendor/autoload.php';
 if (is_file(dirname(__DIR__).'/.env.local')) {
     (new Dotenv())->load(dirname(__DIR__).'/.env.local');
 }
-// CLI-only app: no cookies or signed URLs persist between processes.
+// example app: no cookies or signed URLs persist between processes.
 $_SERVER['APP_SECRET'] ??= bin2hex(random_bytes(32));
 
 // Keep the two compiled configurations separate when reproducing the historical PHP proof.

@@ -39,10 +39,10 @@ final readonly class SessionFactory
     }
 
     /** Batches use the same approved handlers and never construct or contact a sandbox. */
-    public function createBatch(ExecutionIdentity $identity): BatchSession
+    public function createBatch(ExecutionIdentity $identity, array $state = [], ?\Closure $checkpoint = null): BatchSession
     {
         [$catalog, $broker] = $this->assembleTools();
-        return new BatchSession($catalog, $broker, $identity, $this->limits);
+        return new BatchSession($catalog, $broker, $identity, $this->limits, state: $state, checkpoint: $checkpoint);
     }
 
     /** Both paths assemble identical contracts and handlers; execution does not change policy. */
