@@ -37,7 +37,9 @@ final class HttpCatalogProof
             'callBudget' => 'tool_call_limit' === ($value('call_budget')['error']['reason'] ?? null)
                 && 'execution_limit' === ($value('invalid_attempt_exhausted')['error']['reason'] ?? null),
             'usersIsolated' => 'discovery_required' === ($http['other_user_discovery']['response']['result']['structuredContent']['error']['reason'] ?? null)
-                && 'tool_denied' === ($http['other_user_permissions']['response']['result']['structuredContent']['error']['reason'] ?? null),
+                && 'discovery_required' === ($http['other_user_permissions']['response']['result']['structuredContent']['error']['reason'] ?? null),
+            'discoveryFiltersPermissions' => [] === ($http['other_user_search']['response']['result']['structuredContent']['tools'] ?? null)
+                && 0 === ($http['other_user_search']['response']['result']['structuredContent']['matched'] ?? null),
             'freshInstall' => false === ($report['installation']['rootAutoloaderPresent'] ?? null) && false === ($report['installation']['pathRepositorySourcesPresent'] ?? null),
             'ordinaryExecution' => 'in-process' === ($report['doctor']['runtime']['execution'] ?? null)
                 && false === ($report['doctor']['runtime']['hardTermination'] ?? null)

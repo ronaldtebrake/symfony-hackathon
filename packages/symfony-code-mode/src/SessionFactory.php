@@ -15,13 +15,14 @@ use CodeMode\BatchSession;
 use CodeMode\Tool;
 use CodeMode\ToolBroker;
 use CodeMode\ToolCatalog;
+use CodeMode\ToolVisibilityInterface;
 use CodeMode\Symfony\Ai\ApprovedToolbox;
 use CodeMode\Provider\{ProviderRegistry, ToolProviderInterface};
 
 final readonly class SessionFactory
 {
     /** @param list<ReadToolInterface> $tools @param list<ToolProviderInterface> $providers */
-    public function __construct(private array $tools, private string $image = '', private DockerEngine $docker = new DockerEngine(), private ExecutionLimits $limits = new ExecutionLimits(), private ?ApprovedToolbox $aiToolbox = null, private ExecutionProfile $executor = ExecutionProfile::Gvisor, private DiscoveryMode $discovery = DiscoveryMode::Full, private array $providers = [])
+    public function __construct(private array $tools, private string $image = '', private DockerEngine $docker = new DockerEngine(), private ExecutionLimits $limits = new ExecutionLimits(), private ?ApprovedToolbox $aiToolbox = null, private ExecutionProfile $executor = ExecutionProfile::Gvisor, private DiscoveryMode $discovery = DiscoveryMode::Full, private array $providers = [], private ?ToolVisibilityInterface $visibility = null)
     {
         if (ExecutionProfile::Gvisor !== $executor) {
             throw new \InvalidArgumentException('Generated PHP requires the gVisor executor.');
@@ -35,14 +36,14 @@ final readonly class SessionFactory
     {
         [$catalog, $broker, $php] = $this->assembleTools();
         $executor = new GvisorSandbox($this->image, $this->docker);
-        return new CodeModeSession($catalog, $broker, $executor, $identity, $this->limits, discovery: $discovery ?? $this->discovery, phpInterface: $php);
+        return new CodeModeSession($catalog, $broker, $executor, $identity, $this->limits, discovery: $discovery ?? $this->discovery, phpInterface: $php, visibility: $this->visibility);
     }
 
     /** Batches use the same approved handlers and never construct or contact a sandbox. */
     public function createBatch(ExecutionIdentity $identity, array $state = [], ?\Closure $checkpoint = null): BatchSession
     {
         [$catalog, $broker] = $this->assembleTools();
-        return new BatchSession($catalog, $broker, $identity, $this->limits, state: $state, checkpoint: $checkpoint);
+        return new BatchSession($catalog, $broker, $identity, $this->limits, state: $state, checkpoint: $checkpoint, visibility: $this->visibility);
     }
 
     /** Both paths assemble identical contracts and handlers; execution does not change policy. */

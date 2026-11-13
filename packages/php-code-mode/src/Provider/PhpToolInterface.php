@@ -66,9 +66,16 @@ final readonly class PhpToolInterface
     }
 
     /** The complete emitted program is subject to the existing executor's source-byte limit. */
-    public function wrap(string $code): string
+    public function wrap(string $code, ?array $allowedTools = null): string
     {
-        $map = var_export($this->map, true);
+        $map = $this->map;
+        if (null !== $allowedTools) {
+            foreach ($map as $namespace => $methods) {
+                $map[$namespace] = array_filter($methods, static fn ($name) => in_array($name, $allowedTools, true));
+                if ([] === $map[$namespace]) { unset($map[$namespace]); }
+            }
+        }
+        $map = var_export($map, true);
         return <<<'PHP_GUEST'
 return (static function ($tools) {
 PHP_GUEST

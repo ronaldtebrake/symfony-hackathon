@@ -123,4 +123,14 @@ final class ToolCatalog
     {
         return array_values($this->definitions);
     }
+
+    /** Filter before ranking/counting/limiting. Never cache a principal's visibility here. */
+    public function visibleTo(ExecutionIdentity $identity, ?ToolVisibilityInterface $policy): self
+    {
+        if (null === $policy) { return $this; }
+        return new self(array_filter($this->all(), static function (ToolDefinition $tool) use ($identity, $policy): bool {
+            try { return $policy->isVisible($identity, $tool->name); }
+            catch (\Throwable) { return false; }
+        }));
+    }
 }

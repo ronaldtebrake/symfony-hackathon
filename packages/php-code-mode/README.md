@@ -2,7 +2,7 @@
 
 A reusable Composer library for running real PHP in gVisor or dispatching approved JSON batches through a trusted host broker. Batches execute existing handlers without generated code or a sandbox dependency. This is a security-focused proof, not an audited public execution service. See [the security model and runtime decision](docs/security.md) and [the verification record](docs/verification.md).
 
-The package has no Symfony application, Drupal or model-provider dependency. It uses the official PHP MCP SDK for an optional gateway; hosts can also register local trusted handlers. Generated PHP receives only `$tools->call($name, $arguments)` and returns a JSON-compatible value. The broker owns the identity, schema, authorization, and call budget.
+The package has no application or model-provider dependency. It uses the official PHP MCP SDK for an optional gateway; hosts can also register local trusted handlers. Generated PHP receives only `$tools->call($name, $arguments)` and returns a JSON-compatible value. The broker owns the identity, schema, authorization, and call budget.
 
 ## Run the proofs
 
@@ -93,9 +93,9 @@ $result = $session->execute('return $tools->call("articles.list");');
 
 Adapt the example to the discovered tool's required arguments. Only locally approved tools disclosed by full describe can be called; describing a tool does not bypass its authorization callback. The default session allows two execution attempts, including failures. Create a new session for a new host-authorized task. `$session->toolDefinitions()` supplies the three canonical schemas and the selected runtime description for MCP servers and model toolboxes. The static `CodeModeSession::definitions()` retains gVisor descriptions for existing integrations.
 
-At the agent boundary, `AgentResponse::execute($session, $code, $record)` returns only `value` for successful gVisor execution. Its optional trusted callback receives the PHP and full sanitized trace. On failure it records the trace and rethrows; `AgentResponse::failure($error, $session->profile())` produces the compact error reason and affected tool. Unknown runtime warnings are preserved. Direct session/executor calls still return the full `ExecutionResult`; authorization, schemas, limits and cleanup are unchanged. The [Symfony adapter](../symfony-code-mode/README.md#agent-responses-and-host-evidence) supplies MCP and toolbox integration. The Drupal proof uses this same PHP formatter.
+At the agent boundary, `AgentResponse::execute($session, $code, $record)` returns only `value` for successful gVisor execution. Its optional trusted callback receives the PHP and full sanitized trace. On failure it records the trace and rethrows; `AgentResponse::failure($error, $session->profile())` produces the compact error reason and affected tool. Unknown runtime warnings are preserved. Direct session/executor calls still return the full `ExecutionResult`; authorization, schemas, limits and cleanup are unchanged. The [Symfony adapter](../symfony-code-mode/README.md#agent-responses-and-host-evidence) supplies MCP and toolbox integration.
 
-Discovery permits 128 upstream tools, 8 continuation cursors, a 64 KiB result and a cooperative 3-second discovery deadline checked after each returned page. Search returns at most 8 name/description matches; describe accepts at most 16 names. Large catalogs must be narrowed upstream. Tool results must be structured JSON or a single text item; media/resource results are rejected. The gateway preserves envelopes such as Drupal Tool API's `success`, `message`, `data`. Output schemas are metadata, not proof of valid or trusted output.
+Discovery permits 128 upstream tools, 8 continuation cursors, a 64 KiB result and a cooperative 3-second discovery deadline checked after each returned page. Search returns at most 8 name/description matches; describe accepts at most 16 names. Large catalogs must be narrowed upstream. Tool results must be structured JSON or a single text item; media/resource results are rejected. The gateway preserves upstream result envelopes. Output schemas are metadata, not proof of valid or trusted output.
 
 ## JSON batches without a sandbox dependency
 
@@ -132,7 +132,7 @@ This path needs ordinary PHP and JSON; it works inside a web request. There is n
 
 ## Demo for judges
 
-The independent Symfony app provides the current authenticated HTTP product demo. The root workbench retains the editorial audit, direct/JSON/PHP comparison, and inspectable historical PHP/MCP traces. See [the walkthrough](../../docs/demo.md). A separate [Drupal DDEV proof](../../examples/drupal/README.md) verifies real published/restricted node reads through **Tool API → MCP Server Tool Bridge → MCP Server**, using local STDIO and this package. Drupal HTTP authentication remains unverified. No token-saving claim is inferred from the reference run.
+The independent Symfony app provides the current authenticated HTTP product demo. The root workbench retains the editorial audit, direct/JSON/PHP comparison, and inspectable historical PHP/MCP traces. See [the walkthrough](../../docs/demo.md). No token-saving claim is inferred from the reference run.
 
 ## Full schema discovery
 
@@ -149,3 +149,9 @@ Pass the registry's catalog and broker to `CodeModeSession`, with `phpInterface:
 `php()->stubs()` emits editor-only PHP interfaces with conservative schema-derived PHPDoc. Complex schemas remain broad; full JSON Schema stays authoritative. Never load the stubs as runtime code. `CodeModeSession::executionCode()` exposes the full guest source, including the fixed proxy, for host diagnostics. The entire program is checked against the original source-byte limit. No image changes, additional network access or new state channel are required.
 
 See the [standalone Symfony/MCP composition proof](../../examples/composition/README.md) for registration, exact PHP, host call traces and denied reads. Its reference program is operator-written; it makes no model-token claim.
+
+### Capability visibility
+
+Pass a `ToolVisibilityInterface` as the `visibility:` argument to `BatchSession` or `CodeModeSession`. Its `isVisible(ExecutionIdentity $identity, string $tool): bool` method filters discovery and is checked again by the broker on every call. Use the registered name, including a provider namespace where applicable. Policy exceptions fail closed. Resource authorization and input validation remain independent checks; do not call a resource policy with fabricated empty arguments to decide visibility.
+
+Filtering happens before search ranking, counts and limits. Hidden contracts are unavailable to describe, and generated PHP provider maps exclude hidden methods. Discovery state is not a permission cache. Policies for long-lived sessions must read current grants when permissions can be revoked. Without a visibility policy, existing host-approved discovery behavior is preserved.

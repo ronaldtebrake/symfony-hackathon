@@ -14,7 +14,7 @@ final class ToolBroker
     private Validator $validator;
 
     /** @param iterable<Tool> $tools */
-    public function __construct(iterable $tools)
+    public function __construct(iterable $tools, private readonly ?ToolVisibilityInterface $visibility = null)
     {
         // No external schema resolver: validation cannot fetch URLs or local files.
         $this->validator = new Validator(new SchemaLoader());
@@ -26,6 +26,21 @@ final class ToolBroker
         }
     }
 
+    /** Preserve any existing policy when a session supplies an additional one. */
+    public function withVisibility(?ToolVisibilityInterface $visibility): self
+    {
+        if (null === $visibility) { return $this; }
+        $existing = $this->visibility;
+        $combined = null === $existing ? $visibility : new class($existing, $visibility) implements ToolVisibilityInterface {
+            public function __construct(private readonly ToolVisibilityInterface $first, private readonly ToolVisibilityInterface $second) {}
+            public function isVisible(ExecutionIdentity $identity, string $tool): bool
+            {
+                return $this->first->isVisible($identity, $tool) && $this->second->isVisible($identity, $tool);
+            }
+        };
+        return new self($this->tools, $combined);
+    }
+
     /** @param list<string> $allowedTools */
     public function call(string $name, \stdClass $arguments, ExecutionIdentity $identity, array $allowedTools): mixed
     {
@@ -34,6 +49,9 @@ final class ToolBroker
             throw new SandboxException('tool_denied', 'Tool is not authorized.');
         }
         try {
+            if (null !== $this->visibility && !$this->visibility->isVisible($identity, $name)) {
+                throw new SandboxException('tool_denied', 'Tool is not authorized.');
+            }
             if (true !== ($tool->authorize)($identity, $arguments)) {
                 throw new SandboxException('tool_denied', 'Tool is not authorized.');
             }

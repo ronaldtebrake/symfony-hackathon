@@ -2,7 +2,7 @@
 
 Register approved Symfony tools and expose a stable JSON catalog through **normal Symfony HTTP requests**. Symfony AI supplies existing schemas and handler execution; Symfony Security supplies the authenticated user. The broker checks permissions and schemas on every call. No worker, Docker or process-control extensions are needed for JSON.
 
-The [independent Symfony application](../../examples/symfony/README.md) is the runnable quickstart. Its detached fresh-install capture passes **23 HTTP checks**, including authorized/denied reads and budgets that survive reconnects and restarts. Packages currently use Composer path repositories; they are not published to Packagist.
+The [independent Symfony application](../../examples/symfony/README.md) is the runnable quickstart. Its detached fresh-install capture passes **24 HTTP checks**, including authorized/denied reads and budgets that survive reconnects and restarts. Packages currently use Composer path repositories; they are not published to Packagist.
 
 ## Enable HTTP
 
@@ -82,7 +82,7 @@ code_mode:
 
 Discovery still returns full schemas. Selected calls can use `$tools->catalog->getArticles(['ids' => [1]])` or `$tools->call('catalog.getArticles', ['ids' => [1]])`. Both reach the same broker. Host policy, input validation, the disclosed-tool allowlist and execution budgets are unchanged. The generated PHPDoc interfaces describe supported schema shapes; they do not prove program correctness or confer permission. Unknown/complex shapes stay broad.
 
-The generic provider contract and MCP adapter live in the PHP core; the Symfony AI adapter stays in this bundle. Drupal/Rosetta integration can use that core without adopting this demo's UI or fixtures.
+The generic provider contract and MCP adapter live in the PHP core; the Symfony AI adapter stays in this bundle. Other PHP applications can use the core independently of the demo.
 
 ## Historical generated-PHP runtime
 
@@ -169,3 +169,32 @@ Call `tools_describe` for the selected tools before executing PHP. The response 
 The current [HTTP capture](../../docs/evidence/http-catalog-proof.json) verifies fresh adoption, authentication, authorization and persistent budgets. It contains operator requests, not a live agent conversation.
 
 The retained pre-HTTP [catalog capture](../../docs/evidence/catalog-proof.json) includes real Symfony AI follow-ups and denial/recovery, exact JSON calls, provider usage and control traces. All final answers are correct across five live scenarios, but the injection case attempted a restricted read and fails the agent-behavior check. The host denied it before invocation. Neither schemas nor a catalog prevent a model from following malicious data; application permissions must remain authoritative. An otherwise permitted action can still be outside the user's intent. [Coverage and limits](../../docs/batching.md#evidence-coverage-and-next-captures).
+
+## Permission-aware discovery
+
+Configure a capability visibility policy alongside your existing resource authorization:
+
+```yaml
+code_mode:
+    visibility_policy: App\PublicationVisibility
+```
+
+```php
+use CodeMode\ExecutionIdentity;
+use CodeMode\ToolVisibilityInterface;
+
+final class PublicationVisibility implements ToolVisibilityInterface
+{
+    public function isVisible(ExecutionIdentity $identity, string $tool): bool
+    {
+        return 'publication_read' === $tool
+            && $identity->allows('publication.read_published');
+    }
+}
+```
+
+The policy receives the registered tool name (including its provider namespace, when used). It checks capability availability without inventing resource arguments. The catalog filters contracts **before** ranking, counts and truncation. Both search and describe apply it; exceptions hide the capability. A hidden tool cannot be invoked by guessing its name.
+
+Execution rechecks visibility before the existing argument/resource policy on **every** underlying call. Previously discovered names and persisted session state never grant permission. Symfony HTTP derives a fresh identity from Security on each request. In long-lived sessions, a policy must query current application permissions if they can change; an `ExecutionIdentity` is an immutable snapshot. Keep mutable resource and field checks at the actual read as well.
+
+The policy is optional for compatibility: without one, discovery lists the host-approved catalog and existing per-call authorization still applies. It works with read services, Symfony AI tools and namespaced providers, for JSON and isolated PHP. No per-user discovery result is shared or cached. The [independent Symfony example](../../examples/symfony/src/PublicationVisibility.php) uses this shared core interface.

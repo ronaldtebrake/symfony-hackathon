@@ -103,10 +103,12 @@ try {
     $other = $request('tools/call', ['name' => 'execute_tools', 'arguments' => $read(101)], $viewer);
     $report['httpChecks']['other_user_discovery'] = $other;
     $verify('discovery_isolated_by_user', 'discovery_required' === ($other['response']['result']['structuredContent']['error']['reason'] ?? null));
-    $request('tools/call', ['name' => 'search_tools', 'arguments' => ['query' => 'publication']], $viewer);
+    $hidden = $request('tools/call', ['name' => 'search_tools', 'arguments' => ['query' => 'publication']], $viewer);
+    $report['httpChecks']['other_user_search'] = $hidden;
+    $verify('discovery_filters_permissions', [] === ($hidden['response']['result']['structuredContent']['tools'] ?? null) && 0 === ($hidden['response']['result']['structuredContent']['matched'] ?? null));
     $other = $request('tools/call', ['name' => 'execute_tools', 'arguments' => $read(101)], $viewer);
     $report['httpChecks']['other_user_permissions'] = $other;
-    $verify('security_role_enforced', 'tool_denied' === ($other['response']['result']['structuredContent']['error']['reason'] ?? null));
+    $verify('security_role_enforced', 'discovery_required' === ($other['response']['result']['structuredContent']['error']['reason'] ?? null));
     $control(['code-mode:reset-budget', 'demo-reader']);
     $call('search_tools', ['query' => 'publication'], 'operator_reset_discovery');
     $tooMany = $call('execute_tools', ['calls' => array_fill(0, 11, $read(101)['calls'][0])], 'call_budget');
@@ -119,7 +121,7 @@ try {
         'rootAutoloaderPresent' => is_file($app.'/../../vendor/autoload.php'), 'pathRepositorySourcesPresent' => is_dir($app.'/../../packages'),
         'disabledFunctions' => explode(',', $disabled), 'phpVersion' => PHP_VERSION, 'osFamily' => PHP_OS_FAMILY];
     $report['sourceSha256'] = [];
-    foreach (['src/ArticleTool.php', 'src/ReadPolicy.php', 'src/DemoTokenHandler.php', 'public/index.php', 'config/services.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Http/SecurityIdentityProvider.php', 'vendor/ronaldtebrake/symfony-code-mode/src/CodeModeBundle.php', 'vendor/ronaldtebrake/php-code-mode/src/BatchSession.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogTools.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogStateStore.php'] as $source) { $report['sourceSha256'][$source] = hash_file('sha256', $app.'/'.$source); }
+    foreach (['src/PublicationVisibility.php', 'src/ArticleTool.php', 'src/ReadPolicy.php', 'src/DemoTokenHandler.php', 'public/index.php', 'config/services.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Http/SecurityIdentityProvider.php', 'vendor/ronaldtebrake/symfony-code-mode/src/CodeModeBundle.php', 'vendor/ronaldtebrake/php-code-mode/src/BatchSession.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogTools.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogStateStore.php'] as $source) { $report['sourceSha256'][$source] = hash_file('sha256', $app.'/'.$source); }
     $report['status'] = 'passed';
 } catch (Throwable $error) {
     $report['status'] = 'failed'; $report['errorType'] = $error::class;

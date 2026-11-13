@@ -13,7 +13,7 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 return static function (ContainerConfigurator $container): void {
     $container->extension('framework', ['secret' => '%env(APP_SECRET)%', 'http_method_override' => false]);
     $services = $container->services()->defaults()->autowire()->autoconfigure();
-    foreach ([ArticleCatalog::class, ArticleTool::class, ReadPolicy::class, LocalReader::class] as $class) {
+    foreach ([ArticleCatalog::class, ArticleTool::class, ReadPolicy::class, LocalReader::class, Adoption\PublicationVisibility::class] as $class) {
         $services->set($class);
     }
     $services->set('app.toolbox', Toolbox::class)->args([
@@ -43,6 +43,7 @@ return static function (ContainerConfigurator $container): void {
         'ai_toolbox' => 'app.toolbox',
         'ai_tools' => ['publication_read'],
         'ai_authorization' => ReadPolicy::class,
+        'visibility_policy' => Adoption\PublicationVisibility::class,
         'http' => ['enabled' => $http, 'permissions' => ['publication.read_published' => 'ROLE_READER']],
     ]);
 };

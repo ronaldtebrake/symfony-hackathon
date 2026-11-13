@@ -11,12 +11,15 @@ final class BatchSession
     private int $executions = 0;
     private int $toolCalls = 0;
     private readonly int $maxSessionToolCalls;
+    private readonly ToolBroker $broker;
 
-    public function __construct(private readonly ToolCatalog $catalog, private readonly ToolBroker $broker,
+    public function __construct(private readonly ToolCatalog $catalog, ToolBroker $broker,
         private readonly ExecutionIdentity $identity, private readonly ExecutionLimits $limits = new ExecutionLimits(),
         private readonly int $maxBatches = 2, ?int $maxSessionToolCalls = null,
-        array $state = [], private readonly ?\Closure $checkpoint = null)
+        array $state = [], private readonly ?\Closure $checkpoint = null,
+        private readonly ?ToolVisibilityInterface $visibility = null)
     {
+        $this->broker = $broker->withVisibility($visibility);
         if ($maxBatches < 1 || $maxBatches > 20) { throw new \InvalidArgumentException('A session permits between one and twenty batches.'); }
         $this->maxSessionToolCalls = $maxSessionToolCalls ?? min(100, $maxBatches * $limits->maxToolCalls);
         if ($this->maxSessionToolCalls < 0 || $this->maxSessionToolCalls > 100) { throw new \InvalidArgumentException('A session permits at most one hundred underlying calls.'); }
@@ -46,12 +49,12 @@ final class BatchSession
 
     public function searchResult(string $query): array
     {
-        return $this->boundedDiscovery($this->catalog->searchResult($query));
+        return $this->boundedDiscovery($this->visibleCatalog()->searchResult($query));
     }
 
     public function describe(array $names): array
     {
-        $definitions = $this->catalog->describe($names);
+        $definitions = $this->visibleCatalog()->describe($names);
         $result = $this->boundedDiscovery(array_map(static fn ($tool) => $tool->jsonSerialize(), $definitions));
         foreach ($definitions as $definition) { $this->described[$definition->name] = true; }
         $this->checkpoint();
@@ -61,7 +64,7 @@ final class BatchSession
     /** The two-tool catalog discloses complete contracts in search, with the same execution gate. */
     public function searchContracts(string $query): array
     {
-        $result = $this->boundedDiscovery($this->catalog->searchContracts($query));
+        $result = $this->boundedDiscovery($this->visibleCatalog()->searchContracts($query));
         foreach ($result['tools'] as $definition) { $this->described[$definition['name']] = true; }
         $this->checkpoint();
         return $result;
@@ -158,6 +161,8 @@ final class BatchSession
         if (strlen(json_encode($value, JSON_THROW_ON_ERROR, 32)) > 32768) { throw new SandboxException('discovery_limit', 'Narrow the discovery request.'); }
         return $value;
     }
+
+    private function visibleCatalog(): ToolCatalog { return $this->catalog->visibleTo($this->identity, $this->visibility); }
 
     private function requests(array $calls): array
     {

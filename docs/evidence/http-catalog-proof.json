@@ -1,6 +1,6 @@
 {
     "format": "symfony-http-catalog/v1",
-    "capturedAt": "2026-11-10T18:41:39+00:00",
+    "capturedAt": "2026-11-13T09:30:47+00:00",
     "status": "passed",
     "scope": "Operator-authored JSON-RPC over actual Symfony MCP HTTP and bearer authentication. Independent Composer application, synthetic articles, no model or generated code. Process-control and child-process functions disabled inside the HTTP application.",
     "execution": {
@@ -27,6 +27,7 @@
         "origin_check": true,
         "identity_argument_rejected": true,
         "discovery_isolated_by_user": true,
+        "discovery_filters_permissions": true,
         "security_role_enforced": true,
         "call_budget_enforced": true,
         "invalid_attempt_consumed": true,
@@ -207,6 +208,41 @@
                 }
             }
         },
+        "other_user_search": {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 14,
+                "method": "tools/call",
+                "params": {
+                    "name": "search_tools",
+                    "arguments": {
+                        "query": "publication"
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 14,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"tools\":[],\"matched\":0,\"returned\":0,\"limit\":8,\"truncated\":false,\"hint\":\"No approved contract matched. Try another name, action or input field.\"}"
+                        }
+                    ],
+                    "isError": false,
+                    "structuredContent": {
+                        "tools": [],
+                        "matched": 0,
+                        "returned": 0,
+                        "limit": 8,
+                        "truncated": false,
+                        "hint": "No approved contract matched. Try another name, action or input field."
+                    }
+                }
+            }
+        },
         "other_user_permissions": {
             "httpStatus": 200,
             "request": {
@@ -234,15 +270,13 @@
                     "content": [
                         {
                             "type": "text",
-                            "text": "{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"publication_read\",\"index\":0},\"completedCalls\":0}"
+                            "text": "{\"error\":{\"reason\":\"discovery_required\"},\"completedCalls\":0}"
                         }
                     ],
                     "isError": true,
                     "structuredContent": {
                         "error": {
-                            "reason": "tool_denied",
-                            "tool": "publication_read",
-                            "index": 0
+                            "reason": "discovery_required"
                         },
                         "completedCalls": 0
                     }
@@ -851,14 +885,15 @@
         "osFamily": "Darwin"
     },
     "sourceSha256": {
+        "src/PublicationVisibility.php": "5d5b12364a2d5e18e5e2149f4f711145066a9f316f272c44935d138e6712e701",
         "src/ArticleTool.php": "fc91fcc30dc3be218ff10b30077f117ac0c088b6d9145995b9c12643b7810b38",
         "src/ReadPolicy.php": "bcabe020c5a4d674e253e99ce60fec7cfafdba834acc889e77e2abbbc92cf193",
         "src/DemoTokenHandler.php": "0f91c819e36bf4f32269a642a632cb324e80d5970418d5a3ecff00c6d699149f",
         "public/index.php": "0f15c1d1e0a93e9704f38c12f10dafbbd38a885e2f7cda4731ae2de0fcf93bd1",
-        "config/services.php": "5b253b6b7c3848b9341562d97a10948ad716471bc45303a3c36204d6c761c9ae",
+        "config/services.php": "64daf7c15c5fd9e83565e32f86e839c3569bee5edb1b1054edfcc9807e53a74b",
         "vendor/ronaldtebrake/symfony-code-mode/src/Http/SecurityIdentityProvider.php": "4eee5e951bddb86ad2ad540089a6de73fa600e4ae9e3c527a8e3e2b13ab440d0",
-        "vendor/ronaldtebrake/symfony-code-mode/src/CodeModeBundle.php": "910c9e074882d06e9242a69567d50900c0e99c0d120f2cfa80799f8d644ef942",
-        "vendor/ronaldtebrake/php-code-mode/src/BatchSession.php": "06d5e102ac8c526b516c75ad16799b491be1634c67c7a815712e03b733ba650f",
+        "vendor/ronaldtebrake/symfony-code-mode/src/CodeModeBundle.php": "1b8fbec332593c769c5126bcdfe700621f3a4275f5765290f0031265026cdafb",
+        "vendor/ronaldtebrake/php-code-mode/src/BatchSession.php": "430121cb94c6d1879e3ada276df2392d1a453387c544c58d8f25001d322373f1",
         "vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogTools.php": "b114269102bf3e675cab91e932ea444edda0140fa4430212803b9db6bf4ffaa6",
         "vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogStateStore.php": "63c3b84a6978424eea8cee31481bb16af8002e30cd3c464c15a20a5308aeb9e1"
     }

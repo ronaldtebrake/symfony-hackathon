@@ -11,17 +11,20 @@ final class CodeModeSession
     /** @var array<string, true> */
     private array $described = [];
     private int $executions = 0;
+    private readonly ToolBroker $broker;
 
     public function __construct(
         private readonly ToolCatalog $catalog,
-        private readonly ToolBroker $broker,
+        ToolBroker $broker,
         private readonly SandboxExecutor $sandbox,
         private readonly ExecutionIdentity $identity,
         private readonly ExecutionLimits $limits = new ExecutionLimits(),
         private readonly int $maxExecutions = 2,
         private readonly DiscoveryMode $discovery = DiscoveryMode::Full,
         private readonly ?\CodeMode\Provider\PhpToolInterface $phpInterface = null,
+        private readonly ?ToolVisibilityInterface $visibility = null,
     ) {
+        $this->broker = $broker->withVisibility($visibility);
         if ($maxExecutions < 1 || $maxExecutions > 3) {
             throw new \InvalidArgumentException('A session permits between one and three execution attempts.');
         }
@@ -29,13 +32,13 @@ final class CodeModeSession
 
     public function search(string $query): array
     {
-        return $this->catalog->search($query);
+        return $this->visibleCatalog()->search($query);
     }
 
     /** Search lists candidates. Only describe() discloses a callable contract. */
     public function searchResult(string $query): array
     {
-        $result = $this->catalog->searchResult($query);
+        $result = $this->visibleCatalog()->searchResult($query);
         if (strlen(json_encode($result, JSON_THROW_ON_ERROR, 32)) > 32768) {
             throw new SandboxException('discovery_limit', 'Search result exceeds the discovery budget. Narrow the query.');
         }
@@ -44,7 +47,7 @@ final class CodeModeSession
 
     public function describe(array $names): array
     {
-        $definitions = $this->catalog->describe($names);
+        $definitions = $this->visibleCatalog()->describe($names);
         $descriptions = array_map(fn (ToolDefinition $tool) => $tool->jsonSerialize() + ['php' => (new PhpToolGuide())->describe($tool)]
             + ([] === ($interface = $this->phpInterface?->describe($tool) ?? []) ? [] : ['phpInterface' => $interface]), $definitions);
         foreach ($definitions as $definition) {
@@ -66,7 +69,14 @@ final class CodeModeSession
     }
 
     /** Full guest source for host traces. Preparing code neither executes it nor grants capabilities. */
-    public function executionCode(string $code): string { return '' === $code ? '' : ($this->phpInterface?->wrap($code) ?? $code); }
+    public function executionCode(string $code): string
+    {
+        if ('' === $code) { return ''; }
+        $visibleNames = null === $this->visibility ? null : array_column($this->visibleCatalog()->all(), 'name');
+        return $this->phpInterface?->wrap($code, $visibleNames) ?? $code;
+    }
+
+    private function visibleCatalog(): ToolCatalog { return $this->catalog->visibleTo($this->identity, $this->visibility); }
 
     public function profile(): ExecutionProfile
     {

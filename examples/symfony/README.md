@@ -13,7 +13,7 @@ php examples/symfony/bin/console code-mode:doctor
 composer proof:http --working-dir=examples/symfony
 ```
 
-The [fresh-install capture](../../docs/evidence/http-catalog-proof.json) passes **23 checks**. It records actual HTTP JSON-RPC: article 101 returned, article 202 denied, missing/invalid authentication rejected, an unauthorized origin rejected, oversized calls refused, and attempts still exhausted after a server restart and a new MCP connection. A second authenticated user cannot inherit the reader's permissions or discovery state.
+The [fresh-install capture](../../docs/evidence/http-catalog-proof.json) passes **24 checks**. It records actual HTTP JSON-RPC: article 101 returned, article 202 denied, missing/invalid authentication rejected, an unauthorized origin rejected, oversized calls refused, and attempts still exhausted after a server restart and a new MCP connection. A second authenticated user without the read permission sees no article contract and cannot inherit the reader's permissions or discovery state. `PublicationVisibility` controls capability discovery; `ReadPolicy` still checks the requested article on every execution.
 
 The capture used its own `vendor/`, with package sources detached and no root autoloader. Process creation and Unix process-control functions were disabled **in the HTTP application**. The test harness starts a temporary PHP development server and uses ephemeral credentials; it never writes tokens to the report. These are operator-authored checks, not a model conversation or a new token benchmark. The harness requires Composer's ordinary development dependencies, not a container runtime.
 
