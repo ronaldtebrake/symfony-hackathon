@@ -25,7 +25,7 @@ final class CodeModeDemoCommand extends Command
     {
         $this->addOption('mode', null, InputOption::VALUE_REQUIRED, 'reference (no AI) or live (Hugging Face)', 'reference')
             ->addOption('approach', null, InputOption::VALUE_REQUIRED, 'both, code or direct', 'both')
-            ->addOption('backend', null, InputOption::VALUE_REQUIRED, 'fixture or drupal', 'fixture')
+            ->addOption('backend', null, InputOption::VALUE_REQUIRED, 'fixture or http', 'fixture')
             ->addOption('scenario', null, InputOption::VALUE_REQUIRED, 'audit or impact (impact requires live mode)', 'audit')
             ->addOption('question', null, InputOption::VALUE_REQUIRED, 'Custom read-only question (live Symfony fixture only; at most 2000 UTF-8 bytes)');
     }
@@ -36,9 +36,9 @@ final class CodeModeDemoCommand extends Command
         $mode = $input->getOption('mode');
         $approach = $input->getOption('approach');
         $backend = $input->getOption('backend');
-        if (!in_array($mode, ['reference', 'live'], true) || !in_array($approach, ['both', 'code', 'direct'], true) || !in_array($backend, ['fixture', 'drupal'], true)
-            || ('reference' === $mode && 'drupal' === $backend)) {
-            $io->error('Choose reference/live, both/code/direct, and fixture/drupal. Drupal requires live mode.');
+        if (!in_array($mode, ['reference', 'live'], true) || !in_array($approach, ['both', 'code', 'direct'], true) || !in_array($backend, ['fixture', 'http'], true)
+            || ('reference' === $mode && 'http' === $backend)) {
+            $io->error('Choose reference/live, both/code/direct, and fixture/http. The HTTP backend requires live mode.');
             return Command::INVALID;
         }
         try {

@@ -1,6 +1,6 @@
 # Compose Symfony AI and MCP tools
 
-A separate Symfony application, with its own Composer install, catalog, policies and read-only proof viewer. It uses the two reusable packages; it does not load the hackathon app or its services. The existing Symfony and Drupal demos stay independent.
+A separate Symfony application, with its own Composer install, catalog, policies and read-only proof viewer. It uses the two reusable packages; it does not load the hackathon app or its services. The main Symfony demo stays independent.
 
 **The proof:** one PHP program audits 48 published articles, joining native Symfony AI readers with a Symfony-backed MCP media reader. It returns all 10 expected findings through 10 broker calls. Denied reads, undiscovered tools, raw upstream names, attempt limits and an infinite loop exercise the same runner and broker.
 
@@ -68,9 +68,3 @@ The callable broker names are `catalog.getArticles` and `media.getMedia`. The le
 `tools_describe` retains full schemas and adds a short `phpInterface` guide. `ProviderRegistry::php()->stubs()` produces PHP interfaces with PHPDoc argument/result shapes for editors. Unknown references and complex unions fall back to broad types. These are documentation, **not whole-program type safety**. No remote schema text is evaluated as PHP. Input validation and authorization still happen in the broker on every call; native Symfony AI tools also retain their output validation. Generic MCP output schemas remain descriptive unless the upstream implementation validates them.
 
 The guest proxy translates method calls into the existing broker protocol. It is not a security boundary. Both convenience calls and forged/raw calls must pass the same disclosed-tool allowlist, identity, argument validation and per-call policy. The runner image, network isolation and resource limits are unchanged. Host traces identify the provider and original upstream tool; that diagnostic metadata is not added to successful agent responses.
-
-## Drupal / Rosetta later
-
-The PHP core owns `ToolProviderInterface`, `ProviderRegistry` and `McpProvider`; none depend on this example or on Symfony. Drupal can expose reviewed Tool API operations through its existing MCP gateway and compose them under a namespace. A Symfony consumer can mix that provider with native Symfony tools. Drupal remains responsible for entity/field access, account context and rechecking permissions when reading.
-
-The existing [Drupal authorization proof](../drupal/README.md) continues unchanged. No Data Surface query, new Drupal permission, generic entity reader or Rosetta dependency is introduced here. We can evaluate that adapter separately against this provider contract.

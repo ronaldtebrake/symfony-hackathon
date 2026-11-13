@@ -1,9 +1,0 @@
-name: Code Mode Surface query proof
-type: module
-description: 'Optional synthetic field-access fixture for the separate Code Mode query proof.'
-package: Testing
-core_version_requirement: ^11.3 || ^12
-lifecycle: experimental
-dependencies:
-  - webmcp_integration:webmcp_integration_surface_demo
-  - mcp_server_tool_bridge:mcp_server_tool_bridge

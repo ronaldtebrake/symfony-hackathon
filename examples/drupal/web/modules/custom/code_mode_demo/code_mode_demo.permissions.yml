@@ -1,4 +1,0 @@
-read code mode articles:
-  title: 'Read articles through the Code Mode demo tool'
-  description: 'Requires node and title-field view access on every call.'
-  restrict access: true

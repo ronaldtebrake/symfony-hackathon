@@ -42,7 +42,7 @@ final class AuditVerifier
             $actual[$finding['id']] = ['id' => $finding['id'], 'title' => $finding['title'], 'issues' => $issues];
         }
         if ('fixture' !== $backend) {
-            return ['passed' => null, 'message' => 'External data: review these findings against the Drupal site. No fixture oracle applies.'];
+            return ['passed' => null, 'message' => 'External data: review these findings against the source application. No fixture oracle applies.'];
         }
         $expected = (new AuditDataset())->expected();
         $wanted = [];

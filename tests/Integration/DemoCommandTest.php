@@ -30,7 +30,7 @@ final class DemoCommandTest extends TestCase
     {
         yield 'reference custom question' => [['--question' => 'Count articles.']];
         yield 'reference impact' => [['--scenario' => 'impact']];
-        yield 'external backend' => [['--mode' => 'live', '--backend' => 'drupal', '--question' => 'Count articles.']];
+        yield 'external backend' => [['--mode' => 'live', '--backend' => 'http', '--question' => 'Count articles.']];
         yield 'ambiguous selection' => [['--mode' => 'live', '--scenario' => 'impact', '--question' => 'Count articles.']];
         yield 'oversized' => [['--mode' => 'live', '--question' => str_repeat('a', 2001)]];
         yield 'control character' => [['--mode' => 'live', '--question' => "Count\x1b articles."]];

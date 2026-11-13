@@ -19,7 +19,7 @@ final class DemoQuestionTest extends TestCase
         self::assertSame(['id', 'text'], array_keys(get_object_vars($question)));
         $question->requireSupportedRun('live', 'fixture');
         $this->expectException(\InvalidArgumentException::class);
-        $question->requireSupportedRun('live', 'drupal');
+        $question->requireSupportedRun('live', 'http');
     }
 
     #[DataProvider('invalidQuestions')]

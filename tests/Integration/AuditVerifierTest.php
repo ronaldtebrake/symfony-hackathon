@@ -47,8 +47,8 @@ final class AuditVerifierTest extends TestCase
     public function testExternalResultsAreValidatedButNeverClaimedAsVerified(): void
     {
         $verifier = new AuditVerifier();
-        self::assertNull($verifier->verify((new AuditDataset())->expected(), 'drupal', [])['passed']);
-        self::assertFalse($verifier->verify(['audited' => -1, 'findings' => []], 'drupal', [])['passed']);
-        self::assertFalse($verifier->verify(['audited' => 1, 'findings' => [['id' => 1, 'title' => 'Article', 'issues' => ['missing_alt', 'missing_alt']]]], 'drupal', [])['passed']);
+        self::assertNull($verifier->verify((new AuditDataset())->expected(), 'http', [])['passed']);
+        self::assertFalse($verifier->verify(['audited' => -1, 'findings' => []], 'http', [])['passed']);
+        self::assertFalse($verifier->verify(['audited' => 1, 'findings' => [['id' => 1, 'title' => 'Article', 'issues' => ['missing_alt', 'missing_alt']]]], 'http', [])['passed']);
     }
 }

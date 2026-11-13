@@ -21,22 +21,22 @@ final readonly class BackendFactory
     public function create(string $backend, bool $evaluation = false): McpGateway
     {
         if ($evaluation && 'fixture' !== $backend) { throw new \InvalidArgumentException('Evaluations use only the synthetic Symfony fixture.'); }
-        $url = self::env('DRUPAL_MCP_URL');
-        $token = self::env('DRUPAL_MCP_TOKEN');
+        $url = self::env('MCP_HTTP_URL');
+        $token = self::env('MCP_HTTP_TOKEN');
         $names = self::FIXTURE_TOOLS;
-        if ('drupal' === $backend) {
+        if ('http' === $backend) {
             $parts = parse_url($url);
             if (!is_array($parts) || isset($parts['user']) || isset($parts['pass']) || isset($parts['fragment'])
                 || !in_array($parts['scheme'] ?? '', ['http', 'https'], true)
                 || ('http' === $parts['scheme'] && !in_array($parts['host'] ?? '', ['127.0.0.1', 'localhost', '[::1]'], true))) {
-                throw new \InvalidArgumentException('Configure a trusted HTTPS DRUPAL_MCP_URL (HTTP is allowed only on loopback).');
+                throw new \InvalidArgumentException('Configure a trusted HTTPS MCP_HTTP_URL (HTTP is allowed only on loopback).');
             }
-            $names = json_decode(self::env('DRUPAL_MCP_ALLOWED_TOOLS', '[]'), true, flags: JSON_THROW_ON_ERROR);
+            $names = json_decode(self::env('MCP_HTTP_ALLOWED_TOOLS', '[]'), true, flags: JSON_THROW_ON_ERROR);
             if (!is_array($names) || !array_is_list($names) || [] === $names || count($names) > 16) {
-                throw new \InvalidArgumentException('Configure an explicit DRUPAL_MCP_ALLOWED_TOOLS JSON list of read-only tool names discovered from Drupal.');
+                throw new \InvalidArgumentException('Configure an explicit MCP_HTTP_ALLOWED_TOOLS JSON list of read-only tool names approved by the host.');
             }
         } elseif ('fixture' !== $backend) {
-            throw new \InvalidArgumentException('Choose the fixture or drupal backend.');
+            throw new \InvalidArgumentException('Choose the fixture or http backend.');
         }
         $policies = [];
         foreach ($names as $name) {

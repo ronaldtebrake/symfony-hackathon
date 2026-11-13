@@ -20,7 +20,7 @@ The content-query experiment showed where we could simplify. The application alr
 
 PHP remains useful when computation can reduce what returns to the model. JSON makes ordinary tool calls easier to deploy. Both paths keep host-owned permissions and execution limits.
 
-The [visual walkthrough](https://ronaldtebrake.github.io/symfony-hackathon/#version-two) follows those decisions. The optional [Data Surface query proof](examples/drupal-surface-query/README.md#json-batch-comparison) demonstrates reuse with Drupal/Rosetta, including publication, entity and field access. It remains an experimental integration.
+The [visual walkthrough](https://ronaldtebrake.github.io/symfony-hackathon/#version-two) follows those decisions.
 
 The [current catalog evidence](https://ronaldtebrake.github.io/symfony-hackathon/#catalog-evidence) includes five real Symfony AI conversations, the follow-up and boundary recovery, operator control traces and a fresh Symfony consumer without Docker. All final answers match; four scenarios pass fully. In the injection scenario the agent attempted an unwanted restricted read, which the host denied. We retain that failure alongside the successful work. Earlier PHP captures remain unchanged.
 
@@ -83,7 +83,7 @@ Expose `/mcp` through Symfony's MCP bundle and protect it with your normal authe
 
 The application controls identity and access. Symfony AI's existing argument resolver and toolbox execute each approved handler; annotations alone do not grant permission. Budgets persist across HTTP requests and reconnects. No worker is involved. Both packages use Composer path repositories and are **not yet published to Packagist**.
 
-The [provider composition example](examples/composition/README.md) runs beside this demo with its own Composer install. It joins native Symfony AI and MCP tools in one isolated PHP program, with schema-derived PHP interfaces and a separate read-only proof viewer. Drupal can reuse the same core provider contract.
+The [provider composition example](examples/composition/README.md) runs beside this demo with its own Composer install. It joins native Symfony AI and MCP tools in one isolated PHP program, with schema-derived PHP interfaces and a separate read-only proof viewer.
 
 ## Discover, then execute
 
@@ -182,7 +182,7 @@ Code Mode is useful when a task needs pagination, branching or several related r
 
 The [independent application](examples/symfony/README.md) exposes `search_tools` and `execute_tools` at `/mcp`. Register native Symfony AI tools, approve their names, and map Symfony roles to application permissions. The agent connects using the URL and its application bearer token.
 
-The [fresh HTTP proof](docs/evidence/http-catalog-proof.json) passes **23 checks** with process creation disabled: published article 101 returned, restricted article 202 denied, authentication and origin checks, and budgets preserved after reconnecting and restarting the server. Its own Composer install had no root autoloader or package sources. This is an operator proof; retained model-token comparisons are separate historical measurements.
+The [fresh HTTP proof](docs/evidence/http-catalog-proof.json) passes **24 checks** with process creation disabled: published article 101 returned, restricted article 202 denied, authentication and origin checks, and budgets preserved after reconnecting and restarting the server. Discovery also filters contracts by the authenticated user’s permissions; execution rechecks visibility and resource access. Its own Composer install had no root autoloader or package sources. This is an operator proof; retained model-token comparisons are separate historical measurements.
 
 ```sh
 composer install --working-dir=examples/symfony
@@ -252,8 +252,6 @@ For the recorded agent audit and its follow-up, connect the separate `code-mode:
 - [PHP core package](packages/php-code-mode/README.md): runner, broker, bounded discovery and MCP gateway; independent of Symfony and model providers.
 - [Symfony integration](packages/symfony-code-mode/README.md): approved services and native AI tools, session-scoped toolbox, MCP server and prerequisite checks.
 - [Contribution proposals](docs/contributing/README.md): executable PHP MCP SDK and Symfony AI examples for future upstream discussions.
-- [Optional Drupal example](examples/drupal/README.md): reuse through Tool API and MCP Server. The main hackathon demonstration is Symfony-focused.
-- [Separate Data Surface query proof](examples/drupal-surface-query/README.md): Rosetta search through MCP and the same Code Mode provider, with field access, empty results and permission revocation verified.
 
 Run `composer check` for configuration, application and package checks. With gVisor configured, run `composer test:sandbox` and `composer test:demo` sequentially.
 

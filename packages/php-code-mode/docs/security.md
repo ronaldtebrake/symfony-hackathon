@@ -6,7 +6,7 @@ The only supplied generated-PHP executor is gVisor. JSON batches run trusted app
 
 ## Decision: native PHP in gVisor, deployed through Docker
 
-We need real PHP with functions, loops, arrays, and tool composition. The generated program is fully hostile. It must never execute in the Symfony/Drupal process, receive credentials, or select its own execution profile.
+We need real PHP with functions, loops, arrays, and tool composition. The generated program is fully hostile. It must never execute in the host application process, receive credentials, or select its own execution profile.
 
 | Option | Boundary and adoption | Decision for this proof |
 | --- | --- | --- |
@@ -101,7 +101,7 @@ Production deployment still needs:
 
 The package includes bounded MCP discovery, a fresh-client gateway and progressive discovery sessions. The caller configures the endpoint, transport timeouts and allowed names; generated PHP cannot select a server, credential, transport command or identity. Explicit local policy and upstream account/object access must both allow a call. Do not infer safety from `readOnlyHint` or a tool's prose. The fixture deliberately advertises an unapproved delete tool as read-only to exercise this distinction.
 
-The demo connects through STDIO to its PHP fixture or through HTTP to a configured Drupal MCP endpoint. HTTP redirects are disabled; bearer credentials remain in the host client. HTTPS is required except for trusted loopback development. Discovery is limited to 128 upstream tools, 8 continuation cursors, 64 KiB output and a 3-second supervised worker. Each schema/description is also bounded. Both gateway operations use a 64 MiB PHP worker heap; upstream transports need response/time bounds too because JSON decoding can allocate native memory.
+The demo connects through STDIO to its PHP fixture or through HTTP to a host-configured MCP endpoint. HTTP redirects are disabled; bearer credentials remain in the host client. HTTPS is required except for trusted loopback development. Discovery is limited to 128 upstream tools, 8 continuation cursors and 64 KiB output, with a cooperative 3-second deadline checked after each returned page. Each schema/description is also bounded. The gateway runs in the calling application process; the host-configured transport must enforce response and timeout bounds. The JSON HTTP path does not create a worker.
 
 Symfony AI requests PHP, then receives only tool results. Model/tool prose cannot change runner policy. Code Mode has at most two execution attempts with 15 seconds and 30 broker calls each; individual tools have 3 seconds. The direct baseline uses the same approved tools and per-tool supervisor. Provider/model round counts can differ and are measured, not fixed to favor either path. Model output and CMS content remain untrusted even after an audit matches a fixture.
 
@@ -111,7 +111,7 @@ The workbench has no question-entry UI. Human clarification belongs in the MCP c
 
 An operator-only security proof runs three fixed PHP probes against the same read-only fixture and writes a separate private report. Its tighter 2-second/three-call profile is chosen by trusted code, never by a question or tool argument. Failed executions carry a host-allocated run ID; `denied` means the broker rejected authorization before invocation, while other interrupted calls remain `incomplete`. The proof queries Docker for each exact run ID after cleanup. It fails if absence cannot be confirmed. The browser exposes only a loopback GET of that report and renders all source and evidence as text. No adversarial-probe tool or execution endpoint is exposed to agents or HTTP clients.
 
-The Drupal HTTP adapter is protocol-tested against a local MCP server; it has not yet been verified against a Drupal installation. Live inference requires a host Hugging Face key and remains a separate verification step. Mutation approval workflows and a public HTTP execution endpoint are outside this proof.
+The generic HTTP MCP adapter is protocol-tested against a local Symfony MCP server. Live inference requires a host Hugging Face key and remains a separate verification step. Mutation approval workflows and a public HTTP execution endpoint are outside this proof.
 
 ## Sources
 

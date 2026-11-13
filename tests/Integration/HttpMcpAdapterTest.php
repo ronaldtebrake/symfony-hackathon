@@ -22,7 +22,7 @@ final class HttpMcpAdapterTest extends TestCase
         fclose($socket);
         $server = new Process([PHP_BINARY, '-S', $address, '-t', 'public', 'public/index.php'], dirname(__DIR__, 2), ['APP_ENV' => 'test', 'APP_DEBUG' => '0']);
         $saved = [];
-        foreach (['DRUPAL_MCP_URL', 'DRUPAL_MCP_ALLOWED_TOOLS', 'DRUPAL_MCP_TOKEN'] as $name) {
+        foreach (['MCP_HTTP_URL', 'MCP_HTTP_ALLOWED_TOOLS', 'MCP_HTTP_TOKEN'] as $name) {
             $saved[$name] = $_SERVER[$name] ?? null;
         }
         try {
@@ -46,10 +46,10 @@ final class HttpMcpAdapterTest extends TestCase
                 self::assertStringContainsString('javascript', $response->getHeaders()['content-type'][0]);
                 self::assertSame(file_get_contents(dirname(__DIR__, 2).'/public'.$asset), $response->getContent());
             }
-            $_SERVER['DRUPAL_MCP_URL'] = 'http://'.$address.'/mcp';
-            $_SERVER['DRUPAL_MCP_ALLOWED_TOOLS'] = '["app_status"]';
-            $_SERVER['DRUPAL_MCP_TOKEN'] = 'test-only-token';
-            $gateway = (new BackendFactory(dirname(__DIR__, 2)))->create('drupal');
+            $_SERVER['MCP_HTTP_URL'] = 'http://'.$address.'/mcp';
+            $_SERVER['MCP_HTTP_ALLOWED_TOOLS'] = '["app_status"]';
+            $_SERVER['MCP_HTTP_TOKEN'] = 'test-only-token';
+            $gateway = (new BackendFactory(dirname(__DIR__, 2)))->create('http');
             $catalog = $gateway->discover();
             self::assertSame('app_status', $catalog->all()[0]->name);
             self::assertStringNotContainsString('test-only-token', json_encode($catalog->all()));

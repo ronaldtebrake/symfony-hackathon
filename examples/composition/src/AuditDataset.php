@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Composition;
 
-/** A deterministic publishing fixture, not a simulated Drupal installation. */
+/** A deterministic publishing fixture for the Symfony audit. */
 final class AuditDataset
 {
     public const TASK = 'Audit every published article for an empty meta_description and an empty alt text on its hero image. Use the available batched tools. Return JSON with audited (the number of published articles checked) and findings (sorted by article id). Each finding has id, title, and issues containing missing_description and/or missing_alt. Exclude drafts. Do not change any content.';

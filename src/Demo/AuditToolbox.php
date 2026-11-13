@@ -43,7 +43,7 @@ final class AuditToolbox implements ToolboxInterface
         }
         $definitions = 'code' === $approach ? $session->toolDefinitions() : $catalog->all();
         foreach ($definitions as $index => $definition) {
-            // Provider function names have stricter syntax than MCP names (e.g. Drupal's dots).
+            // Provider function names have stricter syntax than MCP names (e.g. names containing dots).
             $alias = 'direct' === $approach ? 'mcp_'.($index + 1) : $definition->name;
             $this->aliases[$alias] = $definition->name;
             $this->definitions[$definition->name] = $definition;

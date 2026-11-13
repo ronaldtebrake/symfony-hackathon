@@ -31,10 +31,9 @@ Run sandbox suites sequentially against a dedicated Docker endpoint. `APP_ENV=te
 
 The JSON batch checks exercise authorized and denied reads, full-envelope
 validation, per-call policy checks, discovery and attempt budgets, time/output
-limits, failure sanitization and worker cleanup. They do not establish a
-production security boundary, hosted compatibility or model-quality advantage.
-The separate Data Surface comparison preserves the existing gVisor proof and
-records batch results without treating them as isolated PHP execution.
+limits and failure sanitization. The independent Symfony HTTP proof also checks
+authentication and persistent budgets with process creation disabled. These
+checks do not certify every hosting environment or establish a model-quality advantage.
 
 The security probes require an authorized read, an explicitly denied tool call, and an infinite loop terminated after its read witness. A startup timeout or generic upstream error is insufficient. Each host-generated container name must be confirmed absent. The separate crash test permits a terminated zombie while its parent finishes reaping, but rejects a live worker after the fallback deadline. Network testing proves the trusted control can reach the destination before checking that the isolated guest cannot.
 
@@ -43,12 +42,11 @@ The security probes require an authorized read, an explicitly denied tool call, 
 - **Symfony AI + Hugging Face:** the [matched comparison](../../../docs/huggingface-comparison.md) verifies correct answers on both paths with the same model, question, fixture and permissions. Every attempted invocation is retained, including bad answers and provider failures. These are development measurements, not repeated performance trials.
 - **Codex:** a two-turn desktop audit/repair-plan chat generated two programs and made twenty successful upstream calls. The separate Symfony bundle CLI rehearsal denied a draft read, proposed an alternative and completed the user-selected audit. Both preserve exact PHP, actual MCP results and independently checked answers.
 - **Reference audit:** checked-in algorithms made ten batched reads each, checked 48 articles and returned ten identical findings. The 85% reduction concerns serialized tool-result payload, excluding prompts, initial schemas and generated code. No model was called.
-- **Drupal:** the optional [DDEV proof](../../../examples/drupal/README.md) uses Tool API, Tool Bridge and MCP Server under a fixed reader account. Published-node data was returned; restricted content was not. Independent Drupal access/read events establish the denial, because the generic gateway reports only `tool_failed` / `incomplete`. Both containers were removed and the nodes remained unchanged. Local STDIO identity selection is not remote authentication.
 
 The workbench is a local GET-only viewer. Tests cover remote-client/Host rejection, fixed report paths, oversized reports, missing evidence, failed-run precedence, mismatched captures and verification that usage and tool bytes reconcile. Source navigation and screenshots do not constitute line-level execution traces. New agent conversations are not automatically imported.
 
 ## Limits
 
-The optional Symfony bundle AI adapter has mocked-provider tests and real MCP/gVisor integration coverage; its paid-provider path is not the Hugging Face audit capture. Drupal HTTP authentication and its full editorial audit remain unverified. Windows, rootless Docker, alternate gVisor platforms and a native Linux coordinator were not verified locally. The configured GitHub Actions sandbox job is not evidence of a completed remote run.
+The optional Symfony bundle AI adapter has mocked-provider tests and real MCP/gVisor integration coverage; its paid-provider path is not the Hugging Face audit capture. Windows, rootless Docker, alternate gVisor platforms and a native Linux coordinator were not verified locally. The configured GitHub Actions sandbox job is not evidence of a completed remote run.
 
 Passing these tests does not establish safety for a public multi-tenant execution service. Production deployment still needs independent review, authenticated identity, admission limits and operational supervision. The [90-second manual recording](../../../docs/demo.md) and formal hackathon submission remain pending.

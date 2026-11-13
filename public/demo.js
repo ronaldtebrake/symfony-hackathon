@@ -48,7 +48,7 @@ function render(report) {
   byId('mode-note').textContent = live
     ? `LIVE INFERENCE · ${runs.code?.model ?? runs.direct?.model ?? 'Hugging Face'} · Results below come from the recorded execution.`
     : report.status === 'empty' ? 'Run composer demo in your terminal. This page follows the latest local result.' : 'REFERENCE RUN · No model was called. The MCP server, broker and isolated PHP execution are real. No token savings are claimed.';
-  byId('dataset-label').textContent = report.backend === 'drupal' ? 'Drupal MCP · configured tools' : 'Editorial fixture · read only';
+  byId('dataset-label').textContent = report.backend === 'http' ? 'HTTP MCP · configured tools' : 'Editorial fixture · read only';
   for (const method of ['direct', 'code']) {
     const run = runs[method];
     byId(`${method}-bytes`).textContent = bytes(run?.toolPayloadBytes);
@@ -94,7 +94,7 @@ function render(report) {
     row.append(body);
     list.append(row);
   });
-  byId('source-note').textContent = report.backend === 'drupal' ? 'Connected through MCP to the configured Drupal Tool API bridge. Review external findings on the site; fixture verification does not apply.' : 'The fixture is a real PHP MCP server. Both paths use the same dataset, authorization and batched tools.';
+  byId('source-note').textContent = report.backend === 'http' ? 'Connected to the host-configured MCP server. Review external findings against the source application; fixture verification does not apply.' : 'The fixture is a real PHP MCP server. Both paths use the same dataset, authorization and batched tools.';
   renderTrace();
 }
 

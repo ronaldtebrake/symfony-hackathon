@@ -48,14 +48,14 @@ final class McpGatewayTest extends TestCase
         }
     }
 
-    public function testUserCannotSelectAnInsecureRemoteDrupalEndpoint(): void
+    public function testUserCannotSelectAnInsecureRemoteMcpEndpoint(): void
     {
-        $_SERVER['DRUPAL_MCP_URL'] = 'http://example.org/mcp';
+        $_SERVER['MCP_HTTP_URL'] = 'http://example.org/mcp';
         try {
             $this->expectException(\InvalidArgumentException::class);
-            (new BackendFactory(dirname(__DIR__, 2)))->create('drupal');
+            (new BackendFactory(dirname(__DIR__, 2)))->create('http');
         } finally {
-            unset($_SERVER['DRUPAL_MCP_URL']);
+            unset($_SERVER['MCP_HTTP_URL']);
         }
     }
 }

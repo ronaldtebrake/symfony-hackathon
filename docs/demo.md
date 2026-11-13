@@ -67,7 +67,6 @@ The [hackathon brief](https://symfony.com/hackathon) is the source for submissio
 
 **The journey:** [From PHP to JSON](https://ronaldtebrake.github.io/symfony-hackathon/#version-two) explains the current execution model, then the infrastructure trade-off that led to it. PHP remains useful for loops, joins and filtering; easier managed isolation could improve its adoption later.
 
-**Drupal:** outside the 90-second cut, show the [separate Data Surface proof](../examples/drupal-surface-query/README.md#json-batch-comparison). It reuses providers while retaining publication and field access. Its fixed JSON/PHP comparison is not another live token benchmark.
 
 **Reproduce model evidence:** `php bin/console code-mode:catalog-proof --no-debug` runs operator checks; `--live` adds paid Symfony AI + Hugging Face inference. Both retain attempts. The public catalog capture includes five live scenarios and the independent app's operator proof. The native client rehearsal is a separate file; no video is included.
 
@@ -155,4 +154,4 @@ Security probes use two seconds, 128 MiB and three calls each. Normal audit exec
 
 The CLI also supports `composer demo -- --mode=live --scenario=impact` and `--question='Count published articles by language. Return counts.'`. Custom answers are marked **review required**; they have no independent correctness badge. Runtime settings and permissions remain host-controlled. Custom-question live inference is outside the captured proof.
 
-The [hackathon brief](https://symfony.com/hackathon), checked **3 November 2026**, asks for a public runnable repository and a 90-second real demo by **22 November, 18:00 CET**. The [evidence index](evidence/README.md) identifies the sources for each claim. The optional [Drupal example](../examples/drupal/README.md) is separate from this recording.
+The [hackathon brief](https://symfony.com/hackathon), checked **3 November 2026**, asks for a public runnable repository and a 90-second real demo by **22 November, 18:00 CET**. The [evidence index](evidence/README.md) identifies the sources for each claim.

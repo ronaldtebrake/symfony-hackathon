@@ -28,7 +28,6 @@ These captures establish the earlier implementation and its limits. Their costs 
 | [Boundary recovery](boundary-recovery-2026-11-02.json) | Codex CLI rehearsal: denied draft read, agent-proposed alternative, user-selected published-content audit. No denied value returned; both containers removed. This is not desktop footage. | Recovery |
 | [Security probes](security-proof-2026-11-01.json) | Fixed PHP programs: authorized read, `tool_denied`, and `wall_timeout` after a completed read. Exact container removal checked. No model called. | Security |
 | [Reference comparison](reference-comparison-2026-10-31.json) | Operator-written algorithms: 48 articles, ten matching findings and ten MCP calls each; 20,154 → 3,014 serialized tool-result bytes. No model called. | Reference |
-| [Drupal authorization](drupal-authorization-proof.json) | Optional DDEV example: published read allowed, restricted read denied with independent Drupal access evidence and cleanup checks. No model called. | [Drupal example](../../examples/drupal/README.md) |
 
 The original [Hugging Face Code Mode capture](huggingface-proof.json) and [failed direct baseline](huggingface-baseline.json) are retained as exact regression fixtures. The baseline binds the original Code Mode file by SHA-256. Their attempts also appear in the matched pair; retaining these original bytes preserves that historical binding and the replay tests. Superseded prose and screenshots are not needed to retain the failed runs.
 

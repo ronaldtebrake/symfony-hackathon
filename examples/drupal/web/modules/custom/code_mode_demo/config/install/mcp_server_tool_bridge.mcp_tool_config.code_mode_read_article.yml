@@ -1,7 +1,0 @@
-id: code_mode_read_article
-tool_id: code_mode_read_article
-description: 'Read the ID and title of one demo article. Drupal checks the acting account, node view access and title-field access. Missing and inaccessible articles are both denied. No writes.'
-status: true
-dependencies:
-  module:
-    - code_mode_demo

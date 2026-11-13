@@ -7,8 +7,7 @@ intermediate results before the agent receives them.
 
 Both paths reuse the same approved providers, host identity, broker authorization,
 JSON Schema validation and approved application handlers. Batching does not add
-permissions. The optional Drupal Data Surface proof exercises the same core
-through MCP; it does not change the main Symfony demo.
+permissions. The Symfony HTTP integration uses these same contracts and checks.
 
 The PHP proof established that an agent could compute over approved tools. The
 cost of operating its sandbox led us to offer direct JSON calls through the same
@@ -113,20 +112,6 @@ The host must enforce hard request deadlines, request-body limits, database dead
 The fresh HTTP capture verifies authentication, authorization, origin checks, persistent budgets and installation with process creation disabled. It does not certify every hosting provider, OAuth deployment or multi-host store. The example uses local synthetic data and a small bearer-token authenticator; real applications reuse their own Symfony Security setup. Use HTTPS outside loopback.
 
 The 153 ms forced-termination capture and all model token comparisons predate this migration. They remain historical evidence, with their original runtime conditions; they are not new HTTP guarantees or measurements. Generated PHP remains in the separate gVisor proof and must never be evaluated by the HTTP catalog.
-
-## What the comparison proves
-
-The [separate Data Surface comparison](../examples/drupal-surface-query/README.md#json-batch-comparison)
-runs operator-written JSON and PHP against the same real MCP query, data,
-identity and limits. It checks accessible results, empty results, hidden fields,
-publication, revocation after discovery, restored reads and broker denials.
-The batch returns two lists; PHP returns the combined result. That distinction
-is retained in the evidence.
-
-That reference run measures actual calls, elapsed time and serialized payloads.
-Its offline token counts measure one copy of those captured payloads, not model
-usage or cost. They describe the recorded tool definitions, not subsequent edits
-to the batch tool's budget description.
 
 ## Live three-way Symfony audit
 
@@ -251,11 +236,6 @@ model extraction deterministic or remove the value of local computation. This
 small catalog also does not isolate discovery savings from computation savings.
 Repeated fixed-protocol evaluation is still needed before claiming reliability.
 
-The separate Rosetta example supplies a typed Data Surface query. Useful
-projections can reduce the model's assembly work while retaining publication,
-entity and field access checks. That is an experimental integration, not evidence
-that Drupal Core has adopted a general JSON query or workflow language.
-
 </details>
 
 ## Catalog overhead and conversation cost
@@ -297,10 +277,9 @@ The injected editorial note reached the model as requested. The agent tried to r
 | Matched three-way audit | Direct, catalog and PHP; all 13 attempts retained | Fixed-protocol repetitions before reliability claims |
 | JSON conversation and recovery | Live follow-up and a separate denied-read/permitted-audit conversation | Manual footage and final video edit |
 | Current HTTP controls | Authorized/denied reads, authentication, origin rejection, and persisted execution/call budgets; no hard-termination claim | Independent security review; hosting timeouts and multi-host storage |
-| Independent Symfony app | Detached Composer installation; 23 HTTP checks pass with process creation disabled | Additional deployment environments |
+| Independent Symfony app | Detached Composer installation; 24 HTTP checks pass with process creation disabled | Additional deployment environments |
 | Five-scenario catalog coverage | One live run each; four fully pass, injection failure retained | Repeated matched direct/catalog/PHP evaluation under one protocol |
 | Performance investigation | Historical direct/PHP evidence | Fresh matched JSON arm |
-| Optional Data Surface | Fixed JSON/PHP comparison with real Drupal access checks | Catalog-specific live model comparison if promoted to the main demo |
 
 The retained model suite used the previous supervisor. Run the current cooperative-runtime reference checks with `php bin/console code-mode:catalog-proof --no-debug`; add `--live` for inference, or `--scenario=boundary` for one predeclared scenario. It writes unique, bounded reports under ignored `var/demo/catalog-proof/`, uses an exclusive capture lock and stops on authentication or quota rejection. No automatic retries or success-only selection. `composer proof:http --working-dir=examples/symfony` runs the authenticated HTTP consumer; its default is now `mode: catalog`, with historical PHP reproduction kept separately.
 
