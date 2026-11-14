@@ -8,12 +8,17 @@ use App\Demo\BackendFactory;
 use CodeMode\BrokerWorker;
 use CodeMode\ExecutionIdentity;
 use CodeMode\ExecutionLimits;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Process\Process;
 
 final class HttpMcpAdapterTest extends TestCase
 {
+    // Keep the forked broker's memory limit independent of earlier tests.
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testLocalServerServesScriptsAndMcpWithoutLeakingToken(): void
     {
         $socket = stream_socket_server('tcp://127.0.0.1:0', $errno, $error);

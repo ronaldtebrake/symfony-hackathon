@@ -15,6 +15,8 @@ use App\Demo\RunTrace;
 use CodeMode\ExecutionIdentity;
 use CodeMode\ExecutionLimits;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use Symfony\AI\Platform\Result\ToolCall;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -128,6 +130,9 @@ final class PerformanceBaselineTest extends WebTestCase
         $data->profile('profile-04');
     }
 
+    // Forked workers must inherit this fixture's heap, not the accumulated full-suite heap.
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testDirectReadersEnforcePolicySchemaAndHostOwnedCallBudget(): void
     {
         $trace = new RunTrace();
@@ -152,6 +157,8 @@ final class PerformanceBaselineTest extends WebTestCase
         $tools->beginTurn(1);
     }
 
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testMissingCapabilityAndOversizedInputFailClosed(): void
     {
         $trace = new RunTrace();
@@ -166,6 +173,8 @@ final class PerformanceBaselineTest extends WebTestCase
         $this->assertFalse($trace->brokerCalls[1]['workerClosed']);
     }
 
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testSlowDirectReaderIsTerminatedAndWorkerClosed(): void
     {
         $data = new class($this->data()) implements ReadDataset {
