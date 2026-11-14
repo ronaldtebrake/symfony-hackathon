@@ -6,13 +6,86 @@ Expose two stable tools: `search_tools` returns approved contracts and `execute_
 
 Your application owns the tool implementations, identity, permissions and execution limits. Conversations stay in your MCP client or Symfony AI agent. Generated PHP requires gVisor. The JSON catalog runs as normal Symfony services over authenticated HTTP, with no worker, Docker or process-control extensions.
 
-![The same 48 articles and 10 findings, with 43,979 versus 12,597 provider tokens in one matched Symfony AI and Hugging Face pair.](docs/images/code-mode-value.svg)
+Built for the [Symfony AI & MCP Hackathon](https://symfony.com/hackathon), using **Symfony AI**, the **PHP MCP SDK** and **Hugging Face Inference Providers**.
 
-*Illustrated flow of the reviewed 2 November 2026 pair: 71.4% fewer input + output tokens and 11 → 5 model requests. Same model, question, data and permissions. One verified pair, not a billing estimate.*
+[Watch the silent 90-second demo](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) · [Visual quickstart](https://ronaldtebrake.github.io/symfony-hackathon/#quickstart)
 
-Built for the [Symfony AI & MCP Hackathon](https://symfony.com/hackathon), using **Symfony AI**, the **PHP MCP SDK** and **Hugging Face Inference Providers**. The runner and Symfony integration are reusable Composer packages.
+## Judge quickstart
 
-[Watch the silent 90-second product demo](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour): real agent footage and permission revocation, with Maker, a shared Symfony voter and profiler traces.
+Use **PHP 8.2+, Composer 2 and Git**. This path runs a real Symfony HTTP application with its own dependencies. The proof needs no model key, Docker or gVisor; Composer checks the required PHP extensions.
+
+### 1. Clone, install and prove the boundary
+
+```sh
+git clone https://github.com/ronaldtebrake/symfony-hackathon.git
+cd symfony-hackathon
+composer install --working-dir=examples/symfony
+php examples/symfony/bin/console code-mode:doctor
+composer proof:http --working-dir=examples/symfony
+```
+
+Expected: the doctor reports ready; the proof returns `"status": "passed"` with **31 passing checks**. It reads published article **101**, denies restricted article **202**, revokes permission after discovery and denies the repeated read. It also checks authentication, cross-user isolation and persistent budgets. The harness starts and stops a temporary server with disposable credentials; it calls no model.
+
+### 2. Connect your agent
+
+Generate a local bearer token:
+
+```sh
+php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'
+```
+
+Save that value in `examples/symfony/.env.local` (ignored by Git; preserve any other settings):
+
+```dotenv
+ADOPTION_MCP_TOKEN=<the generated value>
+```
+
+Prepare a new take, then leave this server running:
+
+```sh
+php examples/symfony/bin/console demo:reader-access grant
+php examples/symfony/bin/console code-mode:reset-budget demo-reader
+composer start --working-dir=examples/symfony
+```
+
+Connect your MCP client to **http://127.0.0.1:8001/mcp**, using `Authorization: Bearer <the same value>`. It should advertise only `search_tools` and `execute_tools`. The client supplies its own model access; no Hugging Face key is needed for this conversation. [Client configuration](docs/codex.md#connect-the-json-catalog).
+
+Ask in a new conversation:
+
+> Use only this Symfony MCP connection. Discover publication_read, read article 101 and tell me its title. Do not use workspace files or shell commands.
+
+Expected title: **A Symfony application owns its tools**. The exact JSON call is shown [below](#discover-then-execute).
+
+### 3. Revoke permission and repeat the read
+
+In a second terminal, from the repository root:
+
+```sh
+php examples/symfony/bin/console demo:reader-access revoke
+```
+
+In the **same chat**, ask:
+
+> The operator revoked my read permission. Repeat the exact article 101 read once using the contract already discovered. Do not search first or retry. Explain the result without presenting the previous title as a fresh read.
+
+Expected: `tool_denied`, `completedCalls: 0`, and no new article data. Keep the same user and connection; **do not reset the budget between reads**. The two attempts include the denial. A subsequent search hides the contract. Before another take, grant access and reset the budget again.
+
+The [independent app guide](examples/symfony/README.md) explains the shared voter, Maker command, profiler and hosting limits. Production apps use their own authentication and permission store; the example uses a local bearer token and permission fixture.
+
+## The evidence behind the design
+
+| What was measured | Result | Scope |
+| --- | --- | --- |
+| JSON catalog vs. direct tools | **35.8% fewer provider tokens**: 46,438 → 29,798 | One matched 9 November audit; same model, question, data and permissions; 10 correct findings; reviews included. Captured before the HTTP migration. |
+| Historical sandboxed PHP vs. direct tools | **71.4% fewer provider tokens**: 43,979 → 12,597 | Separate 2 November pair illustrated below. This percentage is for PHP, not JSON. |
+
+These are provider-reported input + output tokens, not invoices or universal savings. The current HTTP runtime has its own execution proof and has not been re-benchmarked. [Inspect the comparisons and all attempts](https://ronaldtebrake.github.io/symfony-hackathon/#three-way).
+
+**The original sandboxed-PHP explainer**
+
+![Historical sandboxed PHP audit: the same 48 articles and 10 findings, with 43,979 versus 12,597 provider tokens.](docs/images/code-mode-value.svg)
+
+*Historical PHP pair, 2 November 2026: 71.4% fewer tokens and 11 → 5 model requests. The JSON result above comes from a separate matched audit.*
 
 ## How the goal evolved
 
@@ -28,44 +101,38 @@ The [current catalog evidence](https://ronaldtebrake.github.io/symfony-hackathon
 
 **Catalog size and task cost are different measurements.** In an offline four-field-tool fixture, our advertised catalog stays at **287 tokens** from 3 to 100 tools; advertising 100 directly uses **8,605**. Search results and conversation history still consume tokens. Those counts exclude model framing and are separate from provider-reported audit usage. [Measurement and scope](docs/batching.md#catalog-overhead-and-conversation-cost).
 
-## Getting started
+## Explore the saved evidence
 
-You can inspect the recorded executions with PHP 8.2+ and Composer 2. Viewing the evidence requires no Docker or API key:
+The [published workbench](https://ronaldtebrake.github.io/symfony-hackathon/) includes the video, actual calls, model usage and security proofs. To run the same read-only viewer locally, from the repository root:
 
 ```sh
-git clone https://github.com/ronaldtebrake/symfony-hackathon.git
-cd symfony-hackathon
 composer install
 composer start
 ```
 
-Browse the [visual documentation](https://ronaldtebrake.github.io/symfony-hackathon/) or open [the local workbench](http://127.0.0.1:8000/demo). It shows current JSON conversations and follow-ups, actual tool calls, measured model usage and security proofs, with generated PHP preserved in the historical chapters. It is a read-only viewer of saved runs. To run new work, choose an [execution path](#execution-paths) and connect an agent as described below.
+Open **http://127.0.0.1:8000/demo**. This viewer needs no API key or Docker and serves the video with seekable chapters. The separate HTTP application above runs on port **8001**; conversations stay in your agent.
 
-## Reproduce the current proofs
+## Additional catalog checks
+
+After the root `composer install`, these commands exercise the supporting catalog harness:
 
 ```sh
-# Actual MCP reads, control probes and fixed reference algorithms; no inference:
+# Five fixed reference scenarios and actual MCP reads; no inference:
 php bin/console code-mode:catalog-proof --no-debug
-# Same scenarios with real Symfony AI + Hugging Face (uses inference credits):
+# Optional: the same scenarios with paid Symfony AI + Hugging Face inference.
+# First set HUGGINGFACE_API_KEY in the root's ignored .env.local:
 php bin/console code-mode:catalog-proof --live --no-debug
-# Independent consumer, own dependencies and policy; no Docker:
-composer install --working-dir=examples/symfony
+# Separate local-operator STDIO proof (15 checks), not the HTTP quickstart:
 composer proof:catalog --working-dir=examples/symfony
 ```
 
-Every catalog capture is retained under ignored `var/demo/catalog-proof/`. Pages publishes only reviewed evidence. [Coverage, outcomes and remaining gaps](docs/batching.md#evidence-coverage-and-next-captures).
+Captures remain under ignored `var/demo/catalog-proof/`. Pages publishes reviewed evidence only. The [HTTP quickstart](#judge-quickstart) is the current judge-facing path. [Evidence coverage](docs/batching.md#evidence-coverage-and-next-captures).
 
 ## Use your Symfony tools
 
 With `mode: catalog`, the Symfony bundle exposes two MCP tools: `search_tools` and `execute_tools`. Your approved application tools remain behind the broker.
 
-Start with the [independent Symfony HTTP application](examples/symfony/README.md). It has its own dependencies, native Symfony AI tool and access policy:
-
-```sh
-composer install --working-dir=examples/symfony
-php examples/symfony/bin/console code-mode:doctor
-composer proof:http --working-dir=examples/symfony
-```
+The [judge quickstart](#judge-quickstart) runs the independent application. To bring the same integration to your own app, use the [bundle guide](packages/symfony-code-mode/README.md#enable-http).
 
 Register approved native tools and reuse your Symfony voters for discovery and reads:
 
@@ -95,10 +162,10 @@ The [provider composition example](examples/composition/README.md) runs beside t
 
 ## Discover, then execute
 
-For a read of published article 7, the agent first calls `search_tools`:
+For published article **101** in the quickstart application, the agent first calls `search_tools`:
 
 ```json
-{"query":"articles_read"}
+{"query":"publication_read"}
 ```
 
 Search returns the full approved contract. It matches names, descriptions and
@@ -106,7 +173,7 @@ schema fields, with bounded results and explicit truncation. Search does not
 confer permission. The agent then calls `execute_tools`:
 
 ```json
-{"calls":[{"name":"articles_read","arguments":{"id":7}}]}
+{"calls":[{"name":"publication_read","arguments":{"id":101}}]}
 ```
 
 The broker checks the caller, tool and arguments before invoking the handler.
@@ -186,19 +253,6 @@ Code Mode is useful when a task needs pagination, branching or several related r
 
 </details>
 
-## Connect a Symfony application over HTTP
-
-The [independent application](examples/symfony/README.md) exposes `search_tools` and `execute_tools` at `/mcp`. Register native Symfony AI tools, approve their names, and map Symfony roles to application permissions. The agent connects using the URL and its application bearer token.
-
-The [fresh HTTP proof](docs/evidence/http-catalog-proof.json) passes **31 checks** with process creation disabled: published article 101 returned, restricted article 202 denied, authentication and origin checks, and budgets preserved after reconnecting and restarting the server. Discovery also filters contracts by the authenticated user’s permissions; execution rechecks visibility and resource access. Its own Composer install had no root autoloader or package sources. This is an operator proof; retained model-token comparisons are separate historical measurements.
-
-```sh
-composer install --working-dir=examples/symfony
-composer proof:http --working-dir=examples/symfony
-```
-
-No worker option exists for the JSON path. A third execution is refused after the example's two attempts, including failures. Only the operator can reset the authenticated user's budget. [Setup, authentication and recording](examples/symfony/README.md).
-
 ## Execution paths
 
 | Path | What you need | What executes |
@@ -265,10 +319,10 @@ Run `composer check` for configuration, application and package checks. With gVi
 
 [Evidence index](docs/evidence/README.md) · [90-second recording guide](docs/demo.md)
 
-The hackathon deadline is **22 November 2026, 18:00 CET**. The final manual recording and formal submission remain pending.
+The finished [90-second video](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) and [draft submission description](docs/demo.md#submission-description) are ready. Attach the video and submit through SymfonyConnect before **22 November 2026, 18:00 CET**.
 
 ## Publish the visual documentation
 
-`composer docs:build` exports the same read-only proof viewers to `var/pages`. Preview with `php -S 127.0.0.1:8080 -t var/pages`. The build reads only the reviewed evidence in `docs/evidence`; it does not load `.env.local`, local reports, Docker or a model provider. Historical client names remain in original capture provenance; the documentation works with any MCP client or Symfony AI agent.
+`composer docs:build` exports the read-only proof viewers to `var/pages` for static hosting. Preview the same viewer locally with `composer start` at http://127.0.0.1:8000/demo, including video seeking. The build reads reviewed evidence in `docs/evidence` and explicitly selected media in `public/media`; it does not load `.env.local`, local reports, Docker or a model provider. Historical client names remain in original capture provenance; the documentation works with any MCP client or Symfony AI agent.
 
-The [Pages workflow](.github/workflows/pages.yaml) builds pull requests and deploys `main` to GitHub Pages. Select **GitHub Actions** as the repository’s Pages source. Only the generated HTML, CSS, JavaScript, animation and fixed JSON exports are published. New executions still run through a local agent or the operator CLI.
+The [Pages workflow](.github/workflows/pages.yaml) builds pull requests and deploys `main` to GitHub Pages. Select **GitHub Actions** as the repository’s Pages source. Only the generated HTML, CSS, JavaScript, animation, reviewed JSON exports and curated video assets are published. Raw recordings and private profiler storage stay out of the repository. New executions still run through a local agent or the operator CLI.

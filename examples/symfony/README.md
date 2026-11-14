@@ -2,6 +2,8 @@
 
 This small application owns its Composer dependencies, synthetic articles, native Symfony AI `#[AsTool]` service and access policy. It exposes **two MCP tools over authenticated HTTP**: `search_tools` and `execute_tools`. Approved JSON calls run as normal Symfony services. There is no Unix worker, process-control extension, Docker or model-token requirement.
 
+[Judge quickstart: clone → prove → connect → revoke](../../README.md#judge-quickstart).
+
 ## Install and verify
 
 From the repository root:
@@ -29,10 +31,11 @@ Do not commit the token. Run:
 
 ```sh
 php examples/symfony/bin/console demo:reader-access grant
+php examples/symfony/bin/console code-mode:reset-budget demo-reader
 composer start --working-dir=examples/symfony
 ```
 
-The demo starts without a read grant. The operator command writes an ignored local permission fixture; Symfony Security reloads its value on each HTTP request. Missing or malformed state denies the role. Production applications use their own permission store. `demo:reader-access` is never exposed as an AI or MCP tool.
+The demo starts without a read grant. Reset the budget before this new take because an earlier proof or conversation may have consumed its attempts. The operator command writes an ignored local permission fixture; Symfony Security reloads its value on each HTTP request. Missing or malformed state denies the role. Production applications use their own permission store. `demo:reader-access` is never exposed as an AI or MCP tool.
 
 Connect your MCP client to `http://127.0.0.1:8001/mcp`, sending `Authorization: Bearer <your token>`. [Codex configuration](../../docs/codex.md) uses a host environment variable, not a token in TOML. The built-in PHP server is for local development; deploy the same front controller through normal Symfony hosting, with HTTPS and your application's Symfony Security authentication.
 

@@ -10,7 +10,7 @@ The two original screen recordings were supplied on 14 November. Their chat and 
 
 | Time | On screen | Message and evidence |
 | --- | --- | --- |
-| **00:00–00:03** | Symfony violet title: “Your Symfony app. In your agent.” | Build a tool. Share a voter. See every decision. |
+| **00:00–00:03** | Symfony violet title: “Two MCP entry tools. Your approved catalog.” | Discover schemas on demand. Keep Symfony’s access checks. The two entry tools are search_tools and execute_tools. |
 | **00:03–00:10** | Actual Maker output, reformatted for readability. | `make:code-mode-tool InventoryLookup` creates a native AI tool, voter, registration and security test. The generated test passes: one test, two assertions. The scaffold stays hidden and denied until implemented. This is a separate example from the article tool. |
 | **00:10–00:38** | Original agent footage: question, discovery, opened JSON and returned title. | “Look up published article 101 in our Symfony application. What's its title?” The agent calls `search_tools`, then `execute_tools` with `publication_read` and `id: 101`. The result is **A Symfony application owns its tools**. Seven seconds of waiting are visibly trimmed. |
 | **00:38–00:46** | Current tool and controller source, with Symfony syntax colours. | `#[IsGrantedTool(ArticleVoter::READ, subject: 'id')]` and `#[IsGranted(ArticleVoter::READ, subject: 'id')]` share the voter. Discovery uses it too; execution rechecks current access. This implementation was added after the original recording. |
@@ -20,6 +20,27 @@ The two original screen recordings were supplied on 14 November. Their chat and 
 | **01:22–01:30** | Separate historical matched audit and repository link. | Ten correct findings on all paths: direct **46,438**, JSON **29,798**, sandboxed PHP **12,806** provider tokens. JSON used **35.8% fewer** than direct tools in this run. Same model, question, data and permissions; reviews included. Not this lookup's usage, a new HTTP benchmark or a bill. |
 
 Source views: [handler](../examples/symfony/src/ArticleTool.php), [voter](../examples/symfony/src/ArticleVoter.php), [controller](../examples/symfony/src/ArticleController.php). The workbench supplies a video player, seekable chapters, highlighted source, actual Maker output and profiler metadata. Its supporting HTTP records are separate operator checks, not the recorded chat transcript.
+
+## Submission description
+
+Draft for the official project entry; not submitted. Project name: **Symfony Code Mode**.
+
+> Symfony Code Mode gives agents two stable MCP entry tools: search for approved capabilities, then call them with JSON. Symfony AI supplies the schemas and invokes existing handlers; Symfony Security controls which tools a user can discover and rechecks access on every call.
+>
+> We started with generated PHP in gVisor, where code could join and filter tool results before returning them to the model. That worked, but required a separate runtime. The current JSON catalog runs in an ordinary Symfony HTTP application, making adoption simpler while preserving authorization and call budgets. Sandboxed PHP remains available for computation.
+>
+> The real demo reads an article, revokes the user's permission, then denies the identical follow-up. A Maker command, shared voter and profiler panel make the integration familiar to Symfony developers. In a retained matched Symfony AI + Hugging Face audit, JSON used 35.8% fewer provider tokens than direct tools, with ten correct findings on both paths and review costs included. That historical audit predates HTTP; the current application has a separate 31-check execution proof.
+>
+> Clone the repository and run the HTTP proof with PHP and Composer. No Docker or model key is required for that proof.
+
+Submission links:
+
+- Repository: https://github.com/ronaldtebrake/symfony-hackathon
+- Judge quickstart: https://ronaldtebrake.github.io/symfony-hackathon/#quickstart
+- Video player: https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour
+- Final MP4: https://ronaldtebrake.github.io/symfony-hackathon/media/symfony-native-tools-demo-90s.mp4
+
+Suggested tags: **MCP**, **MCP SDK**, **Agent**, **Tool Calling**, **symfony-ai**. Attach the final MP4 and complete submission through SymfonyConnect; the repository push does not submit the entry.
 
 ## Record another take
 

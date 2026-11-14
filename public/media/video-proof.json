@@ -23,7 +23,7 @@
     {
       "start": 0,
       "end": 3,
-      "title": "Your Symfony app, in your agent"
+      "title": "Two MCP entry tools. Your approved catalog."
     },
     {
       "start": 3,
@@ -70,7 +70,8 @@
       1190,
       540
     ],
-    "revocation": "Caption explains the real operator change between recordings; no operator footage was supplied."
+    "revocation": "Caption explains the real operator change between recordings; no operator footage was supplied.",
+    "opening": "The first three seconds explain the two-tool catalog and on-demand schemas. All subsequent source clips and chapter timings are preserved."
   },
   "recordingVerification": {
     "sameExecuteArguments": true,
@@ -503,7 +504,7 @@
     "scope": "Separate 48-article / 24-image matched audit; reviews included. All paths returned 10 correct findings. HTTP runtime not re-benchmarked."
   },
   "assets": {
-    "symfony-native-tools-demo-90s.mp4": "566adb3b2dcd3c6ab8c09aaedb26cc670fa6b03718cad0d5fa7601f878a11e94",
+    "symfony-native-tools-demo-90s.mp4": "79a21ab0b6a038d280ababd24bbeab2b41db54faf2d92050e96371263a1afe2a",
     "profiler-authorized.png": "91e9d66d32dac1fc826565638ac2308249bcf1746515fb5a96ec13b34887eaa8",
     "profiler-denied.png": "215ecf2a8f3355bad65a97e2d3dfaf62af5fabc715525caaba6642c67e96678a",
     "symfony-native-tools-poster.jpg": "87b226d10b94f0ac44e0e3d54281ecf392ba6c61e8fd2a7129cc00851bd92bb1"

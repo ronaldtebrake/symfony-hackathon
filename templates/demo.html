@@ -55,15 +55,15 @@
           </div>
           <div class="hero-code"><div class="code-window-bar"><span><i></i><i></i><i></i></span><span>JSON · two stable tools</span></div>
             <pre><code><span class="syntax-comment">01 · search_tools</span>
-{<span class="syntax-string">"query"</span>: <span class="syntax-string">"published articles"</span>}
+{<span class="syntax-string">"query"</span>: <span class="syntax-string">"publication_read"</span>}
 
 <span class="syntax-comment">Read the returned contract, then:</span>
 <span class="syntax-comment">02 · execute_tools</span>
 {<span class="syntax-string">"calls"</span>: [{
-  <span class="syntax-string">"name"</span>: <span class="syntax-string">"articles_read"</span>,
-  <span class="syntax-string">"arguments"</span>: {<span class="syntax-string">"id"</span>: 7}
+  <span class="syntax-string">"name"</span>: <span class="syntax-string">"publication_read"</span>,
+  <span class="syntax-string">"arguments"</span>: {<span class="syntax-string">"id"</span>: 101}
 }]}</code></pre>
-            <div class="code-window-note">Illustrative approved-tool calls · <a href="#three-way">Inspect the real JSON executions →</a></div>
+            <div class="code-window-note">Quickstart tool contract · <a href="#native-rehearsal">Inspect the actual HTTP calls →</a></div>
           </div>
         </div>
         <div class="journey-signpost"><span class="eyebrow">The design journey</span><p>Compute with PHP <span aria-hidden="true">→</span> keep the access checks <span aria-hidden="true">→</span> adopt with JSON</p><a href="#version-two">Follow the decisions and evidence →</a></div>
@@ -202,9 +202,9 @@ public function __invoke(int $id): JsonResponse
       </section>
       <section id="catalog-adoption" class="doc-page" aria-labelledby="catalog-adoption-heading">
         <div class="eyebrow">Independent Composer consumer · own tool and policy</div><h2 id="catalog-adoption-heading">Your Symfony app. Your approved tool.</h2>
-        <p class="lede">The stock MCP server discovers the app’s approved tool, denies a restricted article and reads a permitted one. Its copied packages run after the source directories are detached, without the main demo autoloader.</p>
+        <p class="lede">The authenticated HTTP server discovers the app’s approved tool, returns a published article and denies restricted or revoked reads. The retained fresh-install capture ran copied packages without the main demo autoloader or package source directories.</p>
         <div id="catalog-adoption-body"><p>Loading the independent consumer proof…</p></div>
-        <div class="proof-run"><code>composer proof:catalog --working-dir=examples/symfony</code><span>No model token, Docker or gVisor configuration</span></div>
+        <div class="proof-run"><code>composer proof:http --working-dir=examples/symfony</code><span>31 HTTP checks · no model token, Docker or gVisor</span></div>
         <p class="measurement-note">The fresh install proves authenticated MCP HTTP, authorized/denied reads and persistent budgets with process creation disabled. It uses normal Symfony services and a local bearer-token fixture; it is not a Packagist release or a hosting certification. <a href="https://github.com/ronaldtebrake/symfony-hackathon/tree/main/examples/symfony">Minimal application and reproduction steps</a> · <a href="#adoption-proof">Historical PHP adoption conversation</a>.</p>
       </section>
 
@@ -221,11 +221,23 @@ public function __invoke(int $id): JsonResponse
       </section>
 
       <section id="quickstart" class="quickstart doc-page" aria-labelledby="quickstart-heading">
-        <div class="eyebrow">Adopt it in your Symfony application</div><h2 id="quickstart-heading">Your tools. One small integration.</h2>
-        <p class="lede">Keep your existing Symfony AI tool services. Register the approved names, supply a host-owned authorization policy and expose Code Mode to any MCP client.</p>
-        <div class="quick-steps"><article><span class="step-number">01</span><h3>Install the bundle</h3><p>The hackathon packages are currently installed from this repository with Composer path repositories. The independent example owns its dependencies and defaults to the JSON catalog. Its recorded proof runs without Docker, a runner image or the main demo autoloader.</p><pre><code>composer install --working-dir=examples/symfony
-php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://github.com/ronaldtebrake/symfony-hackathon/tree/main/examples/symfony">Open the minimal Symfony application ↗</a></article>
-        <article><span class="step-number">02</span><h3>Approve tools and set a policy</h3><p>Symfony AI provides the tool schemas. The policy checks the caller and arguments on every invocation, including every call in a JSON submission. Tool descriptions never grant access.</p><pre><code>code_mode:
+        <div class="eyebrow">Judge quickstart · PHP 8.2+ · Composer 2 · Git</div><h2 id="quickstart-heading">Run the real Symfony demo.</h2>
+        <p class="lede">Clone the app, prove an authorized and denied read, then connect your agent. The HTTP proof needs no model key, Docker or gVisor. Composer checks the required PHP extensions.</p>
+        <div class="quick-steps">
+          <article><span class="step-number">01</span><h3>Clone, install and prove the boundary</h3><pre><code>git clone https://github.com/ronaldtebrake/symfony-hackathon.git
+cd symfony-hackathon
+composer install --working-dir=examples/symfony
+php examples/symfony/bin/console code-mode:doctor
+composer proof:http --working-dir=examples/symfony</code></pre><p>Expected: the doctor reports ready; the proof returns <code>"status": "passed"</code> with <strong>31 passing checks</strong>. Article 101 is returned; restricted article 202 is denied. Revocation after discovery, authentication, cross-user isolation and persistent budgets are checked too.</p><p class="measurement-note">This is real JSON-RPC over authenticated HTTP. The harness starts and stops a temporary server with disposable credentials; no model is called. The app owns its dependencies, tool and voter.</p></article>
+          <article><span class="step-number">02</span><h3>Connect your agent</h3><p>Generate a local bearer token:</p><pre><code>php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'</code></pre><p>Save it in <code>examples/symfony/.env.local</code>, which Git ignores. Preserve any other settings:</p><pre><code>ADOPTION_MCP_TOKEN=&lt;the generated value&gt;</code></pre><p>Prepare a new take, then leave this server running:</p><pre><code>php examples/symfony/bin/console demo:reader-access grant
+php examples/symfony/bin/console code-mode:reset-budget demo-reader
+composer start --working-dir=examples/symfony</code></pre><p>Configure your MCP client with the same token:</p><pre><code>URL: http://127.0.0.1:8001/mcp
+Authorization: Bearer &lt;the same value&gt;</code></pre><p>Only <code>search_tools</code> and <code>execute_tools</code> should be advertised. Your agent uses its existing model access; this conversation needs no Hugging Face key. <a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/codex.md#connect-the-json-catalog">Client configuration ↗</a></p><blockquote class="tour-question">Use only this Symfony MCP connection. Discover publication_read, read article 101 and tell me its title. Do not use workspace files or shell commands.</blockquote><pre><code>{"query":"publication_read"}
+{"calls":[{"name":"publication_read","arguments":{"id":101}}]}</code></pre><p>Expected title: <strong>A Symfony application owns its tools</strong>.</p></article>
+          <article><span class="step-number">03</span><h3>Revoke permission and repeat the read</h3><p>In a second terminal, from the repository root:</p><pre><code>php examples/symfony/bin/console demo:reader-access revoke</code></pre><p>In the same conversation:</p><blockquote class="tour-question">The operator revoked my read permission. Repeat the exact article 101 read once using the contract already discovered. Do not search first or retry. Explain the result without presenting the previous title as a fresh read.</blockquote><pre><code>{"error":{"reason":"tool_denied","tool":"publication_read","index":0},"completedCalls":0}</code></pre><p>Keep the same user and connection. <strong>Do not reset the budget between reads.</strong> The two attempts include the denial. The prior title remains in chat; no new article data is returned. A subsequent search hides the contract. Before another take, grant access and reset the budget again.</p><a href="#demo-tour">Watch the recorded conversation →</a></article>
+        </div>
+        <div class="doc-callout"><strong>Ordinary Symfony hosting. Application-owned access.</strong><p>The example uses a local bearer token and permission fixture. Production apps reuse their own Symfony authentication and permission store. JSON calls run installed handlers in the application process; hosting and downstream clients own hard timeouts.</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/tree/main/examples/symfony">App setup and hosting limits ↗</a></div>
+        <details class="proof-details"><summary>Bring the same integration to your own tools</summary><p>Register approved Symfony AI services and share your application voter between discovery, calls and controllers:</p><pre><code>code_mode:
     mode: catalog
     ai_tool_services: [Adoption\ArticleTool]
     ai_tools: ['publication_read']
@@ -237,10 +249,7 @@ php examples/symfony/bin/console code-mode:doctor</code></pre><a href="https://g
     http:
         enabled: true
         permissions:
-            publication.read_published: ROLE_READER</code></pre><p class="measurement-note">Example configuration; use service IDs and tool names from your app. <a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/examples/symfony/config/services.php">Read the complete working configuration ↗</a></p></article>
-        <article><span class="step-number">03</span><h3>Connect your agent</h3><p>Connect your agent to the authenticated <code>/mcp</code> URL. Symfony Security supplies identity; application policy and persistent budgets control each call.</p><pre><code>URL: https://your-app.example/mcp
-Authorization: Bearer &lt;your application token&gt;</code></pre><p>For native Symfony AI, use <code>BatchToolbox($session, catalog: true)</code> with a host-owned <code>BatchSession</code>.</p></article></div>
-        <div class="doc-callout"><strong>Check prerequisites before executing.</strong><p><code>code-mode:doctor</code> reports what is ready for your configured path. The JSON catalog uses PHP and ordinary Symfony dependencies. No process-control extensions, worker or Docker are required. Hard timeouts belong to your hosting and downstream clients. The historical PHP sandbox has separate prerequisites.</p></div>
+            publication.read_published: ROLE_READER</code></pre><p>These packages use Composer path repositories and are not yet on Packagist. <a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/packages/symfony-code-mode/README.md#enable-http">Full bundle installation and endpoint configuration ↗</a> · <a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/examples/symfony/config/services.php">Working application configuration ↗</a></p><p>For a native Symfony AI conversation, use <code>BatchToolbox($session, catalog: true)</code> with a host-owned <code>BatchSession</code>.</p></details>
         <div class="feature-grid"><article><span>MAKERBUNDLE</span><h3>Start with a safe scaffold</h3><p><code>make:code-mode-tool InventoryLookup</code> creates a native tool, voter, explicit registration and security test. Access is denied until you implement your policy.</p></article><article><span>SYMFONY SECURITY</span><h3>One application voter</h3><p>Reuse your voter for discovery, resource access and normal controllers. Symfony AI’s <code>IsGrantedTool</code> checks the native invocation too.</p></article><article><span>LOCAL PROFILER</span><h3>See what actually ran</h3><p>The Code Mode panel shows discovery, budget reservations and broker decisions alongside native AI events. Detailed diagnostics stay out of agent responses.</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/packages/symfony-code-mode/README.md#native-symfony-development">Set up local development ↗</a></article></div>
         <div class="feature-grid"><a href="#catalog-adoption"><span>WORKING EXAMPLE</span><h3>A fresh Symfony application</h3><p>Its own tool, policy, authorized read and denied read.</p></a><a href="https://github.com/ronaldtebrake/symfony-hackathon/tree/main/examples/composition"><span>REUSE EXISTING TOOLS</span><h3>Compose Symfony AI and MCP</h3><p>Namespaced providers share approved contracts and per-call authorization.</p></a><a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/contributing/README.md"><span>UPSTREAM OPPORTUNITIES</span><h3>Build on Symfony AI &amp; MCP</h3><p>Concrete contribution ideas and reproducible evidence for maintainers.</p></a></div>
       </section>
