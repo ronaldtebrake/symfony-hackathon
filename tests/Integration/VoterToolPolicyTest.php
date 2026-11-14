@@ -18,10 +18,10 @@ final class VoterToolPolicyTest extends TestCase
     {
         $tokens = new TokenStorage();
         $tokens->setToken(new UsernamePasswordToken(new InMemoryUser('reader', null), 'main'));
-        $granted = true;
+        $permission = new \ArrayObject(['granted' => true]);
         $authorization = $this->createMock(AuthorizationCheckerInterface::class);
-        $authorization->method('isGranted')->willReturnCallback(static function ($attribute, $subject = null) use (&$granted): bool {
-            return $granted && ('READ' !== $attribute || 101 === $subject);
+        $authorization->method('isGranted')->willReturnCallback(static function ($attribute, $subject = null) use ($permission): bool {
+            return $permission['granted'] && ('READ' !== $attribute || 101 === $subject);
         });
         $policy = new VoterToolPolicy($tokens, $authorization, ['read' => ['discover' => 'DISCOVER', 'execute' => 'READ', 'subject' => 'id']]);
         $reader = new ExecutionIdentity('reader');
@@ -33,10 +33,10 @@ final class VoterToolPolicyTest extends TestCase
         $this->assertFalse($policy->isGranted($reader, 'read', new \stdClass()));
         $this->assertFalse($policy->isVisible($reader, 'unconfigured'));
         $this->assertFalse($policy->isVisible(new ExecutionIdentity('admin'), 'read'));
-        $granted = false;
+        $permission['granted'] = false;
         $this->assertFalse($policy->isVisible($reader, 'read'));
         $this->assertFalse($policy->isGranted($reader, 'read', (object) ['id' => 101]));
-        $granted = true;
+        $permission['granted'] = true;
         $tokens->setToken(null);
         $this->assertFalse($policy->isGranted($reader, 'read', (object) ['id' => 101]));
     }

@@ -141,7 +141,7 @@ final class ApprovedToolboxTest extends TestCase
                 (new ApprovedToolbox(new Toolbox([$mutator]), $names, new PublishingAuthorization()))->tools();
                 $this->fail('Unsafe catalog accepted.');
             } catch (\LogicException) {
-                $this->assertTrue(true);
+                // Expected: discovery must reject both an unknown tool and a mutating tool.
             }
         }
         $this->expectException(\InvalidArgumentException::class);

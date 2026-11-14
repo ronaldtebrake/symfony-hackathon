@@ -128,6 +128,7 @@ final class PerformanceProofTest extends WebTestCase
             'local_budget' => $report['exhausted']['runtime'] = ['executor' => 'untrusted', 'isolation' => 'none'],
             'redaction' => $report['turns'][0]['trace']['value']['extra'] = RequestCollector::CANARY,
             'timing' => $report['turns'][1]['trace']['value']['after']['profile']['durationMs'] = -1,
+            default => throw new \LogicException('Unexpected test scenario.'),
         };
         $this->assertFalse((new ProofVerifier())->verify($report)['passed']);
     }

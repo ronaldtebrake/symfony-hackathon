@@ -66,6 +66,7 @@ final class HuggingFaceBaselineTest extends WebTestCase
             'bytes' => $capture['result']['toolPayloadBytes']++,
             'ledger' => $capture['result']['brokerCalls'][0]['name'] = 'cms_delete_article',
             'coverage' => $capture['result']['agentCalls'][4]['result'] = '{"items":[]}',
+            default => throw new \LogicException('Unexpected test scenario.'),
         };
         $pair = (new HuggingFaceComparison())->build(self::codeJson(), $capture);
         $this->assertFalse($pair['verifiedComparison']);

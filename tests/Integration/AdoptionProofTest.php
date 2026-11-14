@@ -45,6 +45,7 @@ final class AdoptionProofTest extends WebTestCase
             'usage' => ++$r['liveTrace']['providerTokens']['total'],
             'exposure' => $r['liveTrace']['requestEvidence'] = [],
             'budget' => $r['probe']['executions'][2]['reason'] = null,
+            default => throw new \LogicException('Unexpected test scenario.'),
         };
         $this->assertFalse((new AdoptionProofVerifier())->verify($r)['passed']);
     }

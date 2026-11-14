@@ -92,6 +92,7 @@ final class SymfonyCodeModeTest extends KernelTestCase
         $this->assertTrue($result->isError);
         $this->assertSame('tool_denied', $result->structuredContent['error']['reason']);
         $this->assertSame(['error' => ['reason' => 'tool_denied', 'tool' => 'articles_read']], $result->structuredContent);
+        $this->assertInstanceOf(\Mcp\Schema\Content\TextContent::class, $result->content[0]);
         $this->assertSame($result->structuredContent, json_decode($result->content[0]->text, true));
         $this->assertStringNotContainsString('secret-path-and-token', json_encode($result));
         $unexpected = $factory->result(static fn () => throw new \RuntimeException('private database error'));

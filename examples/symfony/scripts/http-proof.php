@@ -33,6 +33,7 @@ $environment = array_replace(array_fill_keys(array_keys(getenv()), false), [
 $disabled = 'pcntl_fork,pcntl_waitpid,pcntl_alarm,pcntl_signal,posix_setsid,posix_kill,posix_getpid,proc_open,popen,exec,shell_exec,system,passthru';
 $http = HttpClient::create(['timeout' => 10, 'max_duration' => 15, 'max_redirects' => 0]);
 $server = null;
+$endpoint = new ArrayObject(['url' => null]);
 $sequence = 0;
 $session = null;
 $control = static function (array $args) use ($app, $environment): string {
@@ -65,7 +66,11 @@ $startServer = static function () use ($app, $environment, $disabled, $http): ar
     $p->stop();
     throw new RuntimeException('The authenticated HTTP endpoint did not start.');
 };
-$request = static function (string $method, array $params = [], ?string $credential = null, array $extraHeaders = []) use (&$url, &$sequence, &$session, $http, $token): array {
+$request = static function (string $method, array $params = [], ?string $credential = null, array $extraHeaders = []) use ($endpoint, &$sequence, &$session, $http, $token): array {
+    $url = $endpoint['url'];
+    if (!is_string($url)) {
+        throw new LogicException('Start the HTTP server before sending a request.');
+    }
     $rpc = ['jsonrpc' => '2.0', 'id' => ++$sequence, 'method' => $method, 'params' => (object) $params];
     $headers = ['Accept' => 'application/json, text/event-stream', 'Authorization' => 'Bearer '.($credential ?? $token), 'MCP-Protocol-Version' => '2025-11-25'];
     if (null !== $session) {
@@ -98,7 +103,11 @@ $call = static function (string $name, array $arguments, string $label) use ($re
     return $row['response']['result']['structuredContent'] ?? [];
 };
 $read = static fn ($id) => ['calls' => [['name' => 'publication_read', 'arguments' => ['id' => $id]]]];
-$controller = static function (int $id) use (&$url, $http, $token): array {
+$controller = static function (int $id) use ($endpoint, $http, $token): array {
+    $url = $endpoint['url'];
+    if (!is_string($url)) {
+        throw new LogicException('Start the HTTP server before reading an article.');
+    }
     $response = $http->request('GET', substr($url, 0, -4).'/articles/'.$id, ['headers' => ['Authorization' => 'Bearer '.$token, 'Accept' => 'application/json']]);
 
     return ['httpStatus' => $response->getStatusCode(), 'response' => json_decode($response->getContent(false), true)];
@@ -115,8 +124,8 @@ try {
     $control(['code-mode:reset-budget', 'demo-reader']);
     $control(['code-mode:reset-budget', 'demo-viewer']);
     $control(['demo:reader-access', 'grant']);
-    [$server, $url] = $startServer();
-    $report['httpChecks']['unauthenticated'] = ['httpStatus' => $http->request('GET', $url)->getStatusCode()];
+    [$server, $endpoint['url']] = $startServer();
+    $report['httpChecks']['unauthenticated'] = ['httpStatus' => $http->request('GET', $endpoint['url'])->getStatusCode()];
     $verify('authentication_required', 401 === $report['httpChecks']['unauthenticated']['httpStatus']);
     $report['httpChecks']['invalid_token'] = $request('tools/list', credential: 'invalid');
     $verify('invalid_token_rejected', 401 === $report['httpChecks']['invalid_token']['httpStatus']);
@@ -141,7 +150,7 @@ try {
     $verify('failure_consumes_attempt', 'execution_limit' === ($call('execute_tools', $read(101), 'exhausted')['error']['reason'] ?? null));
     // A new process and protocol session must preserve both discovery and exhausted attempts.
     $server->stop();
-    [$server, $url] = $startServer();
+    [$server, $endpoint['url']] = $startServer();
     $initialize();
     $verify('restart_and_reconnect_preserve_budget', 'execution_limit' === ($call('execute_tools', $read(101), 'after_restart')['error']['reason'] ?? null));
     $report['httpChecks']['untrusted_origin'] = $request('tools/list', extraHeaders: ['Origin' => 'https://untrusted.example']);

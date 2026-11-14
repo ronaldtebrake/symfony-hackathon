@@ -211,6 +211,7 @@ final class BatchSession
         return $this->catalog->visibleTo($this->identity, $this->visibility);
     }
 
+    /** @return non-empty-list<\stdClass> */
     private function requests(array $calls): array
     {
         if (!array_is_list($calls) || [] === $calls || \count($calls) > $this->limits->maxToolCalls) {

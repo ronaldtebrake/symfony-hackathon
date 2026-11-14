@@ -15,21 +15,26 @@ try {
     $patch = new Process(['patch', '--batch', '--forward', '-p1', '--input', __DIR__.'/php-mcp-sdk-structured-results.patch'], $directory, timeout: 10);
     $patch->mustRun();
     require $target;
+    // This API exists only in the patched proposal, not in the installed SDK.
+    $structured = [Mcp\Schema\Result\CallToolResult::class, 'structured'];
+    if (!is_callable($structured)) {
+        throw new RuntimeException('The patched SDK does not expose the proposed factory.');
+    }
     $check = static function (bool $condition): void { if (!$condition) { throw new RuntimeException('SDK proposal verification failed.'); } };
     $values = [['count' => 48], [1, 2], (object) [], false, 0, '', null];
     foreach ($values as $value) {
-        $result = Mcp\Schema\Result\CallToolResult::structured($value, meta: ['trace' => 'fixture']);
+        $result = $structured($value, meta: ['trace' => 'fixture']);
         $wire = json_decode(json_encode($result, \JSON_THROW_ON_ERROR), true, flags: \JSON_THROW_ON_ERROR);
         $check(!$wire['isError']);
         $check(json_decode($wire['content'][0]['text'], true) === json_decode(json_encode($value), true));
         $check(($wire['structuredContent'] ?? null) === json_decode(json_encode($value), true));
         $check($wire['_meta'] === ['trace' => 'fixture']);
     }
-    $error = Mcp\Schema\Result\CallToolResult::structured(['error' => ['reason' => 'tool_denied']], isError: true);
+    $error = $structured(['error' => ['reason' => 'tool_denied']], isError: true);
     $check($error->isError && 'tool_denied' === $error->structuredContent['error']['reason']);
     $check(Mcp\Schema\Result\CallToolResult::fromArray(json_decode(json_encode($error), true))->isError);
     try {
-        Mcp\Schema\Result\CallToolResult::structured(\NAN);
+        $structured(\NAN);
         throw new RuntimeException('Invalid JSON was accepted.');
     } catch (JsonException) {
         // The helper must not silently replace invalid data with false or an empty string.

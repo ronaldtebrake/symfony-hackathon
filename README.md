@@ -315,9 +315,11 @@ For the recorded agent audit and its follow-up, connect the separate `code-mode:
 - [Symfony integration](packages/symfony-code-mode/README.md): approved services and native AI tools, session-scoped toolbox, MCP server and prerequisite checks.
 - [Contribution proposals](docs/contributing/README.md): executable PHP MCP SDK and Symfony AI examples for future upstream discussions.
 
-Run `composer check` for coding standards, configuration, application and package checks. `composer cs:check` checks PHP style without modifying files; `composer cs:fix` applies fixes. Review the diff and rerun the tests after fixing. CI runs the same checks on every push and pull request.
+Run `composer check` for coding standards, static analysis, configuration, application and package checks. `composer cs:check` checks PHP style without modifying files; `composer cs:fix` applies fixes. Review the diff and rerun the tests after fixing. CI runs the same checks on every push and pull request.
 
-The locked PHP CS Fixer shim and [configuration](.php-cs-fixer.dist.php) follow [Symfony AI's rule sets](https://github.com/symfony/ai/blob/main/.php-cs-fixer.dist.php), preserving our strict typing, binary stream flags and standalone guest API name. Coverage includes both packages, both example apps, tests and PHP CLI commands. Dependencies, generated caches, captured evidence and Maker templates are excluded; rendered Maker output is checked separately. These are coding-standard checks, not a security audit or a substitute for static analysis.
+The locked PHP CS Fixer shim and [configuration](.php-cs-fixer.dist.php) follow [Symfony AI's rule sets](https://github.com/symfony/ai/blob/main/.php-cs-fixer.dist.php), preserving our strict typing, binary stream flags and standalone guest API name. Coverage includes both packages, both example apps, tests and PHP CLI commands. Dependencies, generated caches, captured evidence and Maker templates are excluded; rendered Maker output is checked separately.
+
+`composer phpstan` runs **PHPStan level 5**, targeting PHP 8.2 with Symfony and PHPUnit extensions and no baseline. It covers the applications, both packages, tests, configuration, PHP CLI commands and rendered Maker scaffolds. The [configuration](phpstan.dist.neon) keeps runtime validation of external data meaningful by treating PHPDoc types as uncertain. Maker and profiler dependencies are development-only; analysis boots no application, reads no credentials and calls no model. Static analysis complements the execution and security proofs.
 
 With gVisor configured, run `composer test:sandbox` and `composer test:demo` sequentially.
 

@@ -81,6 +81,7 @@ final class CodeModeSessionTest extends TestCase
     public function testInvalidNameTypesAreRejectedWithoutCoercion(): void
     {
         $this->expectException(SandboxException::class);
-        (new ToolCatalog([]))->describe([['name' => 'admin.delete']]);
+        // Invoke dynamically to test malformed input beyond the documented PHP contract.
+        (new \ReflectionMethod(ToolCatalog::class, 'describe'))->invoke(new ToolCatalog([]), [['name' => 'admin.delete']]);
     }
 }

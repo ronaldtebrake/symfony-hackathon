@@ -171,6 +171,7 @@ final class CodeModeDemoTest extends KernelTestCase
             $this->assertSame([1, 2], $followUp->structuredContent['value']['article_ids']);
             $exhausted = $client->callTool('php_execute', ['code' => 'return 1;']);
             $this->assertTrue($exhausted->isError);
+            $this->assertInstanceOf(\Mcp\Schema\Content\TextContent::class, $exhausted->content[0]);
             $this->assertStringContainsString('execution_limit', $exhausted->content[0]->text);
         } finally {
             $client->disconnect();

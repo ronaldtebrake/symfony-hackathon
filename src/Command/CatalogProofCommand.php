@@ -87,6 +87,8 @@ final class CatalogProofCommand extends Command
                         $last = $count;
                     }
                 });
+                $report['runs'][$index] = $run;
+                $save();
                 $io->text($run['status'].' · '.($run['trace']['providerTokens']['total'] ?? 0).' reported tokens');
                 foreach ($run['verification']['checks'] as $check => $passed) {
                     if (!$passed) {

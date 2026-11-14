@@ -139,6 +139,7 @@ final class DiscoveryComparisonTest extends WebTestCase
             'pending' => $r['attempts'][1]['status'] = 'pending',
             'failed' => $r['attempts'][1]['status'] = 'failed',
             'missingArm' => $r['attempts'] = [$r['attempts'][0]],
+            default => throw new \LogicException('Unexpected test scenario.'),
         };
         $this->assertFalse((new DiscoveryComparison())->summarize($r)['allCorrect']);
     }

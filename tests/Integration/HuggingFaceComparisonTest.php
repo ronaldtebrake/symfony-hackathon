@@ -97,6 +97,7 @@ final class HuggingFaceComparisonTest extends TestCase
             'usage' => $pair['direct']['result']['providerResponses'][0]['tokens']['total']++,
             'cleanup' => $pair['code']['result']['executions'][1]['containerRemoved'] = false,
             'answer' => $pair['direct']['result']['answer'] = '{"audited":48,"findings":[]}',
+            default => throw new \LogicException('Unexpected test scenario.'),
         };
         // Rebind after mutation so individual verification, not only the outer digest, must reject it.
         $pair['direct']['codeCaptureSha256'] = hash('sha256', HuggingFaceComparison::encodeCapture($pair['code']));

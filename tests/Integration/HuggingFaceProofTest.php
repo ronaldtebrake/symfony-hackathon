@@ -102,6 +102,7 @@ final class HuggingFaceProofTest extends WebTestCase
             'generation' => $result['modelRequests'] = 0,
             'failed' => $result['executions'][0]['status'] = 'failed',
             'missing' => $result = [],
+            default => throw new \LogicException('Unexpected test scenario.'),
         };
         $this->assertFalse((new HuggingFaceProofVerifier())->verify($result)['passed']);
     }

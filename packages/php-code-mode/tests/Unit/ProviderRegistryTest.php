@@ -22,15 +22,15 @@ final class ProviderRegistryTest extends TestCase
 {
     public function testNamespacedCallsKeepOriginalAuthorizationSchemasAndProvenance(): void
     {
-        $called = false;
-        $r = new ProviderRegistry([$this->provider(invoke: static function ($a) use (&$called) {
-            $called = true;
+        $calls = new \ArrayObject(['invoked' => false]);
+        $r = new ProviderRegistry([$this->provider(invoke: static function ($a) use ($calls) {
+            $calls['invoked'] = true;
 
             return $a;
         })]);
         $id = new ExecutionIdentity('reader', ['read']);
         $this->assertSame(1, $r->broker()->call('catalog.read', (object) ['id' => 1], $id, ['catalog.read'])->id);
-        $this->assertTrue($called);
+        $this->assertTrue($calls['invoked']);
         $this->assertSame(['provider' => 'catalog', 'method' => 'read', 'source' => 'test', 'upstreamTool' => 'source_read'], $r->origins()['catalog.read']);
         foreach ([['catalog.read', ['id' => 9], $id, ['catalog.read'], 'tool_denied'],
             ['catalog.read', ['id' => 1], new ExecutionIdentity('other', ['read']), ['catalog.read'], 'tool_denied'],
@@ -38,14 +38,14 @@ final class ProviderRegistryTest extends TestCase
             ['catalog.read', ['id' => 1, 'identity' => 'admin'], $id, ['catalog.read'], 'invalid_arguments'],
             ['source_read', ['id' => 1], $id, ['catalog.read'], 'tool_denied'],
             ['catalog.read', ['id' => 1], $id, [], 'tool_denied']] as [$name, $args, $identity, $allowed, $reason]) {
-            $called = false;
+            $calls['invoked'] = false;
             try {
                 $r->broker()->call($name, (object) $args, $identity, $allowed);
                 $this->fail('Call must fail.');
             } catch (SandboxException $e) {
                 $this->assertSame($reason, $e->reason);
             }
-            $this->assertFalse($called);
+            $this->assertFalse($calls['invoked']);
         }
     }
 

@@ -58,6 +58,7 @@ final class PerformanceConversationTest extends WebTestCase
             'denial' => $r['securityProof']['denials'][0]['trace']['error']['reason'] = 'tool_failed',
             'canary' => $r['trace']['programs'][0] .= RequestCollector::CANARY,
             'turn_range' => $r['turns'][1]['agentCallStart'] = 0,
+            default => throw new \LogicException('Unexpected test scenario.'),
         };
         $this->assertFalse((new ConversationVerifier())->verify($r)['passed']);
     }

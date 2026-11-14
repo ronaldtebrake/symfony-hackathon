@@ -97,6 +97,7 @@ final class RecordedProofTest extends TestCase
             $article['issues'] = array_map(static fn ($issue) => match ($issue) {
                 'missing_meta_description' => 'missing_description',
                 'missing_hero_image_alt_text' => 'missing_alt',
+                default => throw new \LogicException('Unexpected test scenario.'),
             }, $article['issues']);
 
             return $article;

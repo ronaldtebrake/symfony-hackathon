@@ -8,6 +8,10 @@ use Symfony\Component\Process\Process;
 require dirname(__DIR__).'/vendor/autoload.php';
 
 $root = dirname(__DIR__);
+$mode = $argv[1] ?? 'style';
+if (!in_array($mode, ['style', 'phpstan'], true)) {
+    throw new InvalidArgumentException('Choose the style or phpstan check.');
+}
 $directory = sys_get_temp_dir().'/code-mode-maker-style-'.bin2hex(random_bytes(8));
 $filesystem = new Filesystem();
 $templates = [
@@ -41,11 +45,15 @@ try {
         $filesystem->dumpFile($directory.'/'.$path, $render($root.'/packages/symfony-code-mode/src/Maker/templates/'.$name.'.tpl.php', $namespace, $className));
     }
 
-    $check = new Process([
+    $command = 'phpstan' === $mode ? [
+        \PHP_BINARY, $root.'/vendor/bin/phpstan', 'analyse',
+        '--configuration='.$root.'/phpstan.dist.neon', '--no-progress', '--memory-limit=1G', $directory,
+    ] : [
         \PHP_BINARY, $root.'/vendor/bin/php-cs-fixer', 'check',
         '--config='.$root.'/.php-cs-fixer.dist.php', '--path-mode=override',
         '--using-cache=no', '--sequential', '--diff', $directory,
-    ], $root);
+    ];
+    $check = new Process($command, $root, timeout: 120);
     $status = $check->run(static function (string $type, string $output): void {
         fwrite(Process::ERR === $type ? \STDERR : \STDOUT, $output);
     });

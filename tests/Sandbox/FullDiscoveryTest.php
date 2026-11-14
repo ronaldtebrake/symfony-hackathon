@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Sandbox;
 
 use App\Demo\BackendFactory;
-use CodeMode\DiscoveryMode;
 use CodeMode\DockerEngine;
 use CodeMode\ExecutionIdentity;
 use CodeMode\SandboxException;
@@ -22,7 +21,6 @@ final class FullDiscoveryTest extends TestCase
     public function testDefaultRequiresFullContractsBeforeSimpleOrComplexExecution(): void
     {
         $session = $this->sessions()->create(new ExecutionIdentity('reader', ['read']));
-        $this->assertSame(DiscoveryMode::Full, $session->discoveryMode());
         $found = array_column($session->search('read'), null, 'name');
         $this->assertArrayNotHasKey('inputSchema', $found['simple_read']);
         $this->assertArrayNotHasKey('inputSchema', $found['complex_read']);

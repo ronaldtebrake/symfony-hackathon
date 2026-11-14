@@ -1,0 +1,43 @@
+includes:
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/phpstan/phpstan-symfony/extension.neon
+    - scripts/phpstan-paths.php
+
+parameters:
+    level: 5
+    phpVersion: 80200
+    tmpDir: var/phpstan
+    # Runtime validation must remain in place for data from agents and MCP servers.
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: true
+    reportIgnoresWithoutComments: true
+    paths:
+        - src
+        - tests
+        - config
+        - public/index.php
+        - bin
+        - scripts
+        - docs/contributing/verify-sdk-proposal.php
+        - packages/php-code-mode/src
+        - packages/php-code-mode/tests
+        - packages/php-code-mode/runner
+        - packages/php-code-mode/examples
+        - packages/symfony-code-mode/src
+        - examples/symfony/src
+        - examples/symfony/tests
+        - examples/symfony/config
+        - examples/symfony/bin
+        - examples/symfony/public
+        - examples/symfony/scripts
+        - examples/composition/src
+        - examples/composition/tests
+        - examples/composition/config
+        - examples/composition/bin
+        - examples/composition/public
+    excludePaths:
+        analyseAndScan:
+            # These templates emit PHP; analyse the rendered scaffolds separately.
+            - packages/symfony-code-mode/src/Maker/templates/*.tpl.php
+            - config/reference.php
+            - examples/*/config/reference.php

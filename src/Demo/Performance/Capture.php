@@ -93,7 +93,11 @@ final class Capture
                 if (null === $stored || 200 !== $response->getStatusCode()) {
                     throw new \RuntimeException('Synthetic profile was not persisted.');
                 }
-                $records[$id] = ['approved' => $approved, 'variant' => $variant, 'profile' => $stored->getCollector($collector->getName())->snapshot()];
+                $storedCollector = $stored->getCollector($collector->getName());
+                if (!$storedCollector instanceof RequestCollector) {
+                    throw new \RuntimeException('Synthetic profile has an unexpected collector.');
+                }
+                $records[$id] = ['approved' => $approved, 'variant' => $variant, 'profile' => $storedCollector->snapshot()];
             }
             $dataset = new Dataset($records);
             if (str_contains(serialize($dataset), RequestCollector::CANARY)) {

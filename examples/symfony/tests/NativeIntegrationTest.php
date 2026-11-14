@@ -61,7 +61,7 @@ final class NativeIntegrationTest extends WebTestCase
             $headers['HTTP_MCP_SESSION_ID'] = $client->getResponse()->headers->get('mcp-session-id');
             $search = $call('search_tools', ['query' => 'publication']);
             $this->assertSame(['publication_read'], array_column($search['tools'], 'name'));
-            $operation = $client->getProfile()->getCollector('code_mode')->getOperations()[0];
+            $operation = $this->operations($client)[0];
             $this->assertSame(['matched' => 1, 'returned' => 1, 'truncated' => false], $operation['discovery']);
             $read = ['calls' => [['name' => 'publication_read', 'arguments' => ['id' => 101]]]];
             $allowed = $call('execute_tools', $read);
@@ -71,6 +71,7 @@ final class NativeIntegrationTest extends WebTestCase
             self::assertToolCallCount(1);
             self::assertPlatformCallCount(0);
             $collector = $client->getProfile()->getCollector('code_mode');
+            $this->assertInstanceOf(CodeMode\Symfony\Profiler\CatalogDataCollector::class, $collector);
             $this->assertCount(1, $collector->getOperations(), 'Diagnostics must reset between HTTP requests.');
             $operation = $collector->getOperations()[0];
             $this->assertSame(['requested', 'succeeded'], array_column($operation['nativeEvents'], 'phase'));
@@ -83,7 +84,7 @@ final class NativeIntegrationTest extends WebTestCase
             $this->assertSame('tool_denied', $denied['error']['reason']);
             $this->assertSame(0, $denied['completedCalls']);
             self::assertToolCallCount(0);
-            $operation = $client->getProfile()->getCollector('code_mode')->getOperations()[0];
+            $operation = $this->operations($client)[0];
             $this->assertSame([], $operation['nativeEvents'], 'Revocation must stop before the native toolbox.');
             $this->assertSame('denied', $operation['calls'][0]['status']);
             $this->assertSame(2, $operation['budget'][1]['attempts']);
@@ -104,7 +105,7 @@ final class NativeIntegrationTest extends WebTestCase
             $viewerHeaders = array_replace($headers, ['HTTP_AUTHORIZATION' => 'Bearer '.str_repeat('v', 32)]);
             $this->assertSame([], $call('search_tools', ['query' => 'publication'], $viewerHeaders)['tools']);
             self::assertToolCallCount(0);
-            $this->assertSame([], $client->getProfile()->getCollector('code_mode')->getOperations()[0]['calls']);
+            $this->assertSame([], $this->operations($client)[0]['calls']);
             $client->request('GET', '/_profiler/'.$profileToken.'?panel=code_mode');
             self::assertResponseIsSuccessful();
             $this->assertSame(1, $client->getCrawler()->filterXPath('//h2[contains(., "Approved JSON catalog")]')->count());
@@ -129,5 +130,15 @@ final class NativeIntegrationTest extends WebTestCase
     protected static function createKernel(array $options = []): KernelInterface
     {
         return new Kernel('test', true);
+    }
+
+    private function operations(Symfony\Bundle\FrameworkBundle\KernelBrowser $client): array
+    {
+        $profile = $client->getProfile();
+        $this->assertNotNull($profile);
+        $collector = $profile->getCollector('code_mode');
+        $this->assertInstanceOf(CodeMode\Symfony\Profiler\CatalogDataCollector::class, $collector);
+
+        return $collector->getOperations();
     }
 }

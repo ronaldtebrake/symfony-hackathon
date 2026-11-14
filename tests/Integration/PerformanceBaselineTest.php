@@ -84,6 +84,7 @@ final class PerformanceBaselineTest extends WebTestCase
             'budget' => $r['limits']['maxToolCalls'] = 100,
             'turn' => $r['turns'][1]['agentCallStart'] = 0,
             'canary' => $r['trace']['agentCalls'][0]['result'] = RequestCollector::CANARY,
+            default => throw new \LogicException('Unexpected test scenario.'),
         };
         $summary = (new PerformanceComparison())->summarize($r, $this->source());
         $this->assertFalse($summary['paired']);

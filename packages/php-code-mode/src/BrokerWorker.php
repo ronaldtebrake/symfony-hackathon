@@ -35,25 +35,24 @@ final class BrokerWorker
             }
             // Never run inherited application shutdown functions/destructors in this child.
             try {
-                if (false === @ini_set('memory_limit', $limits->brokerMemoryMiB.'M')) {
-                    return;
-                }
-                // Default SIGALRM termination also works when the parent has disappeared.
-                pcntl_signal(\SIGALRM, \SIG_DFL);
-                while (false !== ($line = fgets($pair[1], $limits->maxFrameBytes + 2))) {
-                    try {
-                        pcntl_alarm(intdiv($limits->toolTimeMs + 999, 1000));
-                        $request = json_decode($line, false, 32, \JSON_THROW_ON_ERROR);
-                        $value = $broker->call($request->name, $request->arguments, $identity, $allowedTools);
-                        $response = json_encode(['ok' => true, 'value' => $value], \JSON_THROW_ON_ERROR, 32);
-                        if (\strlen($response) > $limits->maxToolResultBytes) {
-                            throw new SandboxException('tool_result_limit', 'Tool result exceeded its byte limit.');
+                if (false !== @ini_set('memory_limit', $limits->brokerMemoryMiB.'M')) {
+                    // Default SIGALRM termination also works when the parent has disappeared.
+                    pcntl_signal(\SIGALRM, \SIG_DFL);
+                    while (false !== ($line = fgets($pair[1], $limits->maxFrameBytes + 2))) {
+                        try {
+                            pcntl_alarm(intdiv($limits->toolTimeMs + 999, 1000));
+                            $request = json_decode($line, false, 32, \JSON_THROW_ON_ERROR);
+                            $value = $broker->call($request->name, $request->arguments, $identity, $allowedTools);
+                            $response = json_encode(['ok' => true, 'value' => $value], \JSON_THROW_ON_ERROR, 32);
+                            if (\strlen($response) > $limits->maxToolResultBytes) {
+                                throw new SandboxException('tool_result_limit', 'Tool result exceeded its byte limit.');
+                            }
+                        } catch (\Throwable $e) {
+                            $response = json_encode(['ok' => false, 'reason' => $e instanceof SandboxException ? $e->reason : 'tool_failed']);
                         }
-                    } catch (\Throwable $e) {
-                        $response = json_encode(['ok' => false, 'reason' => $e instanceof SandboxException ? $e->reason : 'tool_failed']);
+                        self::writeBlocking($pair[1], $response."\n");
+                        pcntl_alarm(0);
                     }
-                    self::writeBlocking($pair[1], $response."\n");
-                    pcntl_alarm(0);
                 }
             } finally {
                 fclose($pair[1]);

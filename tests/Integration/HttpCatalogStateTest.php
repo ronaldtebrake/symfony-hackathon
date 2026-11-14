@@ -28,9 +28,9 @@ final class HttpCatalogStateTest extends TestCase
         $other = $this->store($directory);
         $schema = (object) ['type' => 'object', 'additionalProperties' => false];
         $catalog = new ToolCatalog([new ToolDefinition('read', 'Read', $schema)]);
-        $invoked = 0;
-        $broker = new ToolBroker([new Tool('read', $schema, static fn () => true, static function () use (&$invoked, $other): int {
-            ++$invoked;
+        $calls = new \ArrayObject(['invoked' => 0]);
+        $broker = new ToolBroker([new Tool('read', $schema, static fn () => true, static function () use ($calls, $other): int {
+            ++$calls['invoked'];
             try {
                 $other->withState('reader', static fn () => self::fail('Concurrent request acquired the same user budget.'));
             } catch (SandboxException $e) {
@@ -47,7 +47,7 @@ final class HttpCatalogStateTest extends TestCase
             } catch (SandboxException $e) {
                 $this->assertSame('tool_failed', $e->reason);
             }
-            $this->assertSame(1, $invoked, 'Stop on the first failed handler.');
+            $this->assertSame(1, $calls['invoked'], 'Stop on the first failed handler.');
             // A new store instance (as in the next HTTP request) sees pre-dispatch reservations.
             $other->withState('reader', static function ($state) {
                 self::assertSame(['described' => ['read'], 'executions' => 1, 'toolCalls' => 2], $state);
@@ -58,7 +58,7 @@ final class HttpCatalogStateTest extends TestCase
             } catch (SandboxException $e) {
                 $this->assertSame('tool_call_limit', $e->reason);
             }
-            $this->assertSame(1, $invoked, 'An exhausted call budget cannot invoke another handler.');
+            $this->assertSame(1, $calls['invoked'], 'An exhausted call budget cannot invoke another handler.');
             $other->withState('another-reader', fn ($state) => $this->assertSame([], $state));
             $other->reset('reader');
             $store->withState('reader', fn ($state) => $this->assertSame([], $state));

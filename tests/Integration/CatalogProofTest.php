@@ -83,6 +83,7 @@ final class CatalogProofTest extends WebTestCase
             'history' => $run['trace']['requestEvidence'][0]['systemPromptSha256'] = 'invented',
             'schema' => $run['approvedTools'][0]['inputSchema']['additionalProperties'] = true,
             'runtime' => $run['trace']['executions'][0]['runtime']['generatedCode'] = true,
+            default => throw new \LogicException('Unexpected test scenario.'),
         };
         $this->assertFalse(CatalogProofVerifier::verify($run)['passed']);
     }

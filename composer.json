@@ -30,8 +30,13 @@
     },
     "require-dev": {
         "php-cs-fixer/shim": "^3.91.2",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpstan/phpstan-symfony": "^2.0",
         "phpunit/phpunit": "^11.5",
-        "symfony/browser-kit": "7.4.*"
+        "symfony/browser-kit": "7.4.*",
+        "symfony/maker-bundle": "^1.64",
+        "symfony/web-profiler-bundle": "7.4.*"
     },
     "config": {
         "allow-plugins": {
@@ -89,14 +94,19 @@
         "demo:security": "@php bin/console code-mode:security-proof",
         "cs:check": [
             "@php vendor/bin/php-cs-fixer check --config=.php-cs-fixer.dist.php --diff --sequential",
-            "@php scripts/check-maker-style.php"
+            "@php scripts/check-maker.php style"
         ],
         "cs:fix": "@php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --sequential",
+        "phpstan": [
+            "@php vendor/bin/phpstan analyse --configuration=phpstan.dist.neon --memory-limit=1G --no-progress",
+            "@php scripts/check-maker.php phpstan"
+        ],
         "check": [
             "@composer validate --strict",
             "@composer validate --strict --working-dir=packages/php-code-mode",
             "@composer validate --strict --working-dir=packages/symfony-code-mode",
             "@cs:check",
+            "@phpstan",
             "@php bin/console lint:yaml config --parse-tags",
             "@php bin/console lint:container --resolve-env-vars",
             "@test",
@@ -107,7 +117,8 @@
     "scripts-descriptions": {
         "start": "Start the local development server at http://127.0.0.1:8000",
         "test": "Run the tests without external API calls",
-        "check": "Check Symfony coding standards, dependencies, configuration, and tests",
+        "check": "Check Symfony coding standards, static analysis, dependencies, configuration, and tests",
+        "phpstan": "Analyse packages, applications, tests, CLI scripts and generated Maker code at level 5",
         "cs:check": "Check Symfony PHP coding standards across the repository without changing files",
         "cs:fix": "Apply Symfony PHP coding standards across the repository; review the diff before committing",
         "docs:build": "Build static visual documentation from reviewed evidence only"
