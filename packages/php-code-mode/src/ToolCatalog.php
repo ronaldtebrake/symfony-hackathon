@@ -12,7 +12,7 @@ final class ToolCatalog
     private array $definitions = [];
 
     /** @param iterable<ToolDefinition> $definitions */
-    public function __construct(iterable $definitions)
+    public function __construct(iterable $definitions, private readonly CatalogSearchInterface $search = new WeightedCatalogSearch())
     {
         foreach ($definitions as $definition) {
             if (isset($this->definitions[$definition->name]) || \count($this->definitions) >= 128) {
@@ -79,31 +79,43 @@ final class ToolCatalog
         if (\strlen($query) > 256) {
             throw new \InvalidArgumentException('Search exceeds its supported bounds.');
         }
-        $query = strtolower(trim($query));
-        $terms = array_unique(preg_split('/[^a-z0-9]+/', $query, flags: \PREG_SPLIT_NO_EMPTY));
-        $ranked = [];
-        foreach ($this->definitions as $definition) {
-            $name = strtolower($definition->name);
-            $description = strtolower($definition->description);
-            $schema = strtolower(json_encode($definition->inputSchema, \JSON_THROW_ON_ERROR));
-            if ($query === $name) {
-                $ranked = [['definition' => $definition, 'score' => \PHP_INT_MAX]];
-                break;
+        $query = trim($query);
+        $definitions = $this->all();
+        if ('' === $query) {
+            $names = array_keys($this->definitions);
+        } else {
+            $names = null;
+            foreach ($definitions as $definition) {
+                if (strtolower($query) === strtolower($definition->name)) {
+                    $names = [$definition->name];
+                    break;
+                }
             }
-            $score = 0;
-            foreach ($terms as $term) {
-                $score += (str_contains($name, $term) ? 4 : 0) + (str_contains($description, $term) ? 2 : 0) + (str_contains($schema, $term) ? 1 : 0);
-            }
-            if ([] === $terms || $score > 0) {
-                $ranked[] = ['definition' => $definition, 'score' => $score];
+            if (null === $names) {
+                // A ranker receives detached input contracts, never handlers or mutable broker schemas.
+                $copies = array_map(static fn (ToolDefinition $tool): ToolDefinition => new ToolDefinition($tool->name, $tool->description,
+                    json_decode(json_encode($tool->inputSchema, \JSON_THROW_ON_ERROR, 32), false, 32, \JSON_THROW_ON_ERROR)), $definitions);
+                try {
+                    $names = $this->search->search($query, $copies);
+                } catch (\Throwable) {
+                    throw new SandboxException('discovery_failed', 'Tool search failed.');
+                }
             }
         }
-        // PHP's stable sort preserves the host catalog order for equal scores.
-        usort($ranked, static fn ($a, $b) => $b['score'] <=> $a['score']);
-        $result = ['tools' => [], 'matched' => \count($ranked), 'returned' => 0, 'limit' => 8, 'truncated' => \count($ranked) > 8];
-        foreach (\array_slice($ranked, 0, 8) as $entry) {
+        if (!array_is_list($names) || \count($names) > \count($definitions)) {
+            throw new SandboxException('discovery_failed', 'Search returned an invalid result.');
+        }
+        $seen = [];
+        foreach ($names as $name) {
+            if (!\is_string($name) || !isset($this->definitions[$name]) || isset($seen[$name])) {
+                throw new SandboxException('discovery_failed', 'Search returned an invalid result.');
+            }
+            $seen[$name] = true;
+        }
+        $result = ['tools' => [], 'matched' => \count($names), 'returned' => 0, 'limit' => 8, 'truncated' => \count($names) > 8];
+        foreach (\array_slice($names, 0, 8) as $name) {
             $candidate = $result;
-            $candidate['tools'][] = $entry['definition']->jsonSerialize();
+            $candidate['tools'][] = $this->definitions[$name]->jsonSerialize();
             ++$candidate['returned'];
             // Reserve room for bounded refinement guidance. Never return partial schemas.
             if (\strlen(json_encode($candidate, \JSON_THROW_ON_ERROR, 32)) > 32000) {
@@ -160,6 +172,6 @@ final class ToolCatalog
             } catch (\Throwable) {
                 return false;
             }
-        }));
+        }), $this->search);
     }
 }

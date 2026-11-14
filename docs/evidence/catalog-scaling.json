@@ -14,7 +14,10 @@
     "maxRegisteredTools": 128,
     "searchResults": 8
   },
-  "httpCaptureSha256": "808328b2e5d0ad9075092f4d7ce5f03abbab80ef46154ee63a2a14b5b46d1ed7",
+  "searchComponent": "CodeMode\\Symfony\\Ai\\Search\\Upstream\\Bm25ToolSearch",
+  "searchComponentSha256": "2dc42def89e45a4e471e82eee9600e8a2fc3045395e9255ba9623c0baec916d0",
+  "catalogSourceSha256": "3db26621415fc0b2e36093000c796937b0dfd507de45f9b4ec0421de9849390d",
+  "httpCaptureSha256": "0f80da5915864e447c871faae602885262359e272a90b5f42ccdb27f946a5d56",
   "contractSourceSha256": "18a915bdf3634b3de759a8a34944583e2ae2678f4520fe3537b5a05a987276ec",
   "samples": [
     {

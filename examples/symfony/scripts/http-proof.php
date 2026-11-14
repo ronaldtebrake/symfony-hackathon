@@ -136,7 +136,7 @@ try {
     sort($names);
     $verify('two_entry_tools', ['execute_tools', 'search_tools'] === $names);
     $verify('discovery_required', 'discovery_required' === ($call('execute_tools', $read(101), 'before_discovery')['error']['reason'] ?? null));
-    $search = $call('search_tools', ['query' => 'publication'], 'discovery');
+    $search = $call('search_tools', ['query' => 'publications'], 'discovery');
     $verify('only_approved_contract', ['publication_read'] === array_column($search['tools'] ?? [], 'name'));
     $allowed = $call('execute_tools', $read(101), 'authorized');
     $verify('authorized_read', ['id' => 101, 'title' => 'A Symfony application owns its tools'] === ($allowed['results'][0]['value'] ?? null));
@@ -162,21 +162,21 @@ try {
     $other = $request('tools/call', ['name' => 'execute_tools', 'arguments' => $read(101)], $viewer);
     $report['httpChecks']['other_user_discovery'] = $other;
     $verify('discovery_isolated_by_user', 'discovery_required' === ($other['response']['result']['structuredContent']['error']['reason'] ?? null));
-    $hidden = $request('tools/call', ['name' => 'search_tools', 'arguments' => ['query' => 'publication']], $viewer);
+    $hidden = $request('tools/call', ['name' => 'search_tools', 'arguments' => ['query' => 'publications']], $viewer);
     $report['httpChecks']['other_user_search'] = $hidden;
     $verify('discovery_filters_permissions', [] === ($hidden['response']['result']['structuredContent']['tools'] ?? null) && 0 === ($hidden['response']['result']['structuredContent']['matched'] ?? null));
     $other = $request('tools/call', ['name' => 'execute_tools', 'arguments' => $read(101)], $viewer);
     $report['httpChecks']['other_user_permissions'] = $other;
     $verify('security_role_enforced', 'discovery_required' === ($other['response']['result']['structuredContent']['error']['reason'] ?? null));
     $control(['code-mode:reset-budget', 'demo-reader']);
-    $call('search_tools', ['query' => 'publication'], 'operator_reset_discovery');
+    $call('search_tools', ['query' => 'publications'], 'operator_reset_discovery');
     $tooMany = $call('execute_tools', ['calls' => array_fill(0, 11, $read(101)['calls'][0])], 'call_budget');
     $verify('call_budget_enforced', 'tool_call_limit' === ($tooMany['error']['reason'] ?? null));
     $verify('invalid_attempt_consumed', 101 === ($call('execute_tools', $read(101), 'recovery_after_invalid')['results'][0]['value']['id'] ?? null)
         && 'execution_limit' === ($call('execute_tools', $read(101), 'invalid_attempt_exhausted')['error']['reason'] ?? null));
     // Separate take: same token, user, server and MCP session throughout. No reset between reads.
     $control(['code-mode:reset-budget', 'demo-reader']);
-    $call('search_tools', ['query' => 'publication'], 'revocation_discovery');
+    $call('search_tools', ['query' => 'publications'], 'revocation_discovery');
     $first = $call('execute_tools', $read(101), 'before_revocation');
     $verify('read_before_revocation', 101 === ($first['results'][0]['value']['id'] ?? null));
     $report['permissionChange'] = ['command' => 'php bin/console demo:reader-access revoke',
@@ -188,7 +188,7 @@ try {
         && 0 === ($denied['completedCalls'] ?? null) && !isset($denied['results']));
     $report['httpChecks']['controller_revoked'] = $controller(101);
     $verify('controller_revocation_enforced', 403 === $report['httpChecks']['controller_revoked']['httpStatus']);
-    $hidden = $call('search_tools', ['query' => 'publication'], 'revoked_discovery');
+    $hidden = $call('search_tools', ['query' => 'publications'], 'revoked_discovery');
     $verify('revoked_contract_hidden', [] === ($hidden['tools'] ?? null) && 0 === ($hidden['matched'] ?? null));
     $control(['demo:reader-access', 'grant']);
     $verify('regrant_does_not_reset_budget', 'execution_limit' === ($call('execute_tools', $read(101), 'regrant_exhausted')['error']['reason'] ?? null));
@@ -197,8 +197,9 @@ try {
     $report['installation'] = ['composerLockSha256' => hash_file('sha256', $app.'/composer.lock'),
         'rootAutoloaderPresent' => is_file($app.'/../../vendor/autoload.php'), 'pathRepositorySourcesPresent' => is_dir($app.'/../../packages'),
         'disabledFunctions' => explode(',', $disabled), 'phpVersion' => \PHP_VERSION, 'osFamily' => \PHP_OS_FAMILY];
+    $report['discovery'] = ['component' => (new CodeMode\Symfony\Ai\Search\SymfonyCatalogSearch())->component(), 'query' => 'publications', 'scope' => 'The ordinary catalog uses the Symfony AI BM25 adapter. This plural query matches publication_read through normalization. No model called.'];
     $report['sourceSha256'] = [];
-    foreach (['src/ArticleVoter.php', 'src/ArticleController.php', 'src/DemoReaderAccess.php', 'src/ReaderAccessCommand.php', 'scripts/http-proof.php', 'src/ArticleTool.php', 'src/DemoTokenHandler.php', 'public/index.php', 'config/services.php', 'config/routes.php', 'config/bundles.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Http/SecurityIdentityProvider.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Security/VoterToolPolicy.php', 'vendor/ronaldtebrake/symfony-code-mode/src/CodeModeBundle.php', 'vendor/ronaldtebrake/php-code-mode/src/BatchSession.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogTools.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogStateStore.php'] as $source) {
+    foreach (['src/ArticleVoter.php', 'src/ArticleController.php', 'src/DemoReaderAccess.php', 'src/ReaderAccessCommand.php', 'scripts/http-proof.php', 'src/ArticleTool.php', 'src/DemoTokenHandler.php', 'public/index.php', 'config/services.php', 'config/routes.php', 'config/bundles.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Http/SecurityIdentityProvider.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Security/VoterToolPolicy.php', 'vendor/ronaldtebrake/symfony-code-mode/src/CodeModeBundle.php', 'vendor/ronaldtebrake/php-code-mode/src/BatchSession.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogTools.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogStateStore.php', 'vendor/ronaldtebrake/php-code-mode/src/ToolCatalog.php', 'vendor/ronaldtebrake/php-code-mode/src/CatalogSearchInterface.php', 'vendor/ronaldtebrake/symfony-code-mode/src/SessionFactory.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Ai/Search/SymfonyCatalogSearch.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Ai/Search/Upstream/Bm25ToolSearch.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Ai/Search/Upstream/ToolSearchInterface.php'] as $source) {
         $report['sourceSha256'][$source] = hash_file('sha256', $app.'/'.$source);
     }
     $report['status'] = 'passed';

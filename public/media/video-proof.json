@@ -529,7 +529,7 @@
   },
   "schemaScaling": {
     "capture": "docs/evidence/catalog-scaling.json",
-    "captureSha256": "201577a03da9f833ee1ac9917a0e6cad8d4b6e04b7876372e1515b03dc7762d0",
+    "captureSha256": "88fb090eab90e627b70366653566478087be78e8b8a2570624ea4f05bbb8ec9d",
     "availableTools": [
       3,
       10,

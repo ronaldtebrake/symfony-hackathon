@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CodeMode\Symfony;
 
 use CodeMode\BatchSession;
+use CodeMode\CatalogSearchInterface;
 use CodeMode\CodeModeSession;
 use CodeMode\DiscoveryMode;
 use CodeMode\DockerEngine;
@@ -15,19 +16,24 @@ use CodeMode\GvisorSandbox;
 use CodeMode\Provider\ProviderRegistry;
 use CodeMode\Provider\ToolProviderInterface;
 use CodeMode\Symfony\Ai\ApprovedToolbox;
+use CodeMode\Symfony\Ai\Search\SymfonyCatalogSearch;
 use CodeMode\Tool;
 use CodeMode\ToolBroker;
 use CodeMode\ToolCatalog;
 use CodeMode\ToolVisibilityInterface;
+use CodeMode\WeightedCatalogSearch;
 
 final readonly class SessionFactory
 {
+    private CatalogSearchInterface $catalogSearch;
+
     /** @param list<ReadToolInterface> $tools @param list<ToolProviderInterface> $providers */
-    public function __construct(private array $tools, private string $image = '', private DockerEngine $docker = new DockerEngine(), private ExecutionLimits $limits = new ExecutionLimits(), private ?ApprovedToolbox $aiToolbox = null, private ExecutionProfile $executor = ExecutionProfile::Gvisor, private DiscoveryMode $discovery = DiscoveryMode::Full, private array $providers = [], private ?ToolVisibilityInterface $visibility = null)
+    public function __construct(private array $tools, private string $image = '', private DockerEngine $docker = new DockerEngine(), private ExecutionLimits $limits = new ExecutionLimits(), private ?ApprovedToolbox $aiToolbox = null, private ExecutionProfile $executor = ExecutionProfile::Gvisor, private DiscoveryMode $discovery = DiscoveryMode::Full, private array $providers = [], private ?ToolVisibilityInterface $visibility = null, ?CatalogSearchInterface $catalogSearch = null)
     {
         if (ExecutionProfile::Gvisor !== $executor) {
             throw new \InvalidArgumentException('Generated PHP requires the gVisor executor.');
         }
+        $this->catalogSearch = $catalogSearch ?? (class_exists(\Symfony\AI\Platform\Tool\Tool::class) ? new SymfonyCatalogSearch() : new WeightedCatalogSearch());
     }
 
     public function profile(): ExecutionProfile
@@ -54,7 +60,7 @@ final readonly class SessionFactory
 
     public function catalog(): ToolCatalog
     {
-        return new ToolCatalog([...array_map(static fn (ReadToolInterface $tool) => $tool->definition(), $this->approvedTools()), ...([] === $this->providers ? [] : (new ProviderRegistry($this->providers))->catalog()->all())]);
+        return new ToolCatalog([...array_map(static fn (ReadToolInterface $tool) => $tool->definition(), $this->approvedTools()), ...([] === $this->providers ? [] : (new ProviderRegistry($this->providers))->catalog()->all())], $this->catalogSearch);
     }
 
     /** Both paths assemble identical contracts and handlers; execution does not change policy. */
@@ -62,7 +68,7 @@ final readonly class SessionFactory
     {
         $tools = $this->approvedTools();
         $providers = [] === $this->providers ? null : new ProviderRegistry($this->providers);
-        $catalog = new ToolCatalog([...array_map(static fn (ReadToolInterface $tool) => $tool->definition(), $tools), ...($providers?->catalog()->all() ?? [])]);
+        $catalog = new ToolCatalog([...array_map(static fn (ReadToolInterface $tool) => $tool->definition(), $tools), ...($providers?->catalog()->all() ?? [])], $this->catalogSearch);
         $handlers = [];
         foreach ($tools as $index => $tool) {
             $definition = $catalog->all()[$index];

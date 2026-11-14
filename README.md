@@ -101,7 +101,7 @@ The content-query experiment showed where we could simplify. The application alr
 
 PHP remains useful when computation can reduce what returns to the model. JSON makes ordinary tool calls easier to deploy. Both paths keep host-owned permissions and execution limits.
 
-The [visual walkthrough](https://ronaldtebrake.github.io/symfony-hackathon/#journey) follows those decisions. It also connects this work to [Symfony AI’s proposed dynamic discovery](https://github.com/symfony/ai/issues/2623): reuse its search components and contribute our application-level evidence. The open proposal is not yet a dependency of this demo.
+The [visual walkthrough](https://ronaldtebrake.github.io/symfony-hackathon/#journey) follows those decisions. The latest iteration reuses the BM25 search component from [Symfony AI’s proposed dynamic discovery](https://github.com/symfony/ai/issues/2623) behind our existing permission checks. While that proposal is open, a small attributed source snapshot keeps the integration dependency-free; a compatible installed Symfony component takes precedence. [Integration and prepared feedback](docs/contributing/README.md#2-build-on-symfony-ais-discovery-work).
 
 The [current catalog evidence](https://ronaldtebrake.github.io/symfony-hackathon/#catalog-evidence) includes five real Symfony AI conversations, the follow-up and boundary recovery, operator control traces and a fresh Symfony consumer without Docker. All final answers match; four scenarios pass fully. In the injection scenario the agent attempted an unwanted restricted read, which the host denied. We retain that failure alongside the successful work. Earlier PHP captures remain unchanged.
 

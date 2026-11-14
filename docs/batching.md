@@ -19,8 +19,9 @@ The [From PHP to JSON chapter](https://ronaldtebrake.github.io/symfony-hackathon
 Set `code_mode.mode: catalog` to expose a fixed pair of MCP tools:
 
 - **`search_tools({"query":"…"})`** returns complete approved contracts, including
-  input schemas. It searches names, descriptions and schema fields with weights
-  of 4, 2 and 1. Any query term can match; an exact tool name selects that tool.
+  input schemas. The Symfony integration uses BM25 from Symfony AI’s proposed
+  search component to rank names, descriptions and schema field names, descriptions
+  and enum values. Any query term can match; an exact tool name selects that tool.
 - **`execute_tools({"calls":[{"name":"…","arguments":{…}}]})`** invokes one or
   more approved calls with literal arguments. One read can use a one-item list;
   batching is optional. Dependent calls require another invocation.
@@ -31,6 +32,14 @@ at most eight complete contracts within a 32 KiB disclosure budget, with match
 counts and narrowing guidance. It never cuts a schema in half. Only contracts
 actually returned become eligible for execution; search does not grant access.
 Every invocation still checks host approval, authorization and arguments.
+
+Only the current user’s visible contracts reach the ranker. It receives no handlers;
+foreign or duplicate results fail closed. Empty queries retain bounded browsing.
+The unmerged component is pinned as a licensed source snapshot, with no new
+Composer dependency, service or model call. A compatible installed Symfony
+implementation takes precedence. The standalone core retains its weighted fallback
+for applications without Symfony AI. The historical PHP discovery protocol is
+unchanged. [Source and pin](../packages/symfony-code-mode/src/Ai/Search/Upstream/README.md).
 
 Set `mode: catalog` explicitly in your app, as the independent Symfony example does. The package default is now `mode: catalog`; the earlier `mode: batch` is retained for reproducing its captures. All JSON modes reuse `BatchSession`
 with argument/result bounds, cooperative deadlines and stop-on-error behavior. In Symfony AI, use

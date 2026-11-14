@@ -38,6 +38,16 @@ Import the MCP route loader (`resource: .`, `type: mcp`) in `config/routes.yaml`
 
 `search_tools` returns full approved contracts; `execute_tools` accepts literal JSON calls. Only the HTTP adapter reads Symfony's current security token. Agent arguments cannot select identity, permissions or server configuration. `code-mode:doctor` checks the selected mode's prerequisites without invoking handlers or calling a model.
 
+### Reusing Symfony AI search
+
+`SessionFactory` uses `SymfonyCatalogSearch` for full-contract JSON discovery when Symfony AI is installed. It adapts the proposed `ToolSearchInterface` and defaults to BM25, which searches names, descriptions and input schema fields and enum values. No search server, embedding model or additional Composer dependency is required.
+
+The proposal is still open. We keep [three attributed, MIT-licensed search classes at a pinned revision](src/Ai/Search/Upstream/README.md), with only their namespace changed. A compatible installed `Symfony\AI\Agent\Toolbox\ToolSearch\Bm25ToolSearch` takes precedence. This does not install the WIP agent loop or native-provider integration.
+
+Visibility is applied before ranking; the ranker receives detached schemas and no executable toolbox. Exact names, empty-query browsing, eight-result truncation and the existing disclosure budget remain owned by the catalog. Execution still checks discovery, current authorization, argument/result schemas and persistent budgets. The PHP discovery protocol is unchanged.
+
+For a custom upstream strategy, pass its first-class `search(...)` callable to `SymfonyCatalogSearch`, then supply that adapter through the optional `SessionFactory` constructor argument `catalogSearch`. The standalone core uses its existing weighted search when Symfony AI is absent.
+
 ## Native Symfony development
 
 ### Scaffold an approved tool
