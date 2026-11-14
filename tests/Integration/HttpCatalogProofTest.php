@@ -27,7 +27,11 @@ final class HttpCatalogProofTest extends WebTestCase
         $client = self::createClient();
         $client->request('GET', '/demo/http-catalog?file=../../.env.local');
         self::assertResponseIsSuccessful();
-        $this->assertTrue(json_decode($client->getResponse()->getContent(), true)['verification']['passed']);
+        $report = json_decode($client->getResponse()->getContent(), true);
+        $this->assertTrue($report['verification']['passed']);
+        $this->assertCount(2, $report['conversation']['attempts']);
+        $this->assertFalse($report['conversation']['attempts'][0]['verification']['passed']);
+        $this->assertTrue($report['conversation']['attempts'][1]['verification']['passed']);
         $client->request('POST', '/demo/http-catalog');
         self::assertResponseStatusCodeSame(405);
         $client->request('GET', '/demo/http-catalog', server: ['REMOTE_ADDR' => '203.0.113.1']);

@@ -141,13 +141,13 @@ function httpMainCalls() {
 function nativeCallCard(call, index) {
   const card = node('article', undefined, 'catalog-turn');
   const heading = node('div', undefined, 'native-call-heading');
-  heading.append(node('h3', `${index + 1}. ${['Discover with permission', 'Read published article 101', 'Repeat article 101 after revocation', 'Search again: no visible contract'][index]}`), node('span', call.response.isError ? 'DENIED' : 'SUCCEEDED', 'status-pill'));
+  heading.append(node('h3', `${index + 1}. ${call.title ?? ['Discover with permission', 'Read published article 101', 'Repeat article 101 after revocation', 'Search again: no visible contract'][index]}`), node('span', call.response.isError ? 'DENIED' : 'SUCCEEDED', 'status-pill'));
   const columns = node('div', undefined, 'native-call-grid');
   const request = node('div'), response = node('div');
   request.append(node('span', `ACTUAL REQUEST · ${call.tool}`, 'tour-label'), catalogJson(call.arguments));
   response.append(node('span', 'ACTUAL RESPONSE · structuredContent', 'tour-label'));
   if (index === 0) {
-    response.append(node('p', 'publication_read · required integer id'), catalogDetails('Full discovered contract', catalogJson(call.response.structuredContent)));
+    response.append(node('p', (call.response.structuredContent?.tools ?? []).map(tool => tool.name).join(', ') || 'No visible contract'), catalogDetails('Full discovered contract', catalogJson(call.response.structuredContent)));
   } else response.append(catalogJson(call.response.structuredContent));
   columns.append(request, response); card.append(heading, columns);
   card.append(catalogDetails('Complete MCP response envelope', catalogJson(call.response)));
@@ -183,10 +183,58 @@ async function loadNativeRehearsal() {
     const response = await fetch(evidenceUrl('/demo/http-catalog'), {cache:'no-store'});
     if (!response.ok) throw new Error('HTTP proof unavailable');
     httpCatalogEvidence = await response.json();
-    renderNativeRehearsal(); renderCatalogAdoption(); renderCatalogControls(); evidenceChanged();
+    renderNativeRehearsal(); renderHttpConversationPicker(); renderCatalogAdoption(); renderCatalogControls(); evidenceChanged();
   } catch {
+    byId('http-conversation-body').textContent = 'The reviewed model conversation could not be loaded.';
     byId('native-rehearsal-body').textContent = 'HTTP MCP evidence could not be loaded. Open the retained JSON report.';
     byId('native-implementation-body').textContent = 'Application source unavailable.';
   }
 }
 loadNativeRehearsal();
+
+function renderHttpConversationPicker() {
+  const attempts = httpCatalogEvidence?.conversation?.attempts ?? [];
+  const select = byId('http-conversation-attempt'); select.replaceChildren();
+  attempts.forEach((run, index) => { const option = node('option', `${index + 1} · ${run.verification?.passed ? 'Verified' : 'Review required'} · ${new Date(run.createdAt).toLocaleString()}`); option.value = String(index); select.append(option); });
+  if (attempts.length) select.value = String(attempts.length - 1);
+  renderHttpConversation();
+}
+function renderHttpConversation() {
+  const attempts = httpCatalogEvidence?.conversation?.attempts ?? [];
+  const run = attempts[Number(byId('http-conversation-attempt').value)];
+  const body = byId('http-conversation-body'); body.replaceChildren();
+  if (!run) { body.append(node('p', 'No reviewed live HTTP conversation is available. The operator proof remains below.')); return; }
+  body.append(node('p', `${run.verification?.passed ? 'VERIFIED CONVERSATION' : 'REVIEW REQUIRED'} · Symfony AI + Hugging Face · ${run.model}`, 'mode-note'));
+  if (run.reviewNote) body.append(run.verification?.passed ? catalogDetails('Capture notes · earlier attempt retained', node('p', run.reviewNote)) : node('p', run.reviewNote, 'doc-callout'));
+  const metrics = node('div', undefined, 'hf-metrics');
+  const calls = (run.http ?? []).filter(row => row.request.method === 'tools/call');
+  for (const [label,value] of [['Provider tokens',run.trace?.providerTokens?.total],['Model requests',run.trace?.modelRequests],['Actual MCP calls',calls.length]]) {
+    const card = node('div'); card.append(node('span',label),node('strong',number(value))); metrics.append(card);
+  }
+  body.append(metrics);
+  run.turns.forEach((turn,index) => {
+    if (index === 1 && run.permissionChange) body.append(node('span','OPERATOR REVOKES PERMISSION','eyebrow'),catalogJson({command:run.permissionChange.command,output:run.permissionChange.output}),node('p','Same authenticated user and connection. No budget reset.','measurement-note'));
+    body.append(node('span',`TURN ${index + 1} · USER → SYMFONY AI AGENT`,'eyebrow'),node('blockquote',turn.question,'tour-question'));
+    calls.forEach((row,callIndex) => {
+      if (row.phase !== (index === 0 ? 'lookup' : 'revoked')) return;
+      const card = nativeCallCard({tool:row.request.params.name,arguments:row.request.params.arguments,response:row.response.result,title:row.request.params.name === 'search_tools' ? (row.phase === 'lookup' ? 'Discover an approved article reader' : 'Check current tool visibility') : (row.phase === 'lookup' ? 'Read published article 101' : 'Repeat the read after revocation')},callIndex);
+      const operations = row.profiler?.operations ?? [];
+      for (const operation of operations) {
+        const events = operation.nativeEvents.map(event => event.phase).join(' → ');
+        const budget = operation.budget.at(-1);
+        card.append(node('p',`Symfony trace: ${operation.status}${operation.reason ? ` · ${operation.reason}` : ''}. ${events ? `Handler: ${events}.` : 'No native handler events.'} ${budget ? `${budget.attempts} / 2 execution attempts used.` : ''}`,'mode-note'));
+      }
+      card.append(catalogDetails('Actual JSON-RPC exchange and bounded profiler trace',catalogJson(row))); body.append(card);
+    });
+    let answer; try { answer = JSON.parse(turn.answer); } catch { answer = null; }
+    body.append(node('span','RECORDED MODEL ANSWER','eyebrow'));
+    if (answer?.explanation) body.append(node('p',answer.explanation));
+    if (answer?.status === 'read' && answer.title) body.append(node('strong',answer.title));
+    body.append(catalogDetails('Exact structured answer',catalogJson(answer ?? turn.answer ?? 'No answer completed.')));
+  });
+  const total = attempts.reduce((sum,attempt) => sum + (attempt.trace?.providerTokens?.total ?? 0),0);
+  body.append(node('p',`${attempts.length} retained live attempt${attempts.length === 1 ? '' : 's'} · ${number(total)} reported tokens across all attempts. Provider-reported input + output; no baseline, savings percentage or billing claim. No answer review or rewrite was applied.`,'measurement-note'));
+  body.append(catalogDetails('Model usage, history digests and verification',catalogJson({verification:run.verification,currentSourceMatches:run.currentSourceMatches,trace:run.trace,systemPrompt:run.systemPrompt,settings:run.settings,permissionChange:run.permissionChange,sourceSha256:run.sourceSha256,scope:run.scope})));
+  if (!run.currentSourceMatches) body.append(node('p','The captured application source differs from the current checkout.','doc-callout'));
+}
+byId('http-conversation-attempt').addEventListener('change',renderHttpConversation);

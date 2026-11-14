@@ -1,6 +1,8 @@
 # Symfony Code Mode
 
-A searchable catalog for approved Symfony AI and MCP tools, with JSON calls and optional sandboxed PHP.
+**Your Symfony tools, on demand. Your application stays in control.**
+
+Give agents a searchable catalog of approved Symfony tools. Discover the contracts needed for the task, call existing services with JSON, and enforce the application’s current permissions on every request.
 
 Expose two stable tools: `search_tools` returns approved contracts and `execute_tools` invokes them with literal JSON arguments. Adding approved tools does not enlarge those two advertised schemas; retrieve full contracts when needed. Reuse Symfony AI schemas, Symfony/MCP providers and application access checks. There is no generated program in this path. The earlier sandboxed PHP implementation remains available as a historical reference and a computation option.
 
@@ -78,6 +80,8 @@ The [independent app guide](examples/symfony/README.md) explains the shared vote
 
 These are `o200k_harmony` counts of serialized MCP JSON, using synthetic four-field tools and the actual HTTP entry contracts. They measure the advertised schema footprint, not total model usage. Search results, task data and conversation history still cost tokens; client conversion and caching affect bills. [Reproduce the measurement](docs/batching.md#catalog-overhead-and-conversation-cost).
 
+**A real conversation through the current HTTP path.** Symfony AI + Hugging Face discovers an article reader through BM25, reads article 101, then receives a denial after the operator revokes permission. A fresh search hides the contract. The verified run used **5,220 provider tokens across six model requests**. Actual JSON exchanges, profiler traces and both attempts—including the first model error—are [visible in the workbench](https://ronaldtebrake.github.io/symfony-hackathon/#native-rehearsal). [Reproduce it](docs/demo.md#current-http-model-conversation). This is execution evidence, not a cost comparison.
+
 **Same findings. Fewer tokens in one matched audit.** Separately, real Symfony AI + Hugging Face runs measured complete conversations:
 
 | What was measured | Result | Scope |
@@ -85,7 +89,7 @@ These are `o200k_harmony` counts of serialized MCP JSON, using synthetic four-fi
 | JSON catalog vs. direct tools | **35.8% fewer provider tokens**: 46,438 → 29,798 | One matched 9 November audit; same model, question, data and permissions; 10 correct findings; reviews included. Captured before the HTTP migration. |
 | Historical sandboxed PHP vs. direct tools | **71.4% fewer provider tokens**: 43,979 → 12,597 | Separate 2 November pair illustrated below. This percentage is for PHP, not JSON. |
 
-These are provider-reported input + output tokens, not invoices or universal savings. The current HTTP runtime has its own execution proof and has not been re-benchmarked. [Inspect the comparisons and all attempts](https://ronaldtebrake.github.io/symfony-hackathon/#three-way).
+These are provider-reported input + output tokens, not invoices or universal savings. The current HTTP runtime has its own operator proof and live conversation; it has not been re-benchmarked against direct tools. [Inspect the comparisons and all attempts](https://ronaldtebrake.github.io/symfony-hackathon/#three-way).
 
 **The original sandboxed-PHP explainer**
 

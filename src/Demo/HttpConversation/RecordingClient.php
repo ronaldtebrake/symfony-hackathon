@@ -1,0 +1,79 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Demo\HttpConversation;
+
+use CodeMode\Symfony\Profiler\CatalogDataCollector;
+use Nyholm\Psr7\Stream;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Symfony\Component\HttpKernel\Profiler\FileProfilerStorage;
+
+/** Capture only JSON-RPC bodies and our bounded collector. Never export HTTP headers or other profiles. */
+final class RecordingClient implements ClientInterface
+{
+    public string $phase = 'setup';
+    private array $records = [];
+    private array $profileTokens = [];
+
+    public function __construct(private readonly ClientInterface $inner, private readonly string $profilerDirectory)
+    {
+    }
+
+    public function sendRequest(RequestInterface $request): ResponseInterface
+    {
+        $started = hrtime(true);
+        $response = $this->inner->sendRequest($request);
+        $rpc = json_decode((string) $request->getBody(), true);
+        if ('POST' !== $request->getMethod() || !isset($rpc['id'])) {
+            return $response;
+        }
+        if (\count($this->records) >= 16) {
+            throw new \RuntimeException('HTTP capture limit exceeded.');
+        }
+        $raw = $response->getBody()->read(131073);
+        if (\strlen($raw) > 131072) {
+            throw new \RuntimeException('HTTP response exceeds the capture limit.');
+        }
+        $body = $raw;
+        if (preg_match('/^data: (.+)$/m', $raw, $match)) {
+            $body = $match[1];
+        }
+        $decoded = json_decode($body, true);
+        // Unexpected debug/error bodies are not safe evidence exports.
+        if (200 !== $response->getStatusCode() || !\is_array($decoded) || !isset($decoded['result']) || ($decoded['id'] ?? null) !== $rpc['id']) {
+            throw new \RuntimeException('Unexpected MCP HTTP response.');
+        }
+        $this->records[] = ['phase' => $this->phase, 'request' => $rpc, 'response' => $decoded,
+            'httpStatus' => $response->getStatusCode(), 'durationMs' => (hrtime(true) - $started) / 1e6];
+        $token = $response->getHeaderLine('X-Debug-Token');
+        $this->profileTokens[] = preg_match('/\A[a-f0-9]{6}\z/D', $token) ? $token : null;
+
+        return $response->withBody(Stream::create($raw));
+    }
+
+    public function records(): array
+    {
+        if ([] === $this->records) {
+            return [];
+        }
+        $storage = new FileProfilerStorage('file:'.$this->profilerDirectory);
+        $records = $this->records;
+        foreach ($records as $index => &$row) {
+            if ('tools/call' !== $row['request']['method']) {
+                continue;
+            }
+            $row['profiler'] = null;
+            $token = $this->profileTokens[$index];
+            if (null !== $token && null !== $profile = $storage->read($token)) {
+                if ($profile->hasCollector('code_mode') && ($collector = $profile->getCollector('code_mode')) instanceof CatalogDataCollector) {
+                    $row['profiler'] = ['operations' => $collector->getOperations(), 'dropped' => $collector->getDropped()];
+                }
+            }
+        }
+
+        return $records;
+    }
+}

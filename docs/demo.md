@@ -27,13 +27,19 @@ Source views: [handler](../examples/symfony/src/ArticleTool.php), [voter](../exa
 
 Draft for the official project entry; not submitted. Project name: **Symfony Code Mode**.
 
-> Symfony Code Mode gives agents two stable MCP entry tools: search for approved capabilities, then call them with JSON. Symfony AI supplies the schemas and invokes existing handlers; Symfony Security controls which tools a user can discover and rechecks access on every call.
+**Lead:** Your Symfony tools, on demand. Your application stays in control.
+
+> Give an AI agent useful access to your Symfony application as its tool catalog grows. Symfony Code Mode exposes two stable MCP entry tools: discover the capabilities available to the authenticated user, then call existing services with JSON. Unused tool schemas stay out of the advertised interface; contracts are retrieved when needed.
 >
-> We started with generated PHP in gVisor, where code could join and filter tool results before returning them to the model. That worked, but required a separate runtime. The current JSON catalog runs in an ordinary Symfony HTTP application, making adoption simpler while preserving authorization and call budgets. Sandboxed PHP remains available for computation.
+> The demo makes the boundary visible. An agent discovers an article reader and returns its title. Revoke the user’s permission and the identical follow-up is denied, even though the agent already knows the tool. A new search hides the contract. The workbench shows real JSON requests, responses and Symfony execution traces.
 >
-> The real demo reads an article, revokes the user's permission, then denies the identical follow-up. A Maker command, shared voter and profiler panel make the integration familiar to Symfony developers. An offline scaling fixture shows the current HTTP entry contracts staying at 239 schema tokens as available tools grow from 3 to 128; search and conversation costs remain additional. Separately, a retained matched Symfony AI + Hugging Face audit used 35.8% fewer provider tokens with JSON than direct tools, with ten correct findings on both paths and review costs included. That historical audit predates HTTP; the current application has a separate 31-check execution proof.
+> This fits ordinary Symfony development: native Symfony AI tools, shared Security voters, a Maker command and a profiler panel, running in a normal PHP HTTP application. Discovery builds on Johannes Wachter’s proposed Symfony AI search components through a pinned, attributed BM25 adapter with no added Composer dependencies. A fresh Symfony AI + Hugging Face conversation exercises that same HTTP path; its attempts and measured usage are retained.
 >
-> Clone the repository and run the HTTP proof with PHP and Composer. No Docker or model key is required for that proof.
+> We began with sandboxed PHP that could join and filter results near the tools. The experiments led to a simpler default for adoption: searchable JSON calls to installed handlers. The PHP path and matched audit evidence remain available, with their trade-offs documented.
+>
+> Clone the repository and run the HTTP access-control proof with PHP and Composer. Explore the real agent video, current model conversation and measured catalog footprint in the visual documentation.
+
+The catalog fixture measures **239 advertised-schema tokens from 3 to 128 tools**. Retrieved schemas and conversation costs are additional; it is not a claim that total usage stays flat. Historical audit savings remain labelled separately from the fresh HTTP conversation.
 
 Submission links:
 
@@ -129,11 +135,11 @@ For profiler shots, use `APP_ENV=dev` locally and capture fresh authorized and r
 
 ## What each shot proves
 
-- The fresh chat uses the client's model. Symfony AI supplies schemas and handler invocation; this is **not** a new Symfony AI + Hugging Face model run.
+- The desktop chat in the film uses the client's model. Symfony AI supplies schemas and handler invocation; this is **not** a new Symfony AI + Hugging Face model run.
 - Same-user revocation takes effect on the **next HTTP request**. The discovered name remains known, but execution rechecks access. The local authenticator reads the changed permission fixture; no reusable package security checks or budgets are relaxed. This does not claim cancellation of a handler already running.
 - The separate HTTP proof also tests restricted article 202, cross-user discovery isolation, unchanged budgets after regrant and server restart, and authentication/origin checks. These extra probes need not fit in the recording.
 - The film’s final chart counts serialized **advertised schemas** with a local tokenizer. The two current HTTP contracts match the real HTTP capture. The larger catalogs are synthetic four-field tools, not additional tools installed in the filmed application. Search results, client framing, task data, history and output are excluded. The model was not called to measure the flat line.
-- The separate workbench audit retains all attempts: **48 articles, 24 images, 10 correct findings**. JSON used **35.8% fewer** provider-reported tokens; PHP used **72.4% fewer** in that matched run, including reviews. Those are complete historical conversation measurements, not the film’s lookup or universal savings. The HTTP runtime has not had a new end-to-end model benchmark.
+- The separate workbench audit retains all attempts: **48 articles, 24 images, 10 correct findings**. JSON used **35.8% fewer** provider-reported tokens; PHP used **72.4% fewer** in that matched run, including reviews. Those are complete historical conversation measurements, not the film’s lookup or universal savings. A separate fresh HTTP/BM25 conversation now records model usage for the lookup and revocation flow; it is not a matched audit benchmark.
 - JSON runs trusted installed handlers in process. No worker, Docker or gVisor is required for this sequence. Hosting and downstream clients enforce hard timeouts; JSON is not a prompt-injection defense.
 - Keep the real requests, responses and untrimmed footage locally. The workbench is a read-only evidence viewer, not a live mirror of your conversation. `--trace-file` is PHP-only; save the JSON records through the client.
 
@@ -148,6 +154,18 @@ The [hackathon brief](https://symfony.com/hackathon) is the source for submissio
 ## Optional follow-up material
 
 **The journey:** [From PHP to JSON](https://ronaldtebrake.github.io/symfony-hackathon/#journey) follows the problem, the gVisor proof, the hosting trade-off and the decision to ship a JSON catalog. PHP remains useful for loops, joins and filtering; easier managed isolation could improve its adoption later.
+
+### Current HTTP model conversation
+
+Install the root dependencies (`composer install`) and independent app (`composer install --working-dir=examples/symfony`), then set `HUGGINGFACE_API_KEY` in the root’s ignored `.env.local`. Never commit or record the key.
+
+```sh
+php bin/console code-mode:http-conversation --live
+```
+
+The command runs the two user turns through Symfony AI and Hugging Face, with at most eight model requests. It uses a disposable copy of the installed independent application and does not change the existing recording account. It retains each attempt under ignored `var/demo/http-conversation/`; reviewed captures are published separately in `docs/evidence/http-conversation.json`.
+
+The verified run used **5,220 provider tokens** (4,191 input + 1,029 output), six model requests and four MCP tool calls. Across both retained attempts: 8,937 tokens and 11 model requests. The second system-prompt revision explicitly requires a fresh visibility search after denial. The original attempt remains visible, including its incorrect visibility claim. No answer was rewritten or reviewed by a second model.
 
 **Reproduce model evidence:** `php bin/console code-mode:catalog-proof --no-debug` runs operator checks; `--live` adds paid Symfony AI + Hugging Face inference. Both retain attempts. The public catalog capture includes five live scenarios and the independent app's operator proof. The earlier native client rehearsal is a separate file. The film and its new development capture have their own provenance record.
 
