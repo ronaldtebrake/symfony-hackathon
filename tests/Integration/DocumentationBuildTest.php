@@ -73,6 +73,9 @@ final class DocumentationBuildTest extends TestCase
         self::assertStringNotContainsString('href="/demo', $html);
         self::assertStringNotContainsString('Codex', $html);
         self::assertStringContainsString('Content-Security-Policy', $html);
+        self::assertStringContainsString('src="media/symfony-native-tools-demo-90s.mp4"', $html);
+        self::assertStringContainsString('poster="media/symfony-native-tools-poster.jpg"', $html);
+        self::assertStringNotContainsString('="/media/', $html);
         $files = [];
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root.'/var/pages', \FilesystemIterator::SKIP_DOTS)) as $file) {
             $files[] = substr($file->getPathname(), strlen($root.'/var/pages/'));
@@ -80,9 +83,44 @@ final class DocumentationBuildTest extends TestCase
         }
         sort($files);
         $expected = ['.nojekyll', 'index.html', 'demo.css', 'demo.js', 'docs.js', 'catalog-proof.js', 'php-syntax.js', 'images/code-mode-value.svg'];
+        foreach (['symfony-native-tools-demo-90s.mp4', 'symfony-native-tools-poster.jpg', 'profiler-authorized.png', 'profiler-denied.png', 'video-proof.json'] as $name) { $expected[] = 'media/'.$name; }
         foreach (['report', 'security-report', 'agent-report', 'boundary-report', 'huggingface-report', 'huggingface-comparison', 'adoption-report', 'evaluation-report', 'performance-report', 'performance-conversation', 'performance-baseline', 'response-payloads', 'audit-three-way', 'catalog-proof', 'native-catalog', 'http-catalog'] as $name) { $expected[] = 'evidence/'.$name.'.json'; }
         sort($expected); self::assertSame($expected, $files);
         self::assertFileDoesNotExist($root.'/var/pages/evidence/discovery-report.json');
         self::assertStringNotContainsString('compact-discovery', $html);
+    }
+
+    public function testVideoChaptersAndClaimsMatchTheirSeparateCaptures(): void
+    {
+        $root = dirname(__DIR__, 2);
+        $video = json_decode(file_get_contents($root.'/public/media/video-proof.json'), true, flags: JSON_THROW_ON_ERROR);
+        self::assertSame(2700, $video['frames']);
+        self::assertSame(90, $video['durationSeconds']);
+        self::assertSame('none', $video['audio']);
+        preg_match_all('/start:(\d+), end:(\d+)/', file_get_contents($root.'/public/docs.js'), $timings, PREG_SET_ORDER);
+        self::assertSame(array_map(static fn (array $chapter): array => [$chapter['start'], $chapter['end']], $video['chapters']),
+            array_map(static fn (array $match): array => [(int) $match[1], (int) $match[2]], $timings));
+        $requests = array_column($video['development']['requests'], null, 'label');
+        self::assertSame($requests['authorized']['request']['params'], $requests['denied']['request']['params']);
+        self::assertSame('A Symfony application owns its tools', $requests['authorized']['response']['result']['structuredContent']['results'][0]['value']['title']);
+        $denied = $requests['denied']['response']['result']['structuredContent'];
+        self::assertSame('tool_denied', $denied['error']['reason']);
+        self::assertSame(0, $denied['completedCalls']);
+        self::assertArrayNotHasKey('results', $denied);
+        self::assertSame(['requested', 'succeeded'], array_column($requests['authorized']['operations'][0]['nativeEvents'], 'phase'));
+        self::assertSame([], $requests['denied']['operations'][0]['nativeEvents']);
+        self::assertSame(2, $requests['denied']['operations'][0]['budget'][2]['attempts']);
+        self::assertSame([], $requests['hidden']['response']['result']['structuredContent']['tools']);
+        foreach ($video['development']['checks'] as $label => $passed) { self::assertTrue($passed, $label); }
+        foreach (['src/ArticleTool.php', 'src/ArticleVoter.php', 'src/ArticleController.php'] as $file) {
+            self::assertSame($video['development']['sourceSha256'][$file], hash_file('sha256', $root.'/examples/symfony/'.$file));
+        }
+        $audit = (new ReportStore($root, reviewedOnly: true))->readThreeWayAudit();
+        $matching = array_values(array_filter($audit['attempts'], static fn (array $attempt): bool => $attempt['protocol'] === $video['historicalAudit']['protocol'] && $attempt['createdAt'] === $video['historicalAudit']['createdAt']));
+        self::assertCount(1, $matching);
+        self::assertTrue($matching[0]['verification']['passed']);
+        foreach ($video['historicalAudit']['providerTokens'] as $arm => $tokens) {
+            self::assertSame($matching[0]['runs'][$arm]['result']['providerTokens']['total'], $tokens);
+        }
     }
 }

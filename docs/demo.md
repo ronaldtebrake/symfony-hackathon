@@ -1,8 +1,29 @@
-# Record the 90-second Symfony product demo
+# The 90-second Symfony product demo
 
-**Show a real permission change:** discover an approved Symfony AI tool, read article 101, revoke the user's permission, then repeat the identical JSON call. The host denies it even though the agent already knows the contract. A new search hides the tool.
+[Watch the silent film and explore its chapters](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) · [Download MP4](../public/media/symfony-native-tools-demo-90s.mp4) · [Capture details and checks](../public/media/video-proof.json).
 
-Record a **fresh conversation** against [the independent Symfony app](../examples/symfony/README.md). The [workbench walkthrough](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) supplies the same shot cues and narration. Its [31-check HTTP capture](evidence/http-catalog-proof.json) contains real operator-authored requests from a detached install, not your new chat or a video. The earlier native client rehearsal remains separate. All articles are synthetic.
+The film keeps **51 seconds of real agent footage** central: discover a published-article tool, read article 101, revoke permission, and repeat the same JSON call. Symfony denies the fresh read even though the agent already knows the contract. Separate inserts show the new Maker command, shared voter and actual development profiler. All articles are synthetic. There is **no speech, music or audio track**.
+
+The two original screen recordings were supplied on 14 November. Their chat and tool responses are not reconstructed. The operator changed permission between recordings; that action is explained by a caption. New development captures are labelled separately because the footage predates the voter/profiler additions. Original recordings and intermediate renders stay outside the tracked repository; only the final film, poster, two profiler screenshots and compact capture record are published.
+
+## Film chapters and text alternative
+
+| Time | On screen | Message and evidence |
+| --- | --- | --- |
+| **00:00–00:03** | Symfony violet title: “Your Symfony app. In your agent.” | Build a tool. Share a voter. See every decision. |
+| **00:03–00:10** | Actual Maker output, reformatted for readability. | `make:code-mode-tool InventoryLookup` creates a native AI tool, voter, registration and security test. The generated test passes: one test, two assertions. The scaffold stays hidden and denied until implemented. This is a separate example from the article tool. |
+| **00:10–00:38** | Original agent footage: question, discovery, opened JSON and returned title. | “Look up published article 101 in our Symfony application. What's its title?” The agent calls `search_tools`, then `execute_tools` with `publication_read` and `id: 101`. The result is **A Symfony application owns its tools**. Seven seconds of waiting are visibly trimmed. |
+| **00:38–00:46** | Current tool and controller source, with Symfony syntax colours. | `#[IsGrantedTool(ArticleVoter::READ, subject: 'id')]` and `#[IsGranted(ArticleVoter::READ, subject: 'id')]` share the voter. Discovery uses it too; execution rechecks current access. This implementation was added after the original recording. |
+| **00:46–00:51** | Violet permission-change card. | The operator revoked `publication.read_published` between recordings. Same authenticated user and application connection; no budget reset. This is a caption of the actual change, not footage of an operator command. |
+| **00:51–01:14** | Full second recording, original speed, then final still hold. | “Can you refresh that article from the application?” The identical JSON call returns `tool_denied`, `completedCalls: 0`. The agent explains the denial and says the earlier title remains in chat but is not a fresh result. |
+| **01:14–01:22** | Actual Symfony profiler screenshots: allowed, then denied. | A separate authenticated HTTP capture records native `requested` / `succeeded` events for the allowed read. After revocation: denied broker call, no native tool events, two attempts consumed. No model was called for these profiles. |
+| **01:22–01:30** | Separate historical matched audit and repository link. | Ten correct findings on all paths: direct **46,438**, JSON **29,798**, sandboxed PHP **12,806** provider tokens. JSON used **35.8% fewer** than direct tools in this run. Same model, question, data and permissions; reviews included. Not this lookup's usage, a new HTTP benchmark or a bill. |
+
+Source views: [handler](../examples/symfony/src/ArticleTool.php), [voter](../examples/symfony/src/ArticleVoter.php), [controller](../examples/symfony/src/ArticleController.php). The workbench supplies a video player, seekable chapters, highlighted source, actual Maker output and profiler metadata. Its supporting HTTP records are separate operator checks, not the recorded chat transcript.
+
+## Record another take
+
+The following prompts are stricter reproduction instructions, not a transcript of the existing film. The additional post-revocation search is useful to demonstrate that the contract disappears; it is covered by the separate HTTP proof and is not in the supplied footage.
 
 ## Prepare the real application
 
@@ -70,21 +91,18 @@ The subsequent search must contain `"tools":[],"matched":0`. The two entry tools
 
 The agent can explain the denial and distinguish the previous result from a new read. Revocation cannot erase information already in the conversation. If it declines to perform the test, retries, reads workspace files or invents a fresh result, retain that attempt and prepare a separate take; do not splice a different call into its transcript.
 
-## Exact recording sequence and voice-over
+## Capture the development inserts
 
-Record at **1920 × 1080**, notifications off. Prepare your editor, operator terminal and workbench tabs. Keep three seconds of still footage around each clip. Capture the real conversation at its actual speed, then trim waiting time with a visible **“wait trimmed”** caption. Ninety seconds is the edited duration.
+In a disposable copy of the independent Symfony application, enable the development environment and run:
 
-| Time | Record | Say |
-| --- | --- | --- |
-| **00:00–00:12** | Submit turn one in your MCP client. Hold on the returned title. Caption **“Authenticated HTTP · independent Symfony app · synthetic articles”**. | “This is Symfony Code Mode. My agent connects to a normal Symfony application over HTTP. I ask for a published article.” |
-| **00:12–00:24** | Expand `search_tools`, then `execute_tools`. Show the discovered `publication_read` contract, `id: 101` and the actual result. | “Search returns the tool because this user has read permission. The agent sends JSON arguments, and Symfony returns the article. Discovery is not a permanent access grant.” |
-| **00:24–00:37** | Editor: `ArticleTool.php` at `#[AsTool]` and `read()`, then `ArticleVoter.php` and `ArticleController.php`. Pre-open each small excerpt. | “Symfony AI supplies the schema and invokes this installed handler. One Symfony voter controls discovery and reads for both the agent and the controller. Execution checks access again.” |
-| **00:37–00:46** | Operator terminal: run `php examples/symfony/bin/console demo:reader-access revoke`. Hold on the output. Caption **“Same user · no reconnect · no budget reset”**. | “Now I revoke the permission in the application. Same user, same connection. I have not reset the budget.” |
-| **00:46–01:01** | Submit the exact follow-up. Expand the same `id: 101` call and its `tool_denied`, `completedCalls: 0`. Then show the new search: `tools: []`, `matched: 0`. | “The agent repeats the exact read using its known contract. Symfony denies it and returns no article. Searching again hides the tool. Previously returned information stays in the chat.” |
-| **01:01–01:17** | Workbench → **The 90-second demo → Compare tokens**. Frame **Direct 46,438 / JSON 29,798 / PHP 12,806**, all ten findings correct. Caption **“Separate historical audit · Symfony AI + Hugging Face · review included”**. | “In a separate matched audit, all three paths found the same ten issues. JSON used thirty-six percent fewer tokens than direct tools. Isolated PHP saved more.” |
-| **01:17–01:30** | Editor: `config/services.php`, highlighting `ai_tool_services`, `ai_tools`, `voter_rules` and `http`. Cut to the passing `code-mode:doctor` output and repository URL. | “Register approved Symfony tools and your policies. JSON runs with ordinary PHP and Symfony dependencies. Permission changes do not reset call budgets. Connect your agent and use your application.” |
+```sh
+APP_ENV=dev php bin/console make:code-mode-tool InventoryLookup
+APP_ENV=dev php vendor/bin/phpunit --no-configuration --bootstrap vendor/autoload.php tests/Tool/InventoryLookupVoterTest.php
+```
 
-Source views: [handler](../examples/symfony/src/ArticleTool.php), [shared voter](../examples/symfony/src/ArticleVoter.php), [controller](../examples/symfony/src/ArticleController.php), [configuration](../examples/symfony/config/services.php). The workbench also shows highlighted excerpts and the separately captured HTTP sequence. Record the actual client calls for the main take; label any substituted proof footage **“Operator HTTP proof · no model called”**.
+Show the real generated file list and passing deny-by-default test. Do not imply that this unimplemented scaffold is the article handler used in the conversation. Open the installed tool/controller source to show the shared voter attributes.
+
+For profiler shots, use `APP_ENV=dev` locally and capture fresh authorized and revoked requests against a separate app copy. In each Symfony profile, open **Code Mode**. Show broker outcomes, native AI events and attempts used. Keep this labelled **“Separate HTTP proof · no model called”** if the requests are operator-authored. The Code Mode collector omits arguments, results and identities; other profiler panels can expose sensitive data. Keep the development profiler private and never record authentication headers.
 
 ## What each shot proves
 
@@ -97,7 +115,7 @@ Source views: [handler](../examples/symfony/src/ArticleTool.php), [shared voter]
 
 ## Edit and deliver
 
-Use straight cuts at **0, 12, 24, 37, 46, 61, 77 and 90 seconds**. Record narration separately. Export **MP4, H.264, 1080p, 30 fps**, exactly **90 seconds / 2,700 frames**. Keep the denied request and response together. Do not show credentials. Store untrimmed footage outside the tracked repository. Recording, editing, uploading and formal submission remain manual steps.
+Use cuts at **0, 3, 10, 38, 46, 51, 74, 82 and 90 seconds**. Export **MP4, H.264, 1080p, 30 fps**, exactly **90 seconds / 2,700 frames**, without an audio track. Keep the denied request and response together. Label waiting trims and separate captures. Store untrimmed footage outside the tracked repository. The finished film is included in Pages; formal hackathon submission remains a separate step.
 
 For another take, grant access and reset the budget before starting a new conversation. To leave the local reader disabled when finished, run `demo:reader-access revoke`.
 
@@ -107,7 +125,7 @@ The [hackathon brief](https://symfony.com/hackathon) is the source for submissio
 
 **The journey:** [From PHP to JSON](https://ronaldtebrake.github.io/symfony-hackathon/#version-two) explains the current execution model, then the infrastructure trade-off that led to it. PHP remains useful for loops, joins and filtering; easier managed isolation could improve its adoption later.
 
-**Reproduce model evidence:** `php bin/console code-mode:catalog-proof --no-debug` runs operator checks; `--live` adds paid Symfony AI + Hugging Face inference. Both retain attempts. The public catalog capture includes five live scenarios and the independent app's operator proof. The native client rehearsal is a separate file; no video is included.
+**Reproduce model evidence:** `php bin/console code-mode:catalog-proof --no-debug` runs operator checks; `--live` adds paid Symfony AI + Hugging Face inference. Both retain attempts. The public catalog capture includes five live scenarios and the independent app's operator proof. The earlier native client rehearsal is a separate file. The film and its new development capture have their own provenance record.
 
 <details>
 <summary>Supporting PHP evidence: repeated evaluation, timelines and response measurements</summary>

@@ -24,14 +24,25 @@ if (document.documentElement.dataset.static === 'true') {
 // This guide consumes the same reviewed evidence as the detailed inspectors.
 // It never invokes a model, MCP endpoint or PHP executor.
 const demoShots = [
-  {kind:8, time:'00:00–00:12', label:'Ask in your agent', title:'A real Symfony tool, from your chat.', source:'Authenticated HTTP proof · published article lookup', href:'#native-rehearsal', narration:"This is Symfony Code Mode. My agent connects to a normal Symfony application over HTTP. I ask for a published article."},
-  {kind:9, time:'00:12–00:24', label:'Discover and read', title:'Discovery reflects your permissions.', source:'HTTP proof · permission-aware contract and authorized JSON call', href:'#native-rehearsal', narration:"Search returns the tool because this user has read permission. The agent sends JSON arguments, and Symfony returns the article. Discovery is not a permanent access grant."},
-  {kind:10, time:'00:24–00:37', label:'Show the code', title:'Your Symfony handler and voter.', source:'Installed Symfony source · native tool, voter and controller', href:'#native-rehearsal', narration:"Symfony AI supplies the schema and invokes this installed handler. One Symfony voter controls discovery and reads, for both the agent and this controller. Execution checks access again."},
-  {kind:12, time:'00:37–00:46', label:'Revoke permission', title:'Same user. Changed permission.', source:'Operator command · local permission fixture', href:'#native-rehearsal', narration:"Now I revoke the permission in the application. Same user, same connection. I have not reset the budget."},
-  {kind:11, time:'00:46–01:01', label:'Repeat the same call', title:'A known contract cannot bypass revocation.', source:'HTTP proof · identical read denied, contract hidden', href:'#native-rehearsal', narration:"The agent repeats the exact read using its known contract. Symfony denies it and returns no article. Searching again hides the tool. Previously returned information stays in the chat."},
-  {kind:5, time:'01:01–01:17', label:'Compare tokens', title:'Measure the whole task.', source:'Separate matched Symfony AI + Hugging Face audit', href:'#three-way', narration:"In a separate matched audit, all three paths found the same ten issues. JSON used thirty-six percent fewer tokens than direct tools. Isolated PHP saved more."},
-  {kind:7, time:'01:17–01:30', label:'Use it in Symfony', title:'Approved tools. Ordinary Symfony hosting.', source:'Configuration · independent Composer application', href:'#catalog-adoption', narration:"Register approved Symfony tools and your policies. JSON runs with ordinary PHP and Symfony dependencies. Permission changes do not reset call budgets. Connect your agent and use your application."},
+  {kind:7, start:0, end:3, time:'00:00–00:03', label:'Your app, in your agent', title:'Build a tool. Share a voter. See every decision.', source:'Silent product overview', href:'#quickstart', caption:'Symfony Code Mode connects an agent to an ordinary Symfony HTTP application. The agent supplies JSON; approved installed handlers do the work.'},
+  {kind:13, start:3, end:10, time:'00:03–00:10', label:'Generate a tool', title:'One Maker command. Four files.', source:'Actual command output · separate development copy', href:'#quickstart', caption:'make:code-mode-tool InventoryLookup creates a native Symfony AI tool, a voter, explicit registration and a security test. The generated voter test passes. The scaffold stays hidden and denied until you implement access. This is a separate example from the article tool in the recording.'},
+  {kind:9, start:10, end:38, time:'00:10–00:38', label:'Discover and read', title:'A real question. A real Symfony tool.', source:'Original agent recording · synthetic article 101', href:'#native-rehearsal', caption:'The user asks for the title of published article 101. The agent discovers publication_read and sends its ID as JSON. Symfony returns “A Symfony application owns its tools”. The actual tool request and response are opened on screen. Seven seconds of waiting are visibly trimmed.'},
+  {kind:10, start:38, end:46, time:'00:38–00:46', label:'Share the voter', title:'One voter. Both paths.', source:'Current installed source · added after the original recording', href:'#native-rehearsal', caption:'The tool uses IsGrantedTool and the controller uses IsGranted, both with ArticleVoter::READ and the article ID. Discovery uses the same voter. Execution checks the current permission again.'},
+  {kind:12, start:46, end:51, time:'00:46–00:51', label:'Revoke permission', title:'Same user. Changed permission.', source:'Actual operator change · between the two recordings', href:'#native-rehearsal', caption:'The operator revoked the reader permission between recordings. The authenticated user and application connection stay the same. The call budget was not reset. This caption explains the change; no operator-terminal footage was supplied.'},
+  {kind:11, start:51, end:74, time:'00:51–01:14', label:'Deny the follow-up', title:'A known contract cannot bypass revocation.', source:'Original agent recording · identical JSON read denied', href:'#native-rehearsal', caption:'The user asks, “Can you refresh that article from the application?” The agent repeats the same read. The response is tool_denied with zero completed calls. The agent explains that the earlier title remains in chat but is not a fresh result. The full follow-up plays at original speed, with a final still hold.'},
+  {kind:14, start:74, end:82, time:'01:14–01:22', label:'Inspect the profiler', title:'See the decision in Symfony.', source:'Actual profiler screenshots · separate HTTP proof, no model', href:'#quickstart', caption:'The authorized request records a successful broker call and native Symfony AI requested/succeeded events. After revocation, the identical request records tool_denied, no native tool events, and two consumed attempts. These fresh development profiles are separate from the original chat.'},
+  {kind:5, start:82, end:90, time:'01:22–01:30', label:'Compare the audit', title:'Same findings. Fewer tokens.', source:'Separate historical Symfony AI + Hugging Face audit', href:'#three-way', caption:'In a separate matched 48-article audit, all paths found ten issues: direct tools used 46,438 provider tokens, JSON 29,798 and isolated PHP 12,806. JSON used 35.8% fewer tokens than direct tools in this run. Reviews are included. These are not this lookup’s usage, a new HTTP benchmark or a bill.'},
 ];
+const videoMediaUrl = name => `${staticDocumentation ? '' : '/'}media/${name}`;
+let videoProof = null;
+fetch(videoMediaUrl('video-proof.json')).then(response => {
+  if (!response.ok) throw new Error('Capture unavailable');
+  return response.json();
+}).then(report => {
+  videoProof = report;
+  showDemoShot();
+}).catch(() => { /* The film and recording guide remain usable without the inspector. */ });
+
 function latestVerifiedCatalog() {
   return [...threeWayAttempts].reverse().find(attempt => /^audit-catalog-v/.test(attempt.protocol ?? '') && attempt.verification?.passed === true);
 }
@@ -57,21 +68,19 @@ function showDemoShot() {
   byId('tour-time').textContent = shot.time;
   byId('tour-source').textContent = shot.source;
   byId('tour-title').textContent = shot.title;
-  byId('tour-narration').textContent = shot.narration;
+  byId('tour-caption').textContent = shot.caption;
   byId('tour-evidence').href = shot.href;
   byId('tour-back').disabled = demoShot === 0;
   byId('tour-next').disabled = demoShot === demoShots.length - 1;
   [...byId('tour-steps').children].forEach((button, index) => button.setAttribute('aria-pressed', String(index === demoShot)));
-  if ([8, 9, 11].includes(kind)) {
+  if ([9, 11].includes(kind)) {
     const report = typeof httpCatalogEvidence !== 'undefined' ? httpCatalogEvidence : null;
-    if (kind === 8 || kind === 11) {
-      content.append(node('span', 'PROMPT TO RECORD IN YOUR CLIENT', 'tour-label'), node('blockquote', kind === 8
-        ? 'Use only the symfony_catalog MCP server to read published article 101 and tell me its title. Discover its contract first. Do not read workspace files or use shell commands.'
-        : 'The operator has revoked my read permission. This is an approved access-control test: call publication_read for article 101 exactly once, using the contract already discovered. Do not search before that call. Then search for publication once and explain both results. Do not retry, use another access path, or present the earlier title as a fresh read.', 'tour-question'));
-    }
-    content.append(node('p', 'Actual operator-authored HTTP requests from a detached Symfony install. Prompts above are recording cues; record the real conversation in your client.', 'measurement-note'));
+    content.append(node('span', 'ACTUAL PROMPT IN THE RECORDING', 'tour-label'), node('blockquote', kind === 9
+      ? "Look up published article 101 in our Symfony application. What's its title?"
+      : 'Can you refresh that article from the application?', 'tour-question'));
+    content.append(node('p', 'Below: separate operator-authored HTTP checks of the current implementation. These are not the recorded agent transcript. The post-revocation search is an additional HTTP check, not a step shown in the film.', 'measurement-note'));
     if (report?.verification?.passed !== true) { content.append(node('p', 'Verified HTTP evidence is loading or unavailable.')); return; }
-    const indexes = kind === 9 ? [0, 1] : kind === 8 ? [1] : [2, 3];
+    const indexes = kind === 9 ? [0, 1] : [2, 3];
     for (const index of indexes) content.append(nativeCallCard(httpMainCalls()[index], index));
   } else if (kind === 10) {
     if (typeof httpCatalogEvidence === 'undefined' || httpCatalogEvidence?.verification?.passed !== true) { content.append(node('p', 'Verified application source is loading or unavailable.')); return; }
@@ -91,6 +100,22 @@ function showDemoShot() {
     }
     table.append(head, body); const scroll = node('div', undefined, 'table-scroll'); scroll.append(table);
     content.append(scroll, node('p', `Captured ${new Date(attempt.createdAt).toLocaleDateString()}. Same 48 published articles, model, original question and permissions. Historical supervised-runtime capture; the HTTP runtime has not been re-benchmarked. All attempts remain retained.`, 'measurement-note'), node('p', 'JSON reduces deployment requirements. PHP can reduce intermediate data returned to the model. Actual charges depend on provider input/output pricing.', 'measurement-note'));
+  } else if (kind === 13) {
+    if (!videoProof) { content.append(node('p', 'Maker capture is loading or unavailable.')); return; }
+    const maker = videoProof.maker;
+    content.append(node('span', 'ACTUAL COMMAND · ISOLATED DEVELOPMENT APP', 'tour-label'), sourceBlock(maker.command), node('span', 'GENERATED FILES', 'tour-label'), sourceBlock(maker.created.join('\n')), node('span', 'GENERATED VOTER TEST', 'tour-label'), sourceBlock(maker.testOutput));
+    content.append(node('p', 'The generated tool is hidden and denied until the developer implements its voter and handler. This InventoryLookup scaffold is separate from the existing article tool in the recording.', 'measurement-note'));
+  } else if (kind === 14) {
+    if (!videoProof) { content.append(node('p', 'Profiler capture is loading or unavailable.')); return; }
+    content.append(node('p', 'Actual Symfony profiler screenshots and metadata from a separate authenticated MCP HTTP capture. No model was called. The denied request reuses the same discovered contract and JSON arguments.'));
+    for (const label of ['authorized', 'denied']) {
+      const request = videoProof.development.requests.find(row => row.label === label);
+      content.append(node('h4', label === 'authorized' ? 'Authorized read' : 'After permission revocation'));
+      const img = node('img'); img.src = videoMediaUrl(`profiler-${label}.png`); img.alt = label === 'authorized' ? 'Symfony Code Mode profiler: successful publication_read, one attempt, native requested and succeeded events.' : 'Symfony Code Mode profiler: tool_denied, two attempts consumed, no native toolbox events.'; img.className = 'tour-profiler'; img.loading = 'lazy';
+      content.append(img);
+      const detail = node('details'); detail.append(node('summary', 'Exact captured operation metadata'), sourceBlock(JSON.stringify(request.operations, null, 2))); content.append(detail);
+    }
+    content.append(node('p', 'The Code Mode panel omits arguments, results and identities. Other profiler panels may contain sensitive data; keep the development profiler private. Agent model tokens are not measured here.', 'measurement-note'));
   } else if (kind === 12) {
     content.append(node('span', 'RUN AS THE OPERATOR, OUTSIDE THE AGENT', 'tour-label'), sourceBlock('php examples/symfony/bin/console demo:reader-access revoke'));
     const change = typeof httpCatalogEvidence === 'undefined' ? null : httpCatalogEvidence?.capture?.permissionChange;
@@ -101,14 +126,29 @@ function showDemoShot() {
     content.append(node('p','Symfony AI supplies the schemas and existing tool execution. The catalog exposes search and literal JSON calls, with Symfony Security, per-call authorization and persistent user budgets.'), sourceBlock("code_mode:\n    mode: catalog\n    ai_tool_services: [Adoption\\ArticleTool]\n    ai_tools: ['publication_read']\n    voter_rules:\n        publication_read:\n            discover: PUBLICATION_DISCOVER\n            execute: PUBLICATION_READ\n            subject: id\n    http:\n        enabled: true\n        permissions:\n            publication.read_published: ROLE_READER"), sourceBlock('php bin/console code-mode:doctor\nHTTP MCP endpoint: /mcp'), node('p','Composer path packages today; not yet on Packagist. JSON runs in the application process with ordinary PHP and Symfony dependencies. The historical generated-PHP path has separate gVisor requirements.', 'measurement-note'));
   }
 }
+const tourVideo = byId('tour-video');
+let pendingVideoSeek = null;
+function selectDemoShot(index) {
+  demoShot = Math.max(0, Math.min(demoShots.length - 1, index));
+  if (tourVideo.readyState > 0) tourVideo.currentTime = demoShots[demoShot].start;
+  else pendingVideoSeek = demoShots[demoShot].start;
+  showDemoShot();
+}
+tourVideo.addEventListener('loadedmetadata', () => {
+  if (pendingVideoSeek !== null) { tourVideo.currentTime = pendingVideoSeek; pendingVideoSeek = null; }
+});
+tourVideo.addEventListener('timeupdate', () => {
+  const index = demoShots.findIndex(shot => tourVideo.currentTime >= shot.start && tourVideo.currentTime < shot.end);
+  if (index >= 0 && demoShot !== index) { demoShot = index; showDemoShot(); }
+});
 for (const [index, shot] of demoShots.entries()) {
   const button = node('button'); button.type = 'button';
   button.append(node('span', shot.time), node('strong', shot.label));
-  button.addEventListener('click', () => { demoShot = index; showDemoShot(); byId('demo-tour').scrollIntoView({block:'start', behavior:'instant'}); });
+  button.addEventListener('click', () => selectDemoShot(index));
   byId('tour-steps').append(button);
 }
-byId('tour-back').addEventListener('click', () => { demoShot = Math.max(0, demoShot - 1); showDemoShot(); byId('demo-tour').scrollIntoView({block:'start', behavior:'instant'}); });
-byId('tour-next').addEventListener('click', () => { demoShot = Math.min(demoShots.length - 1, demoShot + 1); showDemoShot(); byId('demo-tour').scrollIntoView({block:'start', behavior:'instant'}); });
+byId('tour-back').addEventListener('click', () => selectDemoShot(demoShot - 1));
+byId('tour-next').addEventListener('click', () => selectDemoShot(demoShot + 1));
 document.addEventListener('proof-evidence-changed', () => { showCostEstimate(); showDemoShot(); });
 showCostEstimate();
 showDemoShot();

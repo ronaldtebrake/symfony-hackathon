@@ -13,7 +13,7 @@ $root = dirname(__DIR__);
 $output = $root.'/var/pages';
 // Clear only this fixed generated directory, so stale files cannot enter the Pages artifact.
 (new Symfony\Component\Filesystem\Filesystem())->remove($output);
-foreach (['', '/evidence', '/images'] as $directory) {
+foreach (['', '/evidence', '/images', '/media'] as $directory) {
     if (!is_dir($output.$directory) && !mkdir($output.$directory, 0755, true)) {
         throw new RuntimeException('Cannot create documentation output.');
     }
@@ -42,13 +42,26 @@ foreach ($reports as $filename => $method) {
     }
 }
 $html = file_get_contents($root.'/templates/demo.html');
-$html = str_replace(['data-static="false"', 'href="/demo.css"', 'src="/demo.js"', 'src="/docs.js"', 'src="/catalog-proof.js"', 'src="/php-syntax.js"', 'src="/images/'],
-    ['data-static="true"', 'href="demo.css"', 'src="demo.js"', 'src="docs.js"', 'src="catalog-proof.js"', 'src="php-syntax.js"', 'src="images/'], $html);
+$html = str_replace(['data-static="false"', 'href="/demo.css"', 'src="/demo.js"', 'src="/docs.js"', 'src="/catalog-proof.js"', 'src="/php-syntax.js"', 'src="/images/', 'src="/media/', 'href="/media/', 'poster="/media/'],
+    ['data-static="true"', 'href="demo.css"', 'src="demo.js"', 'src="docs.js"', 'src="catalog-proof.js"', 'src="php-syntax.js"', 'src="images/', 'src="media/', 'href="media/', 'poster="media/'], $html);
 $html = preg_replace('#href="/demo/([a-z-]+)"#', 'href="evidence/$1.json"', $html);
 // The static host cannot execute PHP or contact the local MCP server.
 $html = str_replace('<meta name="viewport"', '<meta http-equiv="Content-Security-Policy" content="default-src \'self\'; script-src \'self\'; style-src \'self\'; img-src \'self\' data:; connect-src \'self\'; object-src \'none\'; base-uri \'none\'; form-action \'none\'">' . "\n  " . '<meta name="viewport"', $html);
 file_put_contents($output.'/index.html', $html);
 foreach (['demo.css', 'demo.js', 'docs.js', 'catalog-proof.js', 'php-syntax.js'] as $file) { copy($root.'/public/'.$file, $output.'/'.$file); }
 copy($root.'/docs/images/code-mode-value.svg', $output.'/images/code-mode-value.svg');
+// Publish only the curated edit and its reviewed inserts, never raw recordings or profiler storage.
+$video = json_decode(file_get_contents($root.'/public/media/video-proof.json'), true, flags: JSON_THROW_ON_ERROR);
+$media = ['symfony-native-tools-demo-90s.mp4', 'symfony-native-tools-poster.jpg', 'profiler-authorized.png', 'profiler-denied.png'];
+if (90 !== ($video['durationSeconds'] ?? null) || 'none' !== ($video['audio'] ?? null)) {
+    throw new RuntimeException('Unexpected product video format.');
+}
+foreach ($media as $file) {
+    if (($video['assets'][$file] ?? null) !== hash_file('sha256', $root.'/public/media/'.$file)) {
+        throw new RuntimeException('Product video asset failed verification: '.$file);
+    }
+    copy($root.'/public/media/'.$file, $output.'/media/'.$file);
+}
+copy($root.'/public/media/video-proof.json', $output.'/media/video-proof.json');
 file_put_contents($output.'/.nojekyll', '');
 echo "Built visual documentation in var/pages using ".count($reports)." reviewed evidence exports.\n";

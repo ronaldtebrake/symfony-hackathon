@@ -8,7 +8,9 @@ use App\Demo\ReportStore;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 final readonly class DemoController
@@ -224,6 +226,23 @@ final readonly class DemoController
     {
         $this->requireLocalRequest($request);
         return $this->response(file_get_contents($this->projectDir.'/docs/images/code-mode-value.svg'), 'image/svg+xml');
+    }
+
+    #[Route('/media/{file}', name: 'app_demo_media', methods: ['GET'])]
+    public function media(Request $request, string $file): Response
+    {
+        $this->requireLocalRequest($request);
+        $types = [
+            'symfony-native-tools-demo-90s.mp4' => 'video/mp4',
+            'symfony-native-tools-poster.jpg' => 'image/jpeg',
+            'profiler-authorized.png' => 'image/png', 'profiler-denied.png' => 'image/png',
+            'video-proof.json' => 'application/json',
+        ];
+        if (!isset($types[$file])) { throw new NotFoundHttpException(); }
+        // Symfony handles byte ranges so Safari can seek when using PHP's development server.
+        return new BinaryFileResponse($this->projectDir.'/public/media/'.$file, headers: [
+            'Content-Type' => $types[$file], 'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     private function requireLocalRequest(Request $request): void

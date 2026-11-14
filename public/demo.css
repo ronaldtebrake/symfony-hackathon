@@ -1606,6 +1606,13 @@ h1,h2,h3 { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 #demo-tour > h2,#explore > h2 { font-size:clamp(30px,3vw,42px); line-height:1.2; margin:14px 0; letter-spacing:-1.3px; }
 #demo-tour > .lede,#explore > .lede { font-size:16px; line-height:1.7; max-width:790px; }
 .tour-layout { display:grid; grid-template-columns:192px minmax(0,1fr); gap:22px; margin-top:28px; align-items:start; }
+.product-video { margin:28px 0 14px; }
+.product-video video { display:block; width:100%; aspect-ratio:16/9; border-radius:14px; border:1px solid var(--accent-border); background:var(--code-bg); box-shadow:0 12px 44px #41166a12; }
+.product-video figcaption { color:var(--muted); font-size:12px; line-height:1.7; margin:12px 0; max-width:900px; }
+.video-links { display:flex; flex-wrap:wrap; gap:10px 22px; font-size:12px; align-items:center; }
+.video-links a { color:var(--brand); }
+.video-links span { color:var(--muted); }
+.tour-profiler { display:block; width:100%; height:auto; border:1px solid var(--line); border-radius:8px; margin:16px 0; }
 .tour-steps { display:flex; flex-direction:column; gap:6px; }
 .tour-steps button { display:flex; flex-direction:column; gap:4px; text-align:left; border:1px solid transparent; border-radius:8px; color:var(--muted); background:#fff; padding:13px; }
 .tour-steps button span { font:10px var(--mono); letter-spacing:.3px; }

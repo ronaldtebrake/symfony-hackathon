@@ -1,0 +1,511 @@
+{
+  "format": "symfony-product-video/v1",
+  "durationSeconds": 90,
+  "frames": 2700,
+  "fps": 30,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "audio": "none",
+  "scope": "Real user-supplied agent recordings, edited with separate Maker output, current source and actual development profiler screenshots. No synthetic conversation, tool calls or cursor movements.",
+  "sources": [
+    {
+      "name": "Screen Recording 2026-11-14 at 12.49.40.mov",
+      "sha256": "2d4da545e8d89bc66f09e6bcf8687d7457248bfb4608ed353a90ddfeb6f90551"
+    },
+    {
+      "name": "Screen Recording 2026-11-14 at 12.50.56.mov",
+      "sha256": "b8e40365005ca8c17dd4e2d5a9c106ea25790059bf67433b0ec8ad9b9ab83700"
+    }
+  ],
+  "chapters": [
+    {
+      "start": 0,
+      "end": 3,
+      "title": "Your Symfony app, in your agent"
+    },
+    {
+      "start": 3,
+      "end": 10,
+      "title": "Generate an approved tool"
+    },
+    {
+      "start": 10,
+      "end": 38,
+      "title": "Discover and read"
+    },
+    {
+      "start": 38,
+      "end": 46,
+      "title": "Share the voter"
+    },
+    {
+      "start": 46,
+      "end": 51,
+      "title": "Revoke permission"
+    },
+    {
+      "start": 51,
+      "end": 74,
+      "title": "Deny the follow-up"
+    },
+    {
+      "start": 74,
+      "end": 82,
+      "title": "Inspect the profiler"
+    },
+    {
+      "start": 82,
+      "end": 90,
+      "title": "Compare the complete audit"
+    }
+  ],
+  "edits": {
+    "lookup": "Source 0\u20134s + 11\u201335s at original speed. Seven-second wait trim labelled. First three seconds show full app; then conversation crop.",
+    "followUp": "Full second source at original speed; final frame held until 74s.",
+    "conversationCrop": [
+      390,
+      60,
+      1190,
+      540
+    ],
+    "revocation": "Caption explains the real operator change between recordings; no operator footage was supplied."
+  },
+  "recordingVerification": {
+    "sameExecuteArguments": true,
+    "firstReadCompleted": true,
+    "followUpFailed": true,
+    "denialVisible": "tool_denied; completedCalls: 0",
+    "priorResultNotClaimedAsFresh": true
+  },
+  "maker": {
+    "scope": "Separate scaffold in an isolated development app copy; not the article handler in the original footage.",
+    "command": "APP_ENV=dev php bin/console make:code-mode-tool InventoryLookup --no-interaction --no-ansi",
+    "created": [
+      "src/Tool/InventoryLookupTool.php",
+      "src/Security/InventoryLookupVoter.php",
+      "config/packages/code_mode_inventory_lookup.php",
+      "tests/Tool/InventoryLookupVoterTest.php"
+    ],
+    "output": "\n [WARNING] \"make:code-mode-tool\" is not meant to be run in non-interactive mode.\n\n created: src/Tool/InventoryLookupTool.php\n created: src/Security/InventoryLookupVoter.php\n created: config/packages/code_mode_inventory_lookup.php\n created: tests/Tool/InventoryLookupVoterTest.php\n\n           \n  Success! \n           \n\n Implement the read and the two voter decisions. The generated tool is hidden and denied until then.\n Review the explicit registration. Existing custom authorization/visibility policies remain in force and must also admit this tool.\n Use ai_tool_services for the generated registration; a custom ai_toolbox needs manual wiring instead.\n Enable AiBundle and keep your existing HTTP authenticator. Run the generated test and code-mode:doctor.\n",
+    "testOutput": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\n\nRuntime:       PHP 8.3.19\n\n.                                                                   1 / 1 (100%)\n\nTime: 00:00.002, Memory: 8.00 MB\n\nOK (1 test, 2 assertions)\n",
+    "sourceSha256": {
+      "src/Tool/InventoryLookupTool.php": "f6178d13f771443eb1a804cceefd6d99da747bcf87d655675763b3dafe8032cd",
+      "src/Security/InventoryLookupVoter.php": "6bfc75e5ce0a95a17fcc00934523bf08d3eef7625c1c87caf59348e466c1c67a",
+      "config/packages/code_mode_inventory_lookup.php": "685338e43b6c23825765e7bd8d496aa27de2080db1fb614f31ae21f2f63f681f",
+      "tests/Tool/InventoryLookupVoterTest.php": "88d27d2845e937a570ca639c300771431c4e6e7d4fdf68bd9f2b8067e56dc779"
+    }
+  },
+  "development": {
+    "format": "symfony-native-development/v1",
+    "capturedAt": "2026-11-14T13:46:07+00:00",
+    "scope": "Separate operator-authored MCP HTTP requests in an isolated development app copy. Actual Code Mode profiler metadata. No model called; not the earlier recorded agent session.",
+    "requests": [
+      {
+        "label": "initialize",
+        "httpStatus": 200,
+        "request": {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "method": "initialize",
+          "params": {
+            "protocolVersion": "2025-11-25",
+            "capabilities": {},
+            "clientInfo": {
+              "name": "Development proof",
+              "version": "1"
+            }
+          }
+        },
+        "response": {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "result": {
+            "protocolVersion": "2025-11-25",
+            "capabilities": {
+              "logging": [],
+              "completions": [],
+              "tools": []
+            },
+            "serverInfo": {
+              "name": "Symfony approved catalog",
+              "version": "0.0.1"
+            }
+          }
+        },
+        "operations": []
+      },
+      {
+        "label": "discovery",
+        "httpStatus": 200,
+        "request": {
+          "jsonrpc": "2.0",
+          "id": 2,
+          "method": "tools/call",
+          "params": {
+            "name": "search_tools",
+            "arguments": {
+              "query": "publication"
+            }
+          }
+        },
+        "response": {
+          "jsonrpc": "2.0",
+          "id": 2,
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"tools\":[{\"name\":\"publication_read\",\"description\":\"Read the ID and title of a published article by integer ID.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"}},\"required\":[\"id\"],\"additionalProperties\":false},\"outputSchema\":{\"type\":\"object\",\"required\":[\"id\",\"title\"],\"additionalProperties\":false,\"properties\":{\"id\":{\"type\":\"integer\"},\"title\":{\"type\":\"string\"}}}}],\"matched\":1,\"returned\":1,\"limit\":8,\"truncated\":false}"
+              }
+            ],
+            "isError": false,
+            "structuredContent": {
+              "tools": [
+                {
+                  "name": "publication_read",
+                  "description": "Read the ID and title of a published article by integer ID.",
+                  "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "outputSchema": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "title"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "integer"
+                      },
+                      "title": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              ],
+              "matched": 1,
+              "returned": 1,
+              "limit": 8,
+              "truncated": false
+            }
+          }
+        },
+        "operations": [
+          {
+            "operation": "search_tools",
+            "status": "succeeded",
+            "budget": [
+              {
+                "phase": "before",
+                "attempts": 0,
+                "reservedCalls": 0,
+                "knownContracts": 0
+              },
+              {
+                "phase": "saved",
+                "attempts": 0,
+                "reservedCalls": 0,
+                "knownContracts": 1
+              }
+            ],
+            "calls": [],
+            "nativeEvents": [],
+            "durationMs": 3.943,
+            "discovery": {
+              "matched": 1,
+              "returned": 1,
+              "truncated": false
+            }
+          }
+        ]
+      },
+      {
+        "label": "authorized",
+        "httpStatus": 200,
+        "request": {
+          "jsonrpc": "2.0",
+          "id": 3,
+          "method": "tools/call",
+          "params": {
+            "name": "execute_tools",
+            "arguments": {
+              "calls": [
+                {
+                  "name": "publication_read",
+                  "arguments": {
+                    "id": 101
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "response": {
+          "jsonrpc": "2.0",
+          "id": 3,
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"results\":[{\"name\":\"publication_read\",\"value\":{\"id\":101,\"title\":\"A Symfony application owns its tools\"}}]}"
+              }
+            ],
+            "isError": false,
+            "structuredContent": {
+              "results": [
+                {
+                  "name": "publication_read",
+                  "value": {
+                    "id": 101,
+                    "title": "A Symfony application owns its tools"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "operations": [
+          {
+            "operation": "execute_tools",
+            "status": "succeeded",
+            "budget": [
+              {
+                "phase": "before",
+                "attempts": 0,
+                "reservedCalls": 0,
+                "knownContracts": 1
+              },
+              {
+                "phase": "saved",
+                "attempts": 1,
+                "reservedCalls": 0,
+                "knownContracts": 1
+              },
+              {
+                "phase": "saved",
+                "attempts": 1,
+                "reservedCalls": 1,
+                "knownContracts": 1
+              }
+            ],
+            "calls": [
+              {
+                "name": "publication_read",
+                "status": "succeeded",
+                "durationMs": 1.02
+              }
+            ],
+            "nativeEvents": [
+              {
+                "name": "publication_read",
+                "phase": "requested"
+              },
+              {
+                "name": "publication_read",
+                "phase": "succeeded"
+              }
+            ],
+            "durationMs": 1.772
+          }
+        ]
+      },
+      {
+        "label": "denied",
+        "httpStatus": 200,
+        "request": {
+          "jsonrpc": "2.0",
+          "id": 4,
+          "method": "tools/call",
+          "params": {
+            "name": "execute_tools",
+            "arguments": {
+              "calls": [
+                {
+                  "name": "publication_read",
+                  "arguments": {
+                    "id": 101
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "response": {
+          "jsonrpc": "2.0",
+          "id": 4,
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"publication_read\",\"index\":0},\"completedCalls\":0}"
+              }
+            ],
+            "isError": true,
+            "structuredContent": {
+              "error": {
+                "reason": "tool_denied",
+                "tool": "publication_read",
+                "index": 0
+              },
+              "completedCalls": 0
+            }
+          }
+        },
+        "operations": [
+          {
+            "operation": "execute_tools",
+            "status": "failed",
+            "budget": [
+              {
+                "phase": "before",
+                "attempts": 1,
+                "reservedCalls": 1,
+                "knownContracts": 1
+              },
+              {
+                "phase": "saved",
+                "attempts": 2,
+                "reservedCalls": 1,
+                "knownContracts": 1
+              },
+              {
+                "phase": "saved",
+                "attempts": 2,
+                "reservedCalls": 2,
+                "knownContracts": 1
+              }
+            ],
+            "calls": [
+              {
+                "name": "publication_read",
+                "status": "denied",
+                "reason": "tool_denied",
+                "durationMs": 0.093
+              }
+            ],
+            "nativeEvents": [],
+            "durationMs": 0.888,
+            "reason": "tool_denied"
+          }
+        ]
+      },
+      {
+        "label": "hidden",
+        "httpStatus": 200,
+        "request": {
+          "jsonrpc": "2.0",
+          "id": 5,
+          "method": "tools/call",
+          "params": {
+            "name": "search_tools",
+            "arguments": {
+              "query": "publication"
+            }
+          }
+        },
+        "response": {
+          "jsonrpc": "2.0",
+          "id": 5,
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"tools\":[],\"matched\":0,\"returned\":0,\"limit\":8,\"truncated\":false,\"hint\":\"No approved contract matched. Try another name, action or input field.\"}"
+              }
+            ],
+            "isError": false,
+            "structuredContent": {
+              "tools": [],
+              "matched": 0,
+              "returned": 0,
+              "limit": 8,
+              "truncated": false,
+              "hint": "No approved contract matched. Try another name, action or input field."
+            }
+          }
+        },
+        "operations": [
+          {
+            "operation": "search_tools",
+            "status": "succeeded",
+            "budget": [
+              {
+                "phase": "before",
+                "attempts": 2,
+                "reservedCalls": 2,
+                "knownContracts": 1
+              },
+              {
+                "phase": "saved",
+                "attempts": 2,
+                "reservedCalls": 2,
+                "knownContracts": 1
+              }
+            ],
+            "calls": [],
+            "nativeEvents": [],
+            "durationMs": 0.544,
+            "discovery": {
+              "matched": 0,
+              "returned": 0,
+              "truncated": false
+            }
+          }
+        ]
+      }
+    ],
+    "checks": {
+      "server_requires_authentication": true,
+      "approved_contract_visible": true,
+      "authorized_read": true,
+      "revocation_denied": true,
+      "revoked_contract_hidden": true,
+      "successful_native_events": true,
+      "denial_before_native_toolbox": true,
+      "denial_recorded": true,
+      "budget_not_reset": true,
+      "result_absent_from_diagnostics": true,
+      "credential_absent": true
+    },
+    "permissionChange": {
+      "command": "php bin/console demo:reader-access revoke",
+      "output": "demo-reader: publication.read_published revoked"
+    },
+    "sourceSha256": {
+      "src/ArticleTool.php": "d83787043e3f3ee3cc9c11d35ca32081f24663cdd4f1fc3b9b74865aeae2c30a",
+      "src/ArticleVoter.php": "00653368ab704e5ed8f47149298a1d5d37dd1728e7e486ed74fa711b3c661c2c",
+      "src/ArticleController.php": "b4b33c28d9d9c30728529b1319eb593e9e1a14d1b8aba52327f312b6d65c669a",
+      "vendor/ronaldtebrake/symfony-code-mode/src/Profiler/CatalogTrace.php": "85160386e43350d19e05e5df87a411ebc287894d2d177256a5b6883e7838ad75",
+      "vendor/ronaldtebrake/symfony-code-mode/src/Profiler/CatalogDataCollector.php": "9b735e3087de0f523167d9d4f75f7123e0b28fec4d11c64efb69e385dab67b35"
+    }
+  },
+  "historicalAudit": {
+    "protocol": "audit-catalog-v10",
+    "createdAt": "2026-11-09T16:42:16+00:00",
+    "providerTokens": {
+      "direct": 46438,
+      "batch": 29798,
+      "code": 12806
+    },
+    "scope": "Separate 48-article / 24-image matched audit; reviews included. All paths returned 10 correct findings. HTTP runtime not re-benchmarked."
+  },
+  "assets": {
+    "symfony-native-tools-demo-90s.mp4": "566adb3b2dcd3c6ab8c09aaedb26cc670fa6b03718cad0d5fa7601f878a11e94",
+    "profiler-authorized.png": "91e9d66d32dac1fc826565638ac2308249bcf1746515fb5a96ec13b34887eaa8",
+    "profiler-denied.png": "215ecf2a8f3355bad65a97e2d3dfaf62af5fabc715525caaba6642c67e96678a",
+    "symfony-native-tools-poster.jpg": "87b226d10b94f0ac44e0e3d54281ecf392ba6c61e8fd2a7129cc00851bd92bb1"
+  }
+}

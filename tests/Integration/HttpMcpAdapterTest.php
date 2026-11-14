@@ -46,6 +46,13 @@ final class HttpMcpAdapterTest extends TestCase
                 self::assertStringContainsString('javascript', $response->getHeaders()['content-type'][0]);
                 self::assertSame(file_get_contents(dirname(__DIR__, 2).'/public'.$asset), $response->getContent());
             }
+            $movie = '/media/symfony-native-tools-demo-90s.mp4';
+            $response = $http->request('GET', 'http://'.$address.$movie, ['headers' => ['Range' => 'bytes=0-99']]);
+            self::assertSame(206, $response->getStatusCode());
+            self::assertSame('video/mp4', $response->getHeaders()['content-type'][0]);
+            self::assertSame(file_get_contents(dirname(__DIR__, 2).'/public'.$movie, length: 100), $response->getContent());
+            self::assertSame(404, $http->request('GET', 'http://'.$address.'/media/private-recording.mov')->getStatusCode());
+            self::assertSame(403, $http->request('GET', 'http://'.$address.$movie, ['headers' => ['Host' => 'untrusted.example']])->getStatusCode());
             $_SERVER['MCP_HTTP_URL'] = 'http://'.$address.'/mcp';
             $_SERVER['MCP_HTTP_ALLOWED_TOOLS'] = '["app_status"]';
             $_SERVER['MCP_HTTP_TOKEN'] = 'test-only-token';

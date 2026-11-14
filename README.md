@@ -12,6 +12,8 @@ Your application owns the tool implementations, identity, permissions and execut
 
 Built for the [Symfony AI & MCP Hackathon](https://symfony.com/hackathon), using **Symfony AI**, the **PHP MCP SDK** and **Hugging Face Inference Providers**. The runner and Symfony integration are reusable Composer packages.
 
+[Watch the silent 90-second product demo](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour): real agent footage and permission revocation, with Maker, a shared Symfony voter and profiler traces.
+
 ## How the goal evolved
 
 The PHP audit worked: an agent could paginate, join and filter approved tool results inside gVisor. Making that practical for other Symfony applications meant asking developers to operate a separate Linux runtime and runner image alongside their app.
