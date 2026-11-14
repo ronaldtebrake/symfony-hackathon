@@ -113,6 +113,26 @@ final class DocumentationBuildTest extends TestCase
         preg_match_all('/start:(\d+), end:(\d+)/', file_get_contents($root.'/public/docs.js'), $timings, \PREG_SET_ORDER);
         $this->assertSame(array_map(static fn (array $chapter): array => [$chapter['start'], $chapter['end']], $video['chapters']),
             array_map(static fn (array $match): array => [(int) $match[1], (int) $match[2]], $timings));
+        $binding = $video['liveHttpConversation'];
+        $this->assertSame(hash_file('sha256', $root.'/docs/evidence/http-conversation.json'), $binding['captureSha256']);
+        $attempts = \App\Demo\HttpConversation\Proof::load($root)['attempts'];
+        $this->assertCount($binding['retainedAttempts'], $attempts);
+        $runs = array_values(array_filter($attempts, static fn (array $run): bool => $run['id'] === $binding['attemptId']));
+        $this->assertCount(1, $runs);
+        $run = $runs[0];
+        $this->assertTrue($run['verification']['passed']);
+        $this->assertTrue($run['currentSourceMatches']);
+        $this->assertSame($run['trace']['providerTokens'], $binding['providerTokens']);
+        $this->assertSame($run['trace']['modelRequests'], $binding['modelRequests']);
+        $this->assertSame(\count($run['trace']['agentCalls']), $binding['mcpCalls']);
+        $this->assertSame($run['model'], $binding['model']);
+        $this->assertSame($run['protocol'], $binding['protocol']);
+        $this->assertSame([0, 1, 2, 3], array_column($binding['stages'], 'httpToolCallIndex'));
+        $this->assertSame($video['chapters'][6]['start'], $binding['stages'][0]['start']);
+        $this->assertSame($video['chapters'][6]['end'], $binding['stages'][3]['end']);
+        foreach ($video['assets'] as $asset => $hash) {
+            $this->assertSame($hash, hash_file('sha256', $root.'/public/media/'.$asset));
+        }
         $requests = array_column($video['development']['requests'], null, 'label');
         $this->assertSame($requests['authorized']['request']['params'], $requests['denied']['request']['params']);
         $this->assertSame('A Symfony application owns its tools', $requests['authorized']['response']['result']['structuredContent']['results'][0]['value']['title']);

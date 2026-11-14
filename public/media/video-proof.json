@@ -8,7 +8,7 @@
     1080
   ],
   "audio": "none",
-  "scope": "Real user-supplied agent recordings, edited with separate Maker output, current source and actual development profiler screenshots. No synthetic conversation, tool calls or cursor movements.",
+  "scope": "Original user-supplied agent recordings, edited with separate Maker/source inserts and reformatted excerpts of a real Symfony AI + Hugging Face HTTP conversation. No synthetic agent footage, invented calls or audio. Model insert timing is editorial, not measured latency.",
   "sources": [
     {
       "name": "Screen Recording 2026-11-14 at 12.49.40.mov",
@@ -22,11 +22,11 @@
   "chapters": [
     {
       "start": 0,
-      "end": 3,
-      "title": "Two MCP entry tools. Your approved catalog."
+      "end": 5,
+      "title": "Your Symfony tools, on demand"
     },
     {
-      "start": 3,
+      "start": 5,
       "end": 10,
       "title": "Generate an approved tool"
     },
@@ -37,33 +37,33 @@
     },
     {
       "start": 38,
-      "end": 46,
+      "end": 43,
       "title": "Share the voter"
     },
     {
-      "start": 46,
-      "end": 51,
+      "start": 43,
+      "end": 48,
       "title": "Revoke permission"
     },
     {
-      "start": 51,
-      "end": 74,
+      "start": 48,
+      "end": 71,
       "title": "Deny the follow-up"
     },
     {
-      "start": 74,
-      "end": 82,
-      "title": "Inspect the profiler"
+      "start": 71,
+      "end": 85,
+      "title": "Symfony AI + Hugging Face over HTTP"
     },
     {
-      "start": 82,
+      "start": 85,
       "end": 90,
-      "title": "Grow the catalog"
+      "title": "More tools. Same entry cost."
     }
   ],
   "edits": {
-    "lookup": "Source 0\u20134s + 11\u201335s at original speed. Seven-second wait trim labelled. First three seconds show full app; then conversation crop.",
-    "followUp": "Full second source at original speed; final frame held until 74s.",
+    "lookup": "Source 0–4s + 11–35s at original speed. Seven-second wait trim labelled. First three seconds show full app; then conversation crop.",
+    "followUp": "Full second source at original speed; final frame held until 71s.",
     "conversationCrop": [
       390,
       60,
@@ -71,16 +71,15 @@
       540
     ],
     "revocation": "Caption explains the real operator change between recordings; no operator footage was supplied.",
-    "opening": "The first three seconds explain the two-tool catalog and on-demand schemas. All subsequent source clips and chapter timings are preserved.",
+    "opening": "First five seconds: Your Symfony tools, on demand. Your application stays in control.",
     "outro": {
-      "previousFilmSha256": "79a21ab0b6a038d280ababd24bbeab2b41db54faf2d92050e96371263a1afe2a",
       "changedSeconds": [
-        82,
+        85,
         90
       ],
-      "note": "Seconds 82\u201390 show the current HTTP schema footprint as the fixture catalog grows. Earlier chapters retain their original footage and timing, with simplified presentation captions."
+      "note": "Separate offline advertised-schema measurement; not the model conversation usage."
     },
-    "presentation": "Re-rendered from the original sources with shorter product captions. Removed the lower-left production notes and repeated footer text. Source footage, crop, wait trim and chapter timings are preserved. Capture provenance and methodology remain in the workbench and this record."
+    "presentation": "51 seconds allocated to original agent recordings; existing crop and seven-second wait trim preserved. Minimal product captions, no lower-left production notes. The 14-second HTTP/Hugging Face insert uses actual JSON excerpts and its captured profiler outcome, separately labelled from desktop footage."
   },
   "recordingVerification": {
     "sameExecuteArguments": true,
@@ -508,7 +507,8 @@
       "src/ArticleController.php": "<?php\n\ndeclare(strict_types=1);\n\nnamespace Adoption;\n\nuse Symfony\\Component\\HttpFoundation\\JsonResponse;\nuse Symfony\\Component\\Security\\Http\\Attribute\\IsGranted;\n\nfinal readonly class ArticleController\n{\n    public function __construct(private ArticleCatalog $articles) {}\n\n    #[IsGranted(ArticleVoter::READ, subject: 'id')]\n    public function __invoke(int $id): JsonResponse\n    {\n        return new JsonResponse($this->articles->readPublished($id));\n    }\n}\n",
       "vendor/ronaldtebrake/symfony-code-mode/src/Profiler/CatalogTrace.php": "<?php\n\ndeclare(strict_types=1);\n\nnamespace CodeMode\\Symfony\\Profiler;\n\nuse Symfony\\Contracts\\Service\\ResetInterface;\n\n/** Bounded request-local diagnostics. Never stores identities, arguments, results or exception messages. */\nfinal class CatalogTrace implements ResetInterface\n{\n    private array $operations = [];\n    private ?int $active = null;\n    private int $dropped = 0;\n\n    public function begin(string $operation): void\n    {\n        if (count($this->operations) >= 32) { $this->active = null; ++$this->dropped; return; }\n        $this->operations[] = ['operation' => $operation, 'status' => 'running', 'budget' => [], 'calls' => [], 'nativeEvents' => []];\n        $this->active = array_key_last($this->operations);\n    }\n\n    public function budget(array $state, string $phase): void\n    {\n        if (null === $this->active || count($this->operations[$this->active]['budget']) >= 4) { return; }\n        $this->operations[$this->active]['budget'][] = ['phase' => $phase,\n            'attempts' => (int) ($state['executions'] ?? 0), 'reservedCalls' => (int) ($state['toolCalls'] ?? 0),\n            'knownContracts' => count($state['described'] ?? [])];\n    }\n\n    public function ledger(array $trace): void\n    {\n        if (null === $this->active) { return; }\n        foreach (array_slice($trace['toolCalls'] ?? [], 0, 100) as $call) {\n            $row = ['name' => self::name($call['name'] ?? ''), 'status' => self::name($call['status'] ?? 'unknown')];\n            if (isset($call['reason'])) { $row['reason'] = self::name($call['reason']); }\n            if (isset($call['durationMs'])) { $row['durationMs'] = round((float) $call['durationMs'], 3); }\n            $this->operations[$this->active]['calls'][] = $row;\n        }\n    }\n\n    public function nativeEvent(string $name, string $phase): void\n    {\n        if (null === $this->active) { return; }\n        if (count($this->operations[$this->active]['nativeEvents']) >= 400) { ++$this->dropped; return; }\n        $this->operations[$this->active]['nativeEvents'][] = ['name' => self::name($name), 'phase' => $phase];\n    }\n\n    public function finish(array $value, bool $failed, float $durationMs): void\n    {\n        if (null === $this->active) { return; }\n        $row = &$this->operations[$this->active];\n        $row['status'] = $failed ? 'failed' : 'succeeded';\n        $row['durationMs'] = round($durationMs, 3);\n        if ($failed) { $row['reason'] = self::name($value['error']['reason'] ?? 'tool_failed'); }\n        if ('search_tools' === $row['operation'] && !$failed) {\n            $row['discovery'] = ['matched' => (int) ($value['matched'] ?? 0), 'returned' => (int) ($value['returned'] ?? 0),\n                'truncated' => (bool) ($value['truncated'] ?? false)];\n        }\n        $this->active = null;\n    }\n\n    public function snapshot(): array { return ['operations' => $this->operations, 'dropped' => $this->dropped]; }\n    public function reset(): void { $this->operations = []; $this->active = null; $this->dropped = 0; }\n    private static function name(string $value): string\n    {\n        return preg_match('/\\A[a-zA-Z][a-zA-Z0-9_.-]{0,63}\\z/D', $value) ? $value : '[redacted]';\n    }\n}\n",
       "vendor/ronaldtebrake/symfony-code-mode/src/Profiler/CatalogDataCollector.php": "<?php\n\ndeclare(strict_types=1);\n\nnamespace CodeMode\\Symfony\\Profiler;\n\nuse Symfony\\Component\\HttpFoundation\\{Request, Response};\nuse Symfony\\Component\\HttpKernel\\DataCollector\\DataCollector;\n\nfinal class CatalogDataCollector extends DataCollector\n{\n    public function __construct(private readonly CatalogTrace $trace) {}\n    public function collect(Request $request, Response $response, ?\\Throwable $exception = null): void { $this->data = $this->trace->snapshot(); }\n    public function getName(): string { return 'code_mode'; }\n    public function getOperations(): array { return $this->data['operations'] ?? []; }\n    public function getDropped(): int { return $this->data['dropped'] ?? 0; }\n    public function reset(): void { $this->data = []; $this->trace->reset(); }\n}\n"
-    }
+    },
+    "use": "Supporting earlier operator capture and source provenance; its profiler screenshots are no longer scenes in this film."
   },
   "historicalAudit": {
     "protocol": "audit-catalog-v10",
@@ -522,10 +522,10 @@
     "shownInCurrentFilm": false
   },
   "assets": {
-    "symfony-native-tools-demo-90s.mp4": "97b729d8955960dadaa0d9ce8b5d87109333a2ae8560495f7ed7ee281f8066d9",
+    "symfony-native-tools-demo-90s.mp4": "771ca351d5dc742c5e65847934c06976e90739c11112b6ed7a86eebc661fc53b",
     "profiler-authorized.png": "91e9d66d32dac1fc826565638ac2308249bcf1746515fb5a96ec13b34887eaa8",
     "profiler-denied.png": "215ecf2a8f3355bad65a97e2d3dfaf62af5fabc715525caaba6642c67e96678a",
-    "symfony-native-tools-poster.jpg": "1ae00a031376307f8a2ddbc828a70e4721abefc830b4eb04e77b59d14cf4b6af"
+    "symfony-native-tools-poster.jpg": "b5e3321502648f7f2d5e72121e489a7b63472d6b2a88a22391b9dee4b5b72465"
   },
   "schemaScaling": {
     "capture": "docs/evidence/catalog-scaling.json",
@@ -553,5 +553,43 @@
       100
     ],
     "scope": "Offline tokenization of one serialized MCP tools/list result. The two current HTTP contracts match the authenticated execution capture. Direct catalogs contain synthetic four-field tools. Exact-name searches use the real catalog implementation. No model or tool handler runs; no provider usage, correctness comparison or billing is measured."
+  },
+  "liveHttpConversation": {
+    "capture": "docs/evidence/http-conversation.json",
+    "captureSha256": "02bf36d9040ffd02fd551e41e052de963b72b83331a0a62e1a51a854f607e048",
+    "attemptId": "20261114-184654-22965cb5",
+    "model": "openai/gpt-oss-120b",
+    "protocol": "revocation-v2",
+    "providerTokens": {
+      "prompt": 4191,
+      "completion": 1029,
+      "total": 5220
+    },
+    "modelRequests": 6,
+    "mcpCalls": 4,
+    "retainedAttempts": 2,
+    "scope": "Verified second attempt, separate from the desktop recording. Initial failed visibility recheck retained in the capture. Usage is provider-reported input plus output for this attempt, not a baseline or savings measurement.",
+    "stages": [
+      {
+        "start": 71,
+        "end": 74,
+        "httpToolCallIndex": 0
+      },
+      {
+        "start": 74,
+        "end": 77.5,
+        "httpToolCallIndex": 1
+      },
+      {
+        "start": 77.5,
+        "end": 82,
+        "httpToolCallIndex": 2
+      },
+      {
+        "start": 82,
+        "end": 85,
+        "httpToolCallIndex": 3
+      }
+    ]
   }
 }

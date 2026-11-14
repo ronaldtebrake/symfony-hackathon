@@ -2,9 +2,9 @@
 
 [Watch the silent film and explore its chapters](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) · [Download MP4](../public/media/symfony-native-tools-demo-90s.mp4) · [Capture details and checks](../public/media/video-proof.json).
 
-The film keeps **51 seconds of real agent footage** central: discover a published-article tool, read article 101, revoke permission, and repeat the same JSON call. Symfony denies the fresh read even though the agent already knows the contract. Separate inserts show the new Maker command, shared voter and actual development profiler. All articles are synthetic. There is **no speech, music or audio track**.
+The film keeps **51 seconds of real agent footage** central: discover a published-article tool, read article 101, revoke permission, and repeat the same JSON call. Symfony denies the fresh read even though the agent already knows the contract. Separate inserts show the Maker command, shared voter and fresh **Symfony AI + Hugging Face HTTP/BM25 conversation**, including its actual JSON and profiler outcome. All articles are synthetic. There is **no speech, music or audio track**.
 
-The two original screen recordings were supplied on 14 November. Their chat and tool responses are not reconstructed. The operator changed permission between recordings; that action is explained by a caption. New development captures are labelled separately because the footage predates the voter/profiler additions. Original recordings and intermediate renders stay outside the tracked repository; only the final film, poster, two profiler screenshots and compact capture record are published.
+The two original screen recordings were supplied on 14 November. Their chat and tool responses are not reconstructed. The operator changed permission between recordings; that action is explained by a caption. The model insert is labelled as a second recorded conversation. Its JSON and traces are reformatted from the retained capture; it is not footage of a model UI or a real-time replay. Maker and source inserts remain separate because the original footage predates the voter/profiler additions. Original recordings and intermediate renders stay outside the tracked repository; only the final film, poster and compact capture record are updated. Earlier profiler screenshots remain supporting evidence.
 
 On-screen captions focus on the action and its value. The lower-left production notes and repeated footer text have been removed; methodology and source details stay in this guide, the chapter inspector and the capture record.
 
@@ -12,16 +12,16 @@ On-screen captions focus on the action and its value. The lower-left production 
 
 | Time | On screen | Message and evidence |
 | --- | --- | --- |
-| **00:00–00:03** | Symfony violet title: “Two MCP entry tools. Your approved catalog.” | Discover schemas on demand. Keep Symfony’s access checks. The two entry tools are search_tools and execute_tools. |
-| **00:03–00:10** | Actual Maker output, reformatted for readability. | `make:code-mode-tool InventoryLookup` creates a native AI tool, voter, registration and security test. The generated test passes: one test, two assertions. The scaffold stays hidden and denied until implemented. This is a separate example from the article tool. |
-| **00:10–00:38** | Original agent footage: question, discovery, opened JSON and returned title. | “Look up published article 101 in our Symfony application. What's its title?” The agent calls `search_tools`, then `execute_tools` with `publication_read` and `id: 101`. The result is **A Symfony application owns its tools**. Seven seconds of waiting are visibly trimmed. |
-| **00:38–00:46** | Current tool and controller source, with Symfony syntax colours. | `#[IsGrantedTool(ArticleVoter::READ, subject: 'id')]` and `#[IsGranted(ArticleVoter::READ, subject: 'id')]` share the voter. Discovery uses it too; execution rechecks current access. This implementation was added after the original recording. |
-| **00:46–00:51** | Violet permission-change card. | The operator revoked `publication.read_published` between recordings. Same authenticated user and application connection; no budget reset. This is a caption of the actual change, not footage of an operator command. |
-| **00:51–01:14** | Full second recording, original speed, then final still hold. | “Can you refresh that article from the application?” The identical JSON call returns `tool_denied`, `completedCalls: 0`. The agent explains the denial and says the earlier title remains in chat but is not a fresh result. |
-| **01:14–01:22** | Actual Symfony profiler screenshots: allowed, then denied. | A separate authenticated HTTP capture records native `requested` / `succeeded` events for the allowed read. After revocation: denied broker call, no native tool events, two attempts consumed. No model was called for these profiles. |
-| **01:22–01:30** | Current HTTP catalog scaling and repository link. | “More tools. Same entry cost.” As the synthetic catalog grows from 10 to 100 tools, direct advertisement grows from **865 to 8,605 tokens**. The two HTTP entry contracts stay at **239**. Offline counts of serialized `tools/list` JSON; search results and conversation costs remain additional. No model or handler runs for this measurement. |
+| **00:00–00:05** | “Your Symfony tools, on demand.” | “Your application stays in control.” Two entry tools: search_tools and execute_tools. |
+| **00:05–00:10** | Actual Maker output, reformatted. | `make:code-mode-tool InventoryLookup` creates a native AI tool, voter, registration and test. The generated test passes; the scaffold stays denied until implemented. Separate from the article handler. |
+| **00:10–00:38** | Original lookup footage. | The agent discovers publication_read and reads article 101: **A Symfony application owns its tools**. Original speed, with seven seconds of waiting visibly trimmed. |
+| **00:38–00:43** | Tool and controller source. | `IsGrantedTool` and `IsGranted` share `ArticleVoter::READ`. Installed code, added after the original recording. |
+| **00:43–00:48** | Violet permission-change card. | The operator revoked read permission between recordings. Same user and connection; no budget reset. This explains the real change; it is not operator-terminal footage. |
+| **00:48–01:11** | Full original follow-up, then final still hold. | “Can you refresh that article from the application?” The same JSON read returns `tool_denied`, `completedCalls: 0`. The agent distinguishes the earlier title from a fresh result. |
+| **01:11–01:25** | A second recorded conversation: Symfony AI + Hugging Face. | Actual HTTP JSON excerpts: BM25 discovery, allowed read, revoked denial and hidden contract. The denied call’s profiler trace has no native handler events. **5,220 provider tokens · 6 model requests · 4 MCP calls.** This is the verified attempt from the two-attempt capture; no answer was rewritten. Presentation timing is editorial, not request latency. |
+| **01:25–01:30** | Catalog scaling and repository link. | “More tools. Same entry cost.” Synthetic catalog: 10 → 100 tools, direct schemas 865 → 8,605 tokens, two HTTP entry contracts **239**. Offline advertised-schema counts; search results and conversation costs remain additional. |
 
-Source views: [handler](../examples/symfony/src/ArticleTool.php), [voter](../examples/symfony/src/ArticleVoter.php), [controller](../examples/symfony/src/ArticleController.php). The workbench supplies a video player, seekable chapters, highlighted source, actual Maker output and profiler metadata. Its supporting HTTP records are separate operator checks, not the recorded chat transcript.
+Source views: [handler](../examples/symfony/src/ArticleTool.php), [voter](../examples/symfony/src/ArticleVoter.php), [controller](../examples/symfony/src/ArticleController.php). The workbench supplies a video player, seekable chapters, highlighted source, actual Maker output and recorded HTTP model calls with profiler metadata. Desktop footage, the Hugging Face conversation and operator checks retain separate provenance.
 
 ## Submission description
 
@@ -52,7 +52,7 @@ Suggested tags: **MCP**, **MCP SDK**, **Agent**, **Tool Calling**, **symfony-ai*
 
 ## Record another take
 
-The following prompts are stricter reproduction instructions, not a transcript of the existing film. The additional post-revocation search is useful to demonstrate that the contract disappears; it is covered by the separate HTTP proof and is not in the supplied footage.
+The following prompts are stricter reproduction instructions, not a transcript of the existing film. The additional post-revocation search demonstrates that the contract disappears. It appears in the separate Hugging Face segment; it is not in the supplied desktop footage.
 
 ## Prepare the real application
 
@@ -131,7 +131,9 @@ APP_ENV=dev php vendor/bin/phpunit --no-configuration --bootstrap vendor/autoloa
 
 Show the real generated file list and passing deny-by-default test. Do not imply that this unimplemented scaffold is the article handler used in the conversation. Open the installed tool/controller source to show the shared voter attributes.
 
-For profiler shots, use `APP_ENV=dev` locally and capture fresh authorized and revoked requests against a separate app copy. In each Symfony profile, open **Code Mode**. Show broker outcomes, native AI events and attempts used. Keep this labelled **“Separate HTTP proof · no model called”** if the requests are operator-authored. The Code Mode collector omits arguments, results and identities; other profiler panels can expose sensitive data. Keep the development profiler private and never record authentication headers.
+The current film uses the bounded profiler metadata attached to the retained Hugging Face conversation. Its JSON excerpts are reformatted from that capture, and its timestamps are edit timings. Keep the 5,220-token figure bound to that attempt.
+
+For optional operator profiler shots, use `APP_ENV=dev` locally and capture fresh authorized and revoked requests against a separate app copy. In each Symfony profile, open **Code Mode**. Show broker outcomes, native AI events and attempts used. Keep this labelled **“Separate HTTP proof · no model called”** if the requests are operator-authored. The Code Mode collector omits arguments, results and identities; other profiler panels can expose sensitive data. Keep the development profiler private and never record authentication headers.
 
 ## What each shot proves
 
