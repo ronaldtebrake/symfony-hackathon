@@ -7,6 +7,7 @@ use Adoption\ArticleTool;
 use Adoption\LocalReader;
 use Adoption\ReadPolicy;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $container): void {
@@ -50,5 +51,7 @@ return static function (ContainerConfigurator $container): void {
         $container->extension('framework', ['profiler' => ['enabled' => true, 'collect' => true], 'test' => 'test' === $container->env()]);
         $container->extension('web_profiler', ['toolbar' => false]);
     }
-    if ('dev' === $container->env()) { $container->extension('maker', ['root_namespace' => 'Adoption']); }
+    if ('dev' === $container->env()) {
+        $container->extension('maker', ['root_namespace' => 'Adoption']);
+    }
 };

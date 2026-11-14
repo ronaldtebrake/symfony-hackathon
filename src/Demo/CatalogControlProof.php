@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace App\Demo;
 
-use CodeMode\{BatchSession, ExecutionIdentity, ExecutionLimits, Tool, ToolBroker, ToolCatalog, ToolDefinition};
+use CodeMode\BatchSession;
+use CodeMode\ExecutionIdentity;
+use CodeMode\ExecutionLimits;
 use CodeMode\Symfony\Ai\BatchToolbox;
+use CodeMode\Tool;
+use CodeMode\ToolBroker;
+use CodeMode\ToolCatalog;
+use CodeMode\ToolDefinition;
 use Symfony\AI\Platform\Result\ToolCall;
 
 /** Fixed operator probes with ordinary application calls; no provider call or generated program. */
@@ -13,23 +19,26 @@ final class CatalogControlProof
 {
     public static function run(string $projectDir): array
     {
-        $trace = new RunTrace(); $trace->captureDetails = true;
+        $trace = new RunTrace();
+        $trace->captureDetails = true;
         $gateway = (new BackendFactory($projectDir))->create('fixture', evaluation: true);
-        $catalog = $gateway->discover(); $journal = new AuditReadJournal();
+        $catalog = $gateway->discover();
+        $journal = new AuditReadJournal();
         $identity = new ExecutionIdentity('demo-editor', ['content.audit']);
         $session = new BatchSession($catalog, new ToolBroker($journal->wrap($gateway->approvedTools($catalog))), $identity,
             new ExecutionLimits(wallTimeMs: 15000, toolTimeMs: 3000), maxBatches: 5);
         $toolbox = new RecordingBatchToolbox(new BatchToolbox($session, catalog: true), $trace);
         $invoke = static function (string $name, array $args) use ($toolbox, $trace): array {
             $result = $toolbox->execute(new ToolCall('probe-'.($trace->agentToolCalls + 1), $name, $args));
-            return json_decode($result->getResult(), true, flags: JSON_THROW_ON_ERROR);
+
+            return json_decode($result->getResult(), true, flags: \JSON_THROW_ON_ERROR);
         };
         $invoke('search_tools', ['query' => '']);
         $cases = [];
         foreach ([['authorized', 'cms_get_articles', ['ids' => [1]]], ['restricted', 'cms_get_articles', ['ids' => [49]]],
             ['unapproved', 'cms_delete_article', ['id' => 1]], ['invalid_arguments', 'cms_list_articles', ['offset' => '0', 'limit' => 12]],
             ['recovery', 'cms_get_articles', ['ids' => [2]]], ['attempt_limit', 'cms_get_articles', ['ids' => [2]]]] as [$name, $tool, $args]) {
-            $from = count($trace->executions);
+            $from = \count($trace->executions);
             $result = $invoke('execute_tools', ['calls' => [['name' => $tool, 'arguments' => $args]]]);
             $cases[] = ['case' => $name, 'response' => $result, 'execution' => $trace->executions[$from] ?? null];
         }
@@ -39,21 +48,26 @@ final class CatalogControlProof
         $finished = false;
         $schema = (object) ['type' => 'object', 'properties' => new \stdClass(), 'additionalProperties' => false];
         $slow = new Tool('probe_wait', $schema, static fn (ExecutionIdentity $id) => $id->allows('content.audit'), static function () use (&$finished): int {
-            usleep(220000); $finished = true; return 1;
+            usleep(220000);
+            $finished = true;
+
+            return 1;
         });
-        $slowTrace = new RunTrace(); $slowTrace->captureDetails = true;
+        $slowTrace = new RunTrace();
+        $slowTrace->captureDetails = true;
         $slowToolbox = new RecordingBatchToolbox(new BatchToolbox(new BatchSession(new ToolCatalog([new ToolDefinition('probe_wait', 'Operator timeout fixture.', $schema)]),
             new ToolBroker([$slow]), $identity, new ExecutionLimits(wallTimeMs: 1000, toolTimeMs: 150)), catalog: true), $slowTrace);
         $slowToolbox->execute(new ToolCall('search', 'search_tools', ['query' => '']));
         $start = hrtime(true);
-        $timeout = json_decode($slowToolbox->execute(new ToolCall('timeout', 'execute_tools', ['calls' => [['name' => 'probe_wait', 'arguments' => []]]]))->getResult(), true, flags: JSON_THROW_ON_ERROR);
+        $timeout = json_decode($slowToolbox->execute(new ToolCall('timeout', 'execute_tools', ['calls' => [['name' => 'probe_wait', 'arguments' => []]]]))->getResult(), true, flags: \JSON_THROW_ON_ERROR);
         $elapsed = (hrtime(true) - $start) / 1e6;
-        $report = ['kind' => 'catalog-controls', 'capturedAt' => gmdate(DATE_ATOM), 'mode' => 'operator', 'generatedCode' => false, 'execution' => 'in-process',
+        $report = ['kind' => 'catalog-controls', 'capturedAt' => gmdate(\DATE_ATOM), 'mode' => 'operator', 'generatedCode' => false, 'execution' => 'in-process',
             'scope' => 'Authorized, denied, invalid and recovery reads use the real Symfony MCP fixture. A finite slow handler proves deadlines are checked after return, without hard termination. The fixture MCP transport starts an installed PHP server. No model, JSON execution worker, Docker or gVisor is called.',
             'cases' => $cases, 'forgedConfiguration' => $forged, 'trace' => CatalogProofRunner::snapshot($trace), 'upstream' => $journal->events(),
             'timeout' => ['response' => $timeout, 'trace' => CatalogProofRunner::snapshot($slowTrace), 'elapsedMs' => $elapsed, 'toolTimeMs' => 150, 'handlerReturned' => $finished, 'hardTermination' => false]];
-        $report = json_decode(json_encode($report, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
+        $report = json_decode(json_encode($report, \JSON_THROW_ON_ERROR), true, flags: \JSON_THROW_ON_ERROR);
         $report['verification'] = self::verify($report);
+
         return $report;
     }
 
@@ -73,6 +87,7 @@ final class CatalogControlProof
                 : 'tool_timeout' === ($report['timeout']['response']['error']['reason'] ?? null) && true === ($report['timeout']['workerReaped'] ?? null)
                 && ($report['timeout']['elapsedMs'] ?? 0) >= 150 && $report['timeout']['elapsedMs'] < 2000,
             'noGeneratedCode' => false === ($report['generatedCode'] ?? null) && 0 === ($report['trace']['modelRequests'] ?? null)];
-        return ['passed' => !in_array(false, $checks, true), 'checks' => $checks];
+
+        return ['passed' => !\in_array(false, $checks, true), 'checks' => $checks];
     }
 }

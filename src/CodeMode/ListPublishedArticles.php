@@ -28,7 +28,8 @@ final class ListPublishedArticles implements ReadToolInterface
         }
         $published = array_values(array_filter((new AuditDataset())->articles(), static fn (array $article) => 'published' === $article['status']));
         $offset = ($arguments->page - 1) * 12;
-        $items = array_map(static fn (array $article) => array_intersect_key($article, array_flip(['id', 'title', 'meta_description'])), array_slice($published, $offset, 12));
-        return ['items' => $items, 'nextPage' => $offset + 12 < count($published) ? $arguments->page + 1 : null];
+        $items = array_map(static fn (array $article) => array_intersect_key($article, array_flip(['id', 'title', 'meta_description'])), \array_slice($published, $offset, 12));
+
+        return ['items' => $items, 'nextPage' => $offset + 12 < \count($published) ? $arguments->page + 1 : null];
     }
 }

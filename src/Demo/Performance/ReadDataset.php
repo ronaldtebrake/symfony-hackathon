@@ -8,7 +8,10 @@ namespace App\Demo\Performance;
 interface ReadDataset
 {
     public function allowed(string $id): bool;
+
     public function requests(): array;
+
     public function profile(string $id): array;
+
     public function logs(string $id): array;
 }

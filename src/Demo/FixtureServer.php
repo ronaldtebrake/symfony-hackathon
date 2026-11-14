@@ -10,13 +10,16 @@ use Mcp\Server;
 
 final readonly class FixtureServer
 {
-    public function __construct(private AuditDataset $dataset = new AuditDataset(), private bool $evaluation = false) {}
+    public function __construct(private AuditDataset $dataset = new AuditDataset(), private bool $evaluation = false)
+    {
+    }
 
     public function build(): Server
     {
         $idsSchema = ['type' => 'array', 'items' => ['type' => 'integer', 'minimum' => 1], 'minItems' => 1, 'maxItems' => 12, 'uniqueItems' => true];
         $batchSchema = ['type' => 'object', 'properties' => ['ids' => $idsSchema], 'required' => ['ids'], 'additionalProperties' => false];
         $readOnly = new ToolAnnotations(readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false);
+
         return Server::builder()->setServerInfo('Symfony Code Mode editorial fixture', '0.2.0')
             ->addTool($this->listArticles(...), name: 'cms_list_articles', description: 'List published article IDs and titles for a content metadata audit. Paginate with offset and limit (maximum 12). Returns items, total and next_offset (null at the end). Drafts are excluded by the server.', annotations: $readOnly,
                 inputSchema: ['type' => 'object', 'properties' => ['offset' => ['type' => 'integer', 'minimum' => 0, 'maximum' => 1000], 'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 12]], 'required' => ['offset', 'limit'], 'additionalProperties' => false])
@@ -31,8 +34,9 @@ final readonly class FixtureServer
     public function listArticles(int $offset, int $limit): CallToolResult
     {
         $items = array_values(array_filter($this->dataset->articles(), static fn (array $item): bool => 'published' === $item['status']));
-        $page = array_slice($items, $offset, $limit);
-        return $this->result(['items' => array_map(static fn (array $item): array => ['id' => $item['id'], 'title' => $item['title']], $page), 'total' => count($items), 'next_offset' => $offset + count($page) < count($items) ? $offset + count($page) : null]);
+        $page = \array_slice($items, $offset, $limit);
+
+        return $this->result(['items' => array_map(static fn (array $item): array => ['id' => $item['id'], 'title' => $item['title']], $page), 'total' => \count($items), 'next_offset' => $offset + \count($page) < \count($items) ? $offset + \count($page) : null]);
     }
 
     public function getArticles(array $ids): CallToolResult
@@ -48,6 +52,7 @@ final readonly class FixtureServer
                 $items[array_key_last($items)]['editorial_note'] = EvaluationScenario::POISON;
             }
         }
+
         return $this->result(['items' => $items]);
     }
 
@@ -61,6 +66,7 @@ final readonly class FixtureServer
             }
             $items[] = $media[$id];
         }
+
         return $this->result(['items' => $items]);
     }
 

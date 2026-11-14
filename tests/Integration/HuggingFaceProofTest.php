@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration;
 
+use App\Command\HuggingFaceProofCommand;
 use App\Demo\AuditDataset;
 use App\Demo\BackendFactory;
 use App\Demo\BudgetedPlatform;
+use App\Demo\DemoFactory;
+use App\Demo\HuggingFaceProofRunner;
 use App\Demo\HuggingFaceProofVerifier;
 use App\Demo\ReportStore;
 use App\Demo\RunTrace;
-use App\Demo\DemoFactory;
-use App\Demo\HuggingFaceProofRunner;
-use App\Command\HuggingFaceProofCommand;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\AI\Platform\PlatformInterface;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\HttpClient\MockHttpClient;
 
@@ -23,37 +23,45 @@ final class HuggingFaceProofTest extends WebTestCase
 {
     public function testMissingCredentialCannotCallProviderOrReplaceEvidence(): void
     {
-        $root = dirname(__DIR__, 2);
+        $root = \dirname(__DIR__, 2);
         $directory = sys_get_temp_dir().'/code-mode-no-provider-'.bin2hex(random_bytes(8));
         $saved = $_SERVER['HUGGINGFACE_API_KEY'] ?? null;
         $_SERVER['HUGGINGFACE_API_KEY'] = '';
         $http = new MockHttpClient(static fn () => throw new \LogicException('Provider must not be called.'));
         try {
             $tester = new CommandTester(new HuggingFaceProofCommand(new HuggingFaceProofRunner(new DemoFactory($root), $http, $root), new ReportStore($directory)));
-            self::assertSame(2, $tester->execute([]));
-            self::assertSame(0, $http->getRequestsCount());
-            self::assertDirectoryDoesNotExist($directory);
+            $this->assertSame(2, $tester->execute([]));
+            $this->assertSame(0, $http->getRequestsCount());
+            $this->assertDirectoryDoesNotExist($directory);
         } finally {
-            if (null === $saved) { unset($_SERVER['HUGGINGFACE_API_KEY']); } else { $_SERVER['HUGGINGFACE_API_KEY'] = $saved; }
+            if (null === $saved) {
+                unset($_SERVER['HUGGINGFACE_API_KEY']);
+            } else {
+                $_SERVER['HUGGINGFACE_API_KEY'] = $saved;
+            }
         }
     }
 
     public function testProviderBudgetIsEnforcedBeforeAnyFurtherNetworkRequest(): void
     {
         $inner = $this->createMock(PlatformInterface::class);
-        $inner->expects(self::once())->method('invoke')->willThrowException(new \RuntimeException('Simulated transport failure'));
+        $inner->expects($this->once())->method('invoke')->willThrowException(new \RuntimeException('Simulated transport failure'));
         $trace = new RunTrace();
         $platform = new BudgetedPlatform($inner, $trace, 1);
         foreach (['Simulated transport failure', 'Provider request budget exhausted.'] as $expected) {
-            try { $platform->invoke('model', 'question'); self::fail('Expected failure.'); }
-            catch (\RuntimeException $error) { self::assertSame($expected, $error->getMessage()); }
+            try {
+                $platform->invoke('model', 'question');
+                $this->fail('Expected failure.');
+            } catch (\RuntimeException $error) {
+                $this->assertSame($expected, $error->getMessage());
+            }
         }
-        self::assertSame(1, $trace->modelRequests, 'Failed requests still consume the budget.');
+        $this->assertSame(1, $trace->modelRequests, 'Failed requests still consume the budget.');
     }
 
     public function testVerificationRequiresLinkedSourceResultsMeasurementsAndCleanup(): void
     {
-        self::assertTrue((new HuggingFaceProofVerifier())->verify(self::completeResult())['passed']);
+        $this->assertTrue((new HuggingFaceProofVerifier())->verify(self::completeResult())['passed']);
     }
 
     public function testOnlyTheLinkedDiscoveryRejectionCanSkipContainerCleanup(): void
@@ -61,13 +69,13 @@ final class HuggingFaceProofTest extends WebTestCase
         $result = self::completeResult();
         $error = json_encode(['error' => ['reason' => 'discovery_required']]);
         array_unshift($result['programs'], 'return 1;');
-        array_unshift($result['agentCalls'], ['name' => 'php_execute', 'arguments' => ['code' => 'return 1;'], 'result' => $error, 'bytesToModel' => strlen($error)]);
+        array_unshift($result['agentCalls'], ['name' => 'php_execute', 'arguments' => ['code' => 'return 1;'], 'result' => $error, 'bytesToModel' => \strlen($error)]);
         $result['executions'][0]['programIndex'] = 1;
         array_unshift($result['executions'], ['programIndex' => 0, 'runId' => null, 'status' => 'failed', 'reason' => 'discovery_required', 'toolCalls' => [], 'containerRemoved' => null]);
         ++$result['agentToolCalls'];
-        $result['toolPayloadBytes'] += strlen($error);
+        $result['toolPayloadBytes'] += \strlen($error);
         $verifier = new HuggingFaceProofVerifier();
-        self::assertTrue($verifier->verify($result)['passed']);
+        $this->assertTrue($verifier->verify($result)['passed']);
         foreach (['runId', 'reason', 'toolCalls'] as $field) {
             $mutated = $result;
             $mutated['executions'][0][$field] = match ($field) {
@@ -75,10 +83,10 @@ final class HuggingFaceProofTest extends WebTestCase
                 'reason' => 'execution_failed',
                 'toolCalls' => [['name' => 'cms_list_articles', 'status' => 'incomplete']],
             };
-            self::assertFalse($verifier->verify($mutated)['passed']);
+            $this->assertFalse($verifier->verify($mutated)['passed']);
         }
         $result['executions'][1]['containerRemoved'] = false;
-        self::assertFalse($verifier->verify($result)['passed'], 'Allocated runs still require positive cleanup evidence.');
+        $this->assertFalse($verifier->verify($result)['passed'], 'Allocated runs still require positive cleanup evidence.');
     }
 
     #[DataProvider('missingEvidence')]
@@ -95,7 +103,7 @@ final class HuggingFaceProofTest extends WebTestCase
             'failed' => $result['executions'][0]['status'] = 'failed',
             'missing' => $result = [],
         };
-        self::assertFalse((new HuggingFaceProofVerifier())->verify($result)['passed']);
+        $this->assertFalse((new HuggingFaceProofVerifier())->verify($result)['passed']);
     }
 
     public static function missingEvidence(): iterable
@@ -111,9 +119,9 @@ final class HuggingFaceProofTest extends WebTestCase
         $client->request('GET', '/demo/huggingface-report?file=../../.env.local');
         self::assertResponseIsSuccessful();
         self::assertResponseHeaderSame('content-type', 'application/json');
-        self::assertStringContainsString('no-store', $client->getResponse()->headers->get('cache-control'));
+        $this->assertStringContainsString('no-store', $client->getResponse()->headers->get('cache-control'));
         $store = self::getContainer()->get(ReportStore::class);
-        self::assertSame($store->readHuggingFaceProof() ?? '{"status":"empty","result":null}', $client->getResponse()->getContent());
+        $this->assertSame($store->readHuggingFaceProof() ?? '{"status":"empty","result":null}', $client->getResponse()->getContent());
         $client->request('POST', '/demo/huggingface-report');
         self::assertResponseStatusCodeSame(405);
         $client->request('GET', '/demo/huggingface-report', server: ['REMOTE_ADDR' => '203.0.113.1']);
@@ -124,18 +132,18 @@ final class HuggingFaceProofTest extends WebTestCase
 
     public function testReviewedCaptureRetainsSuccessfulRunAndRejectedFirstAttempt(): void
     {
-        $capture = json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/huggingface-proof.json'), true, flags: JSON_THROW_ON_ERROR);
+        $capture = json_decode(file_get_contents(\dirname(__DIR__, 2).'/docs/evidence/huggingface-proof.json'), true, flags: \JSON_THROW_ON_ERROR);
         $verifier = new HuggingFaceProofVerifier();
-        self::assertSame('complete', $capture['status']);
-        self::assertTrue($verifier->verify($capture['result'])['passed']);
-        self::assertSame(4, $capture['result']['modelRequests']);
-        self::assertSame(3014, $capture['result']['toolPayloadBytes']);
-        self::assertSame(6826, $capture['result']['providerTokens']['total']);
-        self::assertCount(10, $capture['result']['brokerCalls']);
-        self::assertCount(1, $capture['previousAttempts']);
-        self::assertFalse($verifier->verify($capture['previousAttempts'][0]['result'])['passed']);
-        self::assertSame('failed', $capture['previousAttempts'][0]['status']);
-        self::assertTrue($capture['previousAttempts'][0]['verification']['checks']['containersRemoved']);
+        $this->assertSame('complete', $capture['status']);
+        $this->assertTrue($verifier->verify($capture['result'])['passed']);
+        $this->assertSame(4, $capture['result']['modelRequests']);
+        $this->assertSame(3014, $capture['result']['toolPayloadBytes']);
+        $this->assertSame(6826, $capture['result']['providerTokens']['total']);
+        $this->assertCount(10, $capture['result']['brokerCalls']);
+        $this->assertCount(1, $capture['previousAttempts']);
+        $this->assertFalse($verifier->verify($capture['previousAttempts'][0]['result'])['passed']);
+        $this->assertSame('failed', $capture['previousAttempts'][0]['status']);
+        $this->assertTrue($capture['previousAttempts'][0]['verification']['checks']['containersRemoved']);
     }
 
     private static function completeResult(): array
@@ -144,9 +152,10 @@ final class HuggingFaceProofTest extends WebTestCase
         $source = 'return $tools->call("fixture", []);'; // Synthetic verifier input; never executed or published as live evidence.
         $calls = array_map(static fn ($name) => ['name' => $name, 'status' => 'succeeded'], BackendFactory::FIXTURE_TOOLS);
         $encoded = json_encode(['result' => $value, 'toolCalls' => 3]);
-        return ['report' => $value, 'answer' => json_encode($value), 'modelRequests' => 4, 'agentToolCalls' => 1, 'toolPayloadBytes' => strlen($encoded),
+
+        return ['report' => $value, 'answer' => json_encode($value), 'modelRequests' => 4, 'agentToolCalls' => 1, 'toolPayloadBytes' => \strlen($encoded),
             'brokerCalls' => $calls, 'programs' => [$source],
             'executions' => [['programIndex' => 0, 'runId' => 'code-mode-'.str_repeat('a', 32), 'status' => 'succeeded', 'toolCalls' => $calls, 'containerRemoved' => true]],
-            'agentCalls' => [['name' => 'php_execute', 'arguments' => ['code' => $source], 'result' => $encoded, 'bytesToModel' => strlen($encoded)]]];
+            'agentCalls' => [['name' => 'php_execute', 'arguments' => ['code' => $source], 'result' => $encoded, 'bytesToModel' => \strlen($encoded)]]];
     }
 }

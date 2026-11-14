@@ -21,19 +21,19 @@ final class McpTest extends TestCase
 
         try {
             $client->connect(new StdioTransport(
-                PHP_BINARY,
+                \PHP_BINARY,
                 ['bin/console', 'mcp:server', 'default', '--env=test', '--no-debug'],
-                dirname(__DIR__, 2),
+                \dirname(__DIR__, 2),
             ));
 
             $tools = $client->listTools()->tools;
-            self::assertCount(1, $tools);
-            self::assertSame('app_status', $tools[0]->name);
+            $this->assertCount(1, $tools);
+            $this->assertSame('app_status', $tools[0]->name);
 
             $result = $client->callTool('app_status');
-            self::assertFalse($result->isError);
-            self::assertInstanceOf(TextContent::class, $result->content[0]);
-            self::assertSame('ok', $result->content[0]->text);
+            $this->assertFalse($result->isError);
+            $this->assertInstanceOf(TextContent::class, $result->content[0]);
+            $this->assertSame('ok', $result->content[0]->text);
         } finally {
             $client->disconnect();
         }

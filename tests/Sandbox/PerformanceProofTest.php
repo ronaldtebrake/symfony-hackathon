@@ -14,9 +14,9 @@ final class PerformanceProofTest extends KernelTestCase
     {
         self::bootKernel();
         $report = self::getContainer()->get(ProofRunner::class)->run();
-        self::assertSame('complete', $report['status'], json_encode($report['verification']));
-        self::assertTrue((new ProofVerifier())->verify($report)['passed']);
-        self::assertCount(2, $report['turns']);
-        self::assertCount(2, $report['denials']);
+        $this->assertSame('complete', $report['status'], json_encode($report['verification']));
+        $this->assertTrue((new ProofVerifier())->verify($report)['passed']);
+        $this->assertCount(2, $report['turns']);
+        $this->assertCount(2, $report['denials']);
     }
 }

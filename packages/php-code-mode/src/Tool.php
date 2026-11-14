@@ -11,8 +11,8 @@ final readonly class Tool
     public \Closure $invoke;
 
     /**
-     * @param callable(ExecutionIdentity, \stdClass): bool $authorize
-     * @param callable(\stdClass, ExecutionIdentity): mixed $invoke Returns JSON data.
+     * @param callable(ExecutionIdentity, \stdClass): bool  $authorize
+     * @param callable(\stdClass, ExecutionIdentity): mixed $invoke    returns JSON data
      */
     public function __construct(
         public string $name,

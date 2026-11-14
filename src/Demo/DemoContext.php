@@ -9,5 +9,7 @@ use CodeMode\ToolCatalog;
 
 final readonly class DemoContext
 {
-    public function __construct(public AuditToolbox $toolbox, public CodeModeSession $session, public ToolCatalog $catalog, public RunTrace $trace) {}
+    public function __construct(public AuditToolbox $toolbox, public CodeModeSession $session, public ToolCatalog $catalog, public RunTrace $trace)
+    {
+    }
 }

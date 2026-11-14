@@ -3,8 +3,8 @@
 use App\Kernel;
 
 // PHP's development server uses this file as its router. Serve only these public assets directly.
-if ('cli-server' === PHP_SAPI) {
-    if (in_array(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), ['/demo.css', '/demo.js', '/docs.js', '/catalog-proof.js', '/php-syntax.js'], true)) {
+if ('cli-server' === \PHP_SAPI) {
+    if (in_array(parse_url($_SERVER['REQUEST_URI'], \PHP_URL_PATH), ['/demo.css', '/demo.js', '/docs.js', '/catalog-proof.js', '/php-syntax.js'], true)) {
         return false;
     }
     // Existing media files still use Symfony's allowlisted, range-aware response.

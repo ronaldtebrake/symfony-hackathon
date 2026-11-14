@@ -315,7 +315,11 @@ For the recorded agent audit and its follow-up, connect the separate `code-mode:
 - [Symfony integration](packages/symfony-code-mode/README.md): approved services and native AI tools, session-scoped toolbox, MCP server and prerequisite checks.
 - [Contribution proposals](docs/contributing/README.md): executable PHP MCP SDK and Symfony AI examples for future upstream discussions.
 
-Run `composer check` for configuration, application and package checks. With gVisor configured, run `composer test:sandbox` and `composer test:demo` sequentially.
+Run `composer check` for coding standards, configuration, application and package checks. `composer cs:check` checks PHP style without modifying files; `composer cs:fix` applies fixes. Review the diff and rerun the tests after fixing. CI runs the same checks on every push and pull request.
+
+The locked PHP CS Fixer shim and [configuration](.php-cs-fixer.dist.php) follow [Symfony AI's rule sets](https://github.com/symfony/ai/blob/main/.php-cs-fixer.dist.php), preserving our strict typing, binary stream flags and standalone guest API name. Coverage includes both packages, both example apps, tests and PHP CLI commands. Dependencies, generated caches, captured evidence and Maker templates are excluded; rendered Maker output is checked separately. These are coding-standard checks, not a security audit or a substitute for static analysis.
+
+With gVisor configured, run `composer test:sandbox` and `composer test:demo` sequentially.
 
 [Evidence index](docs/evidence/README.md) · [90-second recording guide](docs/demo.md)
 

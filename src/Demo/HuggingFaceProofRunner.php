@@ -16,11 +16,13 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 /** A fixed, operator-started Symfony fixture audit. No execution controls are exposed over HTTP. */
 final readonly class HuggingFaceProofRunner
 {
-    public function __construct(private DemoFactory $factory, private HttpClientInterface $httpClient, #[Autowire('%kernel.project_dir%')] private string $projectDir) {}
+    public function __construct(private DemoFactory $factory, private HttpClientInterface $httpClient, #[Autowire('%kernel.project_dir%')] private string $projectDir)
+    {
+    }
 
     public function run(?\Closure $progress = null, string $approach = 'code', string $protocol = AuditPrompt::COVERAGE_PROTOCOL, ?string $codeCaptureJson = null): array
     {
-        if (!in_array($approach, ['code', 'direct'], true)) {
+        if (!\in_array($approach, ['code', 'direct'], true)) {
             throw new \InvalidArgumentException('Choose code or direct.');
         }
         if ('' === trim(BackendFactory::env('HUGGINGFACE_API_KEY'))) {
@@ -28,7 +30,7 @@ final readonly class HuggingFaceProofRunner
         }
         $systemPrompt = AuditPrompt::build($approach, DemoQuestion::preset(), $protocol);
         $maxRequests = AuditPrompt::maxRequests($approach, $protocol);
-        $report = ['version' => 1, 'kind' => 'direct' === $approach ? 'huggingface-baseline' : 'huggingface-proof', 'mode' => 'live', 'status' => 'running', 'createdAt' => gmdate(DATE_ATOM),
+        $report = ['version' => 1, 'kind' => 'direct' === $approach ? 'huggingface-baseline' : 'huggingface-proof', 'mode' => 'live', 'status' => 'running', 'createdAt' => gmdate(\DATE_ATOM),
             'provider' => 'Hugging Face Inference Providers', 'endpoint' => 'https://router.huggingface.co/v1/chat/completions',
             'backend' => 'Symfony MCP fixture', 'model' => BackendFactory::env('HUGGINGFACE_MODEL', 'openai/gpt-oss-120b'),
             'task' => AuditDataset::TASK, 'runtime' => 'runsc', 'image' => BackendFactory::env('CODE_MODE_IMAGE'),
@@ -43,13 +45,13 @@ final readonly class HuggingFaceProofRunner
         $report['generationSettings'] = AuditPrompt::options($protocol) + ['providerRouting' => 'auto'];
         $report['identity'] = ['subject' => 'demo-editor', 'capabilities' => ['content.audit']];
         $dataset = new AuditDataset();
-        $report['datasetSha256'] = hash('sha256', json_encode([$dataset->articles(), $dataset->media()], JSON_THROW_ON_ERROR));
+        $report['datasetSha256'] = hash('sha256', json_encode([$dataset->articles(), $dataset->media()], \JSON_THROW_ON_ERROR));
         if ('direct' === $approach) {
             $codeBytes = $codeCaptureJson ?? file_get_contents($this->projectDir.'/docs/evidence/huggingface-proof.json');
-            $code = json_decode($codeBytes, true, flags: JSON_THROW_ON_ERROR);
+            $code = json_decode($codeBytes, true, flags: \JSON_THROW_ON_ERROR);
             $validReference = 'legacy' === $protocol
                 ? 'complete' === $code['status'] && (new HuggingFaceProofVerifier())->verify($code['result'], $maxRequests)['passed']
-                : in_array($code['status'], ['complete', 'failed'], true) && ($code['protocol'] ?? null) === $protocol;
+                : \in_array($code['status'], ['complete', 'failed'], true) && ($code['protocol'] ?? null) === $protocol;
             if (!$validReference || $code['model'] !== $report['model'] || $code['task'] !== $report['task']) {
                 throw new \LogicException('The baseline must match the reviewed Code Mode model and question.');
             }
@@ -98,13 +100,13 @@ final readonly class HuggingFaceProofRunner
             }
         }
         if ('code' === $approach && null !== $report['result']) {
-            $docker = new DockerEngine(json_decode(BackendFactory::env('CODE_MODE_DOCKER_COMMAND', '["docker"]'), true, flags: JSON_THROW_ON_ERROR));
+            $docker = new DockerEngine(json_decode(BackendFactory::env('CODE_MODE_DOCKER_COMMAND', '["docker"]'), true, flags: \JSON_THROW_ON_ERROR));
             foreach ($report['result']['executions'] as &$execution) {
                 $execution['containerRemoved'] = null;
-                if (is_string($execution['runId']) && preg_match('/\Acode-mode-[a-f0-9]{32}\z/D', $execution['runId'])) {
+                if (\is_string($execution['runId']) && preg_match('/\Acode-mode-[a-f0-9]{32}\z/D', $execution['runId'])) {
                     try {
                         $execution['containerRemoved'] = '' === $docker->control(['ps', '-aq', '--filter', 'name=^/'.$execution['runId'].'$']);
-                        $execution['cleanupCheckedAt'] = gmdate(DATE_ATOM);
+                        $execution['cleanupCheckedAt'] = gmdate(\DATE_ATOM);
                     } catch (\Throwable) {
                         // A failed daemon query cannot prove cleanup.
                     }
@@ -115,8 +117,9 @@ final readonly class HuggingFaceProofRunner
         $report['verification'] = 'code' === $approach ? (new HuggingFaceProofVerifier())->verify($report['result'] ?? [], $maxRequests) : (new HuggingFaceBaselineVerifier())->verify($report, $maxRequests);
         $report['status'] = !isset($report['error']) && $report['verification']['passed'] ? 'complete' : 'failed';
         $report['elapsedMs'] = (hrtime(true) - $started) / 1_000_000;
-        $report['completedAt'] = gmdate(DATE_ATOM);
+        $report['completedAt'] = gmdate(\DATE_ATOM);
         $progress?->__invoke($report);
+
         return $report;
     }
 }

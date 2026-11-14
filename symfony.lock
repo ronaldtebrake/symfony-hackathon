@@ -8,6 +8,18 @@
             "ref": "fdd756167454623e21f1d769c5b814b243782a67"
         }
     },
+    "php-cs-fixer/shim": {
+        "version": "3.95",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "3.0",
+            "ref": "6cf95ac1baa3d6f5816dd4db7281997912f239a6"
+        },
+        "files": [
+            ".php-cs-fixer.dist.php"
+        ]
+    },
     "php-http/discovery": {
         "version": "1.20",
         "recipe": {

@@ -15,7 +15,9 @@ use Symfony\Component\Security\Core\User\UserInterface;
 final readonly class SecurityIdentityProvider implements IdentityProviderInterface
 {
     /** @param array<string, string> $permissions Code Mode permission => Symfony security attribute. */
-    public function __construct(private TokenStorageInterface $tokens, private AuthorizationCheckerInterface $authorization, private array $permissions) {}
+    public function __construct(private TokenStorageInterface $tokens, private AuthorizationCheckerInterface $authorization, private array $permissions)
+    {
+    }
 
     public function identity(): ExecutionIdentity
     {
@@ -25,8 +27,11 @@ final readonly class SecurityIdentityProvider implements IdentityProviderInterfa
         }
         $granted = [];
         foreach ($this->permissions as $permission => $attribute) {
-            if ($this->authorization->isGranted($attribute)) { $granted[] = $permission; }
+            if ($this->authorization->isGranted($attribute)) {
+                $granted[] = $permission;
+            }
         }
+
         return new ExecutionIdentity($user->getUserIdentifier(), $granted);
     }
 }

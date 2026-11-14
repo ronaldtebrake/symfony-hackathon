@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-use Adoption\{DemoReaderAccess, Kernel};
+use Adoption\DemoReaderAccess;
+use Adoption\Kernel;
 use CodeMode\Symfony\Http\CatalogStateStore;
 use Symfony\AI\AiBundle\Test\AiAssertionsTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Lock\{LockFactory, Store\InMemoryStore};
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\InMemoryStore;
 
 final class NativeIntegrationTest extends WebTestCase
 {
     use AiAssertionsTrait;
-
-    protected static function createKernel(array $options = []): KernelInterface { return new Kernel('test', true); }
 
     public function testSharedVoterNativeEventsBudgetsAndProfilerAcrossRevocation(): void
     {
@@ -36,12 +36,15 @@ final class NativeIntegrationTest extends WebTestCase
                 $client->enableProfiler();
                 $client->request('POST', '/mcp', server: $override ?? $headers, content: json_encode([
                     'jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => ['name' => $name, 'arguments' => $arguments],
-                ], JSON_THROW_ON_ERROR));
+                ], \JSON_THROW_ON_ERROR));
                 self::assertResponseIsSuccessful();
                 $body = $client->getResponse()->getContent();
-                if (preg_match('/^data: (.+)$/m', $body, $match)) { $body = $match[1]; }
-                $decoded = json_decode($body, true, flags: JSON_THROW_ON_ERROR);
+                if (preg_match('/^data: (.+)$/m', $body, $match)) {
+                    $body = $match[1];
+                }
+                $decoded = json_decode($body, true, flags: \JSON_THROW_ON_ERROR);
                 self::assertArrayHasKey('result', $decoded);
+
                 return $decoded['result']['structuredContent'];
             };
             $client->request('GET', '/articles/101', server: $headers);
@@ -50,68 +53,81 @@ final class NativeIntegrationTest extends WebTestCase
             self::assertResponseStatusCodeSame(403);
             $client->request('POST', '/mcp', server: $headers, content: json_encode([
                 'jsonrpc' => '2.0', 'id' => 0, 'method' => 'initialize', 'params' => [
-                    'protocolVersion' => '2025-11-25', 'capabilities' => new \stdClass(),
+                    'protocolVersion' => '2025-11-25', 'capabilities' => new stdClass(),
                     'clientInfo' => ['name' => 'Integration test', 'version' => '1'],
                 ],
-            ], JSON_THROW_ON_ERROR));
+            ], \JSON_THROW_ON_ERROR));
             self::assertResponseIsSuccessful();
             $headers['HTTP_MCP_SESSION_ID'] = $client->getResponse()->headers->get('mcp-session-id');
             $search = $call('search_tools', ['query' => 'publication']);
-            self::assertSame(['publication_read'], array_column($search['tools'], 'name'));
+            $this->assertSame(['publication_read'], array_column($search['tools'], 'name'));
             $operation = $client->getProfile()->getCollector('code_mode')->getOperations()[0];
-            self::assertSame(['matched' => 1, 'returned' => 1, 'truncated' => false], $operation['discovery']);
+            $this->assertSame(['matched' => 1, 'returned' => 1, 'truncated' => false], $operation['discovery']);
             $read = ['calls' => [['name' => 'publication_read', 'arguments' => ['id' => 101]]]];
             $allowed = $call('execute_tools', $read);
-            self::assertSame(['id' => 101, 'title' => 'A Symfony application owns its tools'], $allowed['results'][0]['value']);
-            self::assertArrayNotHasKey('toolCalls', $allowed);
+            $this->assertSame(['id' => 101, 'title' => 'A Symfony application owns its tools'], $allowed['results'][0]['value']);
+            $this->assertArrayNotHasKey('toolCalls', $allowed);
             self::assertToolCalled('publication_read');
             self::assertToolCallCount(1);
             self::assertPlatformCallCount(0);
             $collector = $client->getProfile()->getCollector('code_mode');
-            self::assertCount(1, $collector->getOperations(), 'Diagnostics must reset between HTTP requests.');
+            $this->assertCount(1, $collector->getOperations(), 'Diagnostics must reset between HTTP requests.');
             $operation = $collector->getOperations()[0];
-            self::assertSame(['requested', 'succeeded'], array_column($operation['nativeEvents'], 'phase'));
-            self::assertSame('succeeded', $operation['calls'][0]['status']);
-            self::assertStringNotContainsString('A Symfony application owns its tools', serialize($collector));
+            $this->assertSame(['requested', 'succeeded'], array_column($operation['nativeEvents'], 'phase'));
+            $this->assertSame('succeeded', $operation['calls'][0]['status']);
+            $this->assertStringNotContainsString('A Symfony application owns its tools', serialize($collector));
             $profileToken = $client->getProfile()->getToken();
 
             $access->setGranted(false);
             $denied = $call('execute_tools', $read);
-            self::assertSame('tool_denied', $denied['error']['reason']);
-            self::assertSame(0, $denied['completedCalls']);
+            $this->assertSame('tool_denied', $denied['error']['reason']);
+            $this->assertSame(0, $denied['completedCalls']);
             self::assertToolCallCount(0);
             $operation = $client->getProfile()->getCollector('code_mode')->getOperations()[0];
-            self::assertSame([], $operation['nativeEvents'], 'Revocation must stop before the native toolbox.');
-            self::assertSame('denied', $operation['calls'][0]['status']);
-            self::assertSame(2, $operation['budget'][1]['attempts']);
-            self::assertSame(2, $operation['budget'][2]['reservedCalls']);
+            $this->assertSame([], $operation['nativeEvents'], 'Revocation must stop before the native toolbox.');
+            $this->assertSame('denied', $operation['calls'][0]['status']);
+            $this->assertSame(2, $operation['budget'][1]['attempts']);
+            $this->assertSame(2, $operation['budget'][2]['reservedCalls']);
             $client->request('GET', '/articles/101', server: $headers);
             self::assertResponseStatusCodeSame(403);
-            self::assertSame([], $call('search_tools', ['query' => 'publication'])['tools']);
+            $this->assertSame([], $call('search_tools', ['query' => 'publication'])['tools']);
             // The native Symfony AI attribute also guards direct host-side toolbox usage.
             // This toolbox is not exposed as a separate MCP tool.
             try {
-                self::getContainer()->get('code_mode.native_toolbox')->execute(new \Symfony\AI\Platform\Result\ToolCall('native-policy-check', 'publication_read', ['id' => 101]));
-                self::fail('The native IsGrantedTool listener did not enforce revocation.');
-            } catch (\Symfony\AI\Agent\Toolbox\Exception\ToolExecutionException $error) {
-                self::assertInstanceOf(\Symfony\Component\Security\Core\Exception\AccessDeniedException::class, $error->getPrevious());
+                self::getContainer()->get('code_mode.native_toolbox')->execute(new Symfony\AI\Platform\Result\ToolCall('native-policy-check', 'publication_read', ['id' => 101]));
+                $this->fail('The native IsGrantedTool listener did not enforce revocation.');
+            } catch (Symfony\AI\Agent\Toolbox\Exception\ToolExecutionException $error) {
+                $this->assertInstanceOf(Symfony\Component\Security\Core\Exception\AccessDeniedException::class, $error->getPrevious());
             }
             $access->setGranted(true);
-            self::assertSame('execution_limit', $call('execute_tools', $read)['error']['reason']);
+            $this->assertSame('execution_limit', $call('execute_tools', $read)['error']['reason']);
             $viewerHeaders = array_replace($headers, ['HTTP_AUTHORIZATION' => 'Bearer '.str_repeat('v', 32)]);
-            self::assertSame([], $call('search_tools', ['query' => 'publication'], $viewerHeaders)['tools']);
+            $this->assertSame([], $call('search_tools', ['query' => 'publication'], $viewerHeaders)['tools']);
             self::assertToolCallCount(0);
-            self::assertSame([], $client->getProfile()->getCollector('code_mode')->getOperations()[0]['calls']);
+            $this->assertSame([], $client->getProfile()->getCollector('code_mode')->getOperations()[0]['calls']);
             $client->request('GET', '/_profiler/'.$profileToken.'?panel=code_mode');
             self::assertResponseIsSuccessful();
-            self::assertSame(1, $client->getCrawler()->filterXPath('//h2[contains(., "Approved JSON catalog")]')->count());
+            $this->assertSame(1, $client->getCrawler()->filterXPath('//h2[contains(., "Approved JSON catalog")]')->count());
         } finally {
             self::ensureKernelShutdown();
             unlink($path);
             foreach ($saved as $key => [$server, $env]) {
-                if (null === $server) { unset($_SERVER[$key]); } else { $_SERVER[$key] = $server; }
-                if (null === $env) { unset($_ENV[$key]); } else { $_ENV[$key] = $env; }
+                if (null === $server) {
+                    unset($_SERVER[$key]);
+                } else {
+                    $_SERVER[$key] = $server;
+                }
+                if (null === $env) {
+                    unset($_ENV[$key]);
+                } else {
+                    $_ENV[$key] = $env;
+                }
             }
         }
+    }
+
+    protected static function createKernel(array $options = []): KernelInterface
+    {
+        return new Kernel('test', true);
     }
 }

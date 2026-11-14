@@ -6,9 +6,11 @@ declare(strict_types=1);
 require dirname(__DIR__).'/vendor/autoload.php';
 
 $path = $argv[1] ?? dirname(__DIR__).'/var/demo/performance-conversation.json';
-$report = json_decode(file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
+$report = json_decode(file_get_contents($path), true, flags: \JSON_THROW_ON_ERROR);
 if (isset($argv[2])) {
-    if (!ctype_digit($argv[2]) || !isset($report['previousAttempts'][(int) $argv[2]])) { throw new InvalidArgumentException('Unknown attempt.'); }
+    if (!ctype_digit($argv[2]) || !isset($report['previousAttempts'][(int) $argv[2]])) {
+        throw new InvalidArgumentException('Unknown attempt.');
+    }
     $report = $report['previousAttempts'][(int) $argv[2]];
 }
-echo json_encode((new App\Demo\Performance\TokenBreakdown())->samples($report), JSON_THROW_ON_ERROR);
+echo json_encode((new App\Demo\Performance\TokenBreakdown())->samples($report), \JSON_THROW_ON_ERROR);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CodeMode\Symfony;
 
-use CodeMode\CodeModeSession;
 use CodeMode\AgentResponse;
+use CodeMode\CodeModeSession;
 use CodeMode\ExecutionProfile;
 use Mcp\Schema\Content\TextContent;
 use Mcp\Schema\Result\CallToolResult;
@@ -17,8 +17,8 @@ final class McpServerFactory
     public function create(CodeModeSession $session, ?\Closure $record = null, bool $includeTextContent = true): Server
     {
         $handlers = [
-            'tools_search' => fn (string $query): CallToolResult => $this->result(fn () => $session->searchResult($query), includeTextContent: $includeTextContent),
-            'tools_describe' => fn (array $names): CallToolResult => $this->result(fn () => $session->describe($names), includeTextContent: $includeTextContent),
+            'tools_search' => fn (string $query): CallToolResult => $this->result(static fn () => $session->searchResult($query), includeTextContent: $includeTextContent),
+            'tools_describe' => fn (array $names): CallToolResult => $this->result(static fn () => $session->describe($names), includeTextContent: $includeTextContent),
             'php_execute' => fn (string $code): CallToolResult => $this->result(static fn (): array => AgentResponse::execute($session, $code, $record), $session->profile(), $includeTextContent),
         ];
         $builder = Server::builder()->setServerInfo('Symfony Code Mode', '0.4.0')->setInstructions(
@@ -28,6 +28,7 @@ final class McpServerFactory
             $readOnly = 'php_execute' !== $definition->name || ExecutionProfile::Gvisor === $session->profile();
             $builder->addTool($handlers[$definition->name], name: $definition->name, description: $definition->description, inputSchema: get_object_vars($definition->inputSchema), annotations: new ToolAnnotations(readOnlyHint: $readOnly, destructiveHint: !$readOnly));
         }
+
         return $builder->build();
     }
 
@@ -36,10 +37,12 @@ final class McpServerFactory
     {
         try {
             $value = $call();
-            return new CallToolResult($includeTextContent ? [new TextContent(json_encode($value, JSON_THROW_ON_ERROR))] : [], structuredContent: $value);
+
+            return new CallToolResult($includeTextContent ? [new TextContent(json_encode($value, \JSON_THROW_ON_ERROR))] : [], structuredContent: $value);
         } catch (\Throwable $error) {
             $failure = AgentResponse::failure($error, $profile ?? ExecutionProfile::Gvisor);
-            return new CallToolResult([new TextContent(json_encode($failure, JSON_THROW_ON_ERROR))], isError: true, structuredContent: $failure);
+
+            return new CallToolResult([new TextContent(json_encode($failure, \JSON_THROW_ON_ERROR))], isError: true, structuredContent: $failure);
         }
     }
 }

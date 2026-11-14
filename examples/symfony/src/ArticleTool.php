@@ -18,11 +18,19 @@ use Symfony\AI\Platform\Tool\ToolEffectHints;
 #[AsTool('publication_count', 'Count published articles.', method: 'count', effectHints: new ToolEffectHints(readOnlyHint: true))]
 final class ArticleTool
 {
-    public function __construct(private readonly ArticleCatalog $articles) {}
+    public function __construct(private readonly ArticleCatalog $articles)
+    {
+    }
 
     /** @return array{id: int, title: string} */
     #[IsGrantedTool(ArticleVoter::READ, subject: 'id')]
-    public function read(int $id): array { return $this->articles->readPublished($id); }
+    public function read(int $id): array
+    {
+        return $this->articles->readPublished($id);
+    }
 
-    public function count(): int { return 1; }
+    public function count(): int
+    {
+        return 1;
+    }
 }

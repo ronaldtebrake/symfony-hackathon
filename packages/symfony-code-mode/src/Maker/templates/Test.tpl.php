@@ -16,8 +16,8 @@ final class <?= $voter_short ?>Test extends TestCase
     {
         $voter = new <?= $voter_short ?>();
         $token = new UsernamePasswordToken(new InMemoryUser('reader', null, ['ROLE_USER', 'ROLE_ADMIN']), 'main', ['ROLE_USER', 'ROLE_ADMIN']);
-        self::assertSame(VoterInterface::ACCESS_DENIED, $voter->vote($token, null, [<?= $voter_short ?>::DISCOVER]));
-        self::assertSame(VoterInterface::ACCESS_DENIED, $voter->vote($token, 1, [<?= $voter_short ?>::READ]));
+        $this->assertSame(VoterInterface::ACCESS_DENIED, $voter->vote($token, null, [<?= $voter_short ?>::DISCOVER]));
+        $this->assertSame(VoterInterface::ACCESS_DENIED, $voter->vote($token, 1, [<?= $voter_short ?>::READ]));
     }
 
     // When implementing the voter, replace this scaffold assertion with your own

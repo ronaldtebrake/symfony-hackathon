@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Demo;
 
 use App\CodeMode\PublishingTools;
-use CodeMode\{DockerEngine, ExecutionIdentity, ExecutionLimits};
-use CodeMode\Symfony\Ai\{ApprovedToolbox, ToolAuthorizationInterface};
+use CodeMode\DockerEngine;
+use CodeMode\ExecutionIdentity;
+use CodeMode\ExecutionLimits;
+use CodeMode\Symfony\Ai\ApprovedToolbox;
+use CodeMode\Symfony\Ai\ToolAuthorizationInterface;
 use CodeMode\Symfony\SessionFactory;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 use Symfony\AI\Agent\Toolbox\Toolbox;
@@ -51,6 +54,7 @@ final class DiscoveryCatalog implements ToolAuthorizationInterface
     public static function sessions(string $image, DockerEngine $docker, ExecutionLimits $limits): SessionFactory
     {
         $tools = new self();
+
         return new SessionFactory([], $image, $docker, $limits, new ApprovedToolbox(new Toolbox([$tools]), self::NAMES, $tools));
     }
 
@@ -58,34 +62,44 @@ final class DiscoveryCatalog implements ToolAuthorizationInterface
     {
         $ready = $fallback = [];
         foreach ($definitions as $definition) {
-            if ((new ArchivedCompactGuide())->describe($definition)['requiresDescribe']) { $fallback[] = $definition->name; }
-            else { $ready[] = $definition->name; }
+            if ((new ArchivedCompactGuide())->describe($definition)['requiresDescribe']) {
+                $fallback[] = $definition->name;
+            } else {
+                $ready[] = $definition->name;
+            }
         }
-        return ['tools' => count($definitions), 'compactReady' => $ready, 'requiresDescribe' => $fallback, 'searchResultLimit' => 8];
+
+        return ['tools' => \count($definitions), 'compactReady' => $ready, 'requiresDescribe' => $fallback, 'searchResultLimit' => 8];
     }
 
     public static function fixtureHash(): string
     {
-        return hash('sha256', json_encode([self::PROFILE, (new AuditDataset())->articles(), (new AuditDataset())->media(), PublishingTools::POISON], JSON_THROW_ON_ERROR));
+        return hash('sha256', json_encode([self::PROFILE, (new AuditDataset())->articles(), (new AuditDataset())->media(), PublishingTools::POISON], \JSON_THROW_ON_ERROR));
     }
 
     public function isGranted(ExecutionIdentity $identity, string $tool, \stdClass $arguments): bool
     {
-        if (!$identity->allows('articles.read_published') || !in_array($tool, self::NAMES, true)) { return false; }
+        if (!$identity->allows('articles.read_published') || !\in_array($tool, self::NAMES, true)) {
+            return false;
+        }
         if (str_starts_with($tool, 'article_') || 'publishing_read' === $tool) {
-            return is_int($arguments->id ?? null) && 'published' === ((new AuditDataset())->articles()[$arguments->id]['status'] ?? null);
+            return \is_int($arguments->id ?? null) && 'published' === ((new AuditDataset())->articles()[$arguments->id]['status'] ?? null);
         }
         if (str_starts_with($tool, 'media_')) {
-            return is_int($arguments->id ?? null) && in_array($arguments->id, array_column($this->published(), 'image_id'), true);
+            return \is_int($arguments->id ?? null) && \in_array($arguments->id, array_column($this->published(), 'image_id'), true);
         }
+
         return match ($tool) {
             'publishing_archive' => 2026 === ($arguments->year ?? null) && 10 === ($arguments->month ?? null),
             'publishing_locale_summary' => true,
-            default => is_int($arguments->page ?? null) && $arguments->page >= 1 && $arguments->page <= 4,
+            default => \is_int($arguments->page ?? null) && $arguments->page >= 1 && $arguments->page <= 4,
         };
     }
 
-    public function read(int $id): array { return (new PublishingTools())->read($id); }
+    public function read(int $id): array
+    {
+        return (new PublishingTools())->read($id);
+    }
 
     public function list(int $page): array
     {
@@ -93,58 +107,112 @@ final class DiscoveryCatalog implements ToolAuthorizationInterface
         foreach ($this->page($page) as $article) {
             $items[] = array_intersect_key($article, array_flip(['id', 'title', 'meta_description', 'language', 'path', 'updated'])) + ['hero' => $this->hero($article['id'])];
         }
+
         return ['items' => $items, 'nextPage' => $page < 4 ? $page + 1 : null];
     }
 
-    public function titles(int $page): array { return array_column($this->page($page), 'title'); }
+    public function titles(int $page): array
+    {
+        return array_column($this->page($page), 'title');
+    }
 
-    public function languages(int $page): array { return array_column($this->page($page), 'language'); }
+    public function languages(int $page): array
+    {
+        return array_column($this->page($page), 'language');
+    }
 
-    public function paths(int $page): array { return array_column($this->page($page), 'path'); }
+    public function paths(int $page): array
+    {
+        return array_column($this->page($page), 'path');
+    }
 
-    public function dates(int $page): array { return array_column($this->page($page), 'updated'); }
+    public function dates(int $page): array
+    {
+        return array_column($this->page($page), 'updated');
+    }
 
-    public function mediaIds(int $page): array { return array_column($this->page($page), 'image_id'); }
+    public function mediaIds(int $page): array
+    {
+        return array_column($this->page($page), 'image_id');
+    }
 
     public function metadata(int $id): array
     {
         $article = (new AuditDataset())->articles()[$id] ?? null;
-        if (null === $article || 'published' !== $article['status']) { throw new \RuntimeException('Article is not available.'); }
+        if (null === $article || 'published' !== $article['status']) {
+            throw new \RuntimeException('Article is not available.');
+        }
+
         return $article;
     }
 
     public function hero(int $id): array
     {
         $media = $this->media($this->metadata($id)['image_id']);
+
         return ['id' => $media['id'], 'alt' => $media['alt'], 'file' => ['name' => $media['file_name'], 'dimensions' => ['width' => $media['width'], 'height' => $media['height']]]];
     }
 
-    public function links(int $id): array { return ['canonical' => $this->metadata($id)['path']]; }
+    public function links(int $id): array
+    {
+        return ['canonical' => $this->metadata($id)['path']];
+    }
 
-    public function localization(int $id): array { $article = $this->metadata($id); return [$article['language'] => $article['path']]; }
+    public function localization(int $id): array
+    {
+        $article = $this->metadata($id);
 
-    public function accessibility(int $id): array { return ['articleId' => $id, 'alt' => $this->hero($id)['alt']]; }
+        return [$article['language'] => $article['path']];
+    }
+
+    public function accessibility(int $id): array
+    {
+        return ['articleId' => $id, 'alt' => $this->hero($id)['alt']];
+    }
 
     public function media(int $id): array
     {
-        if (!in_array($id, array_column($this->published(), 'image_id'), true)) { throw new \RuntimeException('Media is not available.'); }
+        if (!\in_array($id, array_column($this->published(), 'image_id'), true)) {
+            throw new \RuntimeException('Media is not available.');
+        }
+
         return (new AuditDataset())->media()[$id];
     }
 
-    public function dimensions(int $id): array { return array_intersect_key($this->media($id), array_flip(['width', 'height'])); }
+    public function dimensions(int $id): array
+    {
+        return array_intersect_key($this->media($id), array_flip(['width', 'height']));
+    }
 
     public function archive(int $year, int $month): array
     {
-        if (2026 !== $year || 10 !== $month) { throw new \InvalidArgumentException('Month is not available.'); }
-        $dates = []; foreach ($this->published() as $article) { $dates[$article['updated']][] = $article['id']; } ksort($dates); return $dates;
+        if (2026 !== $year || 10 !== $month) {
+            throw new \InvalidArgumentException('Month is not available.');
+        }
+        $dates = [];
+        foreach ($this->published() as $article) {
+            $dates[$article['updated']][] = $article['id'];
+        } ksort($dates);
+
+        return $dates;
     }
 
-    public function locales(): array { return array_count_values(array_column($this->published(), 'language')); }
+    public function locales(): array
+    {
+        return array_count_values(array_column($this->published(), 'language'));
+    }
 
-    private function published(): array { return array_values(array_filter((new AuditDataset())->articles(), static fn ($article) => 'published' === $article['status'])); }
+    private function published(): array
+    {
+        return array_values(array_filter((new AuditDataset())->articles(), static fn ($article) => 'published' === $article['status']));
+    }
+
     private function page(int $page): array
     {
-        if ($page < 1 || $page > 4) { throw new \InvalidArgumentException('Page is outside the published collection.'); }
-        return array_slice($this->published(), ($page - 1) * 12, 12);
+        if ($page < 1 || $page > 4) {
+            throw new \InvalidArgumentException('Page is outside the published collection.');
+        }
+
+        return \array_slice($this->published(), ($page - 1) * 12, 12);
     }
 }

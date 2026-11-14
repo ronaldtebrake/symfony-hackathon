@@ -19,34 +19,34 @@ final class HuggingFaceBaselineTest extends WebTestCase
         $verifier = new HuggingFaceBaselineVerifier();
         $totals = [42931, 42942];
         foreach ([$capture['previousAttempts'][0], $capture] as $index => $attempt) {
-            self::assertSame('failed', $attempt['status']);
-            self::assertFalse($verifier->verify($attempt)['passed']);
-            self::assertTrue($verifier->verify($attempt)['checks']['allPublishedArticlesAndMediaRead']);
-            self::assertSame(12, $attempt['result']['modelRequests']);
-            self::assertSame($totals[$index], $attempt['result']['providerTokens']['total']);
-            self::assertCount(11, $attempt['result']['agentCalls']);
-            self::assertSame('incomplete', $attempt['result']['brokerCalls'][10]['status']);
-            self::assertSame(range(25, 36), $attempt['result']['agentCalls'][10]['arguments']['ids']);
-            self::assertSame([], $attempt['result']['programs']);
-            self::assertSame([31, 38, 44, 45], array_values(array_diff(array_column((new AuditDataset())->expected()['findings'], 'id'), array_column($attempt['result']['report']['findings'], 'id'))));
+            $this->assertSame('failed', $attempt['status']);
+            $this->assertFalse($verifier->verify($attempt)['passed']);
+            $this->assertTrue($verifier->verify($attempt)['checks']['allPublishedArticlesAndMediaRead']);
+            $this->assertSame(12, $attempt['result']['modelRequests']);
+            $this->assertSame($totals[$index], $attempt['result']['providerTokens']['total']);
+            $this->assertCount(11, $attempt['result']['agentCalls']);
+            $this->assertSame('incomplete', $attempt['result']['brokerCalls'][10]['status']);
+            $this->assertSame(range(25, 36), $attempt['result']['agentCalls'][10]['arguments']['ids']);
+            $this->assertSame([], $attempt['result']['programs']);
+            $this->assertSame([31, 38, 44, 45], array_values(array_diff(array_column((new AuditDataset())->expected()['findings'], 'id'), array_column($attempt['result']['report']['findings'], 'id'))));
         }
         $pair = (new HuggingFaceComparison())->build(self::codeJson(), $capture);
-        self::assertFalse($pair['verifiedComparison']);
-        self::assertNull($pair['difference']);
-        self::assertSame('failed', $pair['status']);
+        $this->assertFalse($pair['verifiedComparison']);
+        $this->assertNull($pair['difference']);
+        $this->assertSame('failed', $pair['status']);
         foreach (['codeCaptureBound', 'sameModel', 'sameQuestion', 'sameEndpoint', 'sameComponents', 'baselineGenerationSettings', 'approvedReadIdentity', 'sameToolSchemas', 'sameFixture', 'codeResultVerified', 'providerUsageReported'] as $check) {
-            self::assertTrue($pair['checks'][$check], $check);
+            $this->assertTrue($pair['checks'][$check], $check);
         }
-        self::assertSame(['attempts' => 2, 'modelRequests' => 24, 'providerTokens' => 85873, 'knownProviderTokens' => 85873, 'unreportedTokenAttempts' => 0], $pair['observedTotals']['direct']);
-        self::assertSame(['attempts' => 2, 'modelRequests' => 8, 'providerTokens' => 13337, 'knownProviderTokens' => 13337, 'unreportedTokenAttempts' => 0], $pair['observedTotals']['code']);
+        $this->assertSame(['attempts' => 2, 'modelRequests' => 24, 'providerTokens' => 85873, 'knownProviderTokens' => 85873, 'unreportedTokenAttempts' => 0], $pair['observedTotals']['direct']);
+        $this->assertSame(['attempts' => 2, 'modelRequests' => 8, 'providerTokens' => 13337, 'knownProviderTokens' => 13337, 'unreportedTokenAttempts' => 0], $pair['observedTotals']['code']);
     }
 
     public function testSyntheticCorrectDirectResultCanBeComparedWithoutExecutingPhp(): void
     {
         $pair = (new HuggingFaceComparison())->build(self::codeJson(), self::syntheticCorrectResult());
-        self::assertTrue($pair['verifiedComparison']);
-        self::assertSame('complete', $pair['status']);
-        self::assertSame(7, $pair['difference']['modelRequests']);
+        $this->assertTrue($pair['verifiedComparison']);
+        $this->assertSame('complete', $pair['status']);
+        $this->assertSame(7, $pair['difference']['modelRequests']);
     }
 
     #[DataProvider('invalidEvidence')]
@@ -68,13 +68,15 @@ final class HuggingFaceBaselineTest extends WebTestCase
             'coverage' => $capture['result']['agentCalls'][4]['result'] = '{"items":[]}',
         };
         $pair = (new HuggingFaceComparison())->build(self::codeJson(), $capture);
-        self::assertFalse($pair['verifiedComparison']);
-        self::assertNull($pair['difference']);
+        $this->assertFalse($pair['verifiedComparison']);
+        $this->assertNull($pair['difference']);
     }
 
     public static function invalidEvidence(): iterable
     {
-        foreach (['source', 'model', 'question', 'identity', 'schema', 'data', 'usage', 'usageSum', 'php', 'bytes', 'ledger', 'coverage'] as $mutation) { yield $mutation => [$mutation]; }
+        foreach (['source', 'model', 'question', 'identity', 'schema', 'data', 'usage', 'usageSum', 'php', 'bytes', 'ledger', 'coverage'] as $mutation) {
+            yield $mutation => [$mutation];
+        }
     }
 
     public function testComparisonEndpointIsFixedLocalAndReadOnly(): void
@@ -82,8 +84,8 @@ final class HuggingFaceBaselineTest extends WebTestCase
         $client = self::createClient();
         $client->request('GET', '/demo/huggingface-comparison?file=../../.env.local');
         self::assertResponseIsSuccessful();
-        self::assertSame(self::getContainer()->get(ReportStore::class)->readHuggingFaceComparison(), $client->getResponse()->getContent());
-        self::assertStringContainsString('no-store', $client->getResponse()->headers->get('cache-control'));
+        $this->assertSame(self::getContainer()->get(ReportStore::class)->readHuggingFaceComparison(), $client->getResponse()->getContent());
+        $this->assertStringContainsString('no-store', $client->getResponse()->headers->get('cache-control'));
         $client->request('POST', '/demo/huggingface-comparison');
         self::assertResponseStatusCodeSame(405);
         $client->request('GET', '/demo/huggingface-comparison', server: ['REMOTE_ADDR' => '203.0.113.1']);
@@ -94,12 +96,12 @@ final class HuggingFaceBaselineTest extends WebTestCase
 
     private static function capture(): array
     {
-        return json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/huggingface-baseline.json'), true, flags: JSON_THROW_ON_ERROR);
+        return json_decode(file_get_contents(\dirname(__DIR__, 2).'/docs/evidence/huggingface-baseline.json'), true, flags: \JSON_THROW_ON_ERROR);
     }
 
     private static function codeJson(): string
     {
-        return file_get_contents(dirname(__DIR__, 2).'/docs/evidence/huggingface-proof.json');
+        return file_get_contents(\dirname(__DIR__, 2).'/docs/evidence/huggingface-proof.json');
     }
 
     /** Verifier-only input, never executed or published as observed evidence. */
@@ -114,6 +116,7 @@ final class HuggingFaceBaselineTest extends WebTestCase
         $capture['result']['agentToolCalls'] = 10;
         $capture['result']['modelRequests'] = 11;
         $capture['result']['toolPayloadBytes'] = 20154;
+
         return $capture;
     }
 }

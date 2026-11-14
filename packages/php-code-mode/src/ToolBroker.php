@@ -29,15 +29,21 @@ final class ToolBroker
     /** Preserve any existing policy when a session supplies an additional one. */
     public function withVisibility(?ToolVisibilityInterface $visibility): self
     {
-        if (null === $visibility) { return $this; }
+        if (null === $visibility) {
+            return $this;
+        }
         $existing = $this->visibility;
         $combined = null === $existing ? $visibility : new class($existing, $visibility) implements ToolVisibilityInterface {
-            public function __construct(private readonly ToolVisibilityInterface $first, private readonly ToolVisibilityInterface $second) {}
+            public function __construct(private readonly ToolVisibilityInterface $first, private readonly ToolVisibilityInterface $second)
+            {
+            }
+
             public function isVisible(ExecutionIdentity $identity, string $tool): bool
             {
                 return $this->first->isVisible($identity, $tool) && $this->second->isVisible($identity, $tool);
             }
         };
+
         return new self($this->tools, $combined);
     }
 
@@ -45,7 +51,7 @@ final class ToolBroker
     public function call(string $name, \stdClass $arguments, ExecutionIdentity $identity, array $allowedTools): mixed
     {
         $tool = $this->tools[$name] ?? null;
-        if (null === $tool || !in_array($name, $allowedTools, true)) {
+        if (null === $tool || !\in_array($name, $allowedTools, true)) {
             throw new SandboxException('tool_denied', 'Tool is not authorized.');
         }
         try {

@@ -8,7 +8,7 @@ namespace CodeMode;
 class ProcessSession
 {
     /** @var resource|null */
-    private $process = null;
+    private $process;
     /** @var array<int, resource> */
     private array $pipes = [];
     private string $pending = '';
@@ -29,6 +29,11 @@ class ProcessSession
         }
     }
 
+    public function __destruct()
+    {
+        $this->close();
+    }
+
     public function pid(): int
     {
         return proc_get_status($this->process)['pid'];
@@ -36,7 +41,7 @@ class ProcessSession
 
     public function write(string $data): void
     {
-        if ($this->inputClosed || strlen($this->pending) + strlen($data) > 524288) {
+        if ($this->inputClosed || \strlen($this->pending) + \strlen($data) > 524288) {
             throw new SandboxException('input_limit', 'Guest input queue is closed or exceeds its byte limit.');
         }
         $this->pending .= $data;
@@ -76,6 +81,7 @@ class ProcessSession
         if (!$status['running'] && null === $this->exitCode && $status['exitcode'] >= 0) {
             $this->exitCode = $status['exitcode'];
         }
+
         return $status['running'] || !feof($this->pipes[1]) || !feof($this->pipes[2]);
     }
 
@@ -95,14 +101,9 @@ class ProcessSession
         }
         $this->pipes = [];
         if (proc_get_status($this->process)['running']) {
-            proc_terminate($this->process, SIGKILL);
+            proc_terminate($this->process, \SIGKILL);
         }
         proc_close($this->process);
         $this->process = null;
-    }
-
-    public function __destruct()
-    {
-        $this->close();
     }
 }

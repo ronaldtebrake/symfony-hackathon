@@ -9,20 +9,22 @@ final class HuggingFaceComparison
 {
     public static function encodeCapture(array $capture): string
     {
-        return json_encode(json_decode(json_encode($capture, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR), JSON_THROW_ON_ERROR);
+        return json_encode(json_decode(json_encode($capture, \JSON_THROW_ON_ERROR), true, flags: \JSON_THROW_ON_ERROR), \JSON_THROW_ON_ERROR);
     }
 
     public function build(string $codeJson, array $direct): array
     {
-        $code = json_decode($codeJson, true, flags: JSON_THROW_ON_ERROR);
+        $code = json_decode($codeJson, true, flags: \JSON_THROW_ON_ERROR);
         $descriptions = null;
         foreach ($code['result']['agentCalls'] ?? [] as $call) {
-            if ('tools_describe' === $call['name']) { $descriptions = json_decode($call['result'], true); }
+            if ('tools_describe' === $call['name']) {
+                $descriptions = json_decode($call['result'], true);
+            }
         }
         $dataset = new AuditDataset();
         $protocol = $direct['protocol'] ?? 'legacy';
         $matchedProtocol = 'legacy' !== $protocol;
-        if (in_array($protocol, ['coverage-v10', AuditPrompt::COVERAGE_PROTOCOL], true)) {
+        if (\in_array($protocol, ['coverage-v10', AuditPrompt::COVERAGE_PROTOCOL], true)) {
             // Compact discovery omits output schemas on the wire; compare full host contracts separately.
             $descriptions = $code['approvedTools'] ?? null;
         }
@@ -30,20 +32,20 @@ final class HuggingFaceComparison
         $directLimit = AuditPrompt::maxRequests('direct', $protocol);
         $checks = [
             'codeCaptureBound' => hash('sha256', $codeJson) === ($direct['codeCaptureSha256'] ?? null),
-            'sameModel' => ($code['model'] ?? null) === ($direct['model'] ?? null) && is_string($code['model'] ?? null),
+            'sameModel' => ($code['model'] ?? null) === ($direct['model'] ?? null) && \is_string($code['model'] ?? null),
             'sameQuestion' => AuditDataset::TASK === ($code['task'] ?? null) && $code['task'] === ($direct['task'] ?? null),
             'sameEndpoint' => ($code['endpoint'] ?? null) === ($direct['endpoint'] ?? null),
             'sameComponents' => ($code['components'] ?? null) === ($direct['components'] ?? null),
             'baselineGenerationSettings' => (AuditPrompt::options($protocol) + ['providerRouting' => 'auto']) === ($direct['generationSettings'] ?? null),
             'approvedReadIdentity' => ['subject' => 'demo-editor', 'capabilities' => ['content.audit']] === ($direct['identity'] ?? null),
-            'sameToolSchemas' => is_array($descriptions) && $this->definitions($descriptions) === $this->definitions(json_decode(json_encode($direct['approvedTools'] ?? []), true)),
+            'sameToolSchemas' => \is_array($descriptions) && $this->definitions($descriptions) === $this->definitions(json_decode(json_encode($direct['approvedTools'] ?? []), true)),
             'sameFixture' => 'Symfony MCP fixture' === ($code['backend'] ?? null) && $code['backend'] === ($direct['backend'] ?? null)
-                && hash('sha256', json_encode([$dataset->articles(), $dataset->media()], JSON_THROW_ON_ERROR)) === ($direct['datasetSha256'] ?? null),
+                && hash('sha256', json_encode([$dataset->articles(), $dataset->media()], \JSON_THROW_ON_ERROR)) === ($direct['datasetSha256'] ?? null),
             'codeResultVerified' => 'complete' === ($code['status'] ?? null) && (new HuggingFaceProofVerifier())->verify($code['result'] ?? [], $codeLimit)['passed'],
             'directResultVerified' => 'complete' === ($direct['status'] ?? null) && (new HuggingFaceBaselineVerifier())->verify($direct, $directLimit)['passed'],
             'providerUsageReported' => $this->validUsage($code) && $this->validUsage($direct),
         ];
-        if (in_array($protocol, ['coverage-v10', AuditPrompt::COVERAGE_PROTOCOL], true)) {
+        if (\in_array($protocol, ['coverage-v10', AuditPrompt::COVERAGE_PROTOCOL], true)) {
             $checks['coverage-v10' === $protocol ? 'compactContractsDisclosed' : 'fullContractsDisclosed'] = $this->compactContractsDisclosed($code, allowCompact: 'coverage-v10' === $protocol);
         }
         if ($matchedProtocol) {
@@ -64,8 +66,9 @@ final class HuggingFaceComparison
                     && AuditPrompt::review() === ($direct['result']['review']['instruction'] ?? null);
             }
         }
-        $complete = !in_array(false, $checks, true);
-        return ['kind' => 'huggingface-comparison', 'status' => $complete ? 'complete' : (in_array($direct['status'] ?? 'empty', ['running', 'empty'], true) ? ($direct['status'] ?? 'empty') : 'failed'),
+        $complete = !\in_array(false, $checks, true);
+
+        return ['kind' => 'huggingface-comparison', 'status' => $complete ? 'complete' : (\in_array($direct['status'] ?? 'empty', ['running', 'empty'], true) ? ($direct['status'] ?? 'empty') : 'failed'),
             'verifiedComparison' => $complete, 'protocol' => $protocol, 'checks' => $checks, 'code' => $code, 'direct' => $direct,
             'observedTotals' => ['code' => $this->totals($code), 'direct' => $this->totals($direct)],
             'difference' => $complete ? [
@@ -80,22 +83,34 @@ final class HuggingFaceComparison
         $approved = array_column($capture['approvedTools'] ?? [], null, 'name');
         $disclosed = [];
         foreach ($capture['result']['agentCalls'] ?? [] as $call) {
-            if (!in_array($call['name'], $allowCompact ? ['tools_search', 'tools_describe'] : ['tools_describe'], true)) { continue; }
-            $result = json_decode($call['result'], true, flags: JSON_THROW_ON_ERROR);
+            if (!\in_array($call['name'], $allowCompact ? ['tools_search', 'tools_describe'] : ['tools_describe'], true)) {
+                continue;
+            }
+            $result = json_decode($call['result'], true, flags: \JSON_THROW_ON_ERROR);
             foreach ($result['tools'] ?? $result as $tool) {
-                if (!isset($tool['inputSchema'])) { continue; }
+                if (!isset($tool['inputSchema'])) {
+                    continue;
+                }
                 $name = $tool['name'];
-                if (!isset($approved[$name]) || $approved[$name]['inputSchema'] !== $tool['inputSchema']) { return false; }
-                if (!$allowCompact && ($approved[$name]['outputSchema'] ?? null) !== ($tool['outputSchema'] ?? null)) { return false; }
-                if ('tools_describe' === $call['name'] || false === ($tool['requiresDescribe'] ?? null)) { $disclosed[$name] = true; }
+                if (!isset($approved[$name]) || $approved[$name]['inputSchema'] !== $tool['inputSchema']) {
+                    return false;
+                }
+                if (!$allowCompact && ($approved[$name]['outputSchema'] ?? null) !== ($tool['outputSchema'] ?? null)) {
+                    return false;
+                }
+                if ('tools_describe' === $call['name'] || false === ($tool['requiresDescribe'] ?? null)) {
+                    $disclosed[$name] = true;
+                }
             }
         }
+
         return [] !== $approved && [] === array_diff(array_keys($approved), array_keys($disclosed));
     }
 
     private function definitions(array $definitions): array
     {
         usort($definitions, static fn ($a, $b) => $a['name'] <=> $b['name']);
+
         return $definitions;
     }
 
@@ -103,8 +118,9 @@ final class HuggingFaceComparison
     {
         $result = $capture['result'] ?? [];
         $requests = $result['requestEvidence'] ?? [];
-        $expected = array_map(static fn ($call) => ['bytes' => strlen($call['result']), 'sha256' => hash('sha256', $call['result'])], $result['agentCalls'] ?? []);
-        return [] !== $expected && count($requests) === ($result['modelRequests'] ?? null)
+        $expected = array_map(static fn ($call) => ['bytes' => \strlen($call['result']), 'sha256' => hash('sha256', $call['result'])], $result['agentCalls'] ?? []);
+
+        return [] !== $expected && \count($requests) === ($result['modelRequests'] ?? null)
             && $expected === ($requests[array_key_last($requests)]['toolMessages'] ?? null);
     }
 
@@ -113,20 +129,28 @@ final class HuggingFaceComparison
         $result = $capture['result'] ?? [];
         $responses = $result['providerResponses'] ?? [];
         $total = ['prompt' => 0, 'completion' => 0, 'total' => 0];
-        if ([] === $responses || count($responses) !== ($result['modelRequests'] ?? null)) { return false; }
+        if ([] === $responses || \count($responses) !== ($result['modelRequests'] ?? null)) {
+            return false;
+        }
         foreach ($responses as $index => $response) {
-            if ($index + 1 !== $response['request'] || !$this->validUsage(['result' => ['providerTokens' => $response['tokens']]])) { return false; }
-            foreach ($total as $key => &$value) { $value += $response['tokens'][$key]; }
+            if ($index + 1 !== $response['request'] || !$this->validUsage(['result' => ['providerTokens' => $response['tokens']]])) {
+                return false;
+            }
+            foreach ($total as $key => &$value) {
+                $value += $response['tokens'][$key];
+            }
             unset($value);
         }
+
         return 'stop' === ($responses[array_key_last($responses)]['finishReason'] ?? null) && $total === ($result['providerTokens'] ?? null);
     }
 
     private function validUsage(array $capture): bool
     {
         $usage = $capture['result']['providerTokens'] ?? [];
-        return is_int($usage['prompt'] ?? null) && $usage['prompt'] >= 0 && is_int($usage['completion'] ?? null) && $usage['completion'] >= 0
-            && is_int($usage['total'] ?? null) && $usage['total'] > 0 && $usage['total'] === $usage['prompt'] + $usage['completion'];
+
+        return \is_int($usage['prompt'] ?? null) && $usage['prompt'] >= 0 && \is_int($usage['completion'] ?? null) && $usage['completion'] >= 0
+            && \is_int($usage['total'] ?? null) && $usage['total'] > 0 && $usage['prompt'] + $usage['completion'] === $usage['total'];
     }
 
     private function totals(array $capture): array
@@ -137,8 +161,13 @@ final class HuggingFaceComparison
         $unreported = 0;
         foreach ($attempts as $attempt) {
             $requests += $attempt['result']['modelRequests'] ?? 0;
-            if ($this->validUsage($attempt)) { $tokens += $attempt['result']['providerTokens']['total']; } else { ++$unreported; }
+            if ($this->validUsage($attempt)) {
+                $tokens += $attempt['result']['providerTokens']['total'];
+            } else {
+                ++$unreported;
+            }
         }
-        return ['attempts' => count($attempts), 'modelRequests' => $requests, 'providerTokens' => 0 === $unreported ? $tokens : null, 'knownProviderTokens' => $tokens, 'unreportedTokenAttempts' => $unreported];
+
+        return ['attempts' => \count($attempts), 'modelRequests' => $requests, 'providerTokens' => 0 === $unreported ? $tokens : null, 'knownProviderTokens' => $tokens, 'unreportedTokenAttempts' => $unreported];
     }
 }

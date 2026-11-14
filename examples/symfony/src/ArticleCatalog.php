@@ -24,6 +24,7 @@ final class ArticleCatalog
         if (!$this->isPublished($id)) {
             throw new \RuntimeException('No permitted article.');
         }
+
         return ['id' => $id, 'title' => self::ARTICLES[$id]['title']];
     }
 }

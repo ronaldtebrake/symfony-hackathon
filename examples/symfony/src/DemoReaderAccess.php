@@ -9,7 +9,9 @@ use Symfony\Component\Filesystem\Filesystem;
 /** Local recording fixture. Production apps load grants from their own user store. */
 final readonly class DemoReaderAccess
 {
-    public function __construct(private string $path) {}
+    public function __construct(private string $path)
+    {
+    }
 
     public function isGranted(): bool
     {

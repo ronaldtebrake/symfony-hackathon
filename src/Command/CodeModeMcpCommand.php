@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Demo\DemoFactory;
-use CodeMode\ExecutionTraceFile;
 use CodeMode\DiscoveryMode;
+use CodeMode\ExecutionTraceFile;
 use CodeMode\Symfony\McpServerFactory;
 use Mcp\Server\Transport\StdioTransport;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -18,7 +18,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'code-mode:mcp', description: 'Expose tools_search, tools_describe and php_execute to an MCP client over STDIO.')]
 final class CodeModeMcpCommand extends Command
 {
-    public function __construct(private readonly DemoFactory $factory) { parent::__construct(); }
+    public function __construct(private readonly DemoFactory $factory)
+    {
+        parent::__construct();
+    }
 
     protected function configure(): void
     {
@@ -33,6 +36,7 @@ final class CodeModeMcpCommand extends Command
         $record = null === $input->getOption('trace-file') ? null : new ExecutionTraceFile($input->getOption('trace-file'));
         // Preserve this endpoint's structured-only success results; do not add a duplicate text body.
         (new McpServerFactory())->create($session, null === $record ? null : $record(...), includeTextContent: false)->run(new StdioTransport());
+
         return Command::SUCCESS;
     }
 }

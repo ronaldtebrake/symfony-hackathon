@@ -17,9 +17,9 @@ final class HealthTest extends WebTestCase
 
             self::assertResponseIsSuccessful();
             self::assertResponseHeaderSame('content-type', 'application/json');
-            self::assertSame(
+            $this->assertSame(
                 ['status' => 'ok', 'project' => 'symfony-hackathon'],
-                json_decode($client->getResponse()->getContent(), true, flags: JSON_THROW_ON_ERROR),
+                json_decode($client->getResponse()->getContent(), true, flags: \JSON_THROW_ON_ERROR),
             );
         }
     }

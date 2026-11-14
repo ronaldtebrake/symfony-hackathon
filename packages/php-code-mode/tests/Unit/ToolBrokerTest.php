@@ -23,11 +23,11 @@ final class ToolBrokerTest extends TestCase
         )]);
         try {
             $broker->call($name, json_decode($arguments), new ExecutionIdentity('alice', $permissions), $allowlist);
-            self::fail('The broker accepted a denied call.');
+            $this->fail('The broker accepted a denied call.');
         } catch (SandboxException $e) {
-            self::assertSame($reason, $e->reason);
+            $this->assertSame($reason, $e->reason);
         }
-        self::assertFalse($called);
+        $this->assertFalse($called);
     }
 
     public static function deniedCalls(): iterable
@@ -53,11 +53,11 @@ final class ToolBrokerTest extends TestCase
         )]);
         try {
             $broker->call('fail', new \stdClass(), $identity, ['fail']);
-            self::fail('The handler must fail.');
+            $this->fail('The handler must fail.');
         } catch (SandboxException $e) {
-            self::assertSame('tool_failed', $e->reason);
-            self::assertStringNotContainsString('host-secret', $e->getMessage());
-            self::assertNull($e->getPrevious());
+            $this->assertSame('tool_failed', $e->reason);
+            $this->assertStringNotContainsString('host-secret', $e->getMessage());
+            $this->assertNull($e->getPrevious());
         }
     }
 }

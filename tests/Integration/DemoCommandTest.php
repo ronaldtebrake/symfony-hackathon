@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use App\Command\CodeModeDemoCommand;
-use App\Demo\{DemoFactory, DemoRunner, ReportStore};
+use App\Demo\DemoFactory;
+use App\Demo\DemoRunner;
+use App\Demo\ReportStore;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\AI\Platform\PlatformInterface;
@@ -18,12 +20,12 @@ final class DemoCommandTest extends TestCase
     public function testInvalidQuestionsFailBeforeStartingExecutionOrReplacingReports(array $options): void
     {
         $platform = $this->createMock(PlatformInterface::class);
-        $platform->expects(self::never())->method('invoke');
-        $root = dirname(__DIR__, 2);
+        $platform->expects($this->never())->method('invoke');
+        $root = \dirname(__DIR__, 2);
         $reportRoot = sys_get_temp_dir().'/code-mode-unused-'.bin2hex(random_bytes(8));
         $tester = new CommandTester(new CodeModeDemoCommand(new DemoRunner(new DemoFactory($root), $platform, $root), new ReportStore($reportRoot)));
-        self::assertSame(Command::INVALID, $tester->execute($options));
-        self::assertDirectoryDoesNotExist($reportRoot);
+        $this->assertSame(Command::INVALID, $tester->execute($options));
+        $this->assertDirectoryDoesNotExist($reportRoot);
     }
 
     public static function invalidOptions(): iterable

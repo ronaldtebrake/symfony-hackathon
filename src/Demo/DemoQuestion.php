@@ -9,7 +9,9 @@ final readonly class DemoQuestion
 {
     public const MAX_BYTES = 2000;
 
-    private function __construct(public string $id, public string $text) {}
+    private function __construct(public string $id, public string $text)
+    {
+    }
 
     public static function preset(string $id = 'audit'): self
     {
@@ -23,7 +25,7 @@ final readonly class DemoQuestion
     public static function custom(string $text): self
     {
         // Reject terminal controls and invisible formatting; never interpolate a question into PHP.
-        if (strlen($text) > self::MAX_BYTES || 1 !== preg_match('//u', $text)
+        if (\strlen($text) > self::MAX_BYTES || 1 !== preg_match('//u', $text)
             || 1 === preg_match('/[\p{Cc}\p{Cf}]/u', str_replace(["\n", "\r", "\t"], '', $text))) {
             throw new \InvalidArgumentException('Use at most 2000 UTF-8 bytes without control or invisible formatting characters.');
         }
@@ -31,6 +33,7 @@ final readonly class DemoQuestion
         if ('' === $text) {
             throw new \InvalidArgumentException('Write a question about the published articles and their hero images.');
         }
+
         return new self('custom', $text);
     }
 
@@ -40,5 +43,4 @@ final readonly class DemoQuestion
             throw new \InvalidArgumentException('Changed questions require live mode and the Symfony fixture backend.');
         }
     }
-
 }

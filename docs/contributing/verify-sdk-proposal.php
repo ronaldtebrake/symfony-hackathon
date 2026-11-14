@@ -19,17 +19,17 @@ try {
     $values = [['count' => 48], [1, 2], (object) [], false, 0, '', null];
     foreach ($values as $value) {
         $result = Mcp\Schema\Result\CallToolResult::structured($value, meta: ['trace' => 'fixture']);
-        $wire = json_decode(json_encode($result, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
+        $wire = json_decode(json_encode($result, \JSON_THROW_ON_ERROR), true, flags: \JSON_THROW_ON_ERROR);
         $check(!$wire['isError']);
         $check(json_decode($wire['content'][0]['text'], true) === json_decode(json_encode($value), true));
         $check(($wire['structuredContent'] ?? null) === json_decode(json_encode($value), true));
         $check($wire['_meta'] === ['trace' => 'fixture']);
     }
     $error = Mcp\Schema\Result\CallToolResult::structured(['error' => ['reason' => 'tool_denied']], isError: true);
-    $check($error->isError && $error->structuredContent['error']['reason'] === 'tool_denied');
+    $check($error->isError && 'tool_denied' === $error->structuredContent['error']['reason']);
     $check(Mcp\Schema\Result\CallToolResult::fromArray(json_decode(json_encode($error), true))->isError);
     try {
-        Mcp\Schema\Result\CallToolResult::structured(NAN);
+        Mcp\Schema\Result\CallToolResult::structured(\NAN);
         throw new RuntimeException('Invalid JSON was accepted.');
     } catch (JsonException) {
         // The helper must not silently replace invalid data with false or an empty string.
@@ -39,5 +39,7 @@ try {
     echo "PASS: 7 JSON shapes, structured denial round-trip, invalid JSON rejection, existing factories unchanged. Installed vendor code was not modified.\n";
 } finally {
     unlink($target);
-    foreach (['/src/Schema/Result', '/src/Schema', '/src', ''] as $path) { rmdir($directory.$path); }
+    foreach (['/src/Schema/Result', '/src/Schema', '/src', ''] as $path) {
+        rmdir($directory.$path);
+    }
 }

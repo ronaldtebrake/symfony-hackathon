@@ -22,8 +22,8 @@ final class McpGatewayTest extends TestCase
         ]));
         $gateway = new McpGateway(static fn (): Client => $client, ['read' => static fn (): bool => true]);
         $catalog = $gateway->discover();
-        self::assertCount(1, $catalog->all());
-        self::assertSame('integer', $catalog->describe(['read'])[0]->outputSchema->properties->value->type);
+        $this->assertCount(1, $catalog->all());
+        $this->assertSame('integer', $catalog->describe(['read'])[0]->outputSchema->properties->value->type);
     }
 
     public function testRepeatedUpstreamPagesAreRejected(): void
@@ -33,5 +33,4 @@ final class McpGatewayTest extends TestCase
         $this->expectException(SandboxException::class);
         (new McpGateway(static fn (): Client => $client, []))->discover();
     }
-
 }

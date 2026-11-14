@@ -24,7 +24,7 @@ final class HttpCatalogProof
         }
         $checks = [
             'format' => 'symfony-http-catalog/v1' === ($report['format'] ?? null),
-            'messagesAgree' => $consistent && count($calls) >= 10,
+            'messagesAgree' => $consistent && \count($calls) >= 10,
             'authenticatedHttp' => 401 === ($http['unauthenticated']['httpStatus'] ?? null) && 401 === ($http['invalid_token']['httpStatus'] ?? null),
             'originProtected' => 403 === ($http['untrusted_origin']['httpStatus'] ?? null),
             'approvedContract' => ['publication_read'] === array_column($value('discovery')['tools'] ?? [], 'name'),
@@ -56,29 +56,32 @@ final class HttpCatalogProof
             'ordinaryExecution' => 'in-process' === ($report['doctor']['runtime']['execution'] ?? null)
                 && false === ($report['doctor']['runtime']['hardTermination'] ?? null)
                 && [] === array_diff(['pcntl_fork', 'posix_kill', 'proc_open'], $report['installation']['disabledFunctions'] ?? []),
-            'operatorChecks' => 'passed' === ($report['status'] ?? null) && count($report['checks'] ?? []) >= 31 && !in_array(false, $report['checks'] ?? [], true),
+            'operatorChecks' => 'passed' === ($report['status'] ?? null) && \count($report['checks'] ?? []) >= 31 && !\in_array(false, $report['checks'] ?? [], true),
         ];
-        return ['passed' => !in_array(false, $checks, true), 'checks' => $checks];
+
+        return ['passed' => !\in_array(false, $checks, true), 'checks' => $checks];
     }
 
     public static function load(string $root): array
     {
         $raw = file_get_contents($root.'/docs/evidence/http-catalog-proof.json');
-        $capture = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
+        $capture = json_decode($raw, true, 64, \JSON_THROW_ON_ERROR);
         $verification = self::verify($capture);
         $implementation = [];
         foreach (['handler' => 'ArticleTool.php', 'policy' => 'ArticleVoter.php', 'controller' => 'ArticleController.php'] as $role => $file) {
-            $path = 'examples/symfony/src/'.$file; $source = file_get_contents($root.'/'.$path);
+            $path = 'examples/symfony/src/'.$file;
+            $source = file_get_contents($root.'/'.$path);
             $implementation[$role] = ['path' => $path, 'source' => $source, 'sha256' => hash('sha256', $source)];
             $verification['checks'][$role.'SourceMatchesCapture'] = $implementation[$role]['sha256'] === ($capture['sourceSha256']['src/'.$file] ?? null);
         }
         foreach ($capture['sourceSha256'] as $path => $hash) {
             $current = str_starts_with($path, 'vendor/ronaldtebrake/')
-                ? $root.'/packages/'.substr($path, strlen('vendor/ronaldtebrake/'))
+                ? $root.'/packages/'.substr($path, \strlen('vendor/ronaldtebrake/'))
                 : $root.'/examples/symfony/'.$path;
             $verification['checks']['source:'.$path] = is_file($current) && hash_file('sha256', $current) === $hash;
         }
-        $verification['passed'] = !in_array(false, $verification['checks'], true);
+        $verification['passed'] = !\in_array(false, $verification['checks'], true);
+
         return ['status' => $verification['passed'] ? 'passed' : 'failed', 'capture' => $capture,
             'captureSha256' => hash('sha256', $raw), 'verification' => $verification, 'implementation' => $implementation];
     }

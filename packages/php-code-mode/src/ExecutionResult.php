@@ -7,8 +7,8 @@ namespace CodeMode;
 final readonly class ExecutionResult
 {
     /**
-     * @param mixed $value Untrusted guest data, not proof that a tool ran.
-     * @param list<array{name: string, status: string, durationMs?: float, resultBytes?: int, reason?: string}> $toolCalls Recorded by the host.
+     * @param mixed                                                                                             $value     untrusted guest data, not proof that a tool ran
+     * @param list<array{name: string, status: string, durationMs?: float, resultBytes?: int, reason?: string}> $toolCalls recorded by the host
      */
     public function __construct(
         public mixed $value,

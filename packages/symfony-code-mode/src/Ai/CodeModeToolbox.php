@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CodeMode\Symfony\Ai;
 
-use CodeMode\CodeModeSession;
 use CodeMode\AgentResponse;
+use CodeMode\CodeModeSession;
 use CodeMode\ExecutionProfile;
 use CodeMode\SandboxException;
 use Opis\JsonSchema\SchemaLoader;
@@ -23,7 +23,9 @@ final class CodeModeToolbox implements ToolboxInterface
     private int $calls = 0;
     private ?array $lastExecution = null;
 
-    public function __construct(private readonly CodeModeSession $session) {}
+    public function __construct(private readonly CodeModeSession $session)
+    {
+    }
 
     public function getTools(): array
     {
@@ -52,7 +54,14 @@ final class CodeModeToolbox implements ToolboxInterface
             // A sanitized, model-visible result permits recovery without leaking exception details.
             $value = AgentResponse::failure($error, $this->session->profile());
         }
-        return new ToolResult($toolCall, json_encode($value, JSON_THROW_ON_ERROR));
+
+        return new ToolResult($toolCall, json_encode($value, \JSON_THROW_ON_ERROR));
+    }
+
+    /** Host-only observation of this call; cleared before every call. Not part of ToolResult. */
+    public function lastExecution(): ?array
+    {
+        return $this->lastExecution;
     }
 
     private function executePhp(string $code): array
@@ -61,7 +70,4 @@ final class CodeModeToolbox implements ToolboxInterface
             $this->lastExecution = ['code' => $code, 'trace' => $trace];
         });
     }
-
-    /** Host-only observation of this call; cleared before every call. Not part of ToolResult. */
-    public function lastExecution(): ?array { return $this->lastExecution; }
 }

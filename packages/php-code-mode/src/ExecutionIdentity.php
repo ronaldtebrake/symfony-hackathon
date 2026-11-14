@@ -17,6 +17,6 @@ final readonly class ExecutionIdentity
 
     public function allows(string $permission): bool
     {
-        return in_array($permission, $this->permissions, true);
+        return \in_array($permission, $this->permissions, true);
     }
 }

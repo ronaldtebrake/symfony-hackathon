@@ -27,7 +27,9 @@ final class RequestCollector extends DataCollector implements LoggerInterface
 
     public function query(\PDO $db, string $fingerprint, string $sql, array $parameters = []): array
     {
-        if (count($this->data['queries']) >= 32) { throw new \RuntimeException('Synthetic query limit reached.'); }
+        if (\count($this->data['queries']) >= 32) {
+            throw new \RuntimeException('Synthetic query limit reached.');
+        }
         $start = hrtime(true);
         // Deliberate, disclosed latency makes the N+1 pattern visible on an in-memory database.
         usleep(self::QUERY_DELAY_US);
@@ -35,12 +37,15 @@ final class RequestCollector extends DataCollector implements LoggerInterface
         $statement->execute($parameters);
         $rows = $statement->fetchAll(\PDO::FETCH_ASSOC);
         $this->data['queries'][] = ['fingerprint' => $fingerprint, 'sql' => $sql, 'parameters' => $parameters, 'durationMs' => (hrtime(true) - $start) / 1e6];
+
         return $rows;
     }
 
     public function log($level, string|\Stringable $message, array $context = []): void
     {
-        if (count($this->data['logs']) >= 16) { throw new \RuntimeException('Synthetic log limit reached.'); }
+        if (\count($this->data['logs']) >= 16) {
+            throw new \RuntimeException('Synthetic log limit reached.');
+        }
         $this->data['logs'][] = ['level' => $level, 'message' => (string) $message, 'context' => $context];
     }
 
@@ -51,6 +56,13 @@ final class RequestCollector extends DataCollector implements LoggerInterface
             'outputSha256' => hash('sha256', $response->getContent())];
     }
 
-    public function snapshot(): array { return $this->data; }
-    public function getName(): string { return 'code_mode_performance'; }
+    public function snapshot(): array
+    {
+        return $this->data;
+    }
+
+    public function getName(): string
+    {
+        return 'code_mode_performance';
+    }
 }

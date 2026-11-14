@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Demo;
 
-use CodeMode\BrokerWorker;
 use CodeMode\AgentResponse;
+use CodeMode\BrokerWorker;
 use CodeMode\CodeModeSession;
 use CodeMode\ExecutionIdentity;
 use CodeMode\ExecutionLimits;
@@ -38,7 +38,7 @@ final class AuditToolbox implements ToolboxInterface
         private readonly RunTrace $trace,
         private readonly bool $literalUnicode = false,
     ) {
-        if (!in_array($approach, ['direct', 'code'], true)) {
+        if (!\in_array($approach, ['direct', 'code'], true)) {
             throw new \InvalidArgumentException('Unknown demo approach.');
         }
         $definitions = 'code' === $approach ? $session->toolDefinitions() : $catalog->all();
@@ -66,8 +66,8 @@ final class AuditToolbox implements ToolboxInterface
         ++$this->trace->agentToolCalls;
         $name = $this->aliases[$toolCall->getName()] ?? '';
         $arguments = $toolCall->getArguments();
-        $brokerCallCount = count($this->trace->brokerCalls);
-        $span = $this->trace->timeline?->begin('agent_tool', $toolCall->getName(), ['agentCallIndex' => count($this->trace->agentCalls)]);
+        $brokerCallCount = \count($this->trace->brokerCalls);
+        $span = $this->trace->timeline?->begin('agent_tool', $toolCall->getName(), ['agentCallIndex' => \count($this->trace->agentCalls)]);
         $status = 'succeeded';
         try {
             if ('' === $name || $this->trace->agentToolCalls > 60) {
@@ -89,25 +89,27 @@ final class AuditToolbox implements ToolboxInterface
             }
             // Returning the exact encoded string makes the measured payload match the model message.
             $encoded = $this->encode($value);
-            $this->trace->toolPayloadBytes += strlen($encoded);
+            $this->trace->toolPayloadBytes += \strlen($encoded);
             $this->trace->captureCall($toolCall->getName(), $arguments, $encoded);
-            $this->trace->record('tool_result', $name, ['bytesToModel' => strlen($encoded)]);
+            $this->trace->record('tool_result', $name, ['bytesToModel' => \strlen($encoded)]);
+
             return new ToolResult($toolCall, $encoded);
         } catch (\Throwable $error) {
             $status = 'failed';
             $reason = $error instanceof SandboxException ? $error->reason : 'tool_failed';
             $this->trace->record('rejected', $name, ['reason' => $reason]);
             $encoded = json_encode('code' === $this->approach ? AgentResponse::failure($error, $this->session->profile())
-                : ['error' => ['reason' => $reason, 'message' => 'The host rejected or could not complete this tool call. Check the described schema and available execution budget.']], JSON_THROW_ON_ERROR);
-            if ('direct' === $this->approach && count($this->trace->brokerCalls) === $brokerCallCount + 1) {
+                : ['error' => ['reason' => $reason, 'message' => 'The host rejected or could not complete this tool call. Check the described schema and available execution budget.']], \JSON_THROW_ON_ERROR);
+            if ('direct' === $this->approach && \count($this->trace->brokerCalls) === $brokerCallCount + 1) {
                 $last = array_key_last($this->trace->brokerCalls);
                 if ('incomplete' === $this->trace->brokerCalls[$last]['status']) {
                     $this->trace->brokerCalls[$last]['reason'] = $reason;
-                    $this->trace->brokerCalls[$last]['resultBytes'] = strlen($encoded);
+                    $this->trace->brokerCalls[$last]['resultBytes'] = \strlen($encoded);
                 }
             }
-            $this->trace->toolPayloadBytes += strlen($encoded);
+            $this->trace->toolPayloadBytes += \strlen($encoded);
             $this->trace->captureCall($toolCall->getName(), $arguments, $encoded);
+
             return new ToolResult($toolCall, $encoded);
         } finally {
             $this->trace->timeline?->end($span, $status);
@@ -123,18 +125,19 @@ final class AuditToolbox implements ToolboxInterface
             $result = $this->session->execute($code);
         } catch (SandboxException $error) {
             array_push($this->trace->brokerCalls, ...$error->toolCalls);
-            $this->trace->executions[] = ['programIndex' => count($this->trace->programs) - 1, 'runId' => $error->runId, 'status' => 'failed', 'reason' => $error->reason, 'toolCalls' => $error->toolCalls];
+            $this->trace->executions[] = ['programIndex' => \count($this->trace->programs) - 1, 'runId' => $error->runId, 'status' => 'failed', 'reason' => $error->reason, 'toolCalls' => $error->toolCalls];
             throw $error;
         }
         array_push($this->trace->brokerCalls, ...$result->toolCalls);
-        $this->trace->executions[] = ['programIndex' => count($this->trace->programs) - 1, 'runId' => $result->runId, 'status' => 'succeeded', 'durationMs' => $result->durationMs, 'outputBytes' => $result->outputBytes, 'toolCalls' => $result->toolCalls];
+        $this->trace->executions[] = ['programIndex' => \count($this->trace->programs) - 1, 'runId' => $result->runId, 'status' => 'succeeded', 'durationMs' => $result->durationMs, 'outputBytes' => $result->outputBytes, 'toolCalls' => $result->toolCalls];
         $this->trace->report = $result->value;
+
         return AgentResponse::success($result);
     }
 
     private function encode(mixed $value): string
     {
-        return json_encode($value, JSON_THROW_ON_ERROR | ($this->literalUnicode ? JSON_UNESCAPED_UNICODE : 0), 32);
+        return json_encode($value, \JSON_THROW_ON_ERROR | ($this->literalUnicode ? \JSON_UNESCAPED_UNICODE : 0), 32);
     }
 
     private function invokeDirect(string $name, array $arguments): mixed
@@ -142,11 +145,12 @@ final class AuditToolbox implements ToolboxInterface
         $limits = new ExecutionLimits(wallTimeMs: 15000, toolTimeMs: 3000, maxToolCalls: 30);
         $worker = new BrokerWorker($this->broker, new ExecutionIdentity('demo-editor', ['content.audit']), array_keys($this->definitions), $limits);
         $started = BrokerWorker::now();
-        $span = $this->trace->timeline?->begin('broker', $name, ['callIndex' => count($this->trace->brokerCalls), 'arguments' => (object) $arguments]);
+        $span = $this->trace->timeline?->begin('broker', $name, ['callIndex' => \count($this->trace->brokerCalls), 'arguments' => (object) $arguments]);
         try {
             $value = $worker->call($name, (object) $arguments, $started + 3);
-            $this->trace->brokerCalls[] = ['name' => $name, 'status' => 'succeeded', 'durationMs' => (BrokerWorker::now() - $started) * 1000, 'resultBytes' => strlen($this->encode($value))];
-            $this->trace->timeline?->end($span, 'succeeded', ['resultBytes' => strlen($this->encode($value)), 'resultSha256' => hash('sha256', $this->encode($value))]);
+            $this->trace->brokerCalls[] = ['name' => $name, 'status' => 'succeeded', 'durationMs' => (BrokerWorker::now() - $started) * 1000, 'resultBytes' => \strlen($this->encode($value))];
+            $this->trace->timeline?->end($span, 'succeeded', ['resultBytes' => \strlen($this->encode($value)), 'resultSha256' => hash('sha256', $this->encode($value))]);
+
             return $value;
         } catch (\Throwable $error) {
             $denied = $error instanceof SandboxException && 'tool_denied' === $error->reason;

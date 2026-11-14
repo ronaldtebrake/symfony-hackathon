@@ -13,12 +13,14 @@ final class NativeCatalogRehearsal
         $search = $calls[0]['response']['structuredContent'] ?? [];
         $allowed = $calls[1]['response']['structuredContent'] ?? [];
         $denied = $calls[2]['response']['structuredContent'] ?? [];
-        $messagesAgree = 3 === count($calls);
+        $messagesAgree = 3 === \count($calls);
         foreach ($calls as $call) {
             try {
-                $text = json_decode($call['response']['content'][0]['text'] ?? '', true, flags: JSON_THROW_ON_ERROR);
+                $text = json_decode($call['response']['content'][0]['text'] ?? '', true, flags: \JSON_THROW_ON_ERROR);
                 $messagesAgree = $messagesAgree && $text === ($call['response']['structuredContent'] ?? null);
-            } catch (\JsonException) { $messagesAgree = false; }
+            } catch (\JsonException) {
+                $messagesAgree = false;
+            }
         }
         $checks = [
             'nativeCaptureFormat' => 'native-catalog-rehearsal/v1' === ($capture['format'] ?? null),
@@ -35,7 +37,8 @@ final class NativeCatalogRehearsal
                 && ['error' => ['reason' => 'tool_denied', 'tool' => 'publication_read', 'index' => 0], 'completedCalls' => 0] === $denied,
             'textAndStructuredResponsesAgree' => $messagesAgree,
         ];
-        return ['passed' => !in_array(false, $checks, true), 'checks' => $checks];
+
+        return ['passed' => !\in_array(false, $checks, true), 'checks' => $checks];
     }
 
     private static function read(int $id): array

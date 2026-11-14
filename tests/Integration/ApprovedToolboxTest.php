@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration;
 
+use App\CodeMode\DemoIdentityProvider;
 use App\CodeMode\PublishingAuthorization;
 use App\CodeMode\PublishingTools;
-use App\CodeMode\DemoIdentityProvider;
 use CodeMode\ExecutionIdentity;
 use CodeMode\SandboxException;
 use CodeMode\Symfony\Ai\ApprovedToolbox;
@@ -29,7 +29,7 @@ final class ApprovedToolboxTest extends TestCase
     {
         $container = new ContainerBuilder();
         $container->setParameter('kernel.environment', 'test');
-        $container->setParameter('kernel.build_dir', dirname(__DIR__, 2).'/var/cache/test');
+        $container->setParameter('kernel.build_dir', \dirname(__DIR__, 2).'/var/cache/test');
         $container->register('native.tools', Toolbox::class)->setArguments([[new PublishingTools()]]);
         $container->register('native.policy', PublishingAuthorization::class);
         $container->register('native.identity', DemoIdentityProvider::class);
@@ -40,78 +40,121 @@ final class ApprovedToolboxTest extends TestCase
         ]], $container);
         $container->getDefinition(SessionFactory::class)->setPublic(true);
         $container->compile();
-        self::assertSame(['publishing_list'], array_column($container->get(SessionFactory::class)->catalog()->all(), 'name'));
+        $this->assertSame(['publishing_list'], array_column($container->get(SessionFactory::class)->catalog()->all(), 'name'));
         $session = $container->get(SessionFactory::class)->create($this->identity());
-        self::assertSame(\CodeMode\DiscoveryMode::Full, $session->discoveryMode());
-        self::assertSame(['name', 'description'], array_keys($session->search('publishing')[0]));
+        $this->assertSame(\CodeMode\DiscoveryMode::Full, $session->discoveryMode());
+        $this->assertSame(['name', 'description'], array_keys($session->search('publishing')[0]));
         $full = $session->describe(['publishing_list'])[0];
-        self::assertArrayHasKey('inputSchema', $full);
-        self::assertArrayHasKey('outputSchema', $full);
-        self::assertArrayHasKey('php', $full);
-        self::assertNull(\CodeMode\DiscoveryMode::tryFrom('compact'));
+        $this->assertArrayHasKey('inputSchema', $full);
+        $this->assertArrayHasKey('outputSchema', $full);
+        $this->assertArrayHasKey('php', $full);
+        $this->assertNull(\CodeMode\DiscoveryMode::tryFrom('compact'));
     }
 
     public function testOnlyApprovedToolsAreAdaptedAndSymfonyLifecycleStillRuns(): void
     {
-        $dispatcher = new EventDispatcher(); $events = [];
+        $dispatcher = new EventDispatcher();
+        $events = [];
         foreach ([ToolCallRequested::class, ToolCallSucceeded::class] as $event) {
             $dispatcher->addListener($event, static function ($e) use (&$events) { $events[] = $e::class; });
         }
         $adapter = new ApprovedToolbox(new Toolbox([new PublishingTools()], eventDispatcher: $dispatcher), ['publishing_list'], new PublishingAuthorization());
         $tools = $adapter->tools();
-        self::assertCount(1, $tools);
+        $this->assertCount(1, $tools);
         $tool = $tools[0];
-        self::assertSame('integer', $tool->definition()->inputSchema->properties->page->type);
-        self::assertSame('object', $tool->definition()->outputSchema->type);
+        $this->assertSame('integer', $tool->definition()->inputSchema->properties->page->type);
+        $this->assertSame('object', $tool->definition()->outputSchema->type);
         $value = $this->broker($tool)->call('publishing_list', (object) ['page' => 1], $this->identity(), ['publishing_list']);
-        self::assertCount(12, $value->items);
-        self::assertSame([ToolCallRequested::class, ToolCallSucceeded::class], $events);
+        $this->assertCount(12, $value->items);
+        $this->assertSame([ToolCallRequested::class, ToolCallSucceeded::class], $events);
     }
 
     public function testDraftUnprivilegedUnknownAndMalformedCallsNeverReachHandler(): void
     {
-        $dispatcher = new EventDispatcher(); $invocations = 0;
+        $dispatcher = new EventDispatcher();
+        $invocations = 0;
         $dispatcher->addListener(ToolCallRequested::class, static function () use (&$invocations) { ++$invocations; });
         $tool = (new ApprovedToolbox(new Toolbox([new PublishingTools()], eventDispatcher: $dispatcher), ['publishing_read'], new PublishingAuthorization()))->tools()[0];
         foreach ([[49, $this->identity()], [999, $this->identity()], [[], $this->identity()], [1, new ExecutionIdentity('unprivileged')]] as [$id, $identity]) {
-            try { $this->broker($tool)->call('publishing_read', (object) ['id' => $id], $identity, ['publishing_read']); self::fail('Forbidden read ran.'); }
-            catch (SandboxException $e) { self::assertSame('tool_denied', $e->reason); }
+            try {
+                $this->broker($tool)->call('publishing_read', (object) ['id' => $id], $identity, ['publishing_read']);
+                $this->fail('Forbidden read ran.');
+            } catch (SandboxException $e) {
+                $this->assertSame('tool_denied', $e->reason);
+            }
         }
-        try { $this->broker($tool)->call('publishing_read', (object) ['id' => 1, 'permissions' => ['admin']], $this->identity(), ['publishing_read']); self::fail('Unexpected parameter admitted.'); }
-        catch (SandboxException $e) { self::assertSame('invalid_arguments', $e->reason); }
-        try { $this->broker($tool)->call('publishing_list', (object) ['page' => 1], $this->identity(), ['publishing_read']); self::fail('Unapproved tool ran.'); }
-        catch (SandboxException $e) { self::assertSame('tool_denied', $e->reason); }
-        self::assertSame(0, $invocations);
+        try {
+            $this->broker($tool)->call('publishing_read', (object) ['id' => 1, 'permissions' => ['admin']], $this->identity(), ['publishing_read']);
+            $this->fail('Unexpected parameter admitted.');
+        } catch (SandboxException $e) {
+            $this->assertSame('invalid_arguments', $e->reason);
+        }
+        try {
+            $this->broker($tool)->call('publishing_list', (object) ['page' => 1], $this->identity(), ['publishing_read']);
+            $this->fail('Unapproved tool ran.');
+        } catch (SandboxException $e) {
+            $this->assertSame('tool_denied', $e->reason);
+        }
+        $this->assertSame(0, $invocations);
     }
 
     public function testPolicyIsRecheckedAndUpstreamDenialCannotBecomeArticleData(): void
     {
         $policy = new class implements ToolAuthorizationInterface {
             public int $checks = 0;
-            public function isGranted(ExecutionIdentity $identity, string $tool, \stdClass $arguments): bool { return 1 === ++$this->checks; }
+
+            public function isGranted(ExecutionIdentity $identity, string $tool, \stdClass $arguments): bool
+            {
+                return 1 === ++$this->checks;
+            }
         };
         $tool = (new ApprovedToolbox(new Toolbox([new PublishingTools()]), ['publishing_read'], $policy))->tools()[0];
-        try { $this->broker($tool)->call('publishing_read', (object) ['id' => 1], $this->identity(), ['publishing_read']); self::fail('Changed authorization was ignored.'); }
-        catch (SandboxException $e) { self::assertSame('tool_failed', $e->reason); }
-        self::assertSame(2, $policy->checks);
+        try {
+            $this->broker($tool)->call('publishing_read', (object) ['id' => 1], $this->identity(), ['publishing_read']);
+            $this->fail('Changed authorization was ignored.');
+        } catch (SandboxException $e) {
+            $this->assertSame('tool_failed', $e->reason);
+        }
+        $this->assertSame(2, $policy->checks);
         $dispatcher = new EventDispatcher();
         $dispatcher->addListener(ToolCallRequested::class, static fn ($e) => $e->deny('sensitive upstream diagnostic'));
         $tool = (new ApprovedToolbox(new Toolbox([new PublishingTools()], eventDispatcher: $dispatcher), ['publishing_read'], new PublishingAuthorization()))->tools()[0];
-        try { $this->broker($tool)->call('publishing_read', (object) ['id' => 1], $this->identity(), ['publishing_read']); self::fail('Denial string passed the article schema.'); }
-        catch (SandboxException $e) { self::assertSame('tool_failed', $e->reason); self::assertStringNotContainsString('sensitive', $e->getMessage()); }
+        try {
+            $this->broker($tool)->call('publishing_read', (object) ['id' => 1], $this->identity(), ['publishing_read']);
+            $this->fail('Denial string passed the article schema.');
+        } catch (SandboxException $e) {
+            $this->assertSame('tool_failed', $e->reason);
+            $this->assertStringNotContainsString('sensitive', $e->getMessage());
+        }
     }
 
     public function testMissingAndNonReadOnlyToolsFailClosed(): void
     {
-        $mutator = new #[AsTool('delete_article', 'Delete an article')] class { public function __invoke(): string { return 'should not run'; } };
+        $mutator = new #[AsTool('delete_article', 'Delete an article')] class {
+            public function __invoke(): string
+            {
+                return 'should not run';
+            }
+        };
         foreach ([['missing'], ['delete_article']] as $names) {
-            try { (new ApprovedToolbox(new Toolbox([$mutator]), $names, new PublishingAuthorization()))->tools(); self::fail('Unsafe catalog accepted.'); }
-            catch (\LogicException) { self::assertTrue(true); }
+            try {
+                (new ApprovedToolbox(new Toolbox([$mutator]), $names, new PublishingAuthorization()))->tools();
+                $this->fail('Unsafe catalog accepted.');
+            } catch (\LogicException) {
+                $this->assertTrue(true);
+            }
         }
         $this->expectException(\InvalidArgumentException::class);
         new ApprovedToolbox(new Toolbox([]), [], new PublishingAuthorization());
     }
 
-    private function identity(): ExecutionIdentity { return new ExecutionIdentity('reader', ['articles.read_published']); }
-    private function broker($tool): ToolBroker { return new ToolBroker([new Tool($tool->definition()->name, $tool->definition()->inputSchema, $tool->authorize(...), $tool->invoke(...))]); }
+    private function identity(): ExecutionIdentity
+    {
+        return new ExecutionIdentity('reader', ['articles.read_published']);
+    }
+
+    private function broker($tool): ToolBroker
+    {
+        return new ToolBroker([new Tool($tool->definition()->name, $tool->definition()->inputSchema, $tool->authorize(...), $tool->invoke(...))]);
+    }
 }

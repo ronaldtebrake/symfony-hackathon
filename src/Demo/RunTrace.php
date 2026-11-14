@@ -6,7 +6,6 @@ namespace App\Demo;
 
 final class RunTrace
 {
-    public function __construct(public readonly ?\CodeMode\ExecutionTimeline $timeline = null) {}
     public array $events = [];
     public array $brokerCalls = [];
     public array $programs = [];
@@ -21,6 +20,10 @@ final class RunTrace
     public int $agentToolCalls = 0;
     public mixed $report = null;
 
+    public function __construct(public readonly ?\CodeMode\ExecutionTimeline $timeline = null)
+    {
+    }
+
     public function record(string $stage, string $label, array $details = []): void
     {
         $this->events[] = ['stage' => $stage, 'label' => $label, 'details' => $details];
@@ -30,7 +33,7 @@ final class RunTrace
     {
         if ($this->captureDetails) {
             // Capture only tool-level data, never HTTP headers, credentials or provider debug output.
-            $this->agentCalls[] = ['name' => $name, 'arguments' => $arguments, 'result' => $result, 'bytesToModel' => strlen($result)];
+            $this->agentCalls[] = ['name' => $name, 'arguments' => $arguments, 'result' => $result, 'bytesToModel' => \strlen($result)];
         }
     }
 }

@@ -6,22 +6,25 @@ namespace App\Controller;
 
 use App\Demo\ReportStore;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 final readonly class DemoController
 {
-    public function __construct(private ReportStore $store, #[Autowire('%kernel.project_dir%')] private string $projectDir) {}
+    public function __construct(private ReportStore $store, #[Autowire('%kernel.project_dir%')] private string $projectDir)
+    {
+    }
 
     #[Route('/', name: 'app_home', methods: ['GET'])]
     #[Route('/demo', name: 'app_demo', methods: ['GET'])]
     public function index(Request $request): Response
     {
         $this->requireLocalRequest($request);
+
         return $this->response(file_get_contents($this->projectDir.'/templates/demo.html'), 'text/html; charset=utf-8');
     }
 
@@ -29,6 +32,7 @@ final readonly class DemoController
     public function report(Request $request): Response
     {
         $this->requireLocalRequest($request);
+
         return $this->response($this->store->read() ?? '{"status":"empty","results":[]}', 'application/json');
     }
 
@@ -36,6 +40,7 @@ final readonly class DemoController
     public function securityReport(Request $request): Response
     {
         $this->requireLocalRequest($request);
+
         return $this->response($this->store->readSecurityProof() ?? '{"status":"empty","cases":[]}', 'application/json');
     }
 
@@ -44,6 +49,7 @@ final readonly class DemoController
     public function codexReport(Request $request): Response
     {
         $this->requireLocalRequest($request);
+
         return $this->response($this->store->readCodexProof() ?? '{"status":"empty","turns":[]}', 'application/json');
     }
 
@@ -51,6 +57,7 @@ final readonly class DemoController
     public function boundaryReport(Request $request): Response
     {
         $this->requireLocalRequest($request);
+
         return $this->response($this->store->readBoundaryRecovery() ?? '{"status":"empty","turns":[]}', 'application/json');
     }
 
@@ -58,6 +65,7 @@ final readonly class DemoController
     public function huggingFaceReport(Request $request): Response
     {
         $this->requireLocalRequest($request);
+
         return $this->response($this->store->readHuggingFaceProof() ?? '{"status":"empty","result":null}', 'application/json');
     }
 
@@ -65,6 +73,7 @@ final readonly class DemoController
     public function huggingFaceComparison(Request $request): Response
     {
         $this->requireLocalRequest($request);
+
         return $this->response($this->store->readHuggingFaceComparison(), 'application/json');
     }
 
@@ -79,20 +88,26 @@ final readonly class DemoController
                 if (isset($run['draft']['answer'])) {
                     $run['draft']['verification'] = (new \App\Demo\AuditVerifier())->verify(json_decode($run['draft']['answer'], true), 'fixture', $run['result']['brokerCalls'] ?? []);
                 }
-                if ('running' !== $run['status']) { $run['status'] = $run['verification']['passed'] ? 'complete' : 'failed'; }
+                if ('running' !== $run['status']) {
+                    $run['status'] = $run['verification']['passed'] ? 'complete' : 'failed';
+                }
             }
             unset($run);
             $attempt['verification'] = \App\Demo\ThreeWayAuditVerifier::compare($attempt);
-            if ('running' !== $attempt['status']) { $attempt['status'] = $attempt['verification']['passed'] ? 'complete' : 'failed'; }
+            if ('running' !== $attempt['status']) {
+                $attempt['status'] = $attempt['verification']['passed'] ? 'complete' : 'failed';
+            }
         }
         unset($attempt);
-        return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
+
+        return $this->response(json_encode($report, \JSON_THROW_ON_ERROR), 'application/json');
     }
 
     #[Route('/demo/adoption-report', name: 'app_demo_adoption_report', methods: ['GET'])]
     public function adoptionReport(Request $request): Response
     {
         $this->requireLocalRequest($request);
+
         return $this->response($this->store->readAdoptionProof() ?? '{"status":"empty"}', 'application/json');
     }
 
@@ -102,9 +117,13 @@ final readonly class DemoController
         $this->requireLocalRequest($request);
         $report = $this->store->readCatalogProof();
         foreach ($report['attempts'] as &$attempt) {
-            if (isset($attempt['controls'])) { $attempt['controls']['verification'] = \App\Demo\CatalogControlProof::verify($attempt['controls']); }
+            if (isset($attempt['controls'])) {
+                $attempt['controls']['verification'] = \App\Demo\CatalogControlProof::verify($attempt['controls']);
+            }
             foreach ($attempt['runs'] as &$run) {
-                if (!in_array($run['status'], ['complete', 'failed'], true)) { continue; }
+                if (!\in_array($run['status'], ['complete', 'failed'], true)) {
+                    continue;
+                }
                 $run['recordedVerification'] = $run['verification'] ?? null;
                 $run['verification'] = \App\Demo\CatalogProofVerifier::verify($run);
                 $run['status'] = $run['verification']['passed'] ? 'complete' : 'failed';
@@ -112,7 +131,8 @@ final readonly class DemoController
             unset($run);
         }
         unset($attempt);
-        return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
+
+        return $this->response(json_encode($report, \JSON_THROW_ON_ERROR), 'application/json');
     }
 
     #[Route('/demo/native-catalog', name: 'app_demo_native_catalog', methods: ['GET'])]
@@ -120,8 +140,10 @@ final readonly class DemoController
     {
         $this->requireLocalRequest($request);
         $raw = $this->store->readNativeCatalogRehearsal();
-        if (null === $raw) { return $this->response('{"status":"empty"}', 'application/json'); }
-        $capture = json_decode($raw, true, flags: JSON_THROW_ON_ERROR);
+        if (null === $raw) {
+            return $this->response('{"status":"empty"}', 'application/json');
+        }
+        $capture = json_decode($raw, true, flags: \JSON_THROW_ON_ERROR);
         $verification = \App\Demo\NativeCatalogRehearsal::verify($capture);
         $implementation = [];
         // Current application source, not a claim that source bytes were captured at execution.
@@ -130,29 +152,31 @@ final readonly class DemoController
             $source = file_get_contents($this->projectDir.'/'.$path);
             $implementation[$role] = ['path' => $path, 'source' => $source, 'sha256' => hash('sha256', $source)];
         }
+
         return $this->response(json_encode([
             'status' => $verification['passed'] ? 'passed' : 'failed', 'capture' => $capture,
             'captureSha256' => hash('sha256', $raw), 'verification' => $verification,
             'implementation' => $implementation,
-        ], JSON_THROW_ON_ERROR), 'application/json');
+        ], \JSON_THROW_ON_ERROR), 'application/json');
     }
 
     #[Route('/demo/http-catalog', name: 'app_demo_http_catalog', methods: ['GET'])]
     public function httpCatalog(Request $request): Response
     {
         $this->requireLocalRequest($request);
-        return $this->response(json_encode(\App\Demo\HttpCatalogProof::load($this->projectDir), JSON_THROW_ON_ERROR), 'application/json');
+
+        return $this->response(json_encode(\App\Demo\HttpCatalogProof::load($this->projectDir), \JSON_THROW_ON_ERROR), 'application/json');
     }
 
     #[Route('/demo/evaluation-report', name: 'app_demo_evaluation_report', methods: ['GET'])]
     public function evaluationReport(Request $request): Response
     {
         $this->requireLocalRequest($request);
-        $report = json_decode($this->store->readEvaluation() ?? '{"version":1,"kind":"evaluation","batches":[]}', true, flags: JSON_THROW_ON_ERROR);
+        $report = json_decode($this->store->readEvaluation() ?? '{"version":1,"kind":"evaluation","batches":[]}', true, flags: \JSON_THROW_ON_ERROR);
         // Recheck completed rows instead of trusting saved success flags.
         foreach ($report['batches'] as &$batch) {
             foreach ($batch['runs'] as &$run) {
-                if (in_array($run['status'], ['passed', 'failed'], true)) {
+                if (\in_array($run['status'], ['passed', 'failed'], true)) {
                     $run['recordedVerification'] = $run['verification'] ?? null;
                     $run['verification'] = (new \App\Demo\EvaluationVerifier())->verify($run);
                     $run['status'] = !isset($run['error']) && $run['verification']['passed'] ? 'passed' : 'failed';
@@ -161,19 +185,23 @@ final readonly class DemoController
             unset($run);
         }
         unset($batch);
-        return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
+
+        return $this->response(json_encode($report, \JSON_THROW_ON_ERROR), 'application/json');
     }
 
     #[Route('/demo/performance-report', name: 'app_demo_performance_report', methods: ['GET'])]
     public function performanceReport(Request $request): Response
     {
         $this->requireLocalRequest($request);
-        $report = json_decode($this->store->readPerformanceProof() ?? '{"status":"empty"}', true, flags: JSON_THROW_ON_ERROR);
+        $report = json_decode($this->store->readPerformanceProof() ?? '{"status":"empty"}', true, flags: \JSON_THROW_ON_ERROR);
         if ('empty' !== $report['status']) {
             $report['verification'] = (new \App\Demo\Performance\ProofVerifier())->verify($report);
-            if (!$report['verification']['passed']) { $report['status'] = 'failed'; }
+            if (!$report['verification']['passed']) {
+                $report['status'] = 'failed';
+            }
         }
-        return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
+
+        return $this->response(json_encode($report, \JSON_THROW_ON_ERROR), 'application/json');
     }
 
     #[Route('/demo/performance-conversation', name: 'app_demo_performance_conversation', methods: ['GET'])]
@@ -181,50 +209,60 @@ final readonly class DemoController
     {
         $this->requireLocalRequest($request);
         $source = $this->store->readPerformanceConversation() ?? '{"status":"empty"}';
-        $report = json_decode($source, true, flags: JSON_THROW_ON_ERROR);
+        $report = json_decode($source, true, flags: \JSON_THROW_ON_ERROR);
         if ('empty' !== $report['status']) {
-            $verify = static function (array $attempt) use ($source): array {
+            $verify = static function (array $attempt): array {
                 $attempt['verification'] = (new \App\Demo\Performance\ConversationVerifier())->verify($attempt);
                 $attempt['payloadMeasurement'] = (new \App\Demo\Performance\TokenBreakdown())->summarize($attempt);
-                if ('complete' === $attempt['status'] && !$attempt['verification']['passed']) { $attempt['status'] = 'failed'; }
+                if ('complete' === $attempt['status'] && !$attempt['verification']['passed']) {
+                    $attempt['status'] = 'failed';
+                }
+
                 return $attempt;
             };
             $report = $verify($report);
             $report['previousAttempts'] = array_map($verify, $report['previousAttempts'] ?? []);
         }
-        return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
+
+        return $this->response(json_encode($report, \JSON_THROW_ON_ERROR), 'application/json');
     }
 
     #[Route('/demo/performance-baseline', name: 'app_demo_performance_baseline', methods: ['GET'])]
     public function performanceBaseline(Request $request): Response
     {
         $this->requireLocalRequest($request);
-        $report = json_decode($this->store->readPerformanceBaseline() ?? '{"status":"empty"}', true, flags: JSON_THROW_ON_ERROR);
+        $report = json_decode($this->store->readPerformanceBaseline() ?? '{"status":"empty"}', true, flags: \JSON_THROW_ON_ERROR);
         if ('empty' !== $report['status']) {
             $source = $this->store->readPerformanceConversation() ?? '{}';
             $verify = static function (array $attempt) use ($source): array {
                 $attempt['comparison'] = (new \App\Demo\Performance\PerformanceComparison())->summarize($attempt, $source);
                 $attempt['verification'] = $attempt['comparison']['directVerification'];
-                if ('complete' === $attempt['status'] && !$attempt['verification']['passed']) { $attempt['status'] = 'failed'; }
+                if ('complete' === $attempt['status'] && !$attempt['verification']['passed']) {
+                    $attempt['status'] = 'failed';
+                }
+
                 return $attempt;
             };
             $report = $verify($report);
             $report['previousAttempts'] = array_map($verify, $report['previousAttempts'] ?? []);
         }
-        return $this->response(json_encode($report, JSON_THROW_ON_ERROR), 'application/json');
+
+        return $this->response(json_encode($report, \JSON_THROW_ON_ERROR), 'application/json');
     }
 
     #[Route('/demo/response-payloads', name: 'app_demo_response_payloads', methods: ['GET'])]
     public function responsePayloads(Request $request): Response
     {
         $this->requireLocalRequest($request);
-        return $this->response(json_encode((new \App\Demo\ResponsePayloadComparison($this->projectDir))->report(), JSON_THROW_ON_ERROR), 'application/json');
+
+        return $this->response(json_encode((new \App\Demo\ResponsePayloadComparison($this->projectDir))->report(), \JSON_THROW_ON_ERROR), 'application/json');
     }
 
     #[Route('/images/code-mode-value.svg', name: 'app_value_explainer', methods: ['GET'])]
     public function explainer(Request $request): Response
     {
         $this->requireLocalRequest($request);
+
         return $this->response(file_get_contents($this->projectDir.'/docs/images/code-mode-value.svg'), 'image/svg+xml');
     }
 
@@ -238,7 +276,10 @@ final readonly class DemoController
             'profiler-authorized.png' => 'image/png', 'profiler-denied.png' => 'image/png',
             'video-proof.json' => 'application/json',
         ];
-        if (!isset($types[$file])) { throw new NotFoundHttpException(); }
+        if (!isset($types[$file])) {
+            throw new NotFoundHttpException();
+        }
+
         // Symfony handles byte ranges so Safari can seek when using PHP's development server.
         return new BinaryFileResponse($this->projectDir.'/public/media/'.$file, headers: [
             'Content-Type' => $types[$file], 'X-Content-Type-Options' => 'nosniff',
@@ -247,7 +288,7 @@ final readonly class DemoController
 
     private function requireLocalRequest(Request $request): void
     {
-        if (!in_array($request->getClientIp(), ['127.0.0.1', '::1'], true) || !in_array($request->getHost(), ['127.0.0.1', 'localhost', '[::1]'], true)) {
+        if (!\in_array($request->getClientIp(), ['127.0.0.1', '::1'], true) || !\in_array($request->getHost(), ['127.0.0.1', 'localhost', '[::1]'], true)) {
             throw new AccessDeniedHttpException('The demo report is available only on loopback with a local Host header.');
         }
     }

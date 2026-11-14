@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration;
 
-use App\Demo\{AdoptionProofVerifier, DiscoveryCatalog};
-use CodeMode\{DockerEngine, ExecutionIdentity, ExecutionLimits};
+use App\Demo\AdoptionProofVerifier;
+use App\Demo\DiscoveryCatalog;
+use CodeMode\DockerEngine;
+use CodeMode\ExecutionIdentity;
+use CodeMode\ExecutionLimits;
 use CodeMode\Symfony\Ai\ApprovedToolbox;
 use PHPUnit\Framework\TestCase;
 use Symfony\AI\Agent\Toolbox\Toolbox;
@@ -24,48 +27,51 @@ final class DiscoveryCatalogTest extends TestCase
                 'publishing_locale_summary' => new \stdClass(),
                 default => (object) (str_starts_with($definition->name, 'publishing_') && 'publishing_read' !== $definition->name ? ['page' => 1] : ['id' => 1]),
             };
-            self::assertTrue($tool->authorize($reader, $arguments), $definition->name);
-            self::assertNotNull($tool->invoke($arguments, $reader)); // Includes original output-schema validation.
-            self::assertFalse($tool->authorize(new ExecutionIdentity('anonymous', []), $arguments));
+            $this->assertTrue($tool->authorize($reader, $arguments), $definition->name);
+            $this->assertNotNull($tool->invoke($arguments, $reader)); // Includes original output-schema validation.
+            $this->assertFalse($tool->authorize(new ExecutionIdentity('anonymous', []), $arguments));
             if ('publishing_locale_summary' !== $definition->name) {
-                self::assertFalse($tool->authorize($reader, (object) ['id' => 49]), $definition->name);
+                $this->assertFalse($tool->authorize($reader, (object) ['id' => 49]), $definition->name);
             }
         }
-        self::assertFalse($native->isGranted($reader, 'unapproved_tool', new \stdClass()));
+        $this->assertFalse($native->isGranted($reader, 'unapproved_tool', new \stdClass()));
     }
 
     public function testRefinementFindsPreviouslyOmittedCapabilityWithoutChangingTheCatalog(): void
     {
         $catalog = DiscoveryCatalog::sessions('', new DockerEngine(), new ExecutionLimits())->catalog();
         $broad = $catalog->searchResult('article read');
-        self::assertTrue($broad['truncated']);
-        self::assertGreaterThan(8, $broad['matched']);
-        self::assertNotContains('publishing_read', array_column($broad['tools'], 'name'));
+        $this->assertTrue($broad['truncated']);
+        $this->assertGreaterThan(8, $broad['matched']);
+        $this->assertNotContains('publishing_read', array_column($broad['tools'], 'name'));
         $body = $catalog->searchResult('complete body');
-        self::assertSame(['publishing_read'], array_column($body['tools'], 'name'));
-        self::assertFalse($body['truncated']);
+        $this->assertSame(['publishing_read'], array_column($body['tools'], 'name'));
+        $this->assertFalse($body['truncated']);
         $audit = $catalog->searchResult('meta_description');
-        self::assertContains('publishing_list', array_column($audit['tools'], 'name'));
-        self::assertFalse($audit['truncated']);
+        $this->assertContains('publishing_list', array_column($audit['tools'], 'name'));
+        $this->assertFalse($audit['truncated']);
     }
 
     public function testNestedAndMapContractsFallBackAndAuditDataRemainsTheSame(): void
     {
         $catalog = DiscoveryCatalog::sessions('', new DockerEngine(), new ExecutionLimits())->catalog();
-        self::assertCount(16, $catalog->all());
-        self::assertCount(8, $catalog->search('published article'));
+        $this->assertCount(16, $catalog->all());
+        $this->assertCount(8, $catalog->search('published article'));
         $summary = DiscoveryCatalog::summary($catalog->all());
-        self::assertCount(11, $summary['compactReady']);
-        self::assertSame(['article_links', 'article_localization', 'publishing_archive', 'publishing_list', 'publishing_locale_summary'], $summary['requiresDescribe']);
+        $this->assertCount(11, $summary['compactReady']);
+        $this->assertSame(['article_links', 'article_localization', 'publishing_archive', 'publishing_list', 'publishing_locale_summary'], $summary['requiresDescribe']);
         $list = $catalog->describe(['publishing_list'])[0];
-        self::assertTrue((new \App\Demo\ArchivedCompactGuide())->describe($list)['requiresDescribe']);
-        $audited = 0; $missing = [];
+        $this->assertTrue((new \App\Demo\ArchivedCompactGuide())->describe($list)['requiresDescribe']);
+        $audited = 0;
+        $missing = [];
         for ($page = 1; $page <= 4; ++$page) {
             foreach ((new DiscoveryCatalog())->list($page)['items'] as $article) {
                 ++$audited;
-                if ('' === trim($article['meta_description'])) { $missing[] = $article['id']; }
+                if ('' === trim($article['meta_description'])) {
+                    $missing[] = $article['id'];
+                }
             }
         }
-        self::assertSame((new AdoptionProofVerifier())->expected(), ['audited' => $audited, 'missing' => $missing]);
+        $this->assertSame((new AdoptionProofVerifier())->expected(), ['audited' => $audited, 'missing' => $missing]);
     }
 }

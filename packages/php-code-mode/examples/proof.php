@@ -14,7 +14,7 @@ $autoload = is_file(dirname(__DIR__).'/vendor/autoload.php')
 require $autoload;
 
 $image = getenv('CODE_MODE_IMAGE') ?: '';
-$command = json_decode(getenv('CODE_MODE_DOCKER_COMMAND') ?: '["docker"]', true, flags: JSON_THROW_ON_ERROR);
+$command = json_decode(getenv('CODE_MODE_DOCKER_COMMAND') ?: '["docker"]', true, flags: \JSON_THROW_ON_ERROR);
 $sandbox = new GvisorSandbox($image, new DockerEngine($command));
 $broker = new ToolBroker([
     new Tool(
@@ -32,4 +32,4 @@ foreach ([2, 4, 6] as $number) {
 return ['php' => PHP_VERSION, 'sum' => array_sum($values), 'values' => $values];
 PHP, $broker, new ExecutionIdentity('proof-user', ['calculate']), ['demo.add']);
 
-echo json_encode($result, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR).PHP_EOL;
+echo json_encode($result, \JSON_PRETTY_PRINT | \JSON_THROW_ON_ERROR).\PHP_EOL;

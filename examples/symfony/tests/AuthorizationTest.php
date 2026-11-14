@@ -22,12 +22,12 @@ final class AuthorizationTest extends TestCase
         $catalog = new ArticleCatalog();
         $adapter = new ApprovedToolbox(new Toolbox([new ArticleTool($catalog)]), ['publication_read'], new ReadPolicy($catalog));
         $tools = $adapter->tools();
-        self::assertCount(1, $tools);
-        self::assertSame('publication_read', $tools[0]->definition()->name);
+        $this->assertCount(1, $tools);
+        $this->assertSame('publication_read', $tools[0]->definition()->name);
         $tool = $tools[0];
         $broker = new ToolBroker([new Tool($tool->definition()->name, $tool->definition()->inputSchema, $tool->authorize(...), $tool->invoke(...))]);
         $result = $broker->call('publication_read', (object) ['id' => 101], (new LocalReader())->identity(), ['publication_read']);
-        self::assertEquals((object) ['id' => 101, 'title' => 'A Symfony application owns its tools'], $result);
+        $this->assertEquals((object) ['id' => 101, 'title' => 'A Symfony application owns its tools'], $result);
     }
 
     #[DataProvider('deniedCalls')]
@@ -38,14 +38,17 @@ final class AuthorizationTest extends TestCase
         $invocations = 0;
         $tool = (new ApprovedToolbox(new Toolbox([new ArticleTool($catalog)]), ['publication_read'], $policy))->tools()[0];
         $broker = new ToolBroker([new Tool('publication_read', $tool->definition()->inputSchema,
-            fn (ExecutionIdentity $identity, stdClass $args): bool => $policy->isGranted($identity, 'publication_read', $args),
-            function () use (&$invocations): never { ++$invocations; throw new RuntimeException('Handler must not run.'); })]);
+            static fn (ExecutionIdentity $identity, stdClass $args): bool => $policy->isGranted($identity, 'publication_read', $args),
+            static function () use (&$invocations): never {
+                ++$invocations;
+                throw new RuntimeException('Handler must not run.');
+            })]);
         try {
             $broker->call($name, (object) $arguments, new ExecutionIdentity('test-reader', $permissions), ['publication_read']);
-            self::fail('Expected a denied call.');
+            $this->fail('Expected a denied call.');
         } catch (SandboxException $error) {
-            self::assertSame('tool_denied', $error->reason);
-            self::assertSame(0, $invocations);
+            $this->assertSame('tool_denied', $error->reason);
+            $this->assertSame(0, $invocations);
         }
     }
 

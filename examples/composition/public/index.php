@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 require dirname(__DIR__).'/vendor/autoload.php';
 // Read-only, fixed local evidence paths. This viewer never creates a session or executes PHP.
-if (!in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['GET','HEAD'], true)) { http_response_code(405); header('Allow: GET, HEAD'); exit; }
+if (!in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['GET', 'HEAD'], true)) {
+    http_response_code(405);
+    header('Allow: GET, HEAD');
+    exit;
+}
 header("Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'");
 header('X-Content-Type-Options: nosniff');
 $root = dirname(__DIR__);
 $path = is_file($root.'/var/latest-proof.json') ? $root.'/var/latest-proof.json' : $root.'/proof/reference.json';
-$report = is_file($path) ? json_decode(file_get_contents($path), true, 64, JSON_THROW_ON_ERROR) : [];
+$report = is_file($path) ? json_decode(file_get_contents($path), true, 64, \JSON_THROW_ON_ERROR) : [];
 $checks = (new Composition\Verifier())->check($report);
 $passed = !in_array(false, $checks, true);
-$e = static fn ($value) => htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-$json = static fn ($value) => json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+$e = static fn ($value) => htmlspecialchars((string) $value, \ENT_QUOTES | \ENT_SUBSTITUTE, 'UTF-8');
+$json = static fn ($value) => json_encode($value, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES | \JSON_THROW_ON_ERROR);
 $audit = $report['executions']['audit'] ?? [];
 ?>
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -24,21 +28,25 @@ $audit = $report['executions']['audit'] ?? [];
 <main><header><b>Symfony Code Mode</b><span class="dim">Independent adoption example</span></header>
 <div class="hero"><span class="eyebrow">Compose approved tools</span><h1>Different providers.<br><em>One PHP program.</em></h1>
 <p>Symfony AI reads the articles. An MCP service reads their media. PHP joins both inside gVisor, while every call keeps its original policy and schema checks.</p>
-<span class="pill <?= $passed ? '' : 'failed' ?>"><?= $passed ? 'Verified reference execution' : 'Proof missing or verification failed' ?></span>
-<p class="small">Operator-written PHP · No model called · No token-savings claim · <?= $e($report['createdAt'] ?? 'Run composition:proof to capture evidence.') ?></p></div>
-<div class="grid"><div class="card"><strong><?= $e($audit['value']['audited'] ?? '—') ?></strong><span>published articles audited</span></div><div class="card"><strong><?= $e(isset($audit['value']['findings']) ? count($audit['value']['findings']) : '—') ?></strong><span>findings matched to the fixture</span></div><div class="card"><strong><?= $e(isset($audit['toolCalls']) ? count($audit['toolCalls']) : '—') ?></strong><span>actual reads across two providers</span></div></div>
+<span class="pill <?php echo $passed ? '' : 'failed'; ?>"><?php echo $passed ? 'Verified reference execution' : 'Proof missing or verification failed'; ?></span>
+<p class="small">Operator-written PHP · No model called · No token-savings claim · <?php echo $e($report['createdAt'] ?? 'Run composition:proof to capture evidence.'); ?></p></div>
+<div class="grid"><div class="card"><strong><?php echo $e($audit['value']['audited'] ?? '—'); ?></strong><span>published articles audited</span></div><div class="card"><strong><?php echo $e(isset($audit['value']['findings']) ? count($audit['value']['findings']) : '—'); ?></strong><span>findings matched to the fixture</span></div><div class="card"><strong><?php echo $e(isset($audit['toolCalls']) ? count($audit['toolCalls']) : '—'); ?></strong><span>actual reads across two providers</span></div></div>
 <div class="flow"><span class="native">catalog · Symfony AI</span><span>+</span><span class="mcp">media · MCP</span><span>→</span><span>PHP in gVisor</span><span>→</span><span>Verified findings</span></div>
 <section><h2>Write against the approved contracts</h2><p>Namespaced calls are a convenience over the existing broker. The alias grants no access. Search and full schema discovery still come first.</p>
-<pre><?= $e($audit['php'] ?? '') ?></pre>
-<details><summary>Schema-derived PHP interfaces</summary><p class="small">Editor guidance derived from approved schemas. Complex shapes fall back to broad types. This is not static verification of generated programs; the full schema and host policy stay authoritative.</p><pre><?= $e($report['interfaces'] ?? '') ?></pre></details>
-<details><summary>Exact executed source, including the guest proxy</summary><p class="small">SHA-256: <?= $e($audit['sourceSha256'] ?? '') ?> · The proxy also counts against the existing source-byte limit.</p><pre><?= $e($audit['executedPhp'] ?? '') ?></pre></details></section>
-<section><h2>The actual tool calls</h2><p class="small">Recorded by the host broker. <?= $e(isset($audit['executionMs']) ? round($audit['executionMs']).' ms execution' : '') ?> · <?= $e($audit['outputBytes'] ?? '—') ?> execution-output bytes, not model tokens.</p><div class="card"><table><thead><tr><th>#</th><th>PHP tool</th><th>Provider → upstream</th><th>Result</th></tr></thead><tbody>
-<?php foreach ($audit['toolCalls'] ?? [] as $i => $call): $origin = $report['origins'][$call['name']] ?? []; ?>
-<tr><td><?= $i + 1 ?></td><td><?= $e($call['name']) ?></td><td><span class="source"><?= $e($origin['source'] ?? '') ?></span><br><span class="small dim"><?= $e($origin['upstreamTool'] ?? '') ?></span></td><td class="check"><?= $e($call['status']) ?><br><span class="small dim"><?= $e($call['resultBytes'] ?? '—') ?> B</span></td></tr>
-<?php endforeach ?></tbody></table></div><details><summary>Returned findings</summary><pre><?= $e($json($audit['value'] ?? null)) ?></pre></details></section>
+<pre><?php echo $e($audit['php'] ?? ''); ?></pre>
+<details><summary>Schema-derived PHP interfaces</summary><p class="small">Editor guidance derived from approved schemas. Complex shapes fall back to broad types. This is not static verification of generated programs; the full schema and host policy stay authoritative.</p><pre><?php echo $e($report['interfaces'] ?? ''); ?></pre></details>
+<details><summary>Exact executed source, including the guest proxy</summary><p class="small">SHA-256: <?php echo $e($audit['sourceSha256'] ?? ''); ?> · The proxy also counts against the existing source-byte limit.</p><pre><?php echo $e($audit['executedPhp'] ?? ''); ?></pre></details></section>
+<section><h2>The actual tool calls</h2><p class="small">Recorded by the host broker. <?php echo $e(isset($audit['executionMs']) ? round($audit['executionMs']).' ms execution' : ''); ?> · <?php echo $e($audit['outputBytes'] ?? '—'); ?> execution-output bytes, not model tokens.</p><div class="card"><table><thead><tr><th>#</th><th>PHP tool</th><th>Provider → upstream</th><th>Result</th></tr></thead><tbody>
+<?php foreach ($audit['toolCalls'] ?? [] as $i => $call) {
+    $origin = $report['origins'][$call['name']] ?? []; ?>
+<tr><td><?php echo $i + 1; ?></td><td><?php echo $e($call['name']); ?></td><td><span class="source"><?php echo $e($origin['source'] ?? ''); ?></span><br><span class="small dim"><?php echo $e($origin['upstreamTool'] ?? ''); ?></span></td><td class="check"><?php echo $e($call['status']); ?><br><span class="small dim"><?php echo $e($call['resultBytes'] ?? '—'); ?> B</span></td></tr>
+<?php } ?></tbody></table></div><details><summary>Returned findings</summary><pre><?php echo $e($json($audit['value'] ?? null)); ?></pre></details></section>
 <section><h2>The boundaries still hold</h2><p>A draft read and an out-of-scope media read are denied. Raw upstream names and undiscovered tools cannot bypass the broker. A third attempt is rejected before allocation; an infinite loop is terminated.</p>
-<?php foreach ($report['executions'] ?? [] as $label => $run): if ('audit' === $label) { continue; } ?>
-<details><summary><?= $e($label) ?> <span class="dim">· <?= $e($run['reason']) ?></span></summary><pre><?= $e($run['php']) ?></pre><p class="small">Run: <?= $e($run['runId'] ?? 'No container allocated') ?> · <?= $e($run['elapsedMs']) ?> ms · <?= $run['containerRemoved'] ? 'Container removed' : 'No cleanup required' ?></p><pre><?= $e($json($run['toolCalls'])) ?></pre></details>
-<?php endforeach ?>
-<details><summary>Verification checks</summary><pre><?= $e($json($checks)) ?></pre></details></section>
+<?php foreach ($report['executions'] ?? [] as $label => $run) {
+    if ('audit' === $label) {
+        continue;
+    } ?>
+<details><summary><?php echo $e($label); ?> <span class="dim">· <?php echo $e($run['reason']); ?></span></summary><pre><?php echo $e($run['php']); ?></pre><p class="small">Run: <?php echo $e($run['runId'] ?? 'No container allocated'); ?> · <?php echo $e($run['elapsedMs']); ?> ms · <?php echo $run['containerRemoved'] ? 'Container removed' : 'No cleanup required'; ?></p><pre><?php echo $e($json($run['toolCalls'])); ?></pre></details>
+<?php } ?>
+<details><summary>Verification checks</summary><pre><?php echo $e($json($checks)); ?></pre></details></section>
 <footer>This is a read-only viewer. Conversations stay in your agent, connected to <code>php bin/console code-mode:serve</code>. It has its own Composer install and proof files; the main hackathon demo remains independent.</footer></main></html>

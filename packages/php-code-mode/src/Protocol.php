@@ -10,7 +10,7 @@ final class Protocol
     public static function decode(string $line, int $expectedId): \stdClass
     {
         try {
-            $frame = json_decode($line, false, 32, JSON_THROW_ON_ERROR);
+            $frame = json_decode($line, false, 32, \JSON_THROW_ON_ERROR);
         } catch (\JsonException) {
             throw new SandboxException('invalid_protocol', 'Guest emitted invalid JSON.');
         }
@@ -21,7 +21,7 @@ final class Protocol
         sort($keys);
         if ('tool_call' === $frame->type) {
             if ($keys !== ['arguments', 'id', 'name', 'type'] || $frame->id !== $expectedId
-                || !is_string($frame->name) || !preg_match('/\A[a-zA-Z][a-zA-Z0-9_.-]{0,63}\z/D', $frame->name)
+                || !\is_string($frame->name) || !preg_match('/\A[a-zA-Z][a-zA-Z0-9_.-]{0,63}\z/D', $frame->name)
                 || !$frame->arguments instanceof \stdClass) {
                 throw new SandboxException('invalid_protocol', 'Guest emitted an invalid tool request.');
             }
@@ -34,6 +34,7 @@ final class Protocol
         } else {
             throw new SandboxException('invalid_protocol', 'Unknown guest protocol message.');
         }
+
         return $frame;
     }
 }

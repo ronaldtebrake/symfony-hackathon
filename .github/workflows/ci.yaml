@@ -6,6 +6,20 @@ permissions:
     contents: read
 
 jobs:
+    coding-standards:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.2'
+                  extensions: ctype, curl, dom, fileinfo, iconv, mbstring, xml, xmlwriter
+                  tools: composer:v2
+                  coverage: none
+            - run: composer install --no-interaction --prefer-dist --no-scripts
+            # Check the full tree, including packages, examples, tests and CLI commands.
+            - run: composer cs:check
+
     documentation:
         runs-on: ubuntu-latest
         steps:

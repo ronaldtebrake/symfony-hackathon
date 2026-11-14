@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CodeMode\Provider;
 
-use CodeMode\{Tool, ToolDefinition};
+use CodeMode\Tool;
+use CodeMode\ToolDefinition;
 
 /** Both callbacks are host code; descriptions and schemas remain untrusted data. */
 final readonly class ToolBinding

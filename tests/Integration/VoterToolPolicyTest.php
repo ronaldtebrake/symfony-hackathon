@@ -25,19 +25,19 @@ final class VoterToolPolicyTest extends TestCase
         });
         $policy = new VoterToolPolicy($tokens, $authorization, ['read' => ['discover' => 'DISCOVER', 'execute' => 'READ', 'subject' => 'id']]);
         $reader = new ExecutionIdentity('reader');
-        self::assertTrue($policy->isVisible($reader, 'read'));
-        self::assertTrue($policy->isGranted($reader, 'read', (object) ['id' => 101]));
+        $this->assertTrue($policy->isVisible($reader, 'read'));
+        $this->assertTrue($policy->isGranted($reader, 'read', (object) ['id' => 101]));
         foreach ([202, '101', ['id' => 101], null] as $id) {
-            self::assertFalse($policy->isGranted($reader, 'read', (object) ['id' => $id]));
+            $this->assertFalse($policy->isGranted($reader, 'read', (object) ['id' => $id]));
         }
-        self::assertFalse($policy->isGranted($reader, 'read', new \stdClass()));
-        self::assertFalse($policy->isVisible($reader, 'unconfigured'));
-        self::assertFalse($policy->isVisible(new ExecutionIdentity('admin'), 'read'));
+        $this->assertFalse($policy->isGranted($reader, 'read', new \stdClass()));
+        $this->assertFalse($policy->isVisible($reader, 'unconfigured'));
+        $this->assertFalse($policy->isVisible(new ExecutionIdentity('admin'), 'read'));
         $granted = false;
-        self::assertFalse($policy->isVisible($reader, 'read'));
-        self::assertFalse($policy->isGranted($reader, 'read', (object) ['id' => 101]));
+        $this->assertFalse($policy->isVisible($reader, 'read'));
+        $this->assertFalse($policy->isGranted($reader, 'read', (object) ['id' => 101]));
         $granted = true;
         $tokens->setToken(null);
-        self::assertFalse($policy->isGranted($reader, 'read', (object) ['id' => 101]));
+        $this->assertFalse($policy->isGranted($reader, 'read', (object) ['id' => 101]));
     }
 }

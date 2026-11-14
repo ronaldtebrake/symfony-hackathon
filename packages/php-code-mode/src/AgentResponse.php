@@ -17,6 +17,7 @@ final class AgentResponse
             throw $error;
         }
         $record?->__invoke($code, self::successTrace($result));
+
         return self::success($result);
     }
 
@@ -31,10 +32,11 @@ final class AgentResponse
         if ($error instanceof SandboxException) {
             // Identify the failed operation without sending arguments, upstream prose or earlier results.
             $last = $error->toolCalls[array_key_last($error->toolCalls)] ?? null;
-            if (is_array($last) && in_array($last['status'] ?? null, ['denied', 'incomplete'], true)) {
+            if (\is_array($last) && \in_array($last['status'] ?? null, ['denied', 'incomplete'], true)) {
                 $failure['tool'] = $last['name'];
             }
         }
+
         return ['error' => $failure] + self::runtimeWarning($profile);
     }
 

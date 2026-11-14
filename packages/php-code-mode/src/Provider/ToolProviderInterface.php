@@ -8,8 +8,10 @@ namespace CodeMode\Provider;
 interface ToolProviderInterface
 {
     public function name(): string;
+
     /** A non-sensitive adapter label for host traces, never a credential or endpoint. */
     public function source(): string;
+
     /** @return iterable<ToolBinding> */
     public function tools(): iterable;
 }

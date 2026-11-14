@@ -19,14 +19,15 @@ final readonly class DemoRunner
         private DemoFactory $factory,
         #[Autowire(service: 'ai.platform.huggingface')] private PlatformInterface $platform,
         #[Autowire('%kernel.project_dir%')] private string $projectDir,
-    ) {}
+    ) {
+    }
 
     public function run(string $mode, string $approach, string $backend = 'fixture', ?DemoContext $context = null, ?\Closure $progress = null, ?DemoQuestion $question = null, ?int $maxModelRequests = null, string $protocol = AuditPrompt::COVERAGE_PROTOCOL): array
     {
         if (null !== $maxModelRequests && ($maxModelRequests < 1 || $maxModelRequests > 20)) {
             throw new \InvalidArgumentException('Choose a bounded model request budget between one and twenty.');
         }
-        if (!in_array($mode, ['reference', 'live'], true) || ('reference' === $mode && 'fixture' !== $backend)) {
+        if (!\in_array($mode, ['reference', 'live'], true) || ('reference' === $mode && 'fixture' !== $backend)) {
             throw new \InvalidArgumentException('Use reference with the fixture, or live with either backend.');
         }
         $question ??= DemoQuestion::preset();
@@ -43,7 +44,9 @@ final readonly class DemoRunner
                 $found = $search->tools;
                 $ready = array_map(static fn ($tool) => $tool->name, array_filter($found, static fn ($tool) => false === ($tool->requiresDescribe ?? null)));
                 $missing = array_values(array_diff(BackendFactory::FIXTURE_TOOLS, $ready));
-                if ([] !== $missing) { $this->call($context, 'tools_describe', ['names' => $missing]); }
+                if ([] !== $missing) {
+                    $this->call($context, 'tools_describe', ['names' => $missing]);
+                }
                 $this->call($context, 'php_execute', ['code' => file_get_contents($this->projectDir.'/resources/demo/audit.php.txt')]);
             } else {
                 $trace->report = $this->referenceDirect($context);
@@ -72,19 +75,22 @@ final readonly class DemoRunner
                     $tokens['prompt'] += $usage->getPromptTokens();
                     $tokens['completion'] += $usage->getCompletionTokens();
                     $tokens['total'] += $usage->getTotalTokens();
-                } else { $tokens = null; }
+                } else {
+                    $tokens = null;
+                }
                 $trace->review = ['instruction' => AuditPrompt::review(), 'initialAnswer' => $initial, 'finalAnswer' => $answer];
             }
             if ('direct' === $approach) {
                 $json = preg_replace('/\A```(?:json)?\s*([\s\S]*?)\s*```\z/', '$1', trim($answer));
                 try {
-                    $trace->report = json_decode($json, false, 32, JSON_THROW_ON_ERROR);
+                    $trace->report = json_decode($json, false, 32, \JSON_THROW_ON_ERROR);
                 } catch (\JsonException) {
                     $trace->report = null;
                 }
             }
         }
         $verification = (new AuditVerifier())->verify($trace->report, $backend, $trace->brokerCalls, $question);
+
         return [
             'questionId' => $question->id, 'task' => $question->text,
             'approach' => $approach, 'mode' => $mode, 'discoveryMode' => 'code' === $approach ? $context->session->discoveryMode()->value : null, 'model' => 'live' === $mode ? BackendFactory::env('HUGGINGFACE_MODEL', 'openai/gpt-oss-120b') : null,
@@ -100,10 +106,11 @@ final readonly class DemoRunner
     private function call(DemoContext $context, string $name, array $arguments): mixed
     {
         $result = $context->toolbox->execute(new ToolCall('reference-'.($context->trace->agentToolCalls + 1), $context->toolbox->aliasFor($name), $arguments));
-        $value = json_decode($result->getResult(), false, 32, JSON_THROW_ON_ERROR);
+        $value = json_decode($result->getResult(), false, 32, \JSON_THROW_ON_ERROR);
         if ($value instanceof \stdClass && isset($value->error)) {
             throw new \RuntimeException('The reference run failed: '.$value->error->reason);
         }
+
         return $value;
     }
 
@@ -140,6 +147,7 @@ final readonly class DemoRunner
                 $findings[] = ['id' => $article->id, 'title' => $article->title, 'issues' => $issues];
             }
         }
-        return ['audited' => count($articles), 'findings' => $findings];
+
+        return ['audited' => \count($articles), 'findings' => $findings];
     }
 }

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace CodeMode\Provider;
 
-use CodeMode\{Tool, ToolBroker, ToolCatalog, ToolDefinition};
+use CodeMode\Tool;
+use CodeMode\ToolBroker;
+use CodeMode\ToolCatalog;
+use CodeMode\ToolDefinition;
 
 /** Freeze one bounded catalog. Aliases do not grant access or replace per-call policy. */
 final readonly class ProviderRegistry
@@ -22,14 +25,14 @@ final readonly class ProviderRegistry
         foreach ($providers as $provider) {
             $namespace = $provider->name();
             PhpToolInterface::assertIdentifier($namespace);
-            if (isset($seen[strtolower($namespace)]) || count($seen) >= 32) {
+            if (isset($seen[strtolower($namespace)]) || \count($seen) >= 32) {
                 throw new \InvalidArgumentException('Duplicate provider namespace or provider limit exceeded.');
             }
             $seen[strtolower($namespace)] = true;
             $methods = [];
             foreach ($provider->tools() as $binding) {
                 PhpToolInterface::assertIdentifier($binding->method);
-                if (isset($methods[strtolower($binding->method)]) || count($definitions) >= 128) {
+                if (isset($methods[strtolower($binding->method)]) || \count($definitions) >= 128) {
                     throw new \InvalidArgumentException('Duplicate provider method or catalog limit exceeded.');
                 }
                 $methods[strtolower($binding->method)] = true;
@@ -43,9 +46,13 @@ final readonly class ProviderRegistry
                 $map[$namespace][$binding->method] = $name;
                 $origins[$name] = ['provider' => $namespace, 'method' => $binding->method, 'source' => $provider->source(), 'upstreamTool' => $original->name];
             }
-            if ([] === $methods) { throw new \InvalidArgumentException('A provider must expose at least one approved tool.'); }
+            if ([] === $methods) {
+                throw new \InvalidArgumentException('A provider must expose at least one approved tool.');
+            }
         }
-        if ([] === $definitions) { throw new \InvalidArgumentException('Register at least one tool provider.'); }
+        if ([] === $definitions) {
+            throw new \InvalidArgumentException('Register at least one tool provider.');
+        }
         $this->catalog = new ToolCatalog($definitions);
         $this->broker = new ToolBroker($handlers);
         $this->handlers = $handlers;
@@ -53,12 +60,35 @@ final readonly class ProviderRegistry
         $this->php = new PhpToolInterface($map, $this->catalog);
     }
 
-    public function catalog(): ToolCatalog { return $this->catalog; }
-    public function broker(): ToolBroker { return $this->broker; }
+    public function catalog(): ToolCatalog
+    {
+        return $this->catalog;
+    }
+
+    public function broker(): ToolBroker
+    {
+        return $this->broker;
+    }
+
     /** @return list<Tool> Trusted host assembly only. */
-    public function handlers(): array { return $this->handlers; }
-    public function php(): PhpToolInterface { return $this->php; }
+    public function handlers(): array
+    {
+        return $this->handlers;
+    }
+
+    public function php(): PhpToolInterface
+    {
+        return $this->php;
+    }
+
     /** Host-only provenance. Endpoint URLs and credentials are intentionally absent. */
-    public function origins(): array { return $this->origins; }
-    private static function copy(\stdClass $schema): \stdClass { return json_decode(json_encode($schema, JSON_THROW_ON_ERROR, 32), false, 32, JSON_THROW_ON_ERROR); }
+    public function origins(): array
+    {
+        return $this->origins;
+    }
+
+    private static function copy(\stdClass $schema): \stdClass
+    {
+        return json_decode(json_encode($schema, \JSON_THROW_ON_ERROR, 32), false, 32, \JSON_THROW_ON_ERROR);
+    }
 }

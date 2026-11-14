@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration;
 
-use CodeMode\Symfony\Profiler\{CatalogDataCollector, CatalogTrace};
+use CodeMode\Symfony\Profiler\CatalogDataCollector;
+use CodeMode\Symfony\Profiler\CatalogTrace;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 final class CatalogProfilerTest extends TestCase
 {
@@ -22,15 +24,18 @@ final class CatalogProfilerTest extends TestCase
         $collector = new CatalogDataCollector($trace);
         $collector->collect(Request::create('/mcp', server: ['HTTP_AUTHORIZATION' => 'Bearer SECRET_TOKEN']), new Response('SECRET_BODY'));
         $stored = serialize($collector);
-        self::assertStringNotContainsString('SECRET', $stored);
+        $this->assertStringNotContainsString('SECRET', $stored);
         $copy = unserialize($stored);
-        self::assertSame('tool_denied', $copy->getOperations()[0]['calls'][0]['reason']);
-        self::assertSame(['phase' => 'saved', 'attempts' => 1, 'reservedCalls' => 1, 'knownContracts' => 1], $copy->getOperations()[0]['budget'][0]);
-        for ($i = 0; $i < 40; ++$i) { $trace->begin('search_tools'); $trace->finish([], false, 0); }
-        self::assertCount(32, $trace->snapshot()['operations']);
-        self::assertSame(9, $trace->snapshot()['dropped']);
+        $this->assertSame('tool_denied', $copy->getOperations()[0]['calls'][0]['reason']);
+        $this->assertSame(['phase' => 'saved', 'attempts' => 1, 'reservedCalls' => 1, 'knownContracts' => 1], $copy->getOperations()[0]['budget'][0]);
+        for ($i = 0; $i < 40; ++$i) {
+            $trace->begin('search_tools');
+            $trace->finish([], false, 0);
+        }
+        $this->assertCount(32, $trace->snapshot()['operations']);
+        $this->assertSame(9, $trace->snapshot()['dropped']);
         $collector->reset();
-        self::assertSame([], $collector->getOperations());
-        self::assertSame(['operations' => [], 'dropped' => 0], $trace->snapshot());
+        $this->assertSame([], $collector->getOperations());
+        $this->assertSame(['operations' => [], 'dropped' => 0], $trace->snapshot());
     }
 }

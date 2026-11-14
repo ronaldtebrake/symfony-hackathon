@@ -43,11 +43,13 @@ return $comparison + ["sameOutput" => $before->outputSha256 === $after->outputSh
     "queriesSaved" => $before->queryCount - $after->queryCount];
 PHP;
 
-    public function __construct(#[Autowire('%kernel.project_dir%')] private string $projectDir) {}
+    public function __construct(#[Autowire('%kernel.project_dir%')] private string $projectDir)
+    {
+    }
 
     public function run(): array
     {
-        $report = ['version' => 1, 'kind' => 'performance-proof', 'mode' => 'reference', 'status' => 'running', 'createdAt' => gmdate(DATE_ATOM),
+        $report = ['version' => 1, 'kind' => 'performance-proof', 'mode' => 'reference', 'status' => 'running', 'createdAt' => gmdate(\DATE_ATOM),
             'runtime' => 'runsc', 'image' => BackendFactory::env('CODE_MODE_IMAGE'),
             'source' => 'Synthetic Symfony HttpKernel requests, persisted/reloaded Symfony Profiler custom collector, real PDO SQLite queries and PSR-3 log events. Raw profiles are deleted before tools are exposed.',
             'projection' => 'Public fields only before the broker starts; explicit bounded output schemas on all three readers.',
@@ -55,7 +57,7 @@ PHP;
             'limits' => ['wallTimeMs' => 5000, 'memoryMiB' => 128, 'maxToolCalls' => 10, 'attemptsPerSession' => 2],
             'discovery' => [], 'turns' => [], 'denials' => []];
         try {
-            $docker = new DockerEngine(json_decode(BackendFactory::env('CODE_MODE_DOCKER_COMMAND', '["docker"]'), true, flags: JSON_THROW_ON_ERROR));
+            $docker = new DockerEngine(json_decode(BackendFactory::env('CODE_MODE_DOCKER_COMMAND', '["docker"]'), true, flags: \JSON_THROW_ON_ERROR));
             $docker->requireGvisor();
             $this->session(function (Client $client, string $traceFile) use (&$report, $docker): void {
                 $report['discovery'] = $this->discover($client);
@@ -78,7 +80,8 @@ PHP;
         }
         $report['verification'] = (new ProofVerifier())->verify($report);
         $report['status'] = !isset($report['error']) && $report['verification']['passed'] ? 'complete' : 'failed';
-        $report['completedAt'] = gmdate(DATE_ATOM);
+        $report['completedAt'] = gmdate(\DATE_ATOM);
+
         return $report;
     }
 
@@ -87,24 +90,36 @@ PHP;
         $env = ['APP_ENV' => 'test', 'APP_DEBUG' => '0']; // Dotenv skips the main .env.local; no inference token is needed.
         foreach (['PATH', 'HOME', 'DOCKER_HOST', 'DOCKER_CONTEXT', 'DOCKER_CONFIG', 'SSH_AUTH_SOCK', 'XDG_RUNTIME_DIR', 'TMPDIR', 'CODE_MODE_IMAGE', 'CODE_MODE_DOCKER_COMMAND'] as $key) {
             $value = $_SERVER[$key] ?? $_ENV[$key] ?? getenv($key);
-            if (is_string($value)) { $env[$key] = $value; }
+            if (\is_string($value)) {
+                $env[$key] = $value;
+            }
         }
         $traceDir = sys_get_temp_dir().'/code-mode-proof-'.bin2hex(random_bytes(12));
         mkdir($traceDir, 0700);
         $traceFile = $traceDir.'/trace.jsonl';
         $client = Client::builder()->setClientInfo('performance-proof', '1')->setInitTimeout(10)->setRequestTimeout(30)->setMaxRetries(0)->build();
         try {
-            $client->connect(new StdioTransport(PHP_BINARY, ['bin/console', 'code-mode:performance-mcp', '--no-debug', '--trace-file='.$traceFile], $this->projectDir, $env, maxBufferSize: 65536));
+            $client->connect(new StdioTransport(\PHP_BINARY, ['bin/console', 'code-mode:performance-mcp', '--no-debug', '--trace-file='.$traceFile], $this->projectDir, $env, maxBufferSize: 65536));
             $run($client, $traceFile);
-        } finally { $client->disconnect(); if (is_file($traceFile)) { unlink($traceFile); } rmdir($traceDir); }
+        } finally {
+            $client->disconnect();
+            if (is_file($traceFile)) {
+                unlink($traceFile);
+            } rmdir($traceDir);
+        }
     }
 
     private function discover(Client $client): array
     {
         $search = $client->callTool('tools_search', ['query' => 'perf']);
-        if ($search->isError) { throw new \RuntimeException('Discovery failed.'); }
+        if ($search->isError) {
+            throw new \RuntimeException('Discovery failed.');
+        }
         $result = $client->callTool('tools_describe', ['names' => ReadTools::NAMES]);
-        if ($result->isError) { throw new \RuntimeException('Discovery failed.'); }
+        if ($result->isError) {
+            throw new \RuntimeException('Discovery failed.');
+        }
+
         return ['mode' => 'full', 'search' => $search->structuredContent['tools'], 'searchMetadata' => array_diff_key($search->structuredContent, ['tools' => true]), 'describe' => $result->structuredContent];
     }
 
@@ -113,8 +128,9 @@ PHP;
         $result = $client->callTool('php_execute', ['code' => $php]);
         $trace = ExecutionTraceFile::last($traceFile, $php);
         $runId = $trace['runId'] ?? null;
-        $removed = is_string($runId) && 1 === preg_match('/\Acode-mode-[a-f0-9]{32}\z/D', $runId)
+        $removed = \is_string($runId) && 1 === preg_match('/\Acode-mode-[a-f0-9]{32}\z/D', $runId)
             && '' === $docker->control(['ps', '-aq', '--filter', 'name=^/'.$runId.'$']);
+
         return ['php' => $php, 'isError' => $result->isError, 'trace' => $trace, 'agentResponse' => $result->structuredContent, 'containerRemoved' => $removed];
     }
 }

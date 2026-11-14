@@ -35,9 +35,10 @@ final class PerformanceMcpCommand extends Command
         $data = (new Capture())->run();
         $tools = new ApprovedToolbox(new Toolbox([new ReadTools($data)]), ReadTools::NAMES, new ReadPolicy($data));
         $sessions = new SessionFactory([], BackendFactory::env('CODE_MODE_IMAGE'),
-            new DockerEngine(json_decode(BackendFactory::env('CODE_MODE_DOCKER_COMMAND', '["docker"]'), true, flags: JSON_THROW_ON_ERROR)), aiToolbox: $tools);
+            new DockerEngine(json_decode(BackendFactory::env('CODE_MODE_DOCKER_COMMAND', '["docker"]'), true, flags: \JSON_THROW_ON_ERROR)), aiToolbox: $tools);
         $record = null === $input->getOption('trace-file') ? null : new ExecutionTraceFile($input->getOption('trace-file'));
         (new McpServerFactory())->create($sessions->create(new ExecutionIdentity('local-performance-reader', ['performance.read_public'])), null === $record ? null : $record(...))->run(new StdioTransport());
+
         return self::SUCCESS;
     }
 }

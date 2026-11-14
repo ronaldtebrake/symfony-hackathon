@@ -10,13 +10,13 @@ final class GuestExecution
     public static function run(ProcessSession $process, BrokerWorker $worker, string $code, ExecutionLimits $limits, string $name, float $started, array &$calls, ExecutionProfile $profile, ?ExecutionTimeline $timeline = null): ExecutionResult
     {
         $deadline = $started + $limits->wallTimeMs / 1000;
-        $process->write(json_encode(['code' => $code], JSON_THROW_ON_ERROR)."\n");
+        $process->write(json_encode(['code' => $code], \JSON_THROW_ON_ERROR)."\n");
         $outputBytes = 0;
         $buffer = '';
         $finished = false;
         $value = null;
-        $receive = function (string $type, string $chunk) use ($name, $process, $worker, $limits, $deadline, $timeline, &$outputBytes, &$buffer, &$calls, &$finished, &$value): void {
-            $outputBytes += strlen($chunk);
+        $receive = static function (string $type, string $chunk) use ($name, $process, $worker, $limits, $deadline, $timeline, &$outputBytes, &$buffer, &$calls, &$finished, &$value): void {
+            $outputBytes += \strlen($chunk);
             if ($outputBytes > $limits->maxOutputBytes) {
                 throw new SandboxException('output_limit', 'Guest output exceeded its byte limit.');
             }
@@ -34,7 +34,7 @@ final class GuestExecution
                 if (BrokerWorker::now() >= $deadline) {
                     throw new SandboxException('wall_timeout', 'Execution exceeded its wall-clock deadline.');
                 }
-                $frame = Protocol::decode(substr($buffer, 0, $newline), count($calls) + 1);
+                $frame = Protocol::decode(substr($buffer, 0, $newline), \count($calls) + 1);
                 $buffer = substr($buffer, $newline + 1);
                 if ('result' === $frame->type) {
                     $finished = true;
@@ -42,13 +42,13 @@ final class GuestExecution
                     $process->closeInput();
                     continue;
                 }
-                if (count($calls) >= $limits->maxToolCalls) {
+                if (\count($calls) >= $limits->maxToolCalls) {
                     throw new SandboxException('tool_call_limit', 'Execution exceeded its tool-call limit.');
                 }
                 $calls[] = ['name' => $frame->name, 'status' => 'pending'];
                 // Authorization and validation run before invocation, for every call.
                 $callStarted = BrokerWorker::now();
-                $span = $timeline?->begin('broker', $frame->name, ['runId' => $name, 'callIndex' => count($calls) - 1, 'arguments' => $frame->arguments]);
+                $span = $timeline?->begin('broker', $frame->name, ['runId' => $name, 'callIndex' => \count($calls) - 1, 'arguments' => $frame->arguments]);
                 try {
                     $result = $worker->call($frame->name, $frame->arguments, $deadline);
                 } catch (SandboxException $error) {
@@ -60,11 +60,11 @@ final class GuestExecution
                 }
                 $calls[array_key_last($calls)]['status'] = 'succeeded';
                 $calls[array_key_last($calls)]['durationMs'] = (BrokerWorker::now() - $callStarted) * 1000;
-                $calls[array_key_last($calls)]['resultBytes'] = strlen(json_encode($result, JSON_THROW_ON_ERROR, 32));
-                $timeline?->end($span, 'succeeded', ['resultBytes' => $calls[array_key_last($calls)]['resultBytes'], 'resultSha256' => hash('sha256', json_encode($result, JSON_THROW_ON_ERROR, 32))]);
-                $process->write(json_encode(['id' => $frame->id, 'value' => $result], JSON_THROW_ON_ERROR, 32)."\n");
+                $calls[array_key_last($calls)]['resultBytes'] = \strlen(json_encode($result, \JSON_THROW_ON_ERROR, 32));
+                $timeline?->end($span, 'succeeded', ['resultBytes' => $calls[array_key_last($calls)]['resultBytes'], 'resultSha256' => hash('sha256', json_encode($result, \JSON_THROW_ON_ERROR, 32))]);
+                $process->write(json_encode(['id' => $frame->id, 'value' => $result], \JSON_THROW_ON_ERROR, 32)."\n");
             }
-            if (strlen($buffer) > $limits->maxFrameBytes) {
+            if (\strlen($buffer) > $limits->maxFrameBytes) {
                 throw new SandboxException('frame_limit', 'Unterminated guest frame exceeded its byte limit.');
             }
         };
@@ -80,6 +80,7 @@ final class GuestExecution
         if (!$process->succeeded() || !$finished || '' !== $buffer) {
             throw new SandboxException('guest_failed', 'The PHP program exited without a complete successful result.');
         }
+
         return new ExecutionResult($value, $calls, (BrokerWorker::now() - $started) * 1000, $outputBytes, $name, $profile);
     }
 }

@@ -18,10 +18,11 @@ final class ReadArticle implements ReadToolInterface
 
     public function authorize(ExecutionIdentity $identity, \stdClass $arguments): bool
     {
-        if (!$identity->allows('articles.read_published') || !is_int($arguments->id ?? null)) {
+        if (!$identity->allows('articles.read_published') || !\is_int($arguments->id ?? null)) {
             return false;
         }
         $article = (new AuditDataset())->articles()[$arguments->id] ?? null;
+
         return null !== $article && 'published' === $article['status'];
     }
 
@@ -31,6 +32,7 @@ final class ReadArticle implements ReadToolInterface
             throw new \RuntimeException('Read denied.');
         }
         $article = (new AuditDataset())->articles()[$arguments->id];
+
         return array_intersect_key($article, array_flip(['id', 'title', 'meta_description']));
     }
 }

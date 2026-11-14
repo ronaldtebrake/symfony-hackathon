@@ -19,7 +19,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 #[AsCommand(name: 'code-mode:demo', description: 'Compare direct MCP tool calling and Symfony Code Mode on the same content audit.')]
 final class CodeModeDemoCommand extends Command
 {
-    public function __construct(private readonly DemoRunner $runner, private readonly ReportStore $store) { parent::__construct(); }
+    public function __construct(private readonly DemoRunner $runner, private readonly ReportStore $store)
+    {
+        parent::__construct();
+    }
 
     protected function configure(): void
     {
@@ -36,9 +39,10 @@ final class CodeModeDemoCommand extends Command
         $mode = $input->getOption('mode');
         $approach = $input->getOption('approach');
         $backend = $input->getOption('backend');
-        if (!in_array($mode, ['reference', 'live'], true) || !in_array($approach, ['both', 'code', 'direct'], true) || !in_array($backend, ['fixture', 'http'], true)
+        if (!\in_array($mode, ['reference', 'live'], true) || !\in_array($approach, ['both', 'code', 'direct'], true) || !\in_array($backend, ['fixture', 'http'], true)
             || ('reference' === $mode && 'http' === $backend)) {
             $io->error('Choose reference/live, both/code/direct, and fixture/http. The HTTP backend requires live mode.');
+
             return Command::INVALID;
         }
         try {
@@ -51,13 +55,15 @@ final class CodeModeDemoCommand extends Command
             $question->requireSupportedRun($mode, $backend);
         } catch (\InvalidArgumentException $e) {
             $io->error($e->getMessage());
+
             return Command::INVALID;
         }
         if ('live' === $mode && '' === BackendFactory::env('HUGGINGFACE_API_KEY')) {
             $io->error('Set HUGGINGFACE_API_KEY in .env.local for live inference. Reference mode makes no model requests.');
+
             return Command::INVALID;
         }
-        $report = ['version' => 2, 'createdAt' => gmdate(DATE_ATOM), 'status' => 'running', 'mode' => $mode, 'backend' => $backend, 'questionId' => $question->id, 'task' => $question->text, 'results' => []];
+        $report = ['version' => 2, 'createdAt' => gmdate(\DATE_ATOM), 'status' => 'running', 'mode' => $mode, 'backend' => $backend, 'questionId' => $question->id, 'task' => $question->text, 'results' => []];
         $this->store->save($report);
         $io->title('Symfony Code Mode · '.('live' === $mode ? 'live inference' : 'reference run — no model'));
         $failed = false;
@@ -72,7 +78,7 @@ final class CodeModeDemoCommand extends Command
                 $failed = $failed || false === $result['verification']['passed'];
                 $reviewRequired = $reviewRequired || null === $result['verification']['passed'];
                 $io->newLine();
-                $io->table(['Broker calls', 'Tool payload bytes', 'Model requests', 'Provider tokens'], [[count($result['brokerCalls']), $result['toolPayloadBytes'], $result['modelRequests'], $result['providerTokens']['total'] ?? 'not reported']]);
+                $io->table(['Broker calls', 'Tool payload bytes', 'Model requests', 'Provider tokens'], [[\count($result['brokerCalls']), $result['toolPayloadBytes'], $result['modelRequests'], $result['providerTokens']['total'] ?? 'not reported']]);
                 $io->text($result['verification']['message']);
             } catch (\Throwable $e) {
                 $failed = true;
@@ -85,6 +91,7 @@ final class CodeModeDemoCommand extends Command
         $report['status'] = $failed ? 'failed' : ($reviewRequired ? 'review_required' : 'complete');
         $this->store->save($report);
         $io->text('Open http://127.0.0.1:8000/demo after composer start. Reports stay in ignored var/demo/.');
+
         return $failed ? Command::FAILURE : Command::SUCCESS;
     }
 }

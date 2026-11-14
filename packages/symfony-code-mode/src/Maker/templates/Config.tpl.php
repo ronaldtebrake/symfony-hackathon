@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use <?= $tool_class ?>;
 use <?= $voter_class ?>;
+use <?= $tool_class ?>;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $container): void {

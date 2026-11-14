@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 
-use App\CodeMode\{DemoIdentityProvider, ReadArticle};
-use CodeMode\Symfony\{CodeModeBundle, SessionFactory};
-use CodeMode\Symfony\Command\{DoctorCommand, ServeCommand};
+use App\CodeMode\DemoIdentityProvider;
+use App\CodeMode\ReadArticle;
+use CodeMode\Symfony\CodeModeBundle;
+use CodeMode\Symfony\Command\DoctorCommand;
+use CodeMode\Symfony\Command\ServeCommand;
+use CodeMode\Symfony\SessionFactory;
 use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -21,7 +24,9 @@ $container->register(DemoIdentityProvider::class);
     'image' => '%env(MISSING_BATCH_TEST_IMAGE)%',
     'docker_command' => '%env(json:MISSING_BATCH_TEST_DOCKER)%',
 ]], $container);
-foreach ([SessionFactory::class, DoctorCommand::class, ServeCommand::class] as $id) { $container->getDefinition($id)->setPublic(true); }
+foreach ([SessionFactory::class, DoctorCommand::class, ServeCommand::class] as $id) {
+    $container->getDefinition($id)->setPublic(true);
+}
 $container->compile();
 $app = new Application();
 $app->add($container->get(DoctorCommand::class));

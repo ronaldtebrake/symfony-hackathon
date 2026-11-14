@@ -4,4 +4,4 @@
 declare(strict_types=1);
 
 require dirname(__DIR__).'/vendor/autoload.php';
-echo json_encode((new App\Demo\ResponsePayloadComparison(dirname(__DIR__)))->samples(), JSON_THROW_ON_ERROR)."\n";
+echo json_encode((new App\Demo\ResponsePayloadComparison(dirname(__DIR__)))->samples(), \JSON_THROW_ON_ERROR)."\n";

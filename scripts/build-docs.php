@@ -30,7 +30,7 @@ $reports = [
 foreach ($reports as $filename => $method) {
     $response = $controller->$method($request);
     $body = $response->getContent();
-    $report = json_decode($body, true, flags: JSON_THROW_ON_ERROR);
+    $report = json_decode($body, true, flags: \JSON_THROW_ON_ERROR);
     if (200 !== $response->getStatusCode() || 'empty' === ($report['status'] ?? null)) {
         throw new RuntimeException('Missing reviewed evidence: '.$filename);
     }
@@ -46,12 +46,14 @@ $html = str_replace(['data-static="false"', 'href="/demo.css"', 'src="/demo.js"'
     ['data-static="true"', 'href="demo.css"', 'src="demo.js"', 'src="docs.js"', 'src="catalog-proof.js"', 'src="php-syntax.js"', 'src="images/', 'src="media/', 'href="media/', 'poster="media/'], $html);
 $html = preg_replace('#href="/demo/([a-z-]+)"#', 'href="evidence/$1.json"', $html);
 // The static host cannot execute PHP or contact the local MCP server.
-$html = str_replace('<meta name="viewport"', '<meta http-equiv="Content-Security-Policy" content="default-src \'self\'; script-src \'self\'; style-src \'self\'; img-src \'self\' data:; connect-src \'self\'; object-src \'none\'; base-uri \'none\'; form-action \'none\'">' . "\n  " . '<meta name="viewport"', $html);
+$html = str_replace('<meta name="viewport"', '<meta http-equiv="Content-Security-Policy" content="default-src \'self\'; script-src \'self\'; style-src \'self\'; img-src \'self\' data:; connect-src \'self\'; object-src \'none\'; base-uri \'none\'; form-action \'none\'">'."\n  ".'<meta name="viewport"', $html);
 file_put_contents($output.'/index.html', $html);
-foreach (['demo.css', 'demo.js', 'docs.js', 'catalog-proof.js', 'php-syntax.js'] as $file) { copy($root.'/public/'.$file, $output.'/'.$file); }
+foreach (['demo.css', 'demo.js', 'docs.js', 'catalog-proof.js', 'php-syntax.js'] as $file) {
+    copy($root.'/public/'.$file, $output.'/'.$file);
+}
 copy($root.'/docs/images/code-mode-value.svg', $output.'/images/code-mode-value.svg');
 // Publish only the curated edit and its reviewed inserts, never raw recordings or profiler storage.
-$video = json_decode(file_get_contents($root.'/public/media/video-proof.json'), true, flags: JSON_THROW_ON_ERROR);
+$video = json_decode(file_get_contents($root.'/public/media/video-proof.json'), true, flags: \JSON_THROW_ON_ERROR);
 $media = ['symfony-native-tools-demo-90s.mp4', 'symfony-native-tools-poster.jpg', 'profiler-authorized.png', 'profiler-denied.png'];
 if (90 !== ($video['durationSeconds'] ?? null) || 'none' !== ($video['audio'] ?? null)) {
     throw new RuntimeException('Unexpected product video format.');
@@ -64,4 +66,4 @@ foreach ($media as $file) {
 }
 copy($root.'/public/media/video-proof.json', $output.'/media/video-proof.json');
 file_put_contents($output.'/.nojekyll', '');
-echo "Built visual documentation in var/pages using ".count($reports)." reviewed evidence exports.\n";
+echo 'Built visual documentation in var/pages using '.count($reports)." reviewed evidence exports.\n";

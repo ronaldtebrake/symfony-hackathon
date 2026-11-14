@@ -25,7 +25,7 @@ final class GvisorSandboxTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->docker = new DockerEngine(json_decode(getenv('CODE_MODE_DOCKER_COMMAND') ?: '["docker"]', true, flags: JSON_THROW_ON_ERROR));
+        $this->docker = new DockerEngine(json_decode(getenv('CODE_MODE_DOCKER_COMMAND') ?: '["docker"]', true, flags: \JSON_THROW_ON_ERROR));
         $this->sandbox = new GvisorSandbox(getenv('CODE_MODE_IMAGE') ?: '', $this->docker);
         $this->marker = tempnam(sys_get_temp_dir(), 'code-mode-test-');
     }
@@ -36,30 +36,7 @@ final class GvisorSandboxTest extends TestCase
             @unlink($this->marker);
         }
         if (isset($this->docker)) {
-            self::assertSame('', $this->docker->control(['ps', '-aq', '--filter', 'label=php-code-mode.managed=true']), 'An execution leaked a container.');
-        }
-    }
-
-    private function runPhp(string $code, ?ExecutionLimits $limits = null, ?ToolBroker $broker = null, array $allowed = ['demo.add']): ExecutionResult
-    {
-        $marker = $this->marker;
-        $broker ??= new ToolBroker([new Tool('demo.add', json_decode('{"type":"object","properties":{"a":{"type":"integer"},"b":{"type":"integer"}},"required":["a","b"],"additionalProperties":false}'),
-            static fn (ExecutionIdentity $identity): bool => $identity->allows('calculate'),
-            static function (\stdClass $args, ExecutionIdentity $identity) use ($marker): int {
-                file_put_contents($marker, $identity->subject."\n", FILE_APPEND);
-                return $args->a + $args->b;
-            },
-        )]);
-        return $this->sandbox->execute($code, $broker, new ExecutionIdentity('alice', ['calculate']), $allowed, $limits);
-    }
-
-    private function assertRejected(string $reason, \Closure $operation): void
-    {
-        try {
-            $operation();
-            self::fail('Execution unexpectedly succeeded.');
-        } catch (SandboxException $e) {
-            self::assertSame($reason, $e->reason);
+            $this->assertSame('', $this->docker->control(['ps', '-aq', '--filter', 'label=php-code-mode.managed=true']), 'An execution leaked a container.');
         }
     }
 
@@ -73,11 +50,11 @@ foreach ([2, 4, 6] as $number) {
 }
 return ['php' => PHP_VERSION, 'sapi' => PHP_SAPI, 'sum' => $sum($values)];
 PHP);
-        self::assertSame('cli', $result->value->sapi);
-        self::assertStringStartsWith('8.4.', $result->value->php);
-        self::assertSame(42, $result->value->sum);
-        self::assertCount(3, $result->toolCalls);
-        self::assertSame("alice\nalice\nalice\n", file_get_contents($this->marker));
+        $this->assertSame('cli', $result->value->sapi);
+        $this->assertStringStartsWith('8.4.', $result->value->php);
+        $this->assertSame(42, $result->value->sum);
+        $this->assertCount(3, $result->toolCalls);
+        $this->assertSame("alice\nalice\nalice\n", file_get_contents($this->marker));
     }
 
     public function testHostFilesSecretsAndWritableRootAreUnavailable(): void
@@ -98,27 +75,27 @@ PHP);
         } finally {
             putenv('CODE_MODE_HOST_SECRET');
         }
-        self::assertFalse($result->value->hostFile);
-        self::assertFalse($result->value->secret);
-        self::assertFalse($result->value->dockerSocket);
-        self::assertFalse($result->value->rootWrite);
-        self::assertSame(2, $result->value->tmpWrite);
-        self::assertSame('host sentinel', file_get_contents($this->marker));
+        $this->assertFalse($result->value->hostFile);
+        $this->assertFalse($result->value->secret);
+        $this->assertFalse($result->value->dockerSocket);
+        $this->assertFalse($result->value->rootWrite);
+        $this->assertSame(2, $result->value->tmpWrite);
+        $this->assertSame('host sentinel', file_get_contents($this->marker));
     }
 
     public function testGuestCannotRelaxPhpLimitsOrCreateHostProcesses(): void
     {
         $result = $this->runPhp('return array_map("function_exists", ["exec", "proc_open", "pcntl_fork", "ini_set", "set_time_limit", "dl", "putenv"]);');
-        self::assertSame(array_fill(0, 7, false), $result->value);
+        $this->assertSame(array_fill(0, 7, false), $result->value);
         $fresh = $this->runPhp('return file_exists("/tmp/private");');
-        self::assertFalse($fresh->value);
+        $this->assertFalse($fresh->value);
     }
 
     public function testTemporaryStorageIsBounded(): void
     {
         $result = $this->runPhp('$file = fopen("/tmp/fill", "w"); $bytes = 0; for ($i = 0; $i < 8; ++$i) { $bytes += (int) @fwrite($file, str_repeat("x", 1048576)); } return $bytes;');
-        self::assertGreaterThan(0, $result->value);
-        self::assertLessThanOrEqual(4 * 1048576, $result->value);
+        $this->assertGreaterThan(0, $result->value);
+        $this->assertLessThanOrEqual(4 * 1048576, $result->value);
     }
 
     #[DataProvider('attacks')]
@@ -150,28 +127,28 @@ PHP);
     {
         try {
             $this->runPhp('return $tools->call("demo.add", ["a" => 2, "b" => 3]);', allowed: []);
-            self::fail('The call must be denied.');
+            $this->fail('The call must be denied.');
         } catch (SandboxException $error) {
-            self::assertSame('tool_denied', $error->reason);
-            self::assertMatchesRegularExpression('/\Acode-mode-[a-f0-9]{32}\z/', $error->runId);
-            self::assertSame('denied', $error->toolCalls[0]['status']);
-            self::assertSame('tool_denied', $error->toolCalls[0]['reason']);
+            $this->assertSame('tool_denied', $error->reason);
+            $this->assertMatchesRegularExpression('/\Acode-mode-[a-f0-9]{32}\z/', $error->runId);
+            $this->assertSame('denied', $error->toolCalls[0]['status']);
+            $this->assertSame('tool_denied', $error->toolCalls[0]['reason']);
         }
-        self::assertSame('', file_get_contents($this->marker));
+        $this->assertSame('', file_get_contents($this->marker));
     }
 
     public function testFailedExecutionRetainsEarlierHostRecordedCalls(): void
     {
         try {
             $this->runPhp('$tools->call("demo.add", ["a" => 20, "b" => 22]); while (true) {}', new ExecutionLimits(wallTimeMs: 1000, toolTimeMs: 500));
-            self::fail('The program should exceed its deadline.');
+            $this->fail('The program should exceed its deadline.');
         } catch (SandboxException $error) {
-            self::assertSame('wall_timeout', $error->reason);
-            self::assertMatchesRegularExpression('/\Acode-mode-[a-f0-9]{32}\z/', $error->runId);
-            self::assertCount(1, $error->toolCalls);
-            self::assertSame('succeeded', $error->toolCalls[0]['status']);
-            self::assertSame(2, $error->toolCalls[0]['resultBytes']);
-            self::assertSame("alice\n", file_get_contents($this->marker));
+            $this->assertSame('wall_timeout', $error->reason);
+            $this->assertMatchesRegularExpression('/\Acode-mode-[a-f0-9]{32}\z/', $error->runId);
+            $this->assertCount(1, $error->toolCalls);
+            $this->assertSame('succeeded', $error->toolCalls[0]['status']);
+            $this->assertSame(2, $error->toolCalls[0]['resultBytes']);
+            $this->assertSame("alice\n", file_get_contents($this->marker));
         }
     }
 
@@ -179,14 +156,14 @@ PHP);
     {
         $code = 'fwrite(STDOUT, "{\"type\":\"result\",\"value\":42}\n{\"type\":\"tool_call\",\"id\":1,\"name\":\"demo.add\",\"arguments\":{\"a\":1,\"b\":2}}\n"); exit(0);';
         $this->assertRejected('invalid_protocol', fn () => $this->runPhp($code));
-        self::assertSame('', file_get_contents($this->marker));
+        $this->assertSame('', file_get_contents($this->marker));
     }
 
     public function testForgedGuestClaimsCannotForgeHostLedger(): void
     {
         $result = $this->runPhp('fwrite(STDOUT, "{\"type\":\"result\",\"value\":{\"toolCalls\":[\"forged\"]}}\n"); exit(0);');
-        self::assertSame(['forged'], $result->value->toolCalls);
-        self::assertSame([], $result->toolCalls);
+        $this->assertSame(['forged'], $result->value->toolCalls);
+        $this->assertSame([], $result->toolCalls);
     }
 
     public function testBlockingHandlerCannotDisableWatchdog(): void
@@ -200,9 +177,9 @@ PHP);
         )]);
         $start = microtime(true);
         $this->assertRejected('tool_timeout', fn () => $this->runPhp('$tools->call("slow");', new ExecutionLimits(toolTimeMs: 100), $broker, ['slow']));
-        self::assertLessThan(5, microtime(true) - $start);
-        self::assertGreaterThan(0, (int) file_get_contents($marker));
-        self::assertFalse(posix_kill((int) file_get_contents($marker), 0), 'Broker worker survived cancellation.');
+        $this->assertLessThan(5, microtime(true) - $start);
+        $this->assertGreaterThan(0, (int) file_get_contents($marker));
+        $this->assertFalse(posix_kill((int) file_get_contents($marker), 0), 'Broker worker survived cancellation.');
     }
 
     public function testBrokerResponseSizeIsBounded(): void
@@ -219,12 +196,12 @@ PHP);
             // Trusted test fixture and positive control; neither executes guest-supplied source.
             $this->docker->control(['run', '-d', '--name', $name, '--entrypoint', '/usr/local/bin/php', $image, '-n', '-S', '0.0.0.0:8000', '-t', '/runner']);
             $ip = $this->docker->control(['inspect', '-f', '{{.NetworkSettings.Networks.bridge.IPAddress}}', $name]);
-            self::assertNotFalse(filter_var($ip, FILTER_VALIDATE_IP));
+            $this->assertNotFalse(filter_var($ip, \FILTER_VALIDATE_IP));
             $code = '$socket = @fsockopen('.var_export($ip, true).', 8000, $errno, $error, 0.2); echo is_resource($socket) ? "connected" : "denied";';
             $control = $this->docker->control(['run', '--rm', '--entrypoint', '/usr/local/bin/php', $image, '-n', '-r', $code]);
-            self::assertSame('connected', $control, 'The network control endpoint is not reachable.');
+            $this->assertSame('connected', $control, 'The network control endpoint is not reachable.');
             $result = $this->runPhp('$socket = @fsockopen('.var_export($ip, true).', 8000, $errno, $error, 0.2); return is_resource($socket);');
-            self::assertFalse($result->value);
+            $this->assertFalse($result->value);
         } finally {
             $this->docker->remove($name);
         }
@@ -239,7 +216,7 @@ PHP);
     #[DataProvider('crashScenarios')]
     public function testIndependentWatchdogRemovesExecutionAfterHostIsKilled(string $mode): void
     {
-        $process = new Process([PHP_BINARY, dirname(__DIR__).'/fixtures/abandon.php', $this->marker, $mode]);
+        $process = new Process([\PHP_BINARY, \dirname(__DIR__).'/fixtures/abandon.php', $this->marker, $mode]);
         try {
             $process->start();
             $deadline = microtime(true) + 10;
@@ -247,33 +224,58 @@ PHP);
                 usleep(10000);
             }
             $workerPid = (int) file_get_contents($this->marker);
-            self::assertGreaterThan(0, $workerPid, $process->getErrorOutput());
-            self::assertNotSame('', $this->docker->control(['ps', '-q', '--filter', 'label=php-code-mode.managed=true']));
-            $process->signal(SIGKILL); // No PHP finally block or destructor can run.
+            $this->assertGreaterThan(0, $workerPid, $process->getErrorOutput());
+            $this->assertNotSame('', $this->docker->control(['ps', '-q', '--filter', 'label=php-code-mode.managed=true']));
+            $process->signal(\SIGKILL); // No PHP finally block or destructor can run.
             $brokerDeadline = microtime(true) + 2;
             $deadline = microtime(true) + 6;
             do {
                 usleep(50000);
                 $containers = $this->docker->control(['ps', '-aq', '--filter', 'label=php-code-mode.managed=true']);
             } while ('' !== $containers && microtime(true) < $deadline);
-            self::assertSame('', $containers, 'The independent watchdog did not remove the orphan.');
+            $this->assertSame('', $containers, 'The independent watchdog did not remove the orphan.');
             // A hard-killed parent cannot waitpid(). The OS/subreaper owns the dead child.
             // A zombie is terminated; kill(pid, 0) alone cannot distinguish it from live code.
             // A disconnected guest can exit before the broker's one-second alarm expires.
             do {
                 $state = new Process(['ps', '-o', 'stat=', '-p', (string) $workerPid]);
                 $state->run();
-                self::assertContains($state->getExitCode(), [0, 1]);
-                self::assertSame('', $state->getErrorOutput());
+                $this->assertContains($state->getExitCode(), [0, 1]);
+                $this->assertSame('', $state->getErrorOutput());
                 $status = trim($state->getOutput());
                 if ('' === $status || str_starts_with($status, 'Z')) {
                     break;
                 }
                 usleep(50000);
             } while (microtime(true) < $brokerDeadline);
-            self::assertTrue('' === $status || str_starts_with($status, 'Z'), 'Orphaned broker is still executing: '.$status);
+            $this->assertTrue('' === $status || str_starts_with($status, 'Z'), 'Orphaned broker is still executing: '.$status);
         } finally {
-            $process->stop(0, SIGKILL);
+            $process->stop(0, \SIGKILL);
+        }
+    }
+
+    private function runPhp(string $code, ?ExecutionLimits $limits = null, ?ToolBroker $broker = null, array $allowed = ['demo.add']): ExecutionResult
+    {
+        $marker = $this->marker;
+        $broker ??= new ToolBroker([new Tool('demo.add', json_decode('{"type":"object","properties":{"a":{"type":"integer"},"b":{"type":"integer"}},"required":["a","b"],"additionalProperties":false}'),
+            static fn (ExecutionIdentity $identity): bool => $identity->allows('calculate'),
+            static function (\stdClass $args, ExecutionIdentity $identity) use ($marker): int {
+                file_put_contents($marker, $identity->subject."\n", \FILE_APPEND);
+
+                return $args->a + $args->b;
+            },
+        )]);
+
+        return $this->sandbox->execute($code, $broker, new ExecutionIdentity('alice', ['calculate']), $allowed, $limits);
+    }
+
+    private function assertRejected(string $reason, \Closure $operation): void
+    {
+        try {
+            $operation();
+            $this->fail('Execution unexpectedly succeeded.');
+        } catch (SandboxException $e) {
+            $this->assertSame($reason, $e->reason);
         }
     }
 }

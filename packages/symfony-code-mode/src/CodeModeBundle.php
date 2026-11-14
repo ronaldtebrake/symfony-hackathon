@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CodeMode\Symfony;
 
-use CodeMode\DockerEngine;
 use CodeMode\DiscoveryMode;
+use CodeMode\DockerEngine;
 use CodeMode\ExecutionLimits;
 use CodeMode\ExecutionProfile;
+use CodeMode\Symfony\Ai\ApprovedToolbox;
 use CodeMode\Symfony\Command\DoctorCommand;
 use CodeMode\Symfony\Command\ServeCommand;
-use CodeMode\Symfony\Ai\ApprovedToolbox;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -29,7 +29,7 @@ final class CodeModeBundle extends AbstractBundle
             ->enumNode('discovery')->values(['full'])->defaultValue('full')->end()
             ->scalarNode('image')->defaultValue('%env(CODE_MODE_IMAGE)%')->end()
             ->variableNode('docker_command')->defaultValue('%env(json:CODE_MODE_DOCKER_COMMAND)%')->end()
-            ->scalarNode('identity_provider')->defaultValue(\CodeMode\Symfony\Http\SecurityIdentityProvider::class)->cannotBeEmpty()->end()
+            ->scalarNode('identity_provider')->defaultValue(Http\SecurityIdentityProvider::class)->cannotBeEmpty()->end()
             ->scalarNode('visibility_policy')->defaultNull()->end()
             ->arrayNode('http')->canBeEnabled()->children()
                 ->arrayNode('permissions')->useAttributeAsKey('permission')->scalarPrototype()->cannotBeEmpty()->end()->end()
@@ -66,26 +66,30 @@ final class CodeModeBundle extends AbstractBundle
                     || [] !== array_diff($config['ai_tools'], array_keys($config['voter_rules']))) => 'Configure visibility_policy or voter_rules for existing tools first, so generation cannot change their discovery policy.',
                 default => null,
             };
-            $services->set(\CodeMode\Symfony\Maker\MakeCodeModeTool::class)->args([$registrationError])->tag('maker.command');
+            $services->set(Maker\MakeCodeModeTool::class)->args([$registrationError])->tag('maker.command');
         }
         if ($config['profiling']) {
-            $services->set(\CodeMode\Symfony\Profiler\CatalogTrace::class)->tag('kernel.reset', ['method' => 'reset']);
-            $services->set(\CodeMode\Symfony\Profiler\CatalogDataCollector::class)->args([new Reference(\CodeMode\Symfony\Profiler\CatalogTrace::class)])
+            $services->set(Profiler\CatalogTrace::class)->tag('kernel.reset', ['method' => 'reset']);
+            $services->set(Profiler\CatalogDataCollector::class)->args([new Reference(Profiler\CatalogTrace::class)])
                 ->tag('data_collector', ['id' => 'code_mode', 'template' => '@CodeMode/Collector/catalog.html.twig']);
             if (class_exists(\Symfony\AI\Agent\Toolbox\Event\ToolCallRequested::class)) {
-                $services->set(\CodeMode\Symfony\Profiler\ToolEventSubscriber::class)->args([new Reference(\CodeMode\Symfony\Profiler\CatalogTrace::class)])->tag('kernel.event_subscriber');
+                $services->set(Profiler\ToolEventSubscriber::class)->args([new Reference(Profiler\CatalogTrace::class)])->tag('kernel.event_subscriber');
             }
         }
         if ([] !== $config['voter_rules']) {
-            $services->set(\CodeMode\Symfony\Security\VoterToolPolicy::class)->args([
+            $services->set(Security\VoterToolPolicy::class)->args([
                 new Reference('security.token_storage'), new Reference('security.authorization_checker'), $config['voter_rules'],
             ]);
-            $config['ai_authorization'] ??= \CodeMode\Symfony\Security\VoterToolPolicy::class;
-            $config['visibility_policy'] ??= \CodeMode\Symfony\Security\VoterToolPolicy::class;
+            $config['ai_authorization'] ??= Security\VoterToolPolicy::class;
+            $config['visibility_policy'] ??= Security\VoterToolPolicy::class;
         }
         if ([] !== $config['ai_tool_services']) {
-            if (null !== $config['ai_toolbox']) { throw new \InvalidArgumentException('Choose ai_toolbox or ai_tool_services, not both.'); }
-            if (!class_exists(\Symfony\AI\Agent\Toolbox\Toolbox::class)) { throw new \LogicException('Install symfony/ai-agent to register native tools.'); }
+            if (null !== $config['ai_toolbox']) {
+                throw new \InvalidArgumentException('Choose ai_toolbox or ai_tool_services, not both.');
+            }
+            if (!class_exists(\Symfony\AI\Agent\Toolbox\Toolbox::class)) {
+                throw new \LogicException('Install symfony/ai-agent to register native tools.');
+            }
             $services->set('code_mode.native_toolbox', \Symfony\AI\Agent\Toolbox\Toolbox::class)->args([
                 '$tools' => array_map(static fn (string $id) => new Reference($id), $config['ai_tool_services']),
                 '$eventDispatcher' => new Reference('event_dispatcher'),
@@ -93,8 +97,10 @@ final class CodeModeBundle extends AbstractBundle
             $config['ai_toolbox'] = 'code_mode.native_toolbox';
         }
         if ($config['http']['enabled']) {
-            if ('catalog' !== $config['mode']) { throw new \InvalidArgumentException('The HTTP integration exposes the JSON catalog only.'); }
-            $services->set(\CodeMode\Symfony\Http\SecurityIdentityProvider::class)->args([
+            if ('catalog' !== $config['mode']) {
+                throw new \InvalidArgumentException('The HTTP integration exposes the JSON catalog only.');
+            }
+            $services->set(Http\SecurityIdentityProvider::class)->args([
                 new Reference('security.token_storage'), new Reference('security.authorization_checker'), $config['http']['permissions'],
             ]);
             // Separate from kernel.cache_dir: rebuilding the container must not reset budgets.
@@ -103,13 +109,13 @@ final class CodeModeBundle extends AbstractBundle
             $services->set('code_mode.http.lock_store', \Symfony\Component\Lock\Store\FlockStore::class)
                 ->args(['%kernel.project_dir%/var/code-mode/locks']);
             $services->set('code_mode.http.lock_factory', \Symfony\Component\Lock\LockFactory::class)->args([new Reference('code_mode.http.lock_store')]);
-            $services->set(\CodeMode\Symfony\Http\CatalogStateStore::class)->args([new Reference('code_mode.http.cache'), new Reference('code_mode.http.lock_factory')]);
-            $services->set(\CodeMode\Symfony\Http\CatalogTools::class)->autoconfigure()->args([
-                new Reference(SessionFactory::class), new Reference(\CodeMode\Symfony\Http\SecurityIdentityProvider::class), new Reference(\CodeMode\Symfony\Http\CatalogStateStore::class),
-                $config['profiling'] ? new Reference(\CodeMode\Symfony\Profiler\CatalogTrace::class) : null,
+            $services->set(Http\CatalogStateStore::class)->args([new Reference('code_mode.http.cache'), new Reference('code_mode.http.lock_factory')]);
+            $services->set(Http\CatalogTools::class)->autoconfigure()->args([
+                new Reference(SessionFactory::class), new Reference(Http\SecurityIdentityProvider::class), new Reference(Http\CatalogStateStore::class),
+                $config['profiling'] ? new Reference(Profiler\CatalogTrace::class) : null,
             ]);
-            $services->set(\CodeMode\Symfony\Command\ResetBudgetCommand::class)->args([new Reference(\CodeMode\Symfony\Http\CatalogStateStore::class)])->tag('console.command');
-        } elseif (\CodeMode\Symfony\Http\SecurityIdentityProvider::class === $config['identity_provider']) {
+            $services->set(Command\ResetBudgetCommand::class)->args([new Reference(Http\CatalogStateStore::class)])->tag('console.command');
+        } elseif (Http\SecurityIdentityProvider::class === $config['identity_provider']) {
             throw new \InvalidArgumentException('Enable HTTP with Symfony Security, or configure an explicit identity_provider for STDIO.');
         }
         $hasAi = null !== $config['ai_toolbox'] || null !== $config['ai_authorization'] || [] !== $config['ai_tools'];

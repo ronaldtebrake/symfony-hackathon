@@ -6,14 +6,17 @@ namespace CodeMode\Symfony\Http;
 
 use CodeMode\BatchResult;
 use CodeMode\Symfony\SessionFactory;
-use Mcp\Capability\Attribute\{McpTool, Schema};
+use Mcp\Capability\Attribute\McpTool;
+use Mcp\Capability\Attribute\Schema;
 use Mcp\Schema\Content\TextContent;
 use Mcp\Schema\Result\CallToolResult;
 
 /** Normal Symfony services exposed by symfony/mcp-bundle. No subprocess or generated code. */
 final readonly class CatalogTools
 {
-    public function __construct(private SessionFactory $sessions, private SecurityIdentityProvider $identities, private CatalogStateStore $states, private ?\CodeMode\Symfony\Profiler\CatalogTrace $trace = null) {}
+    public function __construct(private SessionFactory $sessions, private SecurityIdentityProvider $identities, private CatalogStateStore $states, private ?\CodeMode\Symfony\Profiler\CatalogTrace $trace = null)
+    {
+    }
 
     #[McpTool(name: 'search_tools', description: 'Search approved Symfony tools and return their complete contracts. Search never grants permission. Use these names and literal JSON arguments in execute_tools.')]
     #[Schema(type: 'object', properties: ['query' => ['type' => 'string', 'maxLength' => 256]], required: ['query'], additionalProperties: false)]
@@ -46,13 +49,16 @@ final readonly class CatalogTools
                         $save($state);
                         $this->trace?->budget($state, 'saved');
                     };
+
                     return $operation($this->sessions->createBatch($identity, $state, $checkpoint));
                 });
             $failed = false;
         } catch (\Throwable $error) {
-            $value = BatchResult::failure($error); $failed = true;
+            $value = BatchResult::failure($error);
+            $failed = true;
         }
         $this->trace?->finish($value, $failed, (hrtime(true) - $started) / 1_000_000);
-        return new CallToolResult([new TextContent(json_encode($value, JSON_THROW_ON_ERROR))], isError: $failed, structuredContent: $value);
+
+        return new CallToolResult([new TextContent(json_encode($value, \JSON_THROW_ON_ERROR))], isError: $failed, structuredContent: $value);
     }
 }

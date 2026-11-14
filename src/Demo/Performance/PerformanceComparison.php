@@ -13,7 +13,9 @@ final class PerformanceComparison
         $codeCheck = (new ConversationVerifier())->verify($code);
         $directCheck = (new BaselineVerifier())->verify($direct, $source);
         $paired = $codeCheck['passed'] && $directCheck['passed'];
-        $codeMetrics = self::metrics($code); $directMetrics = self::metrics($direct);
+        $codeMetrics = self::metrics($code);
+        $directMetrics = self::metrics($direct);
+
         return ['paired' => $paired, 'codeMode' => $codeMetrics, 'directTools' => $directMetrics,
             'codeModeVerification' => $codeCheck, 'directVerification' => $directCheck,
             'totalTokensSavedByCodeMode' => $paired ? $directMetrics['total'] - $codeMetrics['total'] : null,
@@ -25,19 +27,22 @@ final class PerformanceComparison
 
     public static function metrics(array $report): array
     {
-        $trace = $report['trace'] ?? []; $turns = [];
+        $trace = $report['trace'] ?? [];
+        $turns = [];
         foreach ($report['questions'] ?? [] as $i => $question) {
             $turn = $report['turns'][$i] ?? [];
-            $end = $turn['requestEnd'] ?? ($trace['modelRequests'] ?? 0); $start = $turn['requestStart'] ?? $end;
-            $responses = array_slice($trace['providerResponses'] ?? [], $start, max(0, $end - $start));
-            $metered = $end > $start && count($responses) === $end - $start && !in_array(null, array_column($responses, 'tokens'), true);
+            $end = $turn['requestEnd'] ?? ($trace['modelRequests'] ?? 0);
+            $start = $turn['requestStart'] ?? $end;
+            $responses = \array_slice($trace['providerResponses'] ?? [], $start, max(0, $end - $start));
+            $metered = $end > $start && \count($responses) === $end - $start && !\in_array(null, array_column($responses, 'tokens'), true);
             $turns[] = ['question' => $question, 'complete' => isset($turn['answer']), 'requests' => $end - $start,
                 'input' => $metered ? array_sum(array_column(array_column($responses, 'tokens'), 'prompt')) : null,
                 'output' => $metered ? array_sum(array_column(array_column($responses, 'tokens'), 'completion')) : null,
                 'total' => $metered ? array_sum(array_column(array_column($responses, 'tokens'), 'total')) : null];
         }
+
         return ['input' => $trace['providerTokens']['prompt'] ?? null, 'output' => $trace['providerTokens']['completion'] ?? null,
             'total' => $trace['providerTokens']['total'] ?? null, 'requests' => $trace['modelRequests'] ?? 0,
-            'readerCalls' => count($trace['brokerCalls'] ?? []), 'turns' => $turns];
+            'readerCalls' => \count($trace['brokerCalls'] ?? []), 'turns' => $turns];
     }
 }

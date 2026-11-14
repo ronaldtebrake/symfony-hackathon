@@ -7,9 +7,14 @@ namespace CodeMode;
 /** Results are application data. The ledger is host evidence, never an agent-supplied claim. */
 final readonly class BatchResult
 {
-    public function __construct(public array $results, public array $toolCalls, public float $durationMs, public int $outputBytes, public string $runId) {}
+    public function __construct(public array $results, public array $toolCalls, public float $durationMs, public int $outputBytes, public string $runId)
+    {
+    }
 
-    public function response(): array { return ['results' => $this->results]; }
+    public function response(): array
+    {
+        return ['results' => $this->results];
+    }
 
     public static function runtime(): array
     {
@@ -31,7 +36,8 @@ final readonly class BatchResult
         if (null !== $last && 'succeeded' !== $last['status']) {
             $failure += ['tool' => $last['name'], 'index' => array_key_last($calls)];
         }
-        return ['error' => $failure, 'completedCalls' => count(array_filter($calls, static fn ($call) => 'succeeded' === $call['status']))];
+
+        return ['error' => $failure, 'completedCalls' => \count(array_filter($calls, static fn ($call) => 'succeeded' === $call['status']))];
     }
 
     public static function failureTrace(\Throwable $error): array

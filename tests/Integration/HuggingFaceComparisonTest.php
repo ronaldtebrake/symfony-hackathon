@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use App\Command\HuggingFaceCompareCommand;
-use App\Demo\{DemoFactory, HuggingFaceComparison, HuggingFaceProofRunner, ReportStore};
+use App\Demo\DemoFactory;
+use App\Demo\HuggingFaceComparison;
+use App\Demo\HuggingFaceProofRunner;
+use App\Demo\ReportStore;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -20,16 +23,16 @@ final class HuggingFaceComparisonTest extends TestCase
         $pair['direct']['protocol'] = 'coverage-v10';
         $pair['code']['result']['agentCalls'] = [['name' => 'tools_search', 'result' => json_encode(array_map(
             static fn ($tool) => ['name' => $tool['name'], 'inputSchema' => $tool['inputSchema'], 'requiresDescribe' => false],
-            $pair['code']['approvedTools']), JSON_THROW_ON_ERROR)]];
+            $pair['code']['approvedTools']), \JSON_THROW_ON_ERROR)]];
         $checks = self::compare($pair)['checks'];
-        self::assertTrue($checks['compactContractsDisclosed']);
-        self::assertTrue($checks['sameToolSchemas']);
+        $this->assertTrue($checks['compactContractsDisclosed']);
+        $this->assertTrue($checks['sameToolSchemas']);
         $found = json_decode($pair['code']['result']['agentCalls'][0]['result'], true);
         $found[0]['inputSchema']['additionalProperties'] = true;
-        $pair['code']['result']['agentCalls'][0]['result'] = json_encode($found, JSON_THROW_ON_ERROR);
-        self::assertFalse(self::compare($pair)['checks']['compactContractsDisclosed']);
+        $pair['code']['result']['agentCalls'][0]['result'] = json_encode($found, \JSON_THROW_ON_ERROR);
+        $this->assertFalse(self::compare($pair)['checks']['compactContractsDisclosed']);
         $pair['code']['approvedTools'][0]['outputSchema'] = ['type' => 'null'];
-        self::assertFalse(self::compare($pair)['checks']['sameToolSchemas']);
+        $this->assertFalse(self::compare($pair)['checks']['sameToolSchemas']);
     }
 
     public function testCurrentProtocolRequiresFullInputAndOutputDisclosure(): void
@@ -37,50 +40,51 @@ final class HuggingFaceComparisonTest extends TestCase
         // Synthetic verifier input only; never retained as provider evidence.
         $pair = self::capture();
         $pair['direct']['protocol'] = \App\Demo\AuditPrompt::COVERAGE_PROTOCOL;
-        $pair['code']['result']['agentCalls'] = [['name' => 'tools_search', 'result' => json_encode($pair['code']['approvedTools'], JSON_THROW_ON_ERROR)]];
-        self::assertFalse(self::compare($pair)['checks']['fullContractsDisclosed']);
+        $pair['code']['result']['agentCalls'] = [['name' => 'tools_search', 'result' => json_encode($pair['code']['approvedTools'], \JSON_THROW_ON_ERROR)]];
+        $this->assertFalse(self::compare($pair)['checks']['fullContractsDisclosed']);
         $pair['code']['result']['agentCalls'][0]['name'] = 'tools_describe';
-        self::assertTrue(self::compare($pair)['checks']['fullContractsDisclosed']);
-        $found = $pair['code']['approvedTools']; $found[0]['outputSchema'] = ['type' => 'null'];
-        $pair['code']['result']['agentCalls'][0]['result'] = json_encode($found, JSON_THROW_ON_ERROR);
-        self::assertFalse(self::compare($pair)['checks']['fullContractsDisclosed']);
+        $this->assertTrue(self::compare($pair)['checks']['fullContractsDisclosed']);
+        $found = $pair['code']['approvedTools'];
+        $found[0]['outputSchema'] = ['type' => 'null'];
+        $pair['code']['result']['agentCalls'][0]['result'] = json_encode($found, \JSON_THROW_ON_ERROR);
+        $this->assertFalse(self::compare($pair)['checks']['fullContractsDisclosed']);
     }
 
     public function testActualPairHasCorrectAnswersReconciledUsageAndAllHistoricalAttempts(): void
     {
         $pair = self::capture();
         $comparison = self::compare($pair);
-        self::assertTrue($comparison['verifiedComparison']);
-        self::assertCount(21, $comparison['checks']);
-        self::assertSame(31382, $comparison['difference']['tokens']);
-        self::assertSame(6, $comparison['difference']['modelRequests']);
+        $this->assertTrue($comparison['verifiedComparison']);
+        $this->assertCount(21, $comparison['checks']);
+        $this->assertSame(31382, $comparison['difference']['tokens']);
+        $this->assertSame(6, $comparison['difference']['modelRequests']);
         foreach (['code' => [5, 12597, 10], 'direct' => [11, 43979, 9]] as $approach => [$requests, $tokens, $earlier]) {
             $capture = $pair[$approach];
-            self::assertSame('complete', $capture['status']);
-            self::assertSame($requests, $capture['result']['modelRequests']);
-            self::assertSame($tokens, $capture['result']['providerTokens']['total']);
-            self::assertCount(10, $capture['result']['report']['findings']);
-            self::assertCount(10, $capture['result']['brokerCalls']);
-            self::assertCount($earlier, $capture['previousAttempts']);
-            self::assertSame(2, $comparison['observedTotals'][$approach]['unreportedTokenAttempts']);
-            self::assertNull($comparison['observedTotals'][$approach]['providerTokens']);
+            $this->assertSame('complete', $capture['status']);
+            $this->assertSame($requests, $capture['result']['modelRequests']);
+            $this->assertSame($tokens, $capture['result']['providerTokens']['total']);
+            $this->assertCount(10, $capture['result']['report']['findings']);
+            $this->assertCount(10, $capture['result']['brokerCalls']);
+            $this->assertCount($earlier, $capture['previousAttempts']);
+            $this->assertSame(2, $comparison['observedTotals'][$approach]['unreportedTokenAttempts']);
+            $this->assertNull($comparison['observedTotals'][$approach]['providerTokens']);
             $file = 'code' === $approach ? 'huggingface-proof.json' : 'huggingface-baseline.json';
-            $original = json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/'.$file), true);
+            $original = json_decode(file_get_contents(\dirname(__DIR__, 2).'/docs/evidence/'.$file), true);
             $first = $original['previousAttempts'][0];
             unset($original['previousAttempts']);
-            self::assertSame($first, $capture['previousAttempts'][0]);
-            self::assertSame($original, $capture['previousAttempts'][1]);
+            $this->assertSame($first, $capture['previousAttempts'][0]);
+            $this->assertSame($original, $capture['previousAttempts'][1]);
         }
-        self::assertSame(98259, $comparison['observedTotals']['code']['knownProviderTokens']);
-        self::assertSame(327422, $comparison['observedTotals']['direct']['knownProviderTokens']);
-        self::assertSame([], $pair['direct']['result']['programs']);
+        $this->assertSame(98259, $comparison['observedTotals']['code']['knownProviderTokens']);
+        $this->assertSame(327422, $comparison['observedTotals']['direct']['knownProviderTokens']);
+        $this->assertSame([], $pair['direct']['result']['programs']);
     }
 
     #[DataProvider('mutations')]
     public function testCorrectAnswersAloneDoNotEstablishAMatchedComparison(string $mutation): void
     {
         $pair = self::capture();
-        $last = count($pair['direct']['result']['requestEvidence']) - 1;
+        $last = \count($pair['direct']['result']['requestEvidence']) - 1;
         match ($mutation) {
             'prompt' => $pair['direct']['systemPrompt'] .= ' Extra guidance.',
             'shared' => $pair['code']['sharedPromptSha256'] = str_repeat('0', 64),
@@ -97,58 +101,68 @@ final class HuggingFaceComparisonTest extends TestCase
         // Rebind after mutation so individual verification, not only the outer digest, must reject it.
         $pair['direct']['codeCaptureSha256'] = hash('sha256', HuggingFaceComparison::encodeCapture($pair['code']));
         $comparison = self::compare($pair);
-        self::assertFalse($comparison['verifiedComparison']);
-        self::assertNull($comparison['difference']);
+        $this->assertFalse($comparison['verifiedComparison']);
+        $this->assertNull($comparison['difference']);
     }
 
     public static function mutations(): iterable
     {
-        foreach (['prompt', 'shared', 'settings', 'identity', 'data', 'ceiling', 'message', 'finish', 'usage', 'cleanup', 'answer'] as $field) { yield $field => [$field]; }
+        foreach (['prompt', 'shared', 'settings', 'identity', 'data', 'ceiling', 'message', 'finish', 'usage', 'cleanup', 'answer'] as $field) {
+            yield $field => [$field];
+        }
     }
 
     public function testFreshCheckoutFallbackNeverHidesALocalFailedPair(): void
     {
         $root = sys_get_temp_dir().'/code-mode-pair-'.bin2hex(random_bytes(8));
         mkdir($root.'/docs/evidence', 0700, true);
-        copy(dirname(__DIR__, 2).'/docs/evidence/huggingface-pair.json', $root.'/docs/evidence/huggingface-pair.json');
+        copy(\dirname(__DIR__, 2).'/docs/evidence/huggingface-pair.json', $root.'/docs/evidence/huggingface-pair.json');
         $store = new ReportStore($root);
         try {
-            self::assertTrue(json_decode($store->readHuggingFaceComparison(), true)['verifiedComparison']);
-            self::assertSame('complete', json_decode($store->readHuggingFaceProof(), true)['status']);
+            $this->assertTrue(json_decode($store->readHuggingFaceComparison(), true)['verifiedComparison']);
+            $this->assertSame('complete', json_decode($store->readHuggingFaceProof(), true)['status']);
             $pair = self::capture();
             $pair['direct']['status'] = 'failed';
             $store->saveHuggingFacePair($pair);
-            self::assertFalse(json_decode($store->readHuggingFaceComparison(), true)['verifiedComparison']);
+            $this->assertFalse(json_decode($store->readHuggingFaceComparison(), true)['verifiedComparison']);
             file_put_contents($root.'/var/demo/huggingface-pair.json', str_repeat('x', 1048577));
             $this->expectException(\RuntimeException::class);
             $store->readHuggingFaceComparison();
         } finally {
             unlink($root.'/docs/evidence/huggingface-pair.json');
             unlink($root.'/var/demo/huggingface-pair.json');
-            rmdir($root.'/docs/evidence'); rmdir($root.'/docs'); rmdir($root.'/var/demo'); rmdir($root.'/var'); rmdir($root);
+            rmdir($root.'/docs/evidence');
+            rmdir($root.'/docs');
+            rmdir($root.'/var/demo');
+            rmdir($root.'/var');
+            rmdir($root);
         }
     }
 
     public function testMissingCredentialDoesNotOverwriteOrInvoke(): void
     {
-        $root = dirname(__DIR__, 2);
+        $root = \dirname(__DIR__, 2);
         $directory = sys_get_temp_dir().'/code-mode-pair-no-key-'.bin2hex(random_bytes(8));
         $saved = $_SERVER['HUGGINGFACE_API_KEY'] ?? null;
         $_SERVER['HUGGINGFACE_API_KEY'] = '';
         $http = new MockHttpClient(static fn () => throw new \LogicException('No provider request allowed.'));
         try {
             $command = new HuggingFaceCompareCommand(new HuggingFaceProofRunner(new DemoFactory($root), $http, $root), new ReportStore($directory), $root);
-            self::assertSame(2, (new CommandTester($command))->execute([]));
-            self::assertSame(0, $http->getRequestsCount());
-            self::assertDirectoryDoesNotExist($directory);
+            $this->assertSame(2, (new CommandTester($command))->execute([]));
+            $this->assertSame(0, $http->getRequestsCount());
+            $this->assertDirectoryDoesNotExist($directory);
         } finally {
-            if (null === $saved) { unset($_SERVER['HUGGINGFACE_API_KEY']); } else { $_SERVER['HUGGINGFACE_API_KEY'] = $saved; }
+            if (null === $saved) {
+                unset($_SERVER['HUGGINGFACE_API_KEY']);
+            } else {
+                $_SERVER['HUGGINGFACE_API_KEY'] = $saved;
+            }
         }
     }
 
     public function testInterruptedPairKeepsBothHistoriesWhenPrerequisitesFail(): void
     {
-        $root = dirname(__DIR__, 2);
+        $root = \dirname(__DIR__, 2);
         $directory = sys_get_temp_dir().'/code-mode-interrupted-'.bin2hex(random_bytes(8));
         $store = new ReportStore($directory);
         $previous = self::capture();
@@ -165,19 +179,25 @@ final class HuggingFaceComparisonTest extends TestCase
         $http = new MockHttpClient(static fn () => throw new \LogicException('No provider request allowed.'));
         try {
             $command = new HuggingFaceCompareCommand(new HuggingFaceProofRunner(new DemoFactory($root), $http, $root), $store, $root);
-            self::assertSame(1, (new CommandTester($command))->execute([]));
-            self::assertSame(0, $http->getRequestsCount());
+            $this->assertSame(1, (new CommandTester($command))->execute([]));
+            $this->assertSame(0, $http->getRequestsCount());
             $pair = $store->readHuggingFacePair();
             foreach (['code', 'direct'] as $approach) {
-                self::assertSame($history[$approach], $pair[$approach]['previousAttempts']);
-                self::assertSame('failed', $pair[$approach]['status']);
+                $this->assertSame($history[$approach], $pair[$approach]['previousAttempts']);
+                $this->assertSame('failed', $pair[$approach]['status']);
             }
         } finally {
             foreach (['HUGGINGFACE_API_KEY', 'HUGGINGFACE_MODEL', 'CODE_MODE_IMAGE'] as $key) {
-                if (array_key_exists($key, $saved)) { $_SERVER[$key] = $saved[$key]; } else { unset($_SERVER[$key]); }
+                if (\array_key_exists($key, $saved)) {
+                    $_SERVER[$key] = $saved[$key];
+                } else {
+                    unset($_SERVER[$key]);
+                }
             }
             unlink($directory.'/var/demo/huggingface-pair.json');
-            rmdir($directory.'/var/demo'); rmdir($directory.'/var'); rmdir($directory);
+            rmdir($directory.'/var/demo');
+            rmdir($directory.'/var');
+            rmdir($directory);
         }
     }
 
@@ -188,6 +208,6 @@ final class HuggingFaceComparisonTest extends TestCase
 
     private static function capture(): array
     {
-        return json_decode(file_get_contents(dirname(__DIR__, 2).'/docs/evidence/huggingface-pair.json'), true, flags: JSON_THROW_ON_ERROR);
+        return json_decode(file_get_contents(\dirname(__DIR__, 2).'/docs/evidence/huggingface-pair.json'), true, flags: \JSON_THROW_ON_ERROR);
     }
 }

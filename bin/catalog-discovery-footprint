@@ -6,7 +6,11 @@ declare(strict_types=1);
 // Offline serialization only. No MCP handler, model, worker or runtime is started.
 require dirname(__DIR__).'/vendor/autoload.php';
 
-use CodeMode\{BatchSession, ExecutionIdentity, ToolBroker, ToolCatalog, ToolDefinition};
+use CodeMode\BatchSession;
+use CodeMode\ExecutionIdentity;
+use CodeMode\ToolBroker;
+use CodeMode\ToolCatalog;
+use CodeMode\ToolDefinition;
 use Mcp\Schema\Result\ListToolsResult;
 use Mcp\Schema\Tool;
 
@@ -20,8 +24,8 @@ foreach ([3, 10, 20, 40, 100] as $count) {
     $session = new BatchSession(new ToolCatalog($definitions), new ToolBroker([]), new ExecutionIdentity('offline-measurement', []));
     foreach (['direct' => $definitions, 'catalog' => $session->catalogToolDefinitions()] as $mode => $tools) {
         $result = new ListToolsResult(array_map(static fn ($tool) => Tool::fromArray(['name' => $tool->name, 'description' => $tool->description, 'inputSchema' => get_object_vars($tool->inputSchema)]), $tools));
-        $text = json_encode($result, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        $text = json_encode($result, \JSON_UNESCAPED_SLASHES | \JSON_THROW_ON_ERROR);
         $samples[] = ['catalogTools' => $count, 'mode' => $mode, 'advertisedTools' => count($tools), 'bytes' => strlen($text), 'sha256' => hash('sha256', $text), 'text' => $text];
     }
 }
-echo json_encode(['scope' => 'Offline PHP MCP SDK tools/list result serialization. Synthetic tools have four input fields each. Counts exclude search results, task data, prompts, conversation history, output and provider framing. No inference or billing measurement.', 'samples' => $samples], JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n";
+echo json_encode(['scope' => 'Offline PHP MCP SDK tools/list result serialization. Synthetic tools have four input fields each. Counts exclude search results, task data, prompts, conversation history, output and provider framing. No inference or billing measurement.', 'samples' => $samples], \JSON_UNESCAPED_SLASHES | \JSON_THROW_ON_ERROR)."\n";

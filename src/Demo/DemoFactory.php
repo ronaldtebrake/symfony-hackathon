@@ -15,13 +15,15 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class DemoFactory
 {
-    public function __construct(#[Autowire('%kernel.project_dir%')] private string $projectDir) {}
+    public function __construct(#[Autowire('%kernel.project_dir%')] private string $projectDir)
+    {
+    }
 
     public function create(string $approach = 'code', string $backend = 'fixture', ?SandboxExecutor $sandbox = null, bool $evaluation = false, ?RunTrace $trace = null, DiscoveryMode $discovery = DiscoveryMode::Full): DemoContext
     {
         $trace ??= new RunTrace();
         if (null === $sandbox) {
-            $docker = new DockerEngine(json_decode(BackendFactory::env('CODE_MODE_DOCKER_COMMAND', '["docker"]'), true, flags: JSON_THROW_ON_ERROR));
+            $docker = new DockerEngine(json_decode(BackendFactory::env('CODE_MODE_DOCKER_COMMAND', '["docker"]'), true, flags: \JSON_THROW_ON_ERROR));
             $sandbox = new GvisorSandbox(BackendFactory::env('CODE_MODE_IMAGE'), $docker, $trace->timeline);
             // Check the deployment before making any paid model request.
             $docker->requireGvisor();
@@ -34,6 +36,7 @@ final readonly class DemoFactory
         }
         $broker = $gateway->broker($catalog);
         $session = new CodeModeSession($catalog, $broker, $sandbox, new ExecutionIdentity('demo-editor', ['content.audit']), new ExecutionLimits(wallTimeMs: 15000, toolTimeMs: 3000, maxToolCalls: 30), discovery: $discovery);
+
         return new DemoContext(new AuditToolbox($approach, $catalog, $broker, $session, $trace), $session, $catalog, $trace);
     }
 }

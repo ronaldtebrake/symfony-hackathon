@@ -12,7 +12,7 @@ use Symfony\AI\Platform\Tool\ToolEffectHints;
 #[AsTool('<?= $tool_name ?>', 'Read an approved record by integer ID.', effectHints: new ToolEffectHints(readOnlyHint: true),
     metadata: ['code_mode.output_schema' => ['type' => 'object']])]
 #[IsGrantedTool(<?= $voter_short ?>::READ, subject: 'id')]
-final class <?= $class_name ?>
+final class <?= $class_name."\n" ?>
 {
     public function __invoke(int $id): array
     {

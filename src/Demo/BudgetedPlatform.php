@@ -4,21 +4,25 @@ declare(strict_types=1);
 
 namespace App\Demo;
 
-use Symfony\AI\Platform\Model;
-use Symfony\AI\Platform\Message\MessageBag;
-use Symfony\AI\Platform\Message\{AssistantMessage, ToolCallMessage, UserMessage};
 use Symfony\AI\Platform\FinishReason\FinishReason;
-use Symfony\AI\Platform\Result\ResultInterface;
-use Symfony\AI\Platform\Result\TextResult;
-use Symfony\AI\Platform\TokenUsage\TokenUsageInterface;
+use Symfony\AI\Platform\Message\AssistantMessage;
+use Symfony\AI\Platform\Message\MessageBag;
+use Symfony\AI\Platform\Message\ToolCallMessage;
+use Symfony\AI\Platform\Message\UserMessage;
+use Symfony\AI\Platform\Model;
 use Symfony\AI\Platform\ModelCatalog\ModelCatalogInterface;
 use Symfony\AI\Platform\PlatformInterface;
 use Symfony\AI\Platform\Result\DeferredResult;
+use Symfony\AI\Platform\Result\ResultInterface;
+use Symfony\AI\Platform\Result\TextResult;
+use Symfony\AI\Platform\TokenUsage\TokenUsageInterface;
 
 /** Admission happens before invoke(), which may already start HTTP I/O before progress is emitted. */
 final readonly class BudgetedPlatform implements PlatformInterface
 {
-    public function __construct(private PlatformInterface $inner, private RunTrace $trace, private int $limit) {}
+    public function __construct(private PlatformInterface $inner, private RunTrace $trace, private int $limit)
+    {
+    }
 
     public function invoke(string|Model $model, array|string|object $input, array $options = []): DeferredResult
     {
@@ -33,15 +37,19 @@ final readonly class BudgetedPlatform implements PlatformInterface
             foreach ($input as $message) {
                 if ($message instanceof ToolCallMessage) {
                     $text = $message->asText() ?? '';
-                    $tools[] = ['bytes' => strlen($text), 'sha256' => hash('sha256', $text)];
+                    $tools[] = ['bytes' => \strlen($text), 'sha256' => hash('sha256', $text)];
                 }
-                if ($message instanceof UserMessage) { $users[] = hash('sha256', $message->asText() ?? ''); }
-                if ($message instanceof AssistantMessage && null !== $message->asText()) { $assistants[] = hash('sha256', $message->asText()); }
+                if ($message instanceof UserMessage) {
+                    $users[] = hash('sha256', $message->asText() ?? '');
+                }
+                if ($message instanceof AssistantMessage && null !== $message->asText()) {
+                    $assistants[] = hash('sha256', $message->asText());
+                }
             }
             // Digests bind questions, draft and tool evidence without persisting provider reasoning or credentials.
             $this->trace->requestEvidence[] = ['request' => $index, 'toolMessages' => $tools,
                 'systemPromptSha256' => hash('sha256', (string) $input->getSystemMessage()?->getContent()),
-                'userMessageSha256' => $users, 'assistantMessageSha256' => $assistants, 'toolsAvailable' => [] !== ($options['tools'] ?? []), 'toolsDeclared' => array_key_exists('tools', $options)]
+                'userMessageSha256' => $users, 'assistantMessageSha256' => $assistants, 'toolsAvailable' => [] !== ($options['tools'] ?? []), 'toolsDeclared' => \array_key_exists('tools', $options)]
                 + array_intersect_key($options, array_flip(['tool_choice', 'response_format']));
         }
         $span = $this->trace->timeline?->begin('model', 'Model request '.$index, ['request' => $index]);
@@ -53,6 +61,7 @@ final readonly class BudgetedPlatform implements PlatformInterface
         }
         $deferred->onConvert(function (ResultInterface $result) use ($span): ResultInterface {
             $this->trace->timeline?->end($span);
+
             return $result;
         });
         if ($this->trace->captureDetails) {
@@ -63,9 +72,11 @@ final readonly class BudgetedPlatform implements PlatformInterface
                     'answerSha256' => $result instanceof TextResult ? hash('sha256', $result->getContent()) : null,
                     'finishReason' => $finish instanceof FinishReason ? $finish->getCase()->value : null,
                     'tokens' => $usage instanceof TokenUsageInterface ? ['prompt' => $usage->getPromptTokens(), 'completion' => $usage->getCompletionTokens(), 'total' => $usage->getTotalTokens()] : null];
+
                 return $result;
             });
         }
+
         return $deferred;
     }
 

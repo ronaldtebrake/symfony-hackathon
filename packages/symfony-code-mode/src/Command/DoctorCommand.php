@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CodeMode\Symfony\Command;
 
+use CodeMode\BatchResult;
 use CodeMode\DockerEngine;
 use CodeMode\ExecutionLimits;
-use CodeMode\BatchResult;
 use CodeMode\GvisorSandbox;
 use CodeMode\Symfony\SessionFactory;
 use Symfony\Component\Console\Command\Command;
@@ -28,34 +28,47 @@ final class DoctorCommand extends Command
     {
         $checks = [];
         $check = static function (string $name, \Closure $probe, string $pass, string $fail) use (&$checks): bool {
-            try { $ok = true === $probe(); } catch (\Throwable) { $ok = false; }
+            try {
+                $ok = true === $probe();
+            } catch (\Throwable) {
+                $ok = false;
+            }
             $checks[] = ['name' => $name, 'passed' => $ok, 'detail' => $ok ? $pass : $fail];
+
             return $ok;
         };
-        $batch = in_array($this->mode, ['batch', 'catalog'], true);
-        $check('PHP', static fn () => PHP_VERSION_ID >= 80200, 'PHP '.PHP_VERSION, 'Use PHP 8.2 or newer.');
+        $batch = \in_array($this->mode, ['batch', 'catalog'], true);
+        $check('PHP', static fn () => \PHP_VERSION_ID >= 80200, 'PHP '.\PHP_VERSION, 'Use PHP 8.2 or newer.');
         if ($batch) {
-            $check('JSON', static fn () => extension_loaded('json'), 'JSON available; no process-control extensions required', 'Enable JSON.');
+            $check('JSON', static fn () => \extension_loaded('json'), 'JSON available; no process-control extensions required', 'Enable JSON.');
         } else {
-            $check('Historical PHP runtime', static fn () => 'cli' === PHP_SAPI && extension_loaded('json') && extension_loaded('pcntl') && extension_loaded('posix')
-                && !array_filter(['pcntl_fork', 'pcntl_waitpid', 'pcntl_alarm', 'pcntl_signal', 'posix_setsid', 'posix_kill', 'stream_socket_pair'], static fn ($function) => !function_exists($function)),
+            $check('Historical PHP runtime', static fn () => 'cli' === \PHP_SAPI && \extension_loaded('json') && \extension_loaded('pcntl') && \extension_loaded('posix')
+                && !array_filter(['pcntl_fork', 'pcntl_waitpid', 'pcntl_alarm', 'pcntl_signal', 'posix_setsid', 'posix_kill', 'stream_socket_pair'], static fn ($function) => !\function_exists($function)),
                 'Unix CLI supervisor available for the historical gVisor path', 'The historical generated-PHP path requires Unix CLI, pcntl, posix and enabled process supervision functions.');
         }
-        $check('Approved tools', fn () => count($this->sessions->catalog()->all()) > 0, 'Explicit tool services form a valid, bounded catalog', 'Configure approved read services or a Symfony AI toolbox with explicit names and authorization.');
+        $check('Approved tools', fn () => \count($this->sessions->catalog()->all()) > 0, 'Explicit tool services form a valid, bounded catalog', 'Configure approved read services or a Symfony AI toolbox with explicit names and authorization.');
         if (!$batch) {
-            $pinned = $check('Runner image pin', function (): bool { new GvisorSandbox($this->image, $this->docker); return true; }, 'Immutable sha256 image ID configured', 'Set CODE_MODE_IMAGE to the sha256 ID built on the gVisor Docker endpoint.');
-            $check('gVisor runtime', function (): bool { $this->docker->requireGvisor(); return true; }, 'Docker endpoint supplies the required runsc profile', 'Start the dedicated Linux Docker endpoint with runsc; check CODE_MODE_DOCKER_COMMAND. No fallback.');
+            $pinned = $check('Runner image pin', function (): bool {
+                new GvisorSandbox($this->image, $this->docker);
+
+                return true;
+            }, 'Immutable sha256 image ID configured', 'Set CODE_MODE_IMAGE to the sha256 ID built on the gVisor Docker endpoint.');
+            $check('gVisor runtime', function (): bool {
+                $this->docker->requireGvisor();
+
+                return true;
+            }, 'Docker endpoint supplies the required runsc profile', 'Start the dedicated Linux Docker endpoint with runsc; check CODE_MODE_DOCKER_COMMAND. No fallback.');
             $check('Runner image available', fn () => $pinned && $this->image === $this->docker->control(['image', 'inspect', '--format', '{{.Id}}', $this->image]), 'Pinned image exists on that Docker endpoint', 'Build the runner on the configured Docker endpoint and pin its image ID.');
         }
-        $ready = !in_array(false, array_column($checks, 'passed'), true);
+        $ready = !\in_array(false, array_column($checks, 'passed'), true);
         $report = ['ready' => $ready, 'runtime' => ($batch ? BatchResult::runtime() : $this->sessions->profile()->metadata()), 'checks' => $checks, 'limits' => ['wallTimeMs' => $this->limits->wallTimeMs, 'toolTimeMs' => $this->limits->toolTimeMs, 'memoryMiB' => $batch ? null : $this->limits->memoryMiB, 'phpMemoryMiB' => $batch ? null : $this->limits->phpMemoryMiB, 'brokerMemoryMiB' => $batch ? null : $this->limits->brokerMemoryMiB, 'maxToolCalls' => $this->limits->maxToolCalls, 'executionAttempts' => 2, 'deadlineEnforcement' => $batch ? 'cooperative' : 'supervised', 'hardTermination' => !$batch], 'scope' => 'Configuration checks only; no guest execution, application tool invocation or model request. Run the execution proofs separately.'];
         if ($input->getOption('json')) {
-            $output->writeln(json_encode($report, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+            $output->writeln(json_encode($report, \JSON_PRETTY_PRINT | \JSON_THROW_ON_ERROR));
         } else {
             $io = new SymfonyStyle($input, $output);
             $io->title('Symfony Code Mode · local prerequisites');
             $io->table(['Check', 'Status', 'What runs locally'], array_map(static fn (array $c) => [$c['name'], $c['passed'] ? 'OK' : 'FAIL', $c['detail']], $checks));
-            $io->text(sprintf('Limits: %d ms execution · %d ms/tool · %s · %d calls · 2 attempts', $this->limits->wallTimeMs, $this->limits->toolTimeMs, $batch ? 'hosting-managed memory' : $this->limits->memoryMiB.' MiB container memory', $this->limits->maxToolCalls));
+            $io->text(\sprintf('Limits: %d ms execution · %d ms/tool · %s · %d calls · 2 attempts', $this->limits->wallTimeMs, $this->limits->toolTimeMs, $batch ? 'hosting-managed memory' : $this->limits->memoryMiB.' MiB container memory', $this->limits->maxToolCalls));
             $io->note($report['scope']);
             if ($batch) {
                 $io->text('JSON calls run as ordinary Symfony services. No subprocess, process-control extension, Docker or gVisor. Deadlines are checked between calls and after handlers return; configure hard request, HTTP-client and database timeouts in your application/hosting. HTTP identity and persistent budgets are enforced by the catalog integration.');
@@ -63,6 +76,7 @@ final class DoctorCommand extends Command
                 $io->text('A normal Docker Desktop/OrbStack daemon is insufficient without runsc. A local Linux VM may provide the dedicated endpoint. Your MCP client supplies the conversation; Hugging Face is optional for the separate Symfony AI demo.');
             }
         }
+
         return $ready ? self::SUCCESS : self::FAILURE;
     }
 }

@@ -13,15 +13,18 @@ final readonly class GvisorSandbox implements ProfiledExecutor
         }
     }
 
-    public function profile(): ExecutionProfile { return ExecutionProfile::Gvisor; }
+    public function profile(): ExecutionProfile
+    {
+        return ExecutionProfile::Gvisor;
+    }
 
     public function execute(string $code, ToolBroker $broker, ExecutionIdentity $identity, array $allowedTools = [], ?ExecutionLimits $limits = null): ExecutionResult
     {
-        if ('cli' !== PHP_SAPI) {
+        if ('cli' !== \PHP_SAPI) {
             throw new SandboxException('unsupported_host', 'Run the broker in a dedicated PHP CLI worker.');
         }
         $limits ??= new ExecutionLimits();
-        if ('' === $code || strlen($code) > $limits->maxCodeBytes) {
+        if ('' === $code || \strlen($code) > $limits->maxCodeBytes) {
             throw new SandboxException('code_limit', 'PHP source is empty or exceeds its byte limit.');
         }
         $this->docker->requireGvisor();
@@ -53,7 +56,7 @@ final readonly class GvisorSandbox implements ProfiledExecutor
                 '-d', 'disable_functions=exec,passthru,shell_exec,system,proc_open,popen,pcntl_exec,pcntl_fork,pcntl_signal,pcntl_alarm,posix_kill,dl,putenv,ini_set,ini_alter,ini_restore,set_time_limit',
                 '/runner/bootstrap.php',
             ]);
-            $inspection = json_decode($this->docker->control(['inspect', $name]), true, 64, JSON_THROW_ON_ERROR)[0];
+            $inspection = json_decode($this->docker->control(['inspect', $name]), true, 64, \JSON_THROW_ON_ERROR)[0];
             $this->verifyContainer($inspection, $limits);
             $this->timeline?->end($setupSpan);
 
@@ -62,6 +65,7 @@ final readonly class GvisorSandbox implements ProfiledExecutor
             $process = $this->docker->attach($name);
             $result = GuestExecution::run($process, $worker, $code, $limits, $name, $started, $calls, $this->profile(), $this->timeline);
             $this->timeline?->end($executionSpan);
+
             return $result;
         } catch (\Throwable $error) {
             $this->timeline?->end($setupSpan, 'failed');
@@ -79,8 +83,8 @@ final readonly class GvisorSandbox implements ProfiledExecutor
                 $worker->close();
                 $process?->close();
                 if ($creationAttempted) {
-                // Stop the container itself, not just the attached Docker client.
-                // Cleanup failure is an error, never reported as successful execution.
+                    // Stop the container itself, not just the attached Docker client.
+                    // Cleanup failure is an error, never reported as successful execution.
                     $this->docker->remove($name);
                 }
                 $this->timeline?->end($cleanupSpan);
@@ -97,7 +101,7 @@ final readonly class GvisorSandbox implements ProfiledExecutor
         $config = $container['Config'];
         if ('runsc' !== $host['Runtime'] || 'none' !== $host['NetworkMode'] || !$host['ReadonlyRootfs']
             || $host['Privileged'] || ['ALL'] !== $host['CapDrop'] || !empty($host['CapAdd'])
-            || !in_array('no-new-privileges=true', $host['SecurityOpt'], true)
+            || !\in_array('no-new-privileges=true', $host['SecurityOpt'], true)
             || $host['Memory'] !== $limits->memoryMiB * 1048576 || $host['MemorySwap'] !== $host['Memory']
             || 1000000000 !== $host['NanoCpus'] || 128 !== $host['PidsLimit'] || !$host['AutoRemove']
             || !empty($host['Binds']) || !empty($host['Devices']) || !empty($host['DeviceRequests'])

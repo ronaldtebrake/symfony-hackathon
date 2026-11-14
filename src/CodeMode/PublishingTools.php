@@ -26,13 +26,17 @@ final class PublishingTools
         if (null === $article || 'published' !== $article['status']) {
             throw new \RuntimeException('Article is not available.');
         }
+
         return ['id' => $id, 'title' => $article['title'], 'body' => 'Accessible navigation uses clear labels, keyboard support and visible focus states.'.(1 === $id ? "\n\n".self::POISON : '')];
     }
 
     public function list(int $page): array
     {
-        if ($page < 1 || $page > 4) { throw new \InvalidArgumentException('Page is outside the published collection.'); }
+        if ($page < 1 || $page > 4) {
+            throw new \InvalidArgumentException('Page is outside the published collection.');
+        }
         $articles = array_values(array_filter((new AuditDataset())->articles(), static fn ($article) => 'published' === $article['status']));
-        return ['items' => array_map(static fn ($article) => array_intersect_key($article, array_flip(['id', 'title', 'meta_description'])), array_slice($articles, ($page - 1) * 12, 12)), 'nextPage' => $page < 4 ? $page + 1 : null];
+
+        return ['items' => array_map(static fn ($article) => array_intersect_key($article, array_flip(['id', 'title', 'meta_description'])), \array_slice($articles, ($page - 1) * 12, 12)), 'nextPage' => $page < 4 ? $page + 1 : null];
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CodeMode\Symfony;
 
+use CodeMode\BatchSession;
 use CodeMode\CodeModeSession;
 use CodeMode\DiscoveryMode;
 use CodeMode\DockerEngine;
@@ -11,13 +12,13 @@ use CodeMode\ExecutionIdentity;
 use CodeMode\ExecutionLimits;
 use CodeMode\ExecutionProfile;
 use CodeMode\GvisorSandbox;
-use CodeMode\BatchSession;
+use CodeMode\Provider\ProviderRegistry;
+use CodeMode\Provider\ToolProviderInterface;
+use CodeMode\Symfony\Ai\ApprovedToolbox;
 use CodeMode\Tool;
 use CodeMode\ToolBroker;
 use CodeMode\ToolCatalog;
 use CodeMode\ToolVisibilityInterface;
-use CodeMode\Symfony\Ai\ApprovedToolbox;
-use CodeMode\Provider\{ProviderRegistry, ToolProviderInterface};
 
 final readonly class SessionFactory
 {
@@ -29,13 +30,17 @@ final readonly class SessionFactory
         }
     }
 
-    public function profile(): ExecutionProfile { return $this->executor; }
+    public function profile(): ExecutionProfile
+    {
+        return $this->executor;
+    }
 
     /** Each host-owned conversation gets its own discovery state and two-attempt budget. */
     public function create(ExecutionIdentity $identity, ?DiscoveryMode $discovery = null): CodeModeSession
     {
         [$catalog, $broker, $php] = $this->assembleTools();
         $executor = new GvisorSandbox($this->image, $this->docker);
+
         return new CodeModeSession($catalog, $broker, $executor, $identity, $this->limits, discovery: $discovery ?? $this->discovery, phpInterface: $php, visibility: $this->visibility);
     }
 
@@ -43,7 +48,13 @@ final readonly class SessionFactory
     public function createBatch(ExecutionIdentity $identity, array $state = [], ?\Closure $checkpoint = null): BatchSession
     {
         [$catalog, $broker] = $this->assembleTools();
+
         return new BatchSession($catalog, $broker, $identity, $this->limits, state: $state, checkpoint: $checkpoint, visibility: $this->visibility);
+    }
+
+    public function catalog(): ToolCatalog
+    {
+        return new ToolCatalog([...array_map(static fn (ReadToolInterface $tool) => $tool->definition(), $this->approvedTools()), ...([] === $this->providers ? [] : (new ProviderRegistry($this->providers))->catalog()->all())]);
     }
 
     /** Both paths assemble identical contracts and handlers; execution does not change policy. */
@@ -57,12 +68,8 @@ final readonly class SessionFactory
             $definition = $catalog->all()[$index];
             $handlers[] = new Tool($definition->name, $definition->inputSchema, $tool->authorize(...), $tool->invoke(...));
         }
-        return [$catalog, new ToolBroker([...$handlers, ...($providers?->handlers() ?? [])]), $providers?->php()];
-    }
 
-    public function catalog(): ToolCatalog
-    {
-        return new ToolCatalog([...array_map(static fn (ReadToolInterface $tool) => $tool->definition(), $this->approvedTools()), ...([] === $this->providers ? [] : (new ProviderRegistry($this->providers))->catalog()->all())]);
+        return [$catalog, new ToolBroker([...$handlers, ...($providers?->handlers() ?? [])]), $providers?->php()];
     }
 
     private function approvedTools(): array
@@ -71,6 +78,7 @@ final readonly class SessionFactory
         if ([] === $tools && [] === $this->providers) {
             throw new \LogicException('Configure at least one approved read tool.');
         }
+
         return $tools;
     }
 }

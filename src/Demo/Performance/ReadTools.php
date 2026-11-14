@@ -13,11 +13,6 @@ use Symfony\AI\Platform\Tool\ToolEffectHints;
 final readonly class ReadTools
 {
     public const NAMES = ['perf_requests', 'perf_profile', 'perf_logs'];
-    private const ID = ['type' => 'string', 'pattern' => '^[a-z][a-z0-9-]{0,31}$'];
-    private const TIME = ['type' => 'number', 'minimum' => 0];
-    private const COUNT = ['type' => 'integer', 'minimum' => 0, 'maximum' => 32];
-    private const SUMMARY = ['requestId' => self::ID, 'route' => ['enum' => ['catalog_naive', 'catalog_joined', 'health']],
-        'variant' => ['enum' => ['before', 'after', 'control']], 'durationMs' => self::TIME, 'queryCount' => self::COUNT];
     public const INDEX_SCHEMA = ['type' => 'object', 'additionalProperties' => false, 'required' => ['items'], 'properties' => [
         'items' => ['type' => 'array', 'maxItems' => 8, 'items' => ['type' => 'object', 'additionalProperties' => false,
             'required' => ['requestId', 'route', 'variant', 'durationMs', 'queryCount'], 'properties' => self::SUMMARY]]]];
@@ -30,8 +25,28 @@ final readonly class ReadTools
         'requestId' => self::ID, 'events' => ['type' => 'array', 'maxItems' => 16, 'items' => ['type' => 'object', 'additionalProperties' => false,
             'required' => ['event', 'level', 'count'], 'properties' => ['event' => ['enum' => ['authors.loaded_individually', 'catalog.rendered', 'health.ok']],
                 'level' => ['enum' => ['info', 'warning']], 'count' => ['type' => 'integer', 'minimum' => 0, 'maximum' => 100]]]]]];
-    public function __construct(private ReadDataset $data) {}
-    public function requests(): array { return $this->data->requests(); }
-    public function profile(string $requestId): array { return $this->data->profile($requestId); }
-    public function logs(string $requestId): array { return $this->data->logs($requestId); }
+    private const ID = ['type' => 'string', 'pattern' => '^[a-z][a-z0-9-]{0,31}$'];
+    private const TIME = ['type' => 'number', 'minimum' => 0];
+    private const COUNT = ['type' => 'integer', 'minimum' => 0, 'maximum' => 32];
+    private const SUMMARY = ['requestId' => self::ID, 'route' => ['enum' => ['catalog_naive', 'catalog_joined', 'health']],
+        'variant' => ['enum' => ['before', 'after', 'control']], 'durationMs' => self::TIME, 'queryCount' => self::COUNT];
+
+    public function __construct(private ReadDataset $data)
+    {
+    }
+
+    public function requests(): array
+    {
+        return $this->data->requests();
+    }
+
+    public function profile(string $requestId): array
+    {
+        return $this->data->profile($requestId);
+    }
+
+    public function logs(string $requestId): array
+    {
+        return $this->data->logs($requestId);
+    }
 }
