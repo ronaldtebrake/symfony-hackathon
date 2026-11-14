@@ -6,6 +6,8 @@ The film keeps **51 seconds of real agent footage** central: discover a publishe
 
 The two original screen recordings were supplied on 14 November. Their chat and tool responses are not reconstructed. The operator changed permission between recordings; that action is explained by a caption. New development captures are labelled separately because the footage predates the voter/profiler additions. Original recordings and intermediate renders stay outside the tracked repository; only the final film, poster, two profiler screenshots and compact capture record are published.
 
+On-screen captions focus on the action and its value. The lower-left production notes and repeated footer text have been removed; methodology and source details stay in this guide, the chapter inspector and the capture record.
+
 ## Film chapters and text alternative
 
 | Time | On screen | Message and evidence |
@@ -17,7 +19,7 @@ The two original screen recordings were supplied on 14 November. Their chat and 
 | **00:46–00:51** | Violet permission-change card. | The operator revoked `publication.read_published` between recordings. Same authenticated user and application connection; no budget reset. This is a caption of the actual change, not footage of an operator command. |
 | **00:51–01:14** | Full second recording, original speed, then final still hold. | “Can you refresh that article from the application?” The identical JSON call returns `tool_denied`, `completedCalls: 0`. The agent explains the denial and says the earlier title remains in chat but is not a fresh result. |
 | **01:14–01:22** | Actual Symfony profiler screenshots: allowed, then denied. | A separate authenticated HTTP capture records native `requested` / `succeeded` events for the allowed read. After revocation: denied broker call, no native tool events, two attempts consumed. No model was called for these profiles. |
-| **01:22–01:30** | Separate historical matched audit and repository link. | Ten correct findings on all paths: direct **46,438**, JSON **29,798**, sandboxed PHP **12,806** provider tokens. JSON used **35.8% fewer** than direct tools in this run. Same model, question, data and permissions; reviews included. Not this lookup's usage, a new HTTP benchmark or a bill. |
+| **01:22–01:30** | Current HTTP catalog scaling and repository link. | “More tools. Same entry cost.” As the synthetic catalog grows from 10 to 100 tools, direct advertisement grows from **865 to 8,605 tokens**. The two HTTP entry contracts stay at **239**. Offline counts of serialized `tools/list` JSON; search results and conversation costs remain additional. No model or handler runs for this measurement. |
 
 Source views: [handler](../examples/symfony/src/ArticleTool.php), [voter](../examples/symfony/src/ArticleVoter.php), [controller](../examples/symfony/src/ArticleController.php). The workbench supplies a video player, seekable chapters, highlighted source, actual Maker output and profiler metadata. Its supporting HTTP records are separate operator checks, not the recorded chat transcript.
 
@@ -29,7 +31,7 @@ Draft for the official project entry; not submitted. Project name: **Symfony Cod
 >
 > We started with generated PHP in gVisor, where code could join and filter tool results before returning them to the model. That worked, but required a separate runtime. The current JSON catalog runs in an ordinary Symfony HTTP application, making adoption simpler while preserving authorization and call budgets. Sandboxed PHP remains available for computation.
 >
-> The real demo reads an article, revokes the user's permission, then denies the identical follow-up. A Maker command, shared voter and profiler panel make the integration familiar to Symfony developers. In a retained matched Symfony AI + Hugging Face audit, JSON used 35.8% fewer provider tokens than direct tools, with ten correct findings on both paths and review costs included. That historical audit predates HTTP; the current application has a separate 31-check execution proof.
+> The real demo reads an article, revokes the user's permission, then denies the identical follow-up. A Maker command, shared voter and profiler panel make the integration familiar to Symfony developers. An offline scaling fixture shows the current HTTP entry contracts staying at 239 schema tokens as available tools grow from 3 to 128; search and conversation costs remain additional. Separately, a retained matched Symfony AI + Hugging Face audit used 35.8% fewer provider tokens with JSON than direct tools, with ten correct findings on both paths and review costs included. That historical audit predates HTTP; the current application has a separate 31-check execution proof.
 >
 > Clone the repository and run the HTTP proof with PHP and Composer. No Docker or model key is required for that proof.
 
@@ -130,7 +132,8 @@ For profiler shots, use `APP_ENV=dev` locally and capture fresh authorized and r
 - The fresh chat uses the client's model. Symfony AI supplies schemas and handler invocation; this is **not** a new Symfony AI + Hugging Face model run.
 - Same-user revocation takes effect on the **next HTTP request**. The discovered name remains known, but execution rechecks access. The local authenticator reads the changed permission fixture; no reusable package security checks or budgets are relaxed. This does not claim cancellation of a handler already running.
 - The separate HTTP proof also tests restricted article 202, cross-user discovery isolation, unchanged budgets after regrant and server restart, and authentication/origin checks. These extra probes need not fit in the recording.
-- The token table is the retained **48-article, 24-image audit**, not this small lookup. It includes model reviews and failed attempts. JSON used **35.8% fewer** provider-reported tokens; PHP used **72.4% fewer** in this matched run. These are not bills or universal savings. The HTTP runtime has not been re-benchmarked.
+- The film’s final chart counts serialized **advertised schemas** with a local tokenizer. The two current HTTP contracts match the real HTTP capture. The larger catalogs are synthetic four-field tools, not additional tools installed in the filmed application. Search results, client framing, task data, history and output are excluded. The model was not called to measure the flat line.
+- The separate workbench audit retains all attempts: **48 articles, 24 images, 10 correct findings**. JSON used **35.8% fewer** provider-reported tokens; PHP used **72.4% fewer** in that matched run, including reviews. Those are complete historical conversation measurements, not the film’s lookup or universal savings. The HTTP runtime has not had a new end-to-end model benchmark.
 - JSON runs trusted installed handlers in process. No worker, Docker or gVisor is required for this sequence. Hosting and downstream clients enforce hard timeouts; JSON is not a prompt-injection defense.
 - Keep the real requests, responses and untrimmed footage locally. The workbench is a read-only evidence viewer, not a live mirror of your conversation. `--trace-file` is PHP-only; save the JSON records through the client.
 
@@ -144,7 +147,7 @@ The [hackathon brief](https://symfony.com/hackathon) is the source for submissio
 
 ## Optional follow-up material
 
-**The journey:** [From PHP to JSON](https://ronaldtebrake.github.io/symfony-hackathon/#version-two) explains the current execution model, then the infrastructure trade-off that led to it. PHP remains useful for loops, joins and filtering; easier managed isolation could improve its adoption later.
+**The journey:** [From PHP to JSON](https://ronaldtebrake.github.io/symfony-hackathon/#journey) follows the problem, the gVisor proof, the hosting trade-off and the decision to ship a JSON catalog. PHP remains useful for loops, joins and filtering; easier managed isolation could improve its adoption later.
 
 **Reproduce model evidence:** `php bin/console code-mode:catalog-proof --no-debug` runs operator checks; `--live` adds paid Symfony AI + Hugging Face inference. Both retain attempts. The public catalog capture includes five live scenarios and the independent app's operator proof. The earlier native client rehearsal is a separate file. The film and its new development capture have their own provenance record.
 

@@ -1580,8 +1580,8 @@ h1,h2,h3 { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 .catalog-benefits p { color:var(--muted); font-size:13px; line-height:1.7; margin:0; }
 @media(max-width:1100px) { .catalog-benefits { grid-template-columns:1fr; } }
 .journey-signpost a { font-size:12px; color:var(--brand); font-weight:600; }
-#journey > h2 { font-size:clamp(30px,3vw,44px); line-height:1.15; letter-spacing:-1.2px; margin:16px 0; }
-#journey > .lede { max-width:790px; line-height:1.8; color:var(--muted); }
+#journey > h2, #catalog-cost > h2 { font-size:clamp(30px,3vw,44px); line-height:1.15; letter-spacing:-1.2px; margin:16px 0; }
+#journey > .lede, #catalog-cost > .lede { max-width:790px; line-height:1.8; color:var(--muted); }
 .journey-boundary { border:1px solid #dbc9eb; background:#faf6ff; border-radius:10px; padding:20px 24px; display:flex; gap:12px 20px; align-items:center; flex-wrap:wrap; }
 .journey-boundary strong { color:var(--brand); font-size:13px; }
 .journey-boundary span { font-size:11px; color:var(--muted); }
@@ -1709,3 +1709,34 @@ pre.proof-source.php-highlight { font-size:11px; padding:14px; white-space:pre-w
 .native-implementation .tour-code { max-height:420px; font-size:11px; white-space:pre-wrap; overflow-wrap:anywhere; }
 @media(max-width:900px) { .native-call-grid { grid-template-columns:1fr; } }
 @media(max-width:760px) { .catalog-controls { grid-template-columns:1fr; } .catalog-turn { padding:16px; } }
+
+/* Current HTTP schema footprint, separate from historical model usage. */
+.scaling-signpost { display:grid; gap:12px; margin:36px 0; padding:28px 32px; border:1px solid var(--accent-border); border-radius:18px; background:linear-gradient(110deg,#f0e9ff,#fff); color:var(--ink); text-decoration:none; }
+.scaling-signpost strong { font-size:clamp(22px,2.4vw,32px); letter-spacing:-.04em; }
+.scaling-signpost strong span { color:var(--brand); }
+.scaling-signpost > span:last-child { color:var(--muted); font-size:13px; }
+.scaling-card { margin:28px 0; padding:28px; background:var(--surface); border:1px solid var(--accent-border); border-radius:20px; }
+.scaling-toolbar { display:flex; flex-wrap:wrap; gap:12px; align-items:center; font-size:14px; }
+.scaling-toolbar label { font-weight:700; }
+.scaling-toolbar select { border:1px solid var(--accent-border); border-radius:8px; padding:8px 14px; background:var(--paper); color:var(--brand); font:inherit; }
+.scaling-toolbar > span { color:var(--muted); margin-left:auto; font-size:12px; }
+.scaling-numbers { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin:32px 0; }
+.scaling-numbers article { display:grid; gap:8px; padding:22px; border-radius:14px; background:var(--surface-muted); }
+.scaling-numbers article:last-child { background:var(--soft-accent); }
+.scaling-numbers article > span { color:var(--muted); font-size:13px; }
+.scaling-numbers strong { font-size:clamp(40px,6vw,68px); line-height:1; letter-spacing:-.06em; color:var(--brand-muted); }
+.scaling-numbers article:last-child strong { color:var(--brand); }
+.scaling-legend { display:flex; flex-wrap:wrap; gap:24px; font-size:13px; color:var(--brand-muted); }
+.scaling-legend span:last-child { color:var(--brand); font-weight:700; }
+#scaling-chart svg { display:block; width:100%; height:auto; margin-top:15px; }
+.scaling-grid { stroke:var(--line); stroke-width:1; }
+.scaling-axis { font-size:16px; fill:var(--muted); }
+.scaling-line { fill:none; stroke-width:4; stroke-linejoin:round; }
+.scaling-line.scaling-direct { stroke:#b8a3cb; }.scaling-dot.scaling-direct { fill:#b8a3cb; }
+.scaling-line.scaling-catalog { stroke:var(--brand); }.scaling-dot.scaling-catalog { fill:var(--brand); }
+@media(max-width:600px) { .scaling-card { padding:18px; } .scaling-numbers { gap:10px; }.scaling-numbers article { padding:14px; } .scaling-toolbar > span { margin-left:0; width:100%; } }
+.journey-route { display: flex; flex-wrap: wrap; gap: .65rem; margin: 1.75rem 0 2.5rem; }
+.journey-route span { padding: .7rem 1rem; border: 1px solid #ded2ef; border-radius: 999px; color: #54208c; background: #f8f4ff; font-weight: 650; font-size: .9rem; }
+#journey .design-story { max-width: 780px; }
+#journey .design-story h3 { margin-top: 2.5rem; font-size: 1.6rem; letter-spacing: -.03em; line-height: 1.3; }
+#journey .design-story p { line-height: 1.8; }

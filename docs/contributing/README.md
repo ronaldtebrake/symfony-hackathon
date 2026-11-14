@@ -32,15 +32,36 @@ The [v3/v4 investigation](../demo.md#historical-repeated-directphp-evaluation) a
 
 **A concrete API limitation to discuss:** the installed Symfony AI prerelease returns a denied `ToolCallRequested` as an ordinary string-valued `ToolResult`, without a typed denial flag. A wrapper cannot reliably distinguish that from a valid string response. Our object output schemas reject such strings and the broker returns sanitized `tool_failed`; our own authorization policy produces `tool_denied`. Consider preserving a typed outcome for decorators. Reproduce against current upstream before proposing a change. This is separate from MCP error propagation issue #2534, already fixed through #2535.
 
-## 2. Symfony AI: contribute discovery evidence to #2623
+## 2. Build on Symfony AI’s discovery work
 
-[Dynamic tool discovery #2623](https://github.com/symfony/ai/issues/2623) already links a searchable-toolbox/BM25 prototype. Join that discussion instead of opening a duplicate or building a competing search API.
+Reviewed on 14 November 2026: [dynamic discovery #2623](https://github.com/symfony/ai/issues/2623), [Johannes Wachter’s PR #87](https://github.com/wachterjohannes/symfony-ai/pull/87) at `c9b2fc128e50524e6ca7585d2a7771925962ffad`, and its prerequisite [native deferred-tools PR #2878](https://github.com/symfony/ai/pull/2878) at `99536fd46171885bba705f4e1b0df6b86c419b60`. Both PRs are open. No dependency was changed and no feedback has been posted.
 
-Our selected-tool descriptions now include a bounded [PHP usage guide](../../packages/php-code-mode/src/PhpToolGuide.php): an invocation example, argument/result shapes and explicit `stdClass` versus list guidance. Undeclared and referenced output shapes remain `mixed`. Guides are data, never evaluated or used as authorization. The original schemas remain available.
+The designs solve related problems at different layers:
 
-**Suggested contribution:** offer this PHP-specific experience and a focused discovery evaluation. Use a clearly labelled synthetic catalog of 16, 64 and 128 approved tools; compare initial schema bytes, discovery bytes, retrieval accuracy, complete-answer accuracy and request counts. Include ambiguous names and unrelated tools. Keep the model, task, relevant data and permissions fixed. Compare our simple keyword search with the existing prototype before proposing ranking changes. This larger-catalog experiment is a contribution follow-up, not evidence already captured here.
+| Surface | How discovery works | What grows |
+| --- | --- | --- |
+| Our HTTP MCP server | Two stable tools; search returns full contracts; execute accepts literal JSON | Retrieved contracts and conversation history; the two advertised schemas stay fixed |
+| Proposed `SearchableToolbox` | An agent toolbox decorator; common tools stay exposed, searched tools become directly callable | Hidden names appear in the search description; discovered schemas join the tool list. The PR documents possible prompt-cache invalidation |
+| Proposed native provider path | `deferred` tools are handled through the provider’s search capability | Provider-managed behavior; evaluate its usage and cache reporting separately |
 
-[Cloudflare's typed Code Mode interfaces](https://developers.cloudflare.com/agents/model-context-protocol/guides/build-codemode-mcp-server/) informed the guide. The PHP guide has not yet been evaluated in a controlled with/without experiment; do not claim it reduces model errors or tokens.
+**Reuse plan:** keep the current HTTP demo on its installed dependencies. First test a pinned adapter to `ToolSearchInterface` in an isolated example. Pass only the current user’s visible tools to the ranker, then apply our existing contract-size limit, explicit truncation and exact-name behavior. The interface returns ranked tools, not match counts: rank the bounded visible catalog before applying the disclosure limit. Reject results outside that catalog. Keep authorization, discovery state, argument validation and persistent budget reservations in the existing broker/session.
+
+For agents running *inside* Symfony AI, separately test `SearchableToolbox` and native deferred tools. A direct call must pass through the same authorization and budget guard; putting the ordinary application toolbox underneath would bypass our session controls. Do not wrap our two entry tools in another discovery layer by default.
+
+**Offline check performed:** loaded the three pure search classes from the pinned #87 revision in a temporary directory, against the installed Symfony AI `Tool` contract. A `publication_read` tool described as “Read a published article by identifier.” had one string input named `external_reference`. Searching `external_reference` returned nothing with `KeywordToolSearch`, and returned the tool with both `Bm25ToolSearch` and our current catalog. Searching the exact tool name worked in all three. No model, handler or HTTP request ran; this checks that one retrieval behavior, not the full WIP integration or answer quality.
+
+**What to verify before adopting the WIP:**
+
+- Input-field-only queries, ambiguous names, exact names and empty queries. The proposed default `KeywordToolSearch` searches names/descriptions; `Bm25ToolSearch` also reads schema properties, descriptions and enum values. Our current JSON search includes input schemas.
+- Hidden names must not appear in search descriptions or affect ranking/counts. Discover, revoke, execute must deny before handler invocation. Repeat with two users and a long-lived worker.
+- Reset must clear discovery state across conversations. The reviewed `SearchableToolbox::reset()` clears its own state without forwarding to a resettable inner toolbox; `DeferredToolbox` does forward. Clarify ownership and add a nested-reset test.
+- Single-read versus audit tasks, small versus large catalogs, repeated correct answers, total tokens, cached input, requests and elapsed time. Our offline flat-schema measurement is not a native-provider cost comparison.
+
+**Draft feedback for #87 / #2623:**
+
+> We reached the same discovery problem building a Symfony hackathon demo, and would rather build on this than maintain another search implementation. Our external MCP endpoint keeps search/execute fixed; your agent-side toolbox activates tools directly, so the two seem complementary. We can contribute a schema-field-only lookup case, a discover → revoke → denied-call proof, and a catalog-size fixture. A couple of things I’d like to check together: Keyword vs BM25 coverage for parameter names, per-user filtering before names enter the search description, and reset propagation for a wrapped toolbox. Would a small adapter/example plus those tests be useful?
+
+Keep upstream feedback focused on the agent integration, not adoption of the whole runner or workbench. The earlier [PHP usage guide](../../packages/php-code-mode/src/PhpToolGuide.php) and [conversation recipe](symfony-ai-recipe.md) remain separate sandbox experiments.
 
 ## 3. PHP MCP SDK: a structured-result convenience factory
 
@@ -67,7 +88,7 @@ Before submitting, recheck current main and open PRs, agree the helper's scope/n
 
 ## Research follow-up — 4 November 2026
 
-The [hackathon brief](https://symfony.com/hackathon) explicitly values runnable clones, a short real demo and feedback before 1.0. The strongest next steps are a fresh-application installation proof and small, reviewable upstream contributions. The 90-second manual recording and formal submission remain pending. Research is not submission; nothing below has been posted upstream.
+The [hackathon brief](https://symfony.com/hackathon) explicitly values runnable clones, a short real demo and feedback before 1.0. The strongest next steps are a fresh-application installation proof and small, reviewable upstream contributions. The original research priorities are retained below; the 90-second real-agent film and fresh HTTP installation proof have since been completed. Formal submission remains pending. Research is not submission; nothing below has been posted upstream.
 
 | Opportunity | Concrete contribution or acceptance check |
 | --- | --- |
@@ -81,7 +102,7 @@ After this milestone, prioritize:
 
 1. **Distribution and runtime setup.** Prepare independently tagged core/bundle releases and test a consumer that installs those releases without path repositories. Verify one documented dedicated-Linux/VM bootstrap from an empty machine, pin the runner image, and fail clearly when runsc is absent. The fresh-app result proves the PHP integration; runtime provisioning and public package distribution remain adoption gaps.
 2. **One small upstream contribution.** Offer the fresh consumer and complete v4 results to [Code Mode #2508](https://github.com/symfony/ai/issues/2508), whose discussion asks for an example, concrete use case, discovery and structured results. Keep the SDK structured-result helper separate. For [tracing #2342](https://github.com/symfony/ai/issues/2342), contribute focused failure/cleanup and deferred-completion regression cases; do not claim our non-streaming captures validate streaming. These pages were consulted again on 4 November; proposals remain unsubmitted.
-3. **Finish the real 90-second recording.** Use the existing Codex conversation, PHP/call traces and denied-read recovery; show the four-setting consumer configuration briefly to demonstrate reuse. The [brief](https://symfony.com/hackathon) emphasizes runnable code, craft and prerelease feedback. Another large demo would delay the required recording and submission.
+3. **Completed: the 90-second recording.** The [current product film](../demo.md) shows real agent footage against authenticated Symfony HTTP, JSON calls, revocation, Maker, a shared voter and the profiler. Attach this film when submitting.
 4. **Share the permission-aware Symfony integration.** Use the fresh HTTP proof and shared policy tests to demonstrate user-specific discovery, permission revocation and persistent call budgets. Keep future holdout/discovery experiments separate from v4.
 
 The [Symfony performance investigation](../performance.md) now provides a second concrete use case for #2508: compose three approved native readers to find repeated work, correlate log events and verify a prepared alternative. A real synthetic request uses 13 queries; the joined version uses one and returns identical content. Both restricted readers are denied in the passing capture. The earlier inconclusive denial is retained. This reference uses operator-written PHP over the PHP MCP SDK and gVisor. A separate live conversation and matched direct-tool baseline are also captured in the guide; neither is a production profiler integration.
@@ -90,7 +111,7 @@ A follow-up could adapt existing [Mate profiler/Monolog extensions](https://symf
 
 Keep any new evaluation separate from v4. A seeded holdout dataset and catalog sizes of 16/64/128 would test generalization and discovery; the existing five scenarios use one small fixture and do not establish either. [Cloudflare's guidance](https://developers.cloudflare.com/agents/tools/codemode/) also recommends direct calls for simple tasks, so include a single-read case rather than claiming Code Mode always wins.
 
-Some GitHub issue/PR pages could not be refreshed and the authenticated API was rate-limited. Existing notes about #2623 and #605 retain their earlier check date; their current status and duplicate PRs need rechecking before submission. The public hackathon project gallery required SymfonyConnect, so no competitive ranking was established.
+Some GitHub issue/PR pages could not be refreshed and the authenticated API was rate-limited. The #2623/#87/#2878 review above supersedes the earlier discovery notes; #605 and duplicate SDK proposals still need a fresh check before submission. The public hackathon project gallery required SymfonyConnect, so no competitive ranking was established.
 
 ## Reproduce and share
 

@@ -2,7 +2,7 @@
 
 A searchable catalog for approved Symfony AI and MCP tools, with JSON calls and optional sandboxed PHP.
 
-Expose two stable tools: `search_tools` returns approved contracts and `execute_tools` invokes them with literal JSON arguments. Reuse Symfony AI schemas, Symfony/MCP providers and application access checks. There is no generated program in this path. The earlier sandboxed PHP implementation remains available as a historical reference and a computation option.
+Expose two stable tools: `search_tools` returns approved contracts and `execute_tools` invokes them with literal JSON arguments. Adding approved tools does not enlarge those two advertised schemas; retrieve full contracts when needed. Reuse Symfony AI schemas, Symfony/MCP providers and application access checks. There is no generated program in this path. The earlier sandboxed PHP implementation remains available as a historical reference and a computation option.
 
 Your application owns the tool implementations, identity, permissions and execution limits. Conversations stay in your MCP client or Symfony AI agent. Generated PHP requires gVisor. The JSON catalog runs as normal Symfony services over authenticated HTTP, with no worker, Docker or process-control extensions.
 
@@ -74,6 +74,12 @@ The [independent app guide](examples/symfony/README.md) explains the shared vote
 
 ## The evidence behind the design
 
+**More tools. Same entry cost.** In our offline scaling fixture, advertising all 100 tools takes **8,605 tokens**. The current HTTP catalog advertises two contracts: **239 tokens**, unchanged from 3 through the supported maximum of 128 tools. An exact-name search adds one contract: **107 tokens** in this fixture. [Explore the scaling visual](https://ronaldtebrake.github.io/symfony-hackathon/#catalog-cost).
+
+These are `o200k_harmony` counts of serialized MCP JSON, using synthetic four-field tools and the actual HTTP entry contracts. They measure the advertised schema footprint, not total model usage. Search results, task data and conversation history still cost tokens; client conversion and caching affect bills. [Reproduce the measurement](docs/batching.md#catalog-overhead-and-conversation-cost).
+
+**Same findings. Fewer tokens in one matched audit.** Separately, real Symfony AI + Hugging Face runs measured complete conversations:
+
 | What was measured | Result | Scope |
 | --- | --- | --- |
 | JSON catalog vs. direct tools | **35.8% fewer provider tokens**: 46,438 → 29,798 | One matched 9 November audit; same model, question, data and permissions; 10 correct findings; reviews included. Captured before the HTTP migration. |
@@ -95,11 +101,11 @@ The content-query experiment showed where we could simplify. The application alr
 
 PHP remains useful when computation can reduce what returns to the model. JSON makes ordinary tool calls easier to deploy. Both paths keep host-owned permissions and execution limits.
 
-The [visual walkthrough](https://ronaldtebrake.github.io/symfony-hackathon/#version-two) follows those decisions.
+The [visual walkthrough](https://ronaldtebrake.github.io/symfony-hackathon/#journey) follows those decisions. It also connects this work to [Symfony AI’s proposed dynamic discovery](https://github.com/symfony/ai/issues/2623): reuse its search components and contribute our application-level evidence. The open proposal is not yet a dependency of this demo.
 
 The [current catalog evidence](https://ronaldtebrake.github.io/symfony-hackathon/#catalog-evidence) includes five real Symfony AI conversations, the follow-up and boundary recovery, operator control traces and a fresh Symfony consumer without Docker. All final answers match; four scenarios pass fully. In the injection scenario the agent attempted an unwanted restricted read, which the host denied. We retain that failure alongside the successful work. Earlier PHP captures remain unchanged.
 
-**Catalog size and task cost are different measurements.** In an offline four-field-tool fixture, our advertised catalog stays at **287 tokens** from 3 to 100 tools; advertising 100 directly uses **8,605**. Search results and conversation history still consume tokens. Those counts exclude model framing and are separate from provider-reported audit usage. [Measurement and scope](docs/batching.md#catalog-overhead-and-conversation-cost).
+**Catalog size and task cost are different measurements.** The 239-token HTTP entry footprint above is separate from provider-reported audit usage. The previous 287-token STDIO measurement remains in the historical capture; its entry descriptions differ.
 
 ## Explore the saved evidence
 

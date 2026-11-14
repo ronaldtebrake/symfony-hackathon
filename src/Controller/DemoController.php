@@ -28,6 +28,14 @@ final readonly class DemoController
         return $this->response(file_get_contents($this->projectDir.'/templates/demo.html'), 'text/html; charset=utf-8');
     }
 
+    #[Route('/demo/catalog-scaling', name: 'app_catalog_scaling', methods: ['GET'])]
+    public function catalogScaling(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+
+        return $this->response(json_encode(\App\Demo\CatalogScalingProof::load($this->projectDir), \JSON_THROW_ON_ERROR), 'application/json');
+    }
+
     #[Route('/demo/report', name: 'app_demo_report', methods: ['GET'])]
     public function report(Request $request): Response
     {

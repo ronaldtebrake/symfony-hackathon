@@ -3,7 +3,7 @@ const chapters = [...document.querySelectorAll('#documentation > section')];
 const chapterLinks = [...document.querySelectorAll('.docs-nav a')];
 function openChapter() {
   const requested = decodeURIComponent(location.hash.slice(1));
-  const aliases = {'codex-run': 'agent-run', journey: 'version-two'};
+  const aliases = {'codex-run': 'agent-run', 'version-one': 'journey', 'version-two': 'journey'};
   const id = aliases[requested] ?? (requested || 'overview');
   const target = document.getElementById(id);
   const chapter = chapters.find((item) => item === target || item.contains(target)) ?? chapters[0];
@@ -31,7 +31,7 @@ const demoShots = [
   {kind:12, start:46, end:51, time:'00:46–00:51', label:'Revoke permission', title:'Same user. Changed permission.', source:'Actual operator change · between the two recordings', href:'#native-rehearsal', caption:'The operator revoked the reader permission between recordings. The authenticated user and application connection stay the same. The call budget was not reset. This caption explains the change; no operator-terminal footage was supplied.'},
   {kind:11, start:51, end:74, time:'00:51–01:14', label:'Deny the follow-up', title:'A known contract cannot bypass revocation.', source:'Original agent recording · identical JSON read denied', href:'#native-rehearsal', caption:'The user asks, “Can you refresh that article from the application?” The agent repeats the same read. The response is tool_denied with zero completed calls. The agent explains that the earlier title remains in chat but is not a fresh result. The full follow-up plays at original speed, with a final still hold.'},
   {kind:14, start:74, end:82, time:'01:14–01:22', label:'Inspect the profiler', title:'See the decision in Symfony.', source:'Actual profiler screenshots · separate HTTP proof, no model', href:'#quickstart', caption:'The authorized request records a successful broker call and native Symfony AI requested/succeeded events. After revocation, the identical request records tool_denied, no native tool events, and two consumed attempts. These fresh development profiles are separate from the original chat.'},
-  {kind:5, start:82, end:90, time:'01:22–01:30', label:'Compare the audit', title:'Same findings. Fewer tokens.', source:'Separate historical Symfony AI + Hugging Face audit', href:'#three-way', caption:'In a separate matched 48-article audit, all paths found ten issues: direct tools used 46,438 provider tokens, JSON 29,798 and isolated PHP 12,806. JSON used 35.8% fewer tokens than direct tools in this run. Reviews are included. These are not this lookup’s usage, a new HTTP benchmark or a bill.'},
+  {kind:15, start:82, end:90, time:'01:22–01:30', label:'Grow the catalog', title:'More tools. Same entry cost.', source:'Current HTTP contracts · separate offline schema measurement', href:'#catalog-cost', caption:'As the synthetic catalog grows from 10 to 100 tools, directly advertised schemas grow from 865 to 8,605 tokens. The current HTTP catalog stays at two entry tools and 239 tokens. Exact-name search adds one contract. Offline tokenizer counts of tools/list JSON, not total conversation usage or a bill. Search results, task data and history still cost tokens.'},
 ];
 const videoMediaUrl = name => `${staticDocumentation ? '' : '/'}media/${name}`;
 let videoProof = null;
@@ -88,6 +88,9 @@ function showDemoShot() {
       content.append(node('span', label, 'tour-label'), sourceBlock(nativeSourceExcerpt(role), true));
     }
     content.append(proofLink('#native-rehearsal', 'Inspect full source and HTTP calls →'), node('p', 'Source from this documentation build. Symfony AI registers publication_read through AsTool; the explicit allowlist selects it. The agent supplies JSON arguments.', 'measurement-note'));
+  } else if (kind === 15) {
+    if (typeof catalogScalingEvidence === 'undefined' || !catalogScalingEvidence) { content.append(node('p', 'Current schema measurement is loading.')); return; }
+    content.append(scalingTable(catalogScalingEvidence), node('p', 'Offline o200k_harmony counts of one tools/list JSON result. The two contracts match the actual HTTP capture. Synthetic four-field tools; no model or handler runs. The retrieved contract is an additional search response, not included in the advertised-list count.', 'measurement-note'), proofLink('#catalog-cost', 'Explore the scaling visual →'), node('p', 'Total conversation cost still includes retrieved contracts, task data, history and output. Client conversion and caching affect billing.'), proofLink('#three-way', 'Same findings. Fewer tokens: the separate live audit →'));
   } else if (kind === 5) {
     const attempt = latestVerifiedCatalog();
     if (!attempt) { content.append(node('p', 'No fully verified catalog triplet is available. Failed attempts remain inspectable.')); return; }

@@ -86,11 +86,11 @@ final class DocumentationBuildTest extends TestCase
             $this->assertStringNotContainsString('unused-build-sentinel', file_get_contents($file->getPathname()));
         }
         sort($files);
-        $expected = ['.nojekyll', 'index.html', 'demo.css', 'demo.js', 'docs.js', 'catalog-proof.js', 'php-syntax.js', 'images/code-mode-value.svg'];
+        $expected = ['.nojekyll', 'index.html', 'demo.css', 'demo.js', 'docs.js', 'catalog-proof.js', 'catalog-scaling.js', 'php-syntax.js', 'images/code-mode-value.svg'];
         foreach (['symfony-native-tools-demo-90s.mp4', 'symfony-native-tools-poster.jpg', 'profiler-authorized.png', 'profiler-denied.png', 'video-proof.json'] as $name) {
             $expected[] = 'media/'.$name;
         }
-        foreach (['report', 'security-report', 'agent-report', 'boundary-report', 'huggingface-report', 'huggingface-comparison', 'adoption-report', 'evaluation-report', 'performance-report', 'performance-conversation', 'performance-baseline', 'response-payloads', 'audit-three-way', 'catalog-proof', 'native-catalog', 'http-catalog'] as $name) {
+        foreach (['report', 'security-report', 'agent-report', 'boundary-report', 'huggingface-report', 'huggingface-comparison', 'adoption-report', 'evaluation-report', 'performance-report', 'performance-conversation', 'performance-baseline', 'response-payloads', 'audit-three-way', 'catalog-proof', 'native-catalog', 'http-catalog', 'catalog-scaling'] as $name) {
             $expected[] = 'evidence/'.$name.'.json';
         }
         sort($expected);
@@ -106,6 +106,10 @@ final class DocumentationBuildTest extends TestCase
         $this->assertSame(2700, $video['frames']);
         $this->assertSame(90, $video['durationSeconds']);
         $this->assertSame('none', $video['audio']);
+        $this->assertSame(hash_file('sha256', $root.'/docs/evidence/catalog-scaling.json'), $video['schemaScaling']['captureSha256']);
+        $scaling = \App\Demo\CatalogScalingProof::load($root);
+        $this->assertSame(array_column($scaling['samples'], 'availableTools'), $video['schemaScaling']['availableTools']);
+        $this->assertSame(array_column(array_column($scaling['samples'], 'catalog'), 'tokens'), $video['schemaScaling']['catalogTokens']);
         preg_match_all('/start:(\d+), end:(\d+)/', file_get_contents($root.'/public/docs.js'), $timings, \PREG_SET_ORDER);
         $this->assertSame(array_map(static fn (array $chapter): array => [$chapter['start'], $chapter['end']], $video['chapters']),
             array_map(static fn (array $match): array => [(int) $match[1], (int) $match[2]], $timings));

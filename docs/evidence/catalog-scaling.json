@@ -1,0 +1,184 @@
+{
+  "format": "symfony-http-catalog-scaling/v1",
+  "scope": "Offline tokenization of one serialized MCP tools/list result. The two current HTTP contracts match the authenticated execution capture. Direct catalogs contain synthetic four-field tools. Exact-name searches use the real catalog implementation. No model or tool handler runs; no provider usage, correctness comparison or billing is measured.",
+  "excludes": [
+    "JSON-RPC envelope",
+    "client model framing",
+    "system/user prompts",
+    "search results from the advertised-list count",
+    "task data",
+    "conversation history",
+    "model output"
+  ],
+  "limits": {
+    "maxRegisteredTools": 128,
+    "searchResults": 8
+  },
+  "httpCaptureSha256": "808328b2e5d0ad9075092f4d7ce5f03abbab80ef46154ee63a2a14b5b46d1ed7",
+  "contractSourceSha256": "18a915bdf3634b3de759a8a34944583e2ae2678f4520fe3537b5a05a987276ec",
+  "samples": [
+    {
+      "availableTools": 3,
+      "direct": {
+        "advertisedTools": 3,
+        "bytes": 1136,
+        "sha256": "bcebb8ac85cf6adc6eb4c950eaf3f1e7480ecd2ad8639fa441e0c4202233ac1b",
+        "tokens": 263
+      },
+      "catalog": {
+        "advertisedTools": 2,
+        "bytes": 1103,
+        "sha256": "af473e7f3c71ca46c513b57387a9d13df877c92e246e6f1bcb858079b063d5a0",
+        "tokens": 239
+      },
+      "selectedContract": {
+        "returned": 1,
+        "bytes": 439,
+        "sha256": "f3157bfcd0e06febeb7e2dae4b202d40bc5966fc1bd6c727ab8cb7b1dd3ff67d",
+        "tokens": 107
+      },
+      "broadSearch": {
+        "matched": 3,
+        "returned": 3,
+        "truncated": false
+      }
+    },
+    {
+      "availableTools": 10,
+      "direct": {
+        "advertisedTools": 10,
+        "bytes": 3761,
+        "sha256": "f0d6e184d5f2454c360137bd1cc22f6ecdf554ffee5db5d21f842f78ee8be3b1",
+        "tokens": 865
+      },
+      "catalog": {
+        "advertisedTools": 2,
+        "bytes": 1103,
+        "sha256": "af473e7f3c71ca46c513b57387a9d13df877c92e246e6f1bcb858079b063d5a0",
+        "tokens": 239
+      },
+      "selectedContract": {
+        "returned": 1,
+        "bytes": 439,
+        "sha256": "f3157bfcd0e06febeb7e2dae4b202d40bc5966fc1bd6c727ab8cb7b1dd3ff67d",
+        "tokens": 107
+      },
+      "broadSearch": {
+        "matched": 10,
+        "returned": 8,
+        "truncated": true
+      }
+    },
+    {
+      "availableTools": 20,
+      "direct": {
+        "advertisedTools": 20,
+        "bytes": 7511,
+        "sha256": "7b6ffe30947d3a6ea5338ee0885b941959bbfcac243e849d70d7ac924c0ce3b8",
+        "tokens": 1725
+      },
+      "catalog": {
+        "advertisedTools": 2,
+        "bytes": 1103,
+        "sha256": "af473e7f3c71ca46c513b57387a9d13df877c92e246e6f1bcb858079b063d5a0",
+        "tokens": 239
+      },
+      "selectedContract": {
+        "returned": 1,
+        "bytes": 439,
+        "sha256": "f3157bfcd0e06febeb7e2dae4b202d40bc5966fc1bd6c727ab8cb7b1dd3ff67d",
+        "tokens": 107
+      },
+      "broadSearch": {
+        "matched": 20,
+        "returned": 8,
+        "truncated": true
+      }
+    },
+    {
+      "availableTools": 40,
+      "direct": {
+        "advertisedTools": 40,
+        "bytes": 15011,
+        "sha256": "652e7486d6e2f3ad9a076e9d1ddaf37cbee63399b6940616b26a17e0286bc132",
+        "tokens": 3445
+      },
+      "catalog": {
+        "advertisedTools": 2,
+        "bytes": 1103,
+        "sha256": "af473e7f3c71ca46c513b57387a9d13df877c92e246e6f1bcb858079b063d5a0",
+        "tokens": 239
+      },
+      "selectedContract": {
+        "returned": 1,
+        "bytes": 439,
+        "sha256": "f3157bfcd0e06febeb7e2dae4b202d40bc5966fc1bd6c727ab8cb7b1dd3ff67d",
+        "tokens": 107
+      },
+      "broadSearch": {
+        "matched": 40,
+        "returned": 8,
+        "truncated": true
+      }
+    },
+    {
+      "availableTools": 100,
+      "direct": {
+        "advertisedTools": 100,
+        "bytes": 37511,
+        "sha256": "6e945126360821d05b5296c45e140a3edda131519df65dfe6efd216fbabc4986",
+        "tokens": 8605
+      },
+      "catalog": {
+        "advertisedTools": 2,
+        "bytes": 1103,
+        "sha256": "af473e7f3c71ca46c513b57387a9d13df877c92e246e6f1bcb858079b063d5a0",
+        "tokens": 239
+      },
+      "selectedContract": {
+        "returned": 1,
+        "bytes": 439,
+        "sha256": "f3157bfcd0e06febeb7e2dae4b202d40bc5966fc1bd6c727ab8cb7b1dd3ff67d",
+        "tokens": 107
+      },
+      "broadSearch": {
+        "matched": 100,
+        "returned": 8,
+        "truncated": true
+      }
+    },
+    {
+      "availableTools": 128,
+      "direct": {
+        "advertisedTools": 128,
+        "bytes": 48011,
+        "sha256": "c4a343fa3b5e39571edf2234fa1d34358a613158f9bc3306656ac8d86f9eb31c",
+        "tokens": 11013
+      },
+      "catalog": {
+        "advertisedTools": 2,
+        "bytes": 1103,
+        "sha256": "af473e7f3c71ca46c513b57387a9d13df877c92e246e6f1bcb858079b063d5a0",
+        "tokens": 239
+      },
+      "selectedContract": {
+        "returned": 1,
+        "bytes": 439,
+        "sha256": "f3157bfcd0e06febeb7e2dae4b202d40bc5966fc1bd6c727ab8cb7b1dd3ff67d",
+        "tokens": 107
+      },
+      "broadSearch": {
+        "matched": 128,
+        "returned": 8,
+        "truncated": true
+      }
+    }
+  ],
+  "measurement": {
+    "kind": "offline-schema-tokenization",
+    "encoding": "o200k_harmony",
+    "library": "tiktoken==0.12.0",
+    "modelRequests": 0,
+    "note": "Tokenizer-specific counts, not provider-reported input tokens. Actual client conversion, framing, caching and billing vary."
+  }
+}

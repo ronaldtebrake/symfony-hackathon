@@ -100,7 +100,7 @@ function renderCatalogFootprint() {
   const report = catalogEvidence.discoveryFootprint, container = byId('catalog-footprint-body'); container.replaceChildren();
   if (!report) { container.append(node('p', 'Discovery measurement unavailable.')); return; }
   const table = node('table'), head = node('thead'), row = node('tr'), body = node('tbody');
-  ['Approved tools', 'Direct advertised tokens', 'Catalog advertised tokens'].forEach(label => row.append(node('th', label))); head.append(row);
+  ['Historical STDIO fixture tools', 'Direct advertised tokens', 'STDIO catalog tokens'].forEach(label => row.append(node('th', label))); head.append(row);
   for (const size of [...new Set(report.samples.map(sample => sample.catalogTools))]) {
     const direct = report.samples.find(sample => sample.catalogTools === size && sample.mode === 'direct');
     const catalog = report.samples.find(sample => sample.catalogTools === size && sample.mode === 'catalog');

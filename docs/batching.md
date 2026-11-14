@@ -12,7 +12,7 @@ permissions. The Symfony HTTP integration uses these same contracts and checks.
 The PHP proof established that an agent could compute over approved tools. The
 cost of operating its sandbox led us to offer direct JSON calls through the same
 providers. Existing query handlers and JSON Schema contracts made that practical.
-The [From PHP to JSON chapter](https://ronaldtebrake.github.io/symfony-hackathon/#version-two) explains that design decision and its influences.
+The [From PHP to JSON chapter](https://ronaldtebrake.github.io/symfony-hackathon/#journey) explains that design decision and its influences.
 
 ## Search, then call
 
@@ -242,17 +242,31 @@ Repeated fixed-protocol evaluation is still needed before claiming reliability.
 
 The advertised tool list stays fixed as the underlying catalog grows. Search results and subsequent conversation work still consume tokens.
 
-Our offline measurement serializes the PHP MCP SDK `ListToolsResult` for synthetic tools with four input fields each. The catalog uses the real `BatchSession` entry definitions and unchanged default limits:
+The current offline measurement serializes the PHP MCP SDK `ListToolsResult` for synthetic tools with four input fields each. The two HTTP entry contracts are discovered from the real `CatalogTools` attributes and checked against the actual authenticated HTTP capture. No handler or model runs, and no permissions or execution limits change:
 
 | Tools behind the catalog | Direct advertised tokens | Catalog advertised tokens |
 | --- | ---: | ---: |
-| 3 | 263 | 287 |
-| 10 | 865 | 287 |
-| 20 | 1,725 | 287 |
-| 40 | 3,445 | 287 |
-| 100 | 8,605 | 287 |
+| 3 | 263 | 239 |
+| 10 | 865 | 239 |
+| 20 | 1,725 | 239 |
+| 40 | 3,445 | 239 |
+| 100 | 8,605 | 239 |
+| 128 (current limit) | 11,013 | 239 |
 
-These are offline `o200k_harmony` counts, using `tiktoken==0.12.0`, for one serialized tool list. The retained STDIO catalog JSON is 1,330 bytes throughout. The new HTTP entry-tool descriptions differ; this table does not measure HTTP schema tokens. The [capture](evidence/catalog-proof.json) records payload hashes; `php bin/catalog-discovery-footprint` reproduces the exact strings. This excludes prompts, search results, task data, repeated history, reasoning/output and provider framing. It is not a provider bill or an end-to-end benchmark. The three-tool row also shows why discovery can cost more on small catalogs.
+These are offline `o200k_harmony` counts, using `tiktoken==0.12.0`, for one serialized tool list. The HTTP catalog JSON is 1,103 bytes throughout. The [current capture](evidence/catalog-scaling.json) binds each payload by hash. It does not count JSON-RPC envelopes, client model framing, prompts, search results, task data, history or output. Actual clients may transform schemas, defer tools themselves or cache input. This is neither provider-reported usage nor an end-to-end benchmark.
+
+The exact-name query `record_read_001` returns one full contract at every size: **107 additional tokens**, counted separately. A broad query returns at most eight contracts and explicitly reports truncation. With only three tools, the catalog plus that search response is 346 tokens versus 263 for direct advertisement, before counting the extra request. This keeps the trade-off visible. The supported catalog is bounded at 128 tools; the flat line is not a claim of unlimited capacity or unchanged conversation cost.
+
+```sh
+# Reproduce the exact payloads with PHP; no model or server is started:
+php bin/catalog-http-footprint
+# Optional separate measurement environment, not an application dependency:
+python -m venv /tmp/code-mode-tokenizer
+/tmp/code-mode-tokenizer/bin/pip install tiktoken==0.12.0
+/tmp/code-mode-tokenizer/bin/python bin/measure-catalog-tokens.py
+```
+
+The tokenizer may download its public vocabulary on first use. The earlier **287-token STDIO** measurement remains unchanged in [the historical capture](evidence/catalog-proof.json), reproducible with `php bin/catalog-discovery-footprint`. Its descriptions differ from the HTTP tools; do not mix their counts.
 
 The matched audit's JSON **29,798 provider tokens** cover six requests: **24,708 input + 5,090 output**, including **8,733 tokens for answer review**. The audit needs all three application tools and returns article/media data to the model. A constant advertised schema does not keep the rest of the conversation constant. Discovered contracts can remain in history and be counted again; caching and billing depend on the client and provider. There is no claim that growing the underlying catalog increases every conversation by the full schema size.
 
