@@ -80,7 +80,7 @@ function renderCatalogControls() {
   const container = byId('catalog-controls-body'); container.replaceChildren();
   if (!report) { container.append(node('p', 'Current HTTP control evidence is loading.')); return; }
   const cards = node('div', undefined, 'catalog-controls');
-  for (const [label,title] of [['authorized','Approved read'],['restricted','Restricted read'],['after_restart','Budget survives restart'],['call_budget','Call budget']]) {
+  for (const [label,title] of [['authorized','Approved read'],['restricted','Restricted read'],['after_revocation','Permission revoked'],['regrant_exhausted','Regrant preserves budget'],['after_restart','Budget survives restart'],['call_budget','Call budget']]) {
     const call = report.calls.find(call => call.label === label), card = node('article');
     card.append(node('span', 'ACTUAL HTTP EXECUTION', 'eyebrow'), node('h3', title), node('strong', call.response.result.structuredContent.error?.reason ?? 'succeeded'), catalogDetails('Actual JSON-RPC', catalogJson(call))); cards.append(card);
   }
@@ -133,7 +133,7 @@ loadCatalogEvidence();
 // Reviewed HTTP messages from a detached install, separate from native chat and model benchmarks.
 let httpCatalogEvidence = null;
 function httpMainCalls() {
-  return ['discovery','authorized','restricted'].map(label => {
+  return ['revocation_discovery','before_revocation','after_revocation','revoked_discovery'].map(label => {
     const row = httpCatalogEvidence.capture.calls.find(call => call.label === label);
     return {tool:row.request.params.name, arguments:row.request.params.arguments, response:row.response.result};
   });
@@ -141,7 +141,7 @@ function httpMainCalls() {
 function nativeCallCard(call, index) {
   const card = node('article', undefined, 'catalog-turn');
   const heading = node('div', undefined, 'native-call-heading');
-  heading.append(node('h3', `${index + 1}. ${['Discover the approved tool', 'Read published article 101', 'Request restricted article 202'][index]}`), node('span', call.response.isError ? 'DENIED' : 'SUCCEEDED', 'status-pill'));
+  heading.append(node('h3', `${index + 1}. ${['Discover with permission', 'Read published article 101', 'Repeat article 101 after revocation', 'Search again: no visible contract'][index]}`), node('span', call.response.isError ? 'DENIED' : 'SUCCEEDED', 'status-pill'));
   const columns = node('div', undefined, 'native-call-grid');
   const request = node('div'), response = node('div');
   request.append(node('span', `ACTUAL REQUEST · ${call.tool}`, 'tour-label'), catalogJson(call.arguments));
@@ -155,7 +155,7 @@ function nativeCallCard(call, index) {
 }
 function nativeSourceExcerpt(role) {
   const source = httpCatalogEvidence.implementation[role].source;
-  const start = source.indexOf(role === 'handler' ? "#[AsTool('publication_read'" : 'final readonly class ReadPolicy');
+  const start = source.indexOf(role === 'handler' ? "#[AsTool('publication_read'" : role === 'controller' ? 'final readonly class ArticleController' : 'final class ArticleVoter');
   return start < 0 ? source : source.slice(start);
 }
 function renderNativeRehearsal() {
@@ -163,12 +163,15 @@ function renderNativeRehearsal() {
   body.replaceChildren(); implementation.replaceChildren();
   if (report?.verification?.passed !== true) { body.append(node('p', 'The HTTP proof did not pass verification. Inspect the raw report before using it as evidence.')); return; }
   body.append(node('p', `Verified HTTP requests · ${new Date(report.capture.capturedAt).toLocaleDateString()} · fresh Symfony app · process creation disabled`, 'mode-note'));
-  httpMainCalls().forEach((call, index) => body.append(nativeCallCard(call, index)));
+  httpMainCalls().forEach((call, index) => {
+    if (index === 2) body.append(node('span', 'OPERATOR REVOKES PERMISSION · SAME AUTHENTICATED USER', 'tour-label'), catalogJson(report.capture.permissionChange), node('p', 'No server restart, reconnect or budget reset between these reads. The next request reloads roles from the application’s local permission fixture.', 'measurement-note'));
+    body.append(nativeCallCard(call, index));
+  });
   body.append(node('p', 'The next execution is blocked, even after restarting the server and reconnecting. Budgets belong to the authenticated user.', 'doc-callout'));
-  for (const label of ['exhausted', 'after_restart', 'call_budget']) body.append(catalogDetails(label.replaceAll('_', ' '), catalogJson(report.capture.calls.find(call => call.label === label))));
-  body.append(node('p', 'The restricted request returned tool_denied and no article data. A permitted alternative is article 101, already retrieved.', 'measurement-note'), catalogDetails('Provenance and message verification', catalogJson({scope:report.capture.scope, captureSha256:report.captureSha256, verification:report.verification, installation:report.capture.installation, httpChecks:report.capture.httpChecks})));
+  for (const label of ['restricted', 'exhausted', 'after_restart', 'call_budget', 'regrant_exhausted']) body.append(catalogDetails(label.replaceAll('_', ' '), catalogJson(report.capture.calls.find(call => call.label === label))));
+  body.append(node('p', 'Revocation blocks new reads. It cannot erase the article already returned to the agent. An answer from conversation history is not a fresh authorized result.', 'measurement-note'), catalogDetails('Provenance and message verification', catalogJson({scope:report.capture.scope, captureSha256:report.captureSha256, verification:report.verification, installation:report.capture.installation, httpChecks:report.capture.httpChecks})));
   const columns = node('div', undefined, 'native-call-grid native-implementation');
-  for (const [role, title] of [['handler','The registered handler'], ['policy','The application policy']]) {
+  for (const [role, title] of [['handler','The registered handler'], ['policy','One voter for discovery and reads'], ['controller','The same voter in a controller']]) {
     const source = report.implementation[role], card = node('article');
     card.append(node('h3', title), node('span', `${source.path} · excerpt`, 'tour-label'), sourceBlock(nativeSourceExcerpt(role), true), proofLink(`https://github.com/ronaldtebrake/symfony-hackathon/blob/main/${source.path}`, 'Open source ↗'), catalogDetails('Full PHP source', sourceBlock(source.source, true)));
     columns.append(card);

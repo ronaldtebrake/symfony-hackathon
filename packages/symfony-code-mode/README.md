@@ -2,11 +2,11 @@
 
 Register approved Symfony tools and expose a stable JSON catalog through **normal Symfony HTTP requests**. Symfony AI supplies existing schemas and handler execution; Symfony Security supplies the authenticated user. The broker checks permissions and schemas on every call. No worker, Docker or process-control extensions are needed for JSON.
 
-The [independent Symfony application](../../examples/symfony/README.md) is the runnable quickstart. Its detached fresh-install capture passes **24 HTTP checks**, including authorized/denied reads and budgets that survive reconnects and restarts. Packages currently use Composer path repositories; they are not published to Packagist.
+The [independent Symfony application](../../examples/symfony/README.md) is the runnable quickstart. Its detached fresh-install capture verifies authorized/denied reads, permission revocation and budgets that survive reconnects and restarts. Packages currently use Composer path repositories; they are not published to Packagist.
 
 ## Enable HTTP
 
-Register `CodeMode\Symfony\CodeModeBundle`, `Symfony\Bundle\SecurityBundle\SecurityBundle` and `Symfony\AI\McpBundle\McpBundle`. Install a PSR-7/17 implementation such as `nyholm/psr7`, and reuse your application's Symfony Security authenticator for `/mcp`.
+Register `CodeMode\Symfony\CodeModeBundle`, `Symfony\Bundle\SecurityBundle\SecurityBundle`, `Symfony\AI\AiBundle\AiBundle` and `Symfony\AI\McpBundle\McpBundle`. The native tool integration uses `symfony/ai-agent` and `symfony/ai-bundle` (`^1.0@beta`). Install a PSR-7/17 implementation such as `nyholm/psr7`, and reuse your application's Symfony Security authenticator for `/mcp`.
 
 ```yaml
 # config/packages/code_mode.yaml
@@ -16,9 +16,13 @@ code_mode:
         enabled: true
         permissions:
             publication.read_published: ROLE_READER
-    ai_toolbox: app.toolbox
+    ai_tool_services: [App\ArticleTool]
     ai_tools: [publication_read]
-    ai_authorization: App\ReadPolicy
+    voter_rules:
+        publication_read:
+            discover: PUBLICATION_DISCOVER
+            execute: PUBLICATION_READ
+            subject: id
 
 # config/packages/mcp.yaml
 mcp:
@@ -33,6 +37,43 @@ mcp:
 Import the MCP route loader (`resource: .`, `type: mcp`) in `config/routes.yaml`, and require a fully authenticated user on `/mcp` in `security.yaml`. The [example's configuration](../../examples/symfony/config/services.php) includes a local bearer-token authenticator. Real applications keep their existing authentication; use HTTPS outside loopback. Do not also register underlying handlers as directly callable MCP tools, which would bypass this catalog's broker.
 
 `search_tools` returns full approved contracts; `execute_tools` accepts literal JSON calls. Only the HTTP adapter reads Symfony's current security token. Agent arguments cannot select identity, permissions or server configuration. `code-mode:doctor` checks the selected mode's prerequisites without invoking handlers or calling a model.
+
+## Native Symfony development
+
+### Scaffold an approved tool
+
+Enable MakerBundle in development, then run these commands in your HTTP application:
+
+```sh
+composer require --dev symfony/maker-bundle
+php bin/console make:code-mode-tool InventoryLookup
+```
+
+The command creates a native `#[AsTool]` service with `#[IsGrantedTool]`, a Symfony voter, an explicit `ai_tool_services`/`ai_tools` registration, and a PHPUnit test proving the initial voter denies access. Implement the read, its output schema, capability access and resource/field checks, then replace the scaffold assertions with allowed, denied and revoked cases. Until then the tool is hidden and denied, including for an administrator role. It does not modify authentication, existing policies or call budgets, and refuses to overwrite files.
+
+For a new installation, enable `code_mode.http` and secure `/mcp` first. An empty catalog can boot for scaffolding; doctor and execution remain unavailable until an approved tool exists. Existing custom toolboxes require manual registration or migration to `ai_tool_services`. Existing tools need their own `voter_rules` or explicit visibility policy before generation, so the maker cannot silently change discovery for them.
+
+### Share application voters
+
+`voter_rules` maps each approved name to two decisions: `discover` checks the capability without a resource; `execute` passes the named JSON argument as the voter subject. Missing rules, a missing argument, unauthenticated access or a mismatch with the current Security user deny access. Voters must validate their subject. Full broker schema validation still applies.
+
+The [example's ArticleVoter](../../examples/symfony/src/ArticleVoter.php) serves both the normal `GET /articles/{id}` controller and the agent tool. `#[IsGrantedTool(ArticleVoter::READ, subject: 'id')]` also checks native Symfony AI invocation. The broker checks visibility and authorization on every call; the native attribute is an additional guard. Neither discovery nor an earlier successful read grants future access. Existing `ai_authorization` and `visibility_policy` services remain authoritative when configured explicitly; voter rules never replace them.
+
+`ai_tool_services` builds a native Symfony AI toolbox from explicitly listed service IDs and uses the application's event dispatcher. `ai_tools` is still the name allowlist, and read-only hints are still required. An existing `ai_toolbox` remains supported instead; do not configure both.
+
+### Inspect requests in the profiler
+
+Install and enable WebProfilerBundle and TwigBundle only in development/test. With Symfony's profiler enabled, opt in:
+
+```yaml
+when@dev:
+    code_mode:
+        profiling: true
+```
+
+Open the request's **Code Mode** panel via its `X-Debug-Token-Link` header or `/_profiler`. It shows discovery counts, persisted attempt/call reservations, broker outcomes, elapsed time and native Symfony AI requested/succeeded/failed events. A requested event alone does not establish that the handler ran. Broker denials appear without a native invocation. The collector is bounded and resets between requests; it stores no queries, arguments, returned records, user identifiers or exception messages. Agent responses stay unchanged.
+
+The standard **AI** panel also works through Symfony AI's `TraceableToolbox`. It may contain tool arguments and results, as other Symfony profiler panels may contain request/authentication data: keep the entire profiler private and disabled in production. These local tool requests do not measure the external MCP client's model tokens. [Integration tests](../../examples/symfony/tests/NativeIntegrationTest.php) use Symfony AI's own `AiAssertionsTrait` to check tool invocation and verify that denied calls never reach the native toolbox.
 
 ## HTTP state and limits
 
@@ -197,4 +238,4 @@ The policy receives the registered tool name (including its provider namespace, 
 
 Execution rechecks visibility before the existing argument/resource policy on **every** underlying call. Previously discovered names and persisted session state never grant permission. Symfony HTTP derives a fresh identity from Security on each request. In long-lived sessions, a policy must query current application permissions if they can change; an `ExecutionIdentity` is an immutable snapshot. Keep mutable resource and field checks at the actual read as well.
 
-The policy is optional for compatibility: without one, discovery lists the host-approved catalog and existing per-call authorization still applies. It works with read services, Symfony AI tools and namespaced providers, for JSON and isolated PHP. No per-user discovery result is shared or cached. The [independent Symfony example](../../examples/symfony/src/PublicationVisibility.php) uses this shared core interface.
+The policy is optional for compatibility: without one, discovery lists the host-approved catalog and existing per-call authorization still applies. It works with read services, Symfony AI tools and namespaced providers, for JSON and isolated PHP. No per-user discovery result is shared or cached. The independent HTTP application uses `voter_rules`; its [original visibility policy](../../examples/symfony/src/PublicationVisibility.php) remains for the historical local-operator proofs.

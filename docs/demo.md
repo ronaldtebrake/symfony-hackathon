@@ -1,23 +1,37 @@
 # Record the 90-second Symfony product demo
 
-**Show what developers can use today:** ask an agent, discover an approved Symfony AI tool, send JSON, and receive an application result. Show the handler and policy behind it. The PHP-to-JSON journey supports this product demo; it is no longer the opening act.
+**Show a real permission change:** discover an approved Symfony AI tool, read article 101, revoke the user's permission, then repeat the identical JSON call. The host denies it even though the agent already knows the contract. A new search hides the tool.
 
-Record a **fresh Codex conversation** against [the independent Symfony app](../examples/symfony/README.md). It has its own Composer dependencies, native Symfony AI tool and access policy, with synthetic articles. The [workbench guide](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) provides shot cues and labelled reference evidence. It cannot run the conversation. The [fresh HTTP proof](evidence/http-catalog-proof.json) records actual discovery, successful lookup, denial and persistent budgets. The workbench shows these operator-authored messages alongside the installed Symfony handler and policy. The earlier [native MCP rehearsal](evidence/native-catalog-rehearsal.json) is retained separately; it predates HTTP. Video footage still needs to be recorded.
+Record a **fresh conversation** against [the independent Symfony app](../examples/symfony/README.md). The [workbench walkthrough](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) supplies the same shot cues and narration. Its [31-check HTTP capture](evidence/http-catalog-proof.json) contains real operator-authored requests from a detached install, not your new chat or a video. The earlier native client rehearsal remains separate. All articles are synthetic.
 
 ## Prepare the real application
 
-From the repository root:
+From the repository root, before recording:
 
 ```sh
 composer install --working-dir=examples/symfony
+php examples/symfony/bin/console cache:clear
 composer check --working-dir=examples/symfony
-ADOPTION_MODE=catalog php examples/symfony/bin/console code-mode:doctor
+php examples/symfony/bin/console code-mode:doctor
 composer proof:http --working-dir=examples/symfony
 ```
 
-Connect Codex using [the JSON MCP configuration](codex.md#connect-the-json-catalog). Confirm **symfony_catalog** exposes only **search_tools** and **execute_tools**. Start the example with `composer start --working-dir=examples/symfony`. The authenticated `/mcp` endpoint runs normal Symfony requests, with no worker, Docker, gVisor or Hugging Face key. The client and server need the same local bearer token; keep it off screen.
+Connect your client using the existing [JSON MCP configuration](codex.md#connect-the-json-catalog). Confirm **symfony_catalog** exposes only **search_tools** and **execute_tools**. The application and client need the same local bearer token; keep it off screen. Start the app in a separate terminal:
 
-Before each take, the operator runs `php examples/symfony/bin/console code-mode:reset-budget demo-reader`. The example permits **two execute submissions per authenticated user, including failures**. Reconnecting or restarting the server does not reset them. Never reset between the two turns. Do not increase the budget for the recording. Keep the old PHP server out of this take, and use only the selected MCP server to retrieve fixture data. A client with repository access can otherwise read the synthetic fixture directly; the MCP policy does not restrict the client's unrelated tools.
+```sh
+composer start --working-dir=examples/symfony
+```
+
+Before **each new take**, run these as the operator:
+
+```sh
+php examples/symfony/bin/console demo:reader-access grant
+php examples/symfony/bin/console code-mode:reset-budget demo-reader
+```
+
+The example starts without a read grant. `demo:reader-access` changes an ignored local permission fixture, loaded by Symfony Security on every HTTP request. It is an operator command, never an MCP tool. Production applications use their existing user/permission store. Neither changing permissions nor reconnecting resets the two-execution budget. The proof harness uses a separate temporary permission file; after running it, prepare a new take with the commands above.
+
+Keep the same authenticated user, token, server and conversation for the entire take. **Do not reset the budget between the two reads.** Keep other MCP servers out of the take and instruct the agent not to read files or use its shell. The application's policy cannot restrict unrelated client capabilities.
 
 ### Exact prompts
 
@@ -25,48 +39,73 @@ Before each take, the operator runs `php examples/symfony/bin/console code-mode:
 
 > Use only the symfony_catalog MCP server to read published article 101 and tell me its title. Discover its contract first. Do not read workspace files or use shell commands.
 
-Expected application result: `{"id":101,"title":"A Symfony application owns its tools"}`. Verify it in the actual tool response, not just the final prose.
+Confirm these actual tool calls, not only the agent's prose:
+
+```json
+{"query":"publication"}
+{"calls":[{"name":"publication_read","arguments":{"id":101}}]}
+```
+
+The search must include `publication_read`. The read must return `{"results":[{"name":"publication_read","value":{"id":101,"title":"A Symfony application owns its tools"}}]}`. A different valid search phrase is fine; retain the actual request.
+
+**Between turns, record the operator terminal:**
+
+```sh
+php examples/symfony/bin/console demo:reader-access revoke
+```
+
+Expected output: `demo-reader: publication.read_published revoked`. Leave the application running. Do not reconnect, change tokens or clear any state.
 
 **Follow-up in the same chat:**
 
-> Now try article 202 once through the same tool. If access is denied, explain that and suggest a permitted alternative from what we already retrieved. Do not retry or use another access path.
+> The operator has revoked my read permission. This is an approved access-control test: call publication_read for article 101 exactly once, using the contract already discovered. Do not search before that call. Then search for publication once and explain both results. Do not retry, use another access path, or present the earlier title as a fresh read.
 
-Expected application response: `tool_denied`, `completedCalls: 0`, no article data. The agent may suggest the already-read published article; that suggestion needs no third execution. The final wording is model-generated, not scripted evidence. If it retries, bypasses MCP, or invents a result, retain that attempt and fix the take honestly.
+The **identical** execute request must return:
+
+```json
+{"error":{"reason":"tool_denied","tool":"publication_read","index":0},"completedCalls":0}
+```
+
+The subsequent search must contain `"tools":[],"matched":0`. The two entry tools remain advertised; the underlying article contract is hidden. This is a permission denial, not `execution_limit`, a different user's token, or a missing contract before discovery.
+
+The agent can explain the denial and distinguish the previous result from a new read. Revocation cannot erase information already in the conversation. If it declines to perform the test, retries, reads workspace files or invents a fresh result, retain that attempt and prepare a separate take; do not splice a different call into its transcript.
 
 ## Exact recording sequence and voice-over
 
-Record at **1920 × 1080**, notifications off. Prepare the editor and workbench tabs before recording. Keep three seconds of still footage around each clip. Capture the real conversation at its actual speed, then trim waiting time with a visible **“wait trimmed”** caption. Ninety seconds is the edited duration, not a promised execution time.
+Record at **1920 × 1080**, notifications off. Prepare your editor, operator terminal and workbench tabs. Keep three seconds of still footage around each clip. Capture the real conversation at its actual speed, then trim waiting time with a visible **“wait trimmed”** caption. Ninety seconds is the edited duration.
 
 | Time | Record | Say |
 | --- | --- | --- |
-| **00:00–00:12** | Codex: submit turn one, show the resulting title. Caption **“Authenticated HTTP · independent Symfony app · synthetic articles”**. | “This is Symfony Code Mode. In Codex, I ask a separate Symfony application for a published article. The application exposes its approved tools through MCP.” |
-| **00:12–00:23** | Expand that chat's `search_tools` and `execute_tools` records. Show `publication_read`, `id: 101` and the actual result. Use the client transcript if its cards truncate arguments. | “The agent discovers the contract, then sends a tool name and JSON arguments. Symfony runs the installed handler and returns the article.” |
-| **00:23–00:37** | Editor: [ArticleTool.php](../examples/symfony/src/ArticleTool.php), its `#[AsTool]` and `read()` method; then [ReadPolicy.php](../examples/symfony/src/ReadPolicy.php), `isGranted()`. The guide also has highlighted source excerpts. | “Here is that handler, registered with Symfony AI. The application owns the permission check and publication rule. The catalog reuses its schemas and existing toolbox.” |
-| **00:37–00:50** | Back to the same Codex chat: submit the follow-up. Open its actual denial; hold on the explanation and permitted alternative if the agent supplies one. | “Now I ask for a restricted article. The host denies it before the handler runs. The agent can offer the published article we already retrieved.” |
-| **00:50–01:01** | Workbench → **Inspect the controls**. Show the denied read, third execution refused, and exhausted budget after a server restart. Caption **“Separate operator probes · no model called”**. Label the capture as the fresh HTTP adoption proof. | “The same user cannot reset the budget by reconnecting. Even after a server restart, the next execution is refused. Application access checks stay in charge.” |
-| **01:01–01:17** | Workbench → **Compare tokens**. Frame **Direct 46,438 / JSON 29,798 / PHP 12,806**, all ten findings correct. Caption **“Historical matched audit · Symfony AI + Hugging Face · review included · not a new HTTP benchmark”**. | “In a separate matched audit, all three paths found the same ten issues. JSON used thirty-six percent fewer tokens than direct tools. Isolated PHP saved more.” |
-| **01:17–01:30** | Editor: [config/services.php](../examples/symfony/config/services.php), `http`, `ai_tools`, `ai_authorization`. Then the actual passing `code-mode:doctor` output and repository link. | “Register approved tools and a policy, then connect your agent over HTTP. This is ordinary Symfony: no worker, Docker or gVisor for JSON.” |
+| **00:00–00:12** | Submit turn one in your MCP client. Hold on the returned title. Caption **“Authenticated HTTP · independent Symfony app · synthetic articles”**. | “This is Symfony Code Mode. My agent connects to a normal Symfony application over HTTP. I ask for a published article.” |
+| **00:12–00:24** | Expand `search_tools`, then `execute_tools`. Show the discovered `publication_read` contract, `id: 101` and the actual result. | “Search returns the tool because this user has read permission. The agent sends JSON arguments, and Symfony returns the article. Discovery is not a permanent access grant.” |
+| **00:24–00:37** | Editor: `ArticleTool.php` at `#[AsTool]` and `read()`, then `ArticleVoter.php` and `ArticleController.php`. Pre-open each small excerpt. | “Symfony AI supplies the schema and invokes this installed handler. One Symfony voter controls discovery and reads for both the agent and the controller. Execution checks access again.” |
+| **00:37–00:46** | Operator terminal: run `php examples/symfony/bin/console demo:reader-access revoke`. Hold on the output. Caption **“Same user · no reconnect · no budget reset”**. | “Now I revoke the permission in the application. Same user, same connection. I have not reset the budget.” |
+| **00:46–01:01** | Submit the exact follow-up. Expand the same `id: 101` call and its `tool_denied`, `completedCalls: 0`. Then show the new search: `tools: []`, `matched: 0`. | “The agent repeats the exact read using its known contract. Symfony denies it and returns no article. Searching again hides the tool. Previously returned information stays in the chat.” |
+| **01:01–01:17** | Workbench → **The 90-second demo → Compare tokens**. Frame **Direct 46,438 / JSON 29,798 / PHP 12,806**, all ten findings correct. Caption **“Separate historical audit · Symfony AI + Hugging Face · review included”**. | “In a separate matched audit, all three paths found the same ten issues. JSON used thirty-six percent fewer tokens than direct tools. Isolated PHP saved more.” |
+| **01:17–01:30** | Editor: `config/services.php`, highlighting `ai_tool_services`, `ai_tools`, `voter_rules` and `http`. Cut to the passing `code-mode:doctor` output and repository URL. | “Register approved Symfony tools and your policies. JSON runs with ordinary PHP and Symfony dependencies. Permission changes do not reset call budgets. Connect your agent and use your application.” |
 
-This fits 90 seconds with prepared views and an edited conversation. Do not try to install dependencies, explain the whole design history or show every check on screen. Keep the current product first; the optional PHP path gets its comparison column and a link to the full story.
+Source views: [handler](../examples/symfony/src/ArticleTool.php), [shared voter](../examples/symfony/src/ArticleVoter.php), [controller](../examples/symfony/src/ArticleController.php), [configuration](../examples/symfony/config/services.php). The workbench also shows highlighted excerpts and the separately captured HTTP sequence. Record the actual client calls for the main take; label any substituted proof footage **“Operator HTTP proof · no model called”**.
 
 ## What each shot proves
 
-- The fresh chat proves that a client can discover and call the independent application's approved tool. Symfony AI supplies its schema and invokes the handler; **Codex supplies the conversation model**. This is not a fresh Symfony AI + Hugging Face model run.
-- The token table predates the HTTP migration. It is the retained **48-article, 24-image audit**, not the small article lookup. It uses provider-reported input + output tokens, includes reviews, and retains failed attempts. JSON used **35.8% fewer** tokens than direct calls in that matched run; PHP used **72.4% fewer**. These are neither bills nor universal savings.
-- The current controls prove authentication, denial and persisted execution/call budgets. They do **not** prove forced handler termination. In-process deadlines are cooperative; hosting and downstream clients must enforce hard timeouts.
-- The fresh capture ran with process creation disabled. It tests a local bearer authenticator and one persistent host, not every hosting platform or a multi-host deployment. JSON is not a prompt-injection defense. Older injection and forced-termination captures remain historical.
-- Preserve the new chat's requests, responses and untrimmed footage locally. The saved native rehearsal is a separate take containing only MCP messages, not a full chat transcript. Operator and Hugging Face traces are separately labelled. Match new footage to its own requests and responses. `--trace-file` on the stock server currently supports only the PHP path, so retain the JSON records from the client.
+- The fresh chat uses the client's model. Symfony AI supplies schemas and handler invocation; this is **not** a new Symfony AI + Hugging Face model run.
+- Same-user revocation takes effect on the **next HTTP request**. The discovered name remains known, but execution rechecks access. The local authenticator reads the changed permission fixture; no reusable package security checks or budgets are relaxed. This does not claim cancellation of a handler already running.
+- The separate HTTP proof also tests restricted article 202, cross-user discovery isolation, unchanged budgets after regrant and server restart, and authentication/origin checks. These extra probes need not fit in the recording.
+- The token table is the retained **48-article, 24-image audit**, not this small lookup. It includes model reviews and failed attempts. JSON used **35.8% fewer** provider-reported tokens; PHP used **72.4% fewer** in this matched run. These are not bills or universal savings. The HTTP runtime has not been re-benchmarked.
+- JSON runs trusted installed handlers in process. No worker, Docker or gVisor is required for this sequence. Hosting and downstream clients enforce hard timeouts; JSON is not a prompt-injection defense.
+- Keep the real requests, responses and untrimmed footage locally. The workbench is a read-only evidence viewer, not a live mirror of your conversation. `--trace-file` is PHP-only; save the JSON records through the client.
 
 ## Edit and deliver
 
-Use straight cuts at **0, 12, 23, 37, 50, 61, 77 and 90 seconds**. Record narration separately. Export **MP4, H.264, 1080p, 30 fps**, exactly **90 seconds / 2,700 frames**. Check text legibility and that every claim matches its source. Keep untrimmed footage outside the tracked repository. Recording, editing, uploading and formal submission remain manual steps.
+Use straight cuts at **0, 12, 24, 37, 46, 61, 77 and 90 seconds**. Record narration separately. Export **MP4, H.264, 1080p, 30 fps**, exactly **90 seconds / 2,700 frames**. Keep the denied request and response together. Do not show credentials. Store untrimmed footage outside the tracked repository. Recording, editing, uploading and formal submission remain manual steps.
 
-The [hackathon brief](https://symfony.com/hackathon) is the source for submission requirements. The [evidence index](evidence/README.md) identifies supporting captures. The workbench's read-only walkthrough is a recording aid, not a finished video.
+For another take, grant access and reset the budget before starting a new conversation. To leave the local reader disabled when finished, run `demo:reader-access revoke`.
+
+The [hackathon brief](https://symfony.com/hackathon) is the source for submission requirements. The [evidence index](evidence/README.md) identifies supporting captures.
 
 ## Optional follow-up material
 
 **The journey:** [From PHP to JSON](https://ronaldtebrake.github.io/symfony-hackathon/#version-two) explains the current execution model, then the infrastructure trade-off that led to it. PHP remains useful for loops, joins and filtering; easier managed isolation could improve its adoption later.
-
 
 **Reproduce model evidence:** `php bin/console code-mode:catalog-proof --no-debug` runs operator checks; `--live` adds paid Symfony AI + Hugging Face inference. Both retain attempts. The public catalog capture includes five live scenarios and the independent app's operator proof. The native client rehearsal is a separate file; no video is included.
 

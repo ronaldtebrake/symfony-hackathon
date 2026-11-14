@@ -13,6 +13,8 @@ use PHPUnit\Framework\TestCase;
 
 final class McpGatewayTest extends TestCase
 {
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    #[\PHPUnit\Framework\Attributes\PreserveGlobalState(false)]
     public function testRealDiscoveryAndCallsApplyLocalPolicyAndUpstreamAccess(): void
     {
         $gateway = (new BackendFactory(dirname(__DIR__, 2)))->create('fixture');

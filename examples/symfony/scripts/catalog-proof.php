@@ -17,7 +17,7 @@ $verify = static function (string $name, bool $ok) use (&$checks): void {
     if (!$ok) { throw new RuntimeException('Adoption check failed.'); }
 };
 // The stock server gets no runner settings, inference key or inherited application credentials.
-$environment = ['PATH' => '/usr/bin:/bin', 'ADOPTION_MODE' => 'catalog'];
+$environment = ['PATH' => '/usr/bin:/bin', 'ADOPTION_MODE' => 'catalog', 'APP_ENV' => 'operator'];
 $client = Client::builder()->setClientInfo('fresh-symfony-catalog-proof', '1')->setInitTimeout(10)->setRequestTimeout(10)->setMaxRetries(0)->build();
 $report = ['format' => 'fresh-symfony-catalog/v1', 'capturedAt' => gmdate(DATE_ATOM), 'status' => 'running',
     'scope' => 'Independent Symfony app, copied local Composer packages, own approved native tool and policy, real stock MCP STDIO server. Literal operator requests; no model or generated PHP. No Docker settings passed. Not a Packagist or remote-authentication proof.'];

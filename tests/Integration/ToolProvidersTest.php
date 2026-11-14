@@ -43,6 +43,10 @@ final class ToolProvidersTest extends TestCase
         new ProviderRegistry([new SymfonyAiProvider('articles', $approved, ['listArticles'=>'publishing_list'])]);
     }
 
+    // Fork from a fresh test process so earlier kernel compilations do not consume
+    // the broker's unchanged 64 MiB allowance before this test starts.
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    #[\PHPUnit\Framework\Attributes\PreserveGlobalState(false)]
     public function testMcpAdapterPreservesOriginalNamesPolicyAndUpstreamAccess(): void
     {
         $gateway = (new BackendFactory(dirname(__DIR__, 2)))->create('fixture');

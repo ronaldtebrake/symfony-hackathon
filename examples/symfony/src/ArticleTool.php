@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Adoption;
 
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
+use Symfony\AI\AiBundle\Security\Attribute\IsGrantedTool;
 use Symfony\AI\Platform\Tool\ToolEffectHints;
 
 #[AsTool('publication_read', 'Read the ID and title of a published article by integer ID.',
@@ -20,6 +21,7 @@ final class ArticleTool
     public function __construct(private readonly ArticleCatalog $articles) {}
 
     /** @return array{id: int, title: string} */
+    #[IsGrantedTool(ArticleVoter::READ, subject: 'id')]
     public function read(int $id): array { return $this->articles->readPublished($id); }
 
     public function count(): int { return 1; }

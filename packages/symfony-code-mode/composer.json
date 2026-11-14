@@ -24,6 +24,9 @@
     },
     "suggest": {
         "symfony/ai-agent": "Install ^1.0@beta to use the optional CodeModeToolbox bridge.",
-        "symfony/ai-platform": "Install ^1.0@beta to use the optional CodeModeToolbox bridge."
+        "symfony/ai-platform": "Install ^1.0@beta to use the optional CodeModeToolbox bridge.",
+        "symfony/ai-bundle": "Install ^1.0@beta for native IsGrantedTool checks and AI profiler integration.",
+        "symfony/maker-bundle": "Install ^1.64 in development for make:code-mode-tool.",
+        "symfony/web-profiler-bundle": "Install ^7.4 in development for the Code Mode profiler panel."
     }
 }

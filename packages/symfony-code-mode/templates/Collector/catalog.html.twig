@@ -1,0 +1,33 @@
+{% extends '@WebProfiler/Profiler/layout.html.twig' %}
+
+{% block toolbar %}
+    {% if collector.operations|length %}
+        {% set icon %}<span class="sf-toolbar-value">{ }</span><span class="sf-toolbar-label">{{ collector.operations|length }}</span>{% endset %}
+        {% set text %}<div class="sf-toolbar-info-piece"><b>Code Mode</b><span>{{ collector.operations|length }} catalog operation(s)</span></div>{% endset %}
+        {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', {link: profiler_url}) }}
+    {% endif %}
+{% endblock %}
+
+{% block menu %}<span class="label"><span class="icon">{ }</span><strong>Code Mode</strong></span>{% endblock %}
+{% block panel %}
+    <h2>Approved JSON catalog</h2>
+    <p>Request-local discovery, persistent budget reservations and broker decisions. Arguments, results, user identifiers and exception messages are omitted.</p>
+    <p>Native events show entry into the Symfony AI toolbox and its outcome. A requested event alone does not prove the handler ran. Client model tokens are not observed here.</p>
+    {% for operation in collector.operations %}
+        <h3>{{ operation.operation }} · {{ operation.status }} · {{ operation.durationMs|default(0) }} ms</h3>
+        {% if operation.reason is defined %}<p class="status-error">{{ operation.reason }}</p>{% endif %}
+        {% if operation.discovery is defined %}<p>{{ operation.discovery.returned }} visible contracts returned / {{ operation.discovery.matched }} matched. Truncated: {{ operation.discovery.truncated ? 'yes' : 'no' }}.</p>{% endif %}
+        <table><thead><tr><th>Budget checkpoint</th><th>Attempts used</th><th>Calls reserved</th><th>Known contracts</th></tr></thead><tbody>
+        {% for budget in operation.budget %}<tr><td>{{ budget.phase }}</td><td>{{ budget.attempts }}</td><td>{{ budget.reservedCalls }}</td><td>{{ budget.knownContracts }}</td></tr>{% endfor %}
+        </tbody></table>
+        {% if operation.calls %}
+            <table><thead><tr><th>Tool</th><th>Broker outcome</th><th>Reason</th><th>Time</th></tr></thead><tbody>
+            {% for call in operation.calls %}<tr><td>{{ call.name }}</td><td>{{ call.status }}</td><td>{{ call.reason|default('—') }}</td><td>{{ call.durationMs|default(0) }} ms</td></tr>{% endfor %}
+            </tbody></table>
+        {% endif %}
+        <h4>Native Symfony AI events</h4>
+        {% if operation.nativeEvents %}<ul>{% for event in operation.nativeEvents %}<li>{{ event.name }} · {{ event.phase }}</li>{% endfor %}</ul>
+        {% else %}<p>No native toolbox events observed. Broker denials occur before tool invocation; non-AI providers do not emit Symfony AI events.</p>{% endif %}
+    {% else %}<p>No catalog operations in this request.</p>{% endfor %}
+    {% if collector.dropped %}<p>{{ collector.dropped }} diagnostic entries omitted by the request limit.</p>{% endif %}
+{% endblock %}

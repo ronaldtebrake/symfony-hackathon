@@ -12,7 +12,7 @@ use Opis\JsonSchema\Validator;
 use Symfony\AI\Agent\Toolbox\ToolboxInterface;
 use Symfony\AI\Platform\Result\ToolCall;
 
-/** @internal Invoked inside the supervised broker worker, never inside the PHP sandbox. */
+/** @internal Invokes installed handlers on the host, never inside the generated-PHP sandbox. */
 final readonly class ApprovedTool implements ReadToolInterface
 {
     public function __construct(private ToolboxInterface $toolbox, private ToolDefinition $tool, private ToolAuthorizationInterface $authorization) {}

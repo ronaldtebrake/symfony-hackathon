@@ -65,7 +65,7 @@ php examples/symfony/bin/console code-mode:doctor
 composer proof:http --working-dir=examples/symfony
 ```
 
-Register approved tools and map host permissions to Symfony Security attributes:
+Register approved native tools and reuse your Symfony voters for discovery and reads:
 
 ```yaml
 code_mode:
@@ -74,14 +74,20 @@ code_mode:
         enabled: true
         permissions:
             publication.read_published: ROLE_READER
-    ai_toolbox: app.toolbox
+    ai_tool_services: [App\ArticleTool]
     ai_tools: [publication_read]
-    ai_authorization: App\ReadPolicy
+    voter_rules:
+        publication_read:
+            discover: PUBLICATION_DISCOVER
+            execute: PUBLICATION_READ
+            subject: id
 ```
 
 Expose `/mcp` through Symfony's MCP bundle and protect it with your normal authenticator. The [integration guide](packages/symfony-code-mode/README.md#enable-http) supplies the routing and registry configuration. For the local example, set its ignored bearer token and run `composer start --working-dir=examples/symfony`; connect your agent to `http://127.0.0.1:8001/mcp`. [Client setup](docs/codex.md).
 
 The application controls identity and access. Symfony AI's existing argument resolver and toolbox execute each approved handler; annotations alone do not grant permission. Budgets persist across HTTP requests and reconnects. No worker is involved. Both packages use Composer path repositories and are **not yet published to Packagist**.
+
+With MakerBundle installed, `php bin/console make:code-mode-tool InventoryLookup` generates a native tool, a deny-by-default voter, explicit registration and a security test. The optional **Code Mode profiler panel** shows discovery counts, budget reservations, broker decisions and native Symfony AI events without adding traces to agent responses. [Scaffolding, shared voters and local profiling](packages/symfony-code-mode/README.md#native-symfony-development).
 
 The [provider composition example](examples/composition/README.md) runs beside this demo with its own Composer install. It joins native Symfony AI and MCP tools in one isolated PHP program, with schema-derived PHP interfaces and a separate read-only proof viewer.
 
@@ -182,7 +188,7 @@ Code Mode is useful when a task needs pagination, branching or several related r
 
 The [independent application](examples/symfony/README.md) exposes `search_tools` and `execute_tools` at `/mcp`. Register native Symfony AI tools, approve their names, and map Symfony roles to application permissions. The agent connects using the URL and its application bearer token.
 
-The [fresh HTTP proof](docs/evidence/http-catalog-proof.json) passes **24 checks** with process creation disabled: published article 101 returned, restricted article 202 denied, authentication and origin checks, and budgets preserved after reconnecting and restarting the server. Discovery also filters contracts by the authenticated user’s permissions; execution rechecks visibility and resource access. Its own Composer install had no root autoloader or package sources. This is an operator proof; retained model-token comparisons are separate historical measurements.
+The [fresh HTTP proof](docs/evidence/http-catalog-proof.json) passes **31 checks** with process creation disabled: published article 101 returned, restricted article 202 denied, authentication and origin checks, and budgets preserved after reconnecting and restarting the server. Discovery also filters contracts by the authenticated user’s permissions; execution rechecks visibility and resource access. Its own Composer install had no root autoloader or package sources. This is an operator proof; retained model-token comparisons are separate historical measurements.
 
 ```sh
 composer install --working-dir=examples/symfony
