@@ -33,7 +33,7 @@ Draft for the official project entry; not submitted. Project name: **Symfony Cod
 >
 > The demo makes the boundary visible. An agent discovers an article reader and returns its title. Revoke the user’s permission and the identical follow-up is denied, even though the agent already knows the tool. A new search hides the contract. The workbench shows real JSON requests, responses and Symfony execution traces.
 >
-> This fits ordinary Symfony development: native Symfony AI tools, shared Security voters, a Maker command and a profiler panel, running in a normal PHP HTTP application. Discovery builds on Johannes Wachter’s proposed Symfony AI search components through a pinned, attributed BM25 adapter with no added Composer dependencies. A fresh Symfony AI + Hugging Face conversation exercises that same HTTP path; its attempts and measured usage are retained.
+> Built with Symfony AI and the official PHP MCP SDK, this fits ordinary Symfony development: native tools, shared Security voters, a Maker command and a profiler panel, running in a normal PHP HTTP application. Discovery builds on Johannes Wachter’s proposed Symfony AI search components through a pinned, attributed BM25 adapter with no added Composer dependencies. A fresh Symfony AI conversation using Hugging Face Inference Providers exercises that same HTTP path; its attempts and measured usage are retained.
 >
 > We began with sandboxed PHP that could join and filter results near the tools. The experiments led to a simpler default for adoption: searchable JSON calls to installed handlers. The PHP path and matched audit evidence remain available, with their trade-offs documented.
 >
@@ -49,6 +49,8 @@ Submission links:
 - Final MP4: https://ronaldtebrake.github.io/symfony-hackathon/media/symfony-native-tools-demo-90s.mp4
 
 Suggested tags: **MCP**, **MCP SDK**, **Agent**, **Tool Calling**, **symfony-ai**. Attach the final MP4 and complete submission through SymfonyConnect; the repository push does not submit the entry.
+
+Before submitting, replace the earlier PHP-workflow description with the description above and attach the current MP4. On **15 November 2026**, the [public project entry](https://symfony.com/hackathon/projects/symfony-code-mode) still showed the earlier description and **“No video yet”**. Confirm the updated description, repository link and playable video on that page after saving. The deadline is **22 November 2026, 18:00 CET**.
 
 ## Record another take
 
@@ -147,7 +149,7 @@ For optional operator profiler shots, use `APP_ENV=dev` locally and capture fres
 
 ## Edit and deliver
 
-Use cuts at **0, 3, 10, 38, 46, 51, 74, 82 and 90 seconds**. Export **MP4, H.264, 1080p, 30 fps**, exactly **90 seconds / 2,700 frames**, without an audio track. Keep the denied request and response together. Label waiting trims and separate captures. Store untrimmed footage outside the tracked repository. The finished film is included in Pages; formal hackathon submission remains a separate step.
+Use chapter cuts at **0, 5, 10, 38, 43, 48, 71, 85 and 90 seconds**, matching the film table above. Export **MP4, H.264, 1080p, 30 fps**, exactly **90 seconds / 2,700 frames**, without an audio track. Keep the denied request and response together. Label waiting trims and separate captures. Store untrimmed footage outside the tracked repository. The finished film is included in Pages; formal hackathon submission remains a separate step.
 
 For another take, grant access and reset the budget before starting a new conversation. To leave the local reader disabled when finished, run `demo:reader-access revoke`.
 
@@ -255,4 +257,4 @@ Security probes use two seconds, 128 MiB and three calls each. Normal audit exec
 
 The CLI also supports `composer demo -- --mode=live --scenario=impact` and `--question='Count published articles by language. Return counts.'`. Custom answers are marked **review required**; they have no independent correctness badge. Runtime settings and permissions remain host-controlled. Custom-question live inference is outside the captured proof.
 
-The [hackathon brief](https://symfony.com/hackathon), checked **3 November 2026**, asks for a public runnable repository and a 90-second real demo by **22 November, 18:00 CET**. The [evidence index](evidence/README.md) identifies the sources for each claim.
+The [hackathon brief](https://symfony.com/hackathon), checked **15 November 2026**, calls for Symfony AI, the PHP MCP SDK and Hugging Face Inference Providers, with a public runnable repository and a 90-second real demo by **22 November 2026, 18:00 CET**. The [evidence index](evidence/README.md) identifies the sources for each claim. Upstream feedback is prepared in [the contribution notes](contributing/README.md), but has not been posted.

@@ -272,13 +272,13 @@ Code Mode is useful when a task needs pagination, branching or several related r
 
 For gVisor, follow the [runtime setup](packages/php-code-mode/README.md#sandboxed-php), put the image ID and Docker command in ignored `.env.local`, then run `code-mode:doctor`. macOS can use a Linux VM. Ordinary Docker alone is insufficient. There is no unsafe local PHP executor or automatic fallback.
 
-For the JSON catalog, add `mode: catalog` alongside your approved tools and identity provider. `code-mode:serve` exposes `search_tools` and `execute_tools`. Each call uses the same authorization and schema checks. Results stay separate; the model combines them. The earlier `mode: batch` interface with a separate describe step remains available for reproducing its captures. [Batch format, limits and hosted Symfony requirements](docs/batching.md).
+For the JSON catalog, enable HTTP with `mode: catalog`, register your approved tools and protect `/mcp` with your Symfony authenticator, as in the [judge quickstart](#judge-quickstart). The endpoint exposes `search_tools` and `execute_tools`. Each call uses the same authorization and schema checks. Results stay separate; the model combines them. The local-operator `code-mode:serve` command and earlier `mode: batch` interface remain available for reproducing historical captures. [Batch format, limits and hosted Symfony requirements](docs/batching.md).
 
 The JSON HTTP endpoint uses Symfony MCP and Security. It enforces permissions, argument validation and per-user call budgets across requests and restarts. Deadlines are cooperative; hosting and downstream clients must enforce hard timeouts. The default persistent state/lock works on one application host. Generated PHP remains a separate historical gVisor path.
 
 The bundle defaults to **5 seconds per execution/batch, 1 second per tool, 10 tool calls and two attempts**, including failures. gVisor adds a 128 MiB container limit. The separate editorial-audit harness uses a larger bounded profile, documented in its [demo guide](docs/demo.md).
 
-The security proof checks an authorized read, a denied tool call and an infinite loop terminated after a completed read, with container removal verified. Tool descriptions, CMS content and generated PHP remain untrusted. This is a tested development proof, not an audited public execution service. [Security model](packages/php-code-mode/docs/security.md) · [Verification scope](packages/php-code-mode/docs/verification.md).
+The historical PHP security proof checks an authorized read, a denied tool call and an infinite loop terminated after a completed read, with container removal verified. Tool descriptions, CMS content and generated PHP remain untrusted. This is a tested development proof, not an audited public execution service. [Security model](packages/php-code-mode/docs/security.md) · [Verification scope](packages/php-code-mode/docs/verification.md).
 
 ## Measured results
 
