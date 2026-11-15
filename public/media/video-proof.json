@@ -22,48 +22,53 @@
   "chapters": [
     {
       "start": 0,
-      "end": 5,
-      "title": "Your Symfony tools, on demand"
+      "end": 7,
+      "title": "More tools. Same entry cost."
     },
     {
-      "start": 5,
-      "end": 10,
+      "start": 7,
+      "end": 12,
+      "title": "From PHP to JSON"
+    },
+    {
+      "start": 12,
+      "end": 17,
       "title": "Generate an approved tool"
     },
     {
-      "start": 10,
-      "end": 38,
+      "start": 17,
+      "end": 45,
       "title": "Discover and read"
     },
     {
-      "start": 38,
-      "end": 43,
+      "start": 45,
+      "end": 50,
       "title": "Share the voter"
     },
     {
-      "start": 43,
-      "end": 48,
+      "start": 50,
+      "end": 55,
       "title": "Revoke permission"
     },
     {
-      "start": 48,
-      "end": 71,
+      "start": 55,
+      "end": 78,
       "title": "Deny the follow-up"
     },
     {
-      "start": 71,
-      "end": 85,
+      "start": 78,
+      "end": 87,
       "title": "Symfony AI + Hugging Face over HTTP"
     },
     {
-      "start": 85,
+      "start": 87,
       "end": 90,
-      "title": "More tools. Same entry cost."
+      "title": "Run it in Symfony"
     }
   ],
   "edits": {
     "lookup": "Source 0–4s + 11–35s at original speed. Seven-second wait trim labelled. First three seconds show full app; then conversation crop.",
-    "followUp": "Full second source at original speed; final frame held until 71s.",
+    "followUp": "Full second source at original speed; final frame held until 78s.",
     "conversationCrop": [
       390,
       60,
@@ -71,15 +76,22 @@
       540
     ],
     "revocation": "Caption explains the real operator change between recordings; no operator footage was supplied.",
-    "opening": "First five seconds: Your Symfony tools, on demand. Your application stays in control.",
+    "opening": "First seven seconds: the separate offline advertised-schema measurement, 10 to 100 synthetic tools; two HTTP entry tools stay at 239 schema tokens.",
     "outro": {
       "changedSeconds": [
-        85,
+        87,
         90
       ],
-      "note": "Separate offline advertised-schema measurement; not the model conversation usage."
+      "note": "Clone. Run the proof. Connect your agent. Repository link; PHP and Composer."
     },
-    "presentation": "51 seconds allocated to original agent recordings; existing crop and seven-second wait trim preserved. Minimal product captions, no lower-left production notes. The 14-second HTTP/Hugging Face insert uses actual JSON excerpts and its captured profiler outcome, separately labelled from desktop footage."
+    "presentation": "51 seconds allocated to original agent recordings; existing crop and seven-second wait trim preserved. Minimal product captions, no lower-left production notes. A nine-second separately labelled HTTP/Hugging Face insert shows the actual denied follow-up and hidden-contract search. No provider-token total is displayed in the film; measured usage remains in the reviewed evidence.",
+    "journey": {
+      "seconds": [
+        7,
+        12
+      ],
+      "note": "Sandboxed PHP in gVisor, JSON calls over ordinary HTTP, then discovery built on the proposed Symfony AI BM25 component. Historical and current paths remain distinct."
+    }
   },
   "recordingVerification": {
     "sameExecuteArguments": true,
@@ -522,10 +534,10 @@
     "shownInCurrentFilm": false
   },
   "assets": {
-    "symfony-native-tools-demo-90s.mp4": "771ca351d5dc742c5e65847934c06976e90739c11112b6ed7a86eebc661fc53b",
+    "symfony-native-tools-demo-90s.mp4": "815f794255c82514637d8e467843adcd312abc079fc7507fb81111099d4c2a55",
     "profiler-authorized.png": "91e9d66d32dac1fc826565638ac2308249bcf1746515fb5a96ec13b34887eaa8",
     "profiler-denied.png": "215ecf2a8f3355bad65a97e2d3dfaf62af5fabc715525caaba6642c67e96678a",
-    "symfony-native-tools-poster.jpg": "b5e3321502648f7f2d5e72121e489a7b63472d6b2a88a22391b9dee4b5b72465"
+    "symfony-native-tools-poster.jpg": "8e87af147154c865aa9d05916a27edd083b196a63f53a4d8d6237cac66cc2c9a"
   },
   "schemaScaling": {
     "capture": "docs/evidence/catalog-scaling.json",
@@ -552,7 +564,11 @@
       40,
       100
     ],
-    "scope": "Offline tokenization of one serialized MCP tools/list result. The two current HTTP contracts match the authenticated execution capture. Direct catalogs contain synthetic four-field tools. Exact-name searches use the real catalog implementation. No model or tool handler runs; no provider usage, correctness comparison or billing is measured."
+    "scope": "Offline tokenization of one serialized MCP tools/list result. The two current HTTP contracts match the authenticated execution capture. Direct catalogs contain synthetic four-field tools. Exact-name searches use the real catalog implementation. No model or tool handler runs; no provider usage, correctness comparison or billing is measured.",
+    "onScreenSeconds": [
+      0,
+      7
+    ]
   },
   "liveHttpConversation": {
     "capture": "docs/evidence/http-conversation.json",
@@ -568,26 +584,16 @@
     "modelRequests": 6,
     "mcpCalls": 4,
     "retainedAttempts": 2,
-    "scope": "Verified second attempt, separate from the desktop recording. Initial failed visibility recheck retained in the capture. Usage is provider-reported input plus output for this attempt, not a baseline or savings measurement.",
+    "scope": "Verified second attempt, separate from the desktop recording. Film excerpts show the denied follow-up and hidden-contract search. The complete four-call sequence, initial failed visibility recheck and provider usage remain in the capture. Usage is not shown in the film and is not a baseline or savings measurement.",
     "stages": [
       {
-        "start": 71,
-        "end": 74,
-        "httpToolCallIndex": 0
-      },
-      {
-        "start": 74,
-        "end": 77.5,
-        "httpToolCallIndex": 1
-      },
-      {
-        "start": 77.5,
-        "end": 82,
+        "start": 78,
+        "end": 82.5,
         "httpToolCallIndex": 2
       },
       {
-        "start": 82,
-        "end": 85,
+        "start": 82.5,
+        "end": 87,
         "httpToolCallIndex": 3
       }
     ]

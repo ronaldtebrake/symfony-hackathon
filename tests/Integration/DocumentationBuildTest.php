@@ -127,9 +127,10 @@ final class DocumentationBuildTest extends TestCase
         $this->assertSame(\count($run['trace']['agentCalls']), $binding['mcpCalls']);
         $this->assertSame($run['model'], $binding['model']);
         $this->assertSame($run['protocol'], $binding['protocol']);
-        $this->assertSame([0, 1, 2, 3], array_column($binding['stages'], 'httpToolCallIndex'));
-        $this->assertSame($video['chapters'][6]['start'], $binding['stages'][0]['start']);
-        $this->assertSame($video['chapters'][6]['end'], $binding['stages'][3]['end']);
+        $this->assertSame([2, 3], array_column($binding['stages'], 'httpToolCallIndex'));
+        $this->assertSame($video['chapters'][7]['start'], $binding['stages'][0]['start']);
+        $this->assertSame($binding['stages'][0]['end'], $binding['stages'][1]['start']);
+        $this->assertSame($video['chapters'][7]['end'], $binding['stages'][1]['end']);
         foreach ($video['assets'] as $asset => $hash) {
             $this->assertSame($hash, hash_file('sha256', $root.'/public/media/'.$asset));
         }
