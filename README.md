@@ -1,20 +1,27 @@
 # Symfony Code Mode
 
-**Your Symfony tools, on demand. Your application stays in control.**
+**Connect AI agents to your Symfony application through MCP.**
 
-Give agents a searchable catalog of approved Symfony tools. Discover the contracts needed for the task, call existing services with JSON, and enforce the application’s current permissions on every request.
+Symfony Code Mode is a reusable Composer package and Symfony bundle that adds a **searchable MCP (Model Context Protocol) tool catalog** to an application. An agent discovers the tools available to its authenticated user, then calls existing Symfony services with JSON arguments. The conversation stays in the agent; your application owns the data and access rules.
 
-Expose two stable tools: `search_tools` returns approved contracts and `execute_tools` invokes them with literal JSON arguments. Adding approved tools does not enlarge those two advertised schemas; retrieve full contracts when needed. Reuse Symfony AI schemas, Symfony/MCP providers and application access checks. There is no generated program in this path. The earlier sandboxed PHP implementation remains available as a historical reference and a computation option.
+**Why a catalog?** Advertising every tool upfront adds schemas to the agent’s context, including tools it may never use. We expose two stable MCP tools:
 
-Your application owns the tool implementations, identity, permissions and execution limits. Conversations stay in your MCP client or Symfony AI agent. Generated PHP requires gVisor. The JSON catalog runs as normal Symfony services over authenticated HTTP, with no worker, Docker or process-control extensions.
+- `search_tools` returns the matching tool contracts visible to the current user.
+- `execute_tools` calls approved handlers with JSON, checking current permissions, arguments and budgets on every execution.
+
+Adding approved tools leaves those two advertised schemas unchanged. Full contracts are retrieved when needed; retrieved schemas, results and conversation history still consume tokens.
+
+**The demo:** an agent discovers an article reader and retrieves its title. The operator revokes permission. The identical follow-up is denied before the handler runs, and a fresh search hides the contract. Knowing a tool’s name does not preserve access to it.
+
+The current JSON path runs as ordinary authenticated Symfony HTTP. It invokes installed PHP services and needs no generated-code sandbox, worker or Docker. The [design journey](https://ronaldtebrake.github.io/symfony-hackathon/#journey) explains how the earlier sandboxed-PHP experiments led here.
 
 Built for the [Symfony AI & MCP Hackathon](https://symfony.com/hackathon), using **Symfony AI**, the **PHP MCP SDK** and **Hugging Face Inference Providers**.
 
-[Watch the silent 90-second demo](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) · [Visual quickstart](https://ronaldtebrake.github.io/symfony-hackathon/#quickstart)
+[Watch the 90-second demo](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) · [Run the judge quickstart](#judge-quickstart) · [Inspect the real Symfony AI conversation](https://ronaldtebrake.github.io/symfony-hackathon/#native-rehearsal)
 
 ## Judge quickstart
 
-Use **PHP 8.2+, Composer 2 and Git**. This path runs a real Symfony HTTP application with its own dependencies. The proof needs no model key, Docker or gVisor; Composer checks the required PHP extensions.
+Use **PHP 8.2+, Composer 2 and Git**, with network access for the initial dependency install. Composer checks the required PHP extensions. Step 1 runs real HTTP requests against an independent Symfony application with its own dependencies; it needs no model key, Docker or gVisor. Steps 2–3 let you repeat the conversation in an MCP client using that client’s model access. The published video and saved evidence can be viewed without installing anything.
 
 ### 1. Clone, install and prove the boundary
 
@@ -68,11 +75,23 @@ php examples/symfony/bin/console demo:reader-access revoke
 
 In the **same chat**, ask:
 
-> The operator revoked my read permission. Repeat the exact article 101 read once using the contract already discovered. Do not search first or retry. Explain the result without presenting the previous title as a fresh read.
+> The operator revoked my read permission. Repeat the exact article 101 read once using the contract already discovered, then search again to check which tools remain visible. Do not search before the read or retry it. Explain both results without presenting the previous title as a fresh read.
 
-Expected: `tool_denied`, `completedCalls: 0`, and no new article data. Keep the same user and connection; **do not reset the budget between reads**. The two attempts include the denial. A subsequent search hides the contract. Before another take, grant access and reset the budget again.
+Expected: `tool_denied`, `completedCalls: 0`, and no new article data. The subsequent search returns `"tools": [], "matched": 0`. Keep the same user and connection; **do not reset the budget between reads**. The two attempts include the denial. Before another take, grant access and reset the budget again.
 
 The [independent app guide](examples/symfony/README.md) explains the shared voter, Maker command, profiler and hosting limits. Production apps use their own authentication and permission store; the example uses a local bearer token and permission fixture.
+
+## What the Symfony stack makes possible
+
+| Component | Its role in the working demo |
+| --- | --- |
+| **Symfony AI** | Derives native tool schemas and invokes installed handlers. The catalog adapter also reuses a pinned, attributed snapshot of the proposed BM25 discovery component, without a separate search service. |
+| **PHP MCP SDK + Symfony MCP Bundle** | Expose `search_tools` and `execute_tools` over HTTP so an MCP client can discover and call the catalog. |
+| **Symfony Security** | Supplies the authenticated identity. One voter governs discovery, tool reads and the normal article controller; permissions are rechecked after discovery. |
+| **Hugging Face Inference Providers** | Powers the separately recorded Symfony AI conversation: discover, read, revoke, deny and recheck visibility. Actual requests, results, usage and both attempts are retained. |
+| **MakerBundle + WebProfilerBundle** | Scaffold an explicitly registered tool and deny-by-default voter, then show broker decisions and native AI events in the profiler. |
+
+The [reviewed HTTP conversation](https://ronaldtebrake.github.io/symfony-hackathon/#native-rehearsal) shows the current path. Reproducing that particular model run requires a Hugging Face token; [the capture guide](docs/demo.md#current-http-model-conversation) keeps that optional step separate from the key-free quickstart. Run `composer check` after installing the root dependencies to check coding standards, PHPStan, configuration and tests. CI also checks the independent HTTP application on Linux and Windows. [Prepared upstream feedback](docs/contributing/README.md) is available for review and has not been posted.
 
 ## The evidence behind the design
 
