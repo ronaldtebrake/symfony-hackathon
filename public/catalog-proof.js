@@ -192,15 +192,19 @@ async function loadNativeRehearsal() {
 }
 loadNativeRehearsal();
 
+function httpConversationAttempts() {
+  return (byId('http-conversation-client').value === 'claude' ? httpCatalogEvidence?.nativeCodeMode : httpCatalogEvidence?.conversation)?.attempts ?? [];
+}
 function renderHttpConversationPicker() {
-  const attempts = httpCatalogEvidence?.conversation?.attempts ?? [];
+  const attempts = httpConversationAttempts();
   const select = byId('http-conversation-attempt'); select.replaceChildren();
   attempts.forEach((run, index) => { const option = node('option', `${index + 1} · ${run.verification?.passed ? 'Verified' : 'Review required'} · ${new Date(run.createdAt).toLocaleString()}`); option.value = String(index); select.append(option); });
   if (attempts.length) select.value = String(attempts.length - 1);
   renderHttpConversation();
 }
 function renderHttpConversation() {
-  const attempts = httpCatalogEvidence?.conversation?.attempts ?? [];
+  if (byId('http-conversation-client').value === 'claude') { renderClaudeCodeMode(); return; }
+  const attempts = httpConversationAttempts();
   const run = attempts[Number(byId('http-conversation-attempt').value)];
   const body = byId('http-conversation-body'); body.replaceChildren();
   if (!run) { body.append(node('p', 'No reviewed live HTTP conversation is available. The operator proof remains below.')); return; }
@@ -238,3 +242,54 @@ function renderHttpConversation() {
   if (!run.currentSourceMatches) body.append(node('p','The captured application source differs from the current checkout.','doc-callout'));
 }
 byId('http-conversation-attempt').addEventListener('change',renderHttpConversation);
+byId('http-conversation-client').addEventListener('change',renderHttpConversationPicker);
+if (new URLSearchParams(window.location.search).get('client') === 'claude') byId('http-conversation-client').value = 'claude';
+
+function renderClaudeCodeMode() {
+  const run = httpConversationAttempts()[Number(byId('http-conversation-attempt').value)];
+  const body = byId('http-conversation-body'); body.replaceChildren();
+  if (!run) { body.append(node('p', 'No reviewed native Code Mode capture is available.')); return; }
+  const calls = run.http.filter(row => row.request.method === 'tools/call');
+  body.append(node('p', `${run.verification.passed ? 'VERIFIED CONVERSATION' : 'REVIEW REQUIRED'} · ${run.client.name} ${run.client.version} · ${run.client.model}`, 'mode-note'));
+  body.append(node('p', 'Claude writes the JavaScript. Symfony keeps the permissions.', 'lede'));
+  const metrics = node('div', undefined, 'hf-metrics');
+  for (const [label, value] of [['Generated JavaScript blocks', run.code.length], ['Actual MCP calls', calls.length], ['Execution attempts, including denial', calls.filter(row => row.request.params.name === 'execute_tools').length]]) {
+    const card = node('div'); card.append(node('span', label), node('strong', number(value))); metrics.append(card);
+  }
+  body.append(metrics);
+  let callIndex = 0;
+  run.turns.forEach((turn, index) => {
+    if (index === 1) body.append(node('span', 'OPERATOR REVOKES PERMISSION', 'eyebrow'), catalogJson({command: run.permissionChange.command, output: run.permissionChange.output}), node('p', 'Same authenticated user and Claude session. No budget reset.', 'measurement-note'));
+    body.append(node('span', `TURN ${index + 1} · USER → CLAUDE`, 'eyebrow'), node('blockquote', turn.question, 'tour-question'));
+    const discovery = node('div');
+    let discoveryShown = false;
+    for (const block of run.code.filter(item => item.turn === index)) {
+      const nested = run.agentCalls.filter(call => call.codeId === block.id && call.name.startsWith('mcp__symfony_catalog__'));
+      if (!nested.length) {
+        discovery.append(sourceBlock(block.code), catalogDetails('Actual Code Mode result', sourceBlock(block.result)));
+        continue;
+      }
+      if (discovery.childNodes.length && !discoveryShown) {
+        const details = catalogDetails('Client discovery · both steps retained', discovery);
+        body.append(node('p', 'The first client-side search found only ToolSearch. Claude then found the Symfony catalog; both generated steps are retained.', 'measurement-note'), details);
+        discoveryShown = true;
+      }
+      const source = node('article', undefined, 'catalog-turn');
+      source.append(node('span', 'GENERATED JAVASCRIPT · EXECUTED BY CLAUDE', 'eyebrow'), sourceBlock(block.code));
+      body.append(source);
+      for (const call of nested) {
+        const row = calls[callIndex];
+        const card = nativeCallCard({tool:row.request.params.name, arguments:row.request.params.arguments, response:row.response.result}, callIndex++);
+        const operation = row.profiler?.operations?.[0];
+        if (operation) card.append(node('p', operation.nativeEvents.length ? 'Symfony handler: requested → succeeded.' : `${operation.reason === 'tool_denied' ? 'Permission denied. ' : ''}No article handler invocation.`, 'mode-note'));
+        card.append(catalogDetails('Actual HTTP exchange and Symfony profiler trace', catalogJson(row)));
+        body.append(card);
+      }
+      source.append(catalogDetails('Actual Code Mode result', sourceBlock(block.result)));
+    }
+    body.append(catalogDetails('Exact recorded model answer', node('p', turn.answer, 'recorded-agent-answer')));
+  });
+  body.append(node('p', 'One native client run. Five JavaScript blocks include two client-discovery steps; the follow-up performs the denied read and visibility check in one block. This is an interoperability proof, with no token-savings claim.', 'measurement-note'));
+  body.append(catalogDetails('Verification, source binding and capture method', catalogJson({verification:run.verification, currentSourceMatches:run.currentSourceMatches, client:run.client, capture:run.capture, sourceSha256:run.sourceSha256, installation:run.installation, cleanup:run.cleanup, scope:run.scope})));
+  if (!run.currentSourceMatches) body.append(node('p', 'The captured application source differs from the current checkout.', 'doc-callout'));
+}

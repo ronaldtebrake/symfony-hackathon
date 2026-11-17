@@ -203,11 +203,11 @@ public function __invoke(int $id): JsonResponse
       </section>
 
       <section id="native-rehearsal" class="doc-page" aria-labelledby="native-rehearsal-heading">
-        <div class="eyebrow">Symfony AI + Hugging Face · authenticated MCP HTTP</div><h2 id="native-rehearsal-heading">One lookup. One boundary.</h2>
+        <div class="eyebrow">Symfony tools · authenticated MCP HTTP</div><h2 id="native-rehearsal-heading">One lookup. One boundary.</h2>
         <p class="lede">A real model discovers an approved Symfony tool and reads article 101. The operator revokes permission. The agent repeats the same read, receives a denial and checks which tools remain visible. Inspect its actual JSON calls and Symfony’s execution traces.</p>
-        <div class="evaluation-controls"><label for="http-conversation-attempt">Recorded conversation</label><select id="http-conversation-attempt" aria-label="Choose a retained HTTP conversation attempt"></select></div>
+        <div class="evaluation-controls"><label for="http-conversation-client">Agent</label><select id="http-conversation-client"><option value="symfony-ai">Symfony AI + Hugging Face</option><option value="claude">Claude · native Code Mode</option></select><label for="http-conversation-attempt">Recorded conversation</label><select id="http-conversation-attempt" aria-label="Choose a retained HTTP conversation attempt"></select></div>
         <div id="http-conversation-body"><p>Loading the reviewed model conversation…</p></div>
-        <p class="measurement-note">Current HTTP/BM25 implementation · synthetic article · a disposable copy of the independent Symfony app. This is a separate live Symfony AI + Hugging Face capture, not the desktop footage in the film or a token-savings comparison. Every attempt is retained.</p>
+        <p class="measurement-note">Two clients, the same HTTP/BM25 application and access checks. Each recording uses a disposable app copy and synthetic article. Claude executes generated JavaScript in its own runtime; Symfony receives JSON and runs installed handlers. These captures are separate from the desktop footage in the film and from token comparisons. Every attempt is retained.</p>
         <details class="proof-details"><summary>Supporting fresh-install proof · 31 operator checks</summary><div id="native-rehearsal-body"><p>Loading the reviewed HTTP requests…</p></div></details>
         <div class="section-explainer"><span class="eyebrow">Installed application code</span><h3>The Symfony handler and its access policy.</h3><p>Symfony AI registers the service through <code>#[AsTool]</code>. The catalog selects <code>publication_read</code>; the application checks access before invoking its handler. This PHP is installed code, not model output.</p></div>
         <div id="native-implementation-body"><p>Loading the application source…</p></div>

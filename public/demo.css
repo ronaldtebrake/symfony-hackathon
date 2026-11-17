@@ -1701,6 +1701,7 @@ pre.proof-source.php-highlight { font-size:11px; padding:14px; white-space:pre-w
 .catalog-controls article > strong { color:var(--brand); font-size:24px; }
 #catalog-attempt { max-width:100%; margin:16px 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:white; color:var(--ink); }
 .catalog-turn .tour-code { max-height:400px; }
+.recorded-agent-answer { white-space:pre-line; }
 .native-call-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
 .native-call-grid > div { min-width:0; }
 .native-call-grid .tour-code { white-space:pre-wrap; overflow-wrap:anywhere; }

@@ -97,6 +97,10 @@ final class DocumentationBuildTest extends TestCase
         $this->assertSame($expected, $files);
         $this->assertFileDoesNotExist($root.'/var/pages/evidence/discovery-report.json');
         $this->assertStringNotContainsString('compact-discovery', $html);
+        $http = json_decode(file_get_contents($root.'/var/pages/evidence/http-catalog.json'), true, flags: \JSON_THROW_ON_ERROR);
+        $this->assertTrue($http['nativeCodeMode']['attempts'][0]['verification']['passed']);
+        $this->assertTrue($http['nativeCodeMode']['attempts'][0]['currentSourceMatches']);
+        $this->assertCount(5, $http['nativeCodeMode']['attempts'][0]['code']);
     }
 
     public function testVideoChaptersAndClaimsMatchTheirSeparateCaptures(): void

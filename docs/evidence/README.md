@@ -13,6 +13,8 @@ Current JSON catalog evidence and historical PHP captures are kept separately. T
 | [Historical STDIO discovery footprint](catalog-proof.json) | Offline SDK tool-list serialization with payload hashes: 287 catalog tokens for 3–100 synthetic tools. Excludes the rest of the conversation; not provider usage. | [Overhead versus task cost](../batching.md#catalog-overhead-and-conversation-cost) |
 | [Matched direct / JSON / PHP audit](audit-three-way.json) | Same model, question, data and permissions; ten correct findings on every path, 46,438 / 29,798 / 12,806 provider tokens with review included. All prior attempts retained separately. | [Three-way comparison](https://ronaldtebrake.github.io/symfony-hackathon/#three-way) |
 
+The separate [native Claude Code capture](claude-code-mode-http.json) records a live Sonnet 5.5 session on 17 November: five generated JavaScript blocks, four actual MCP HTTP calls, an authorized read, permission revocation, denial and a now-hidden contract. The first client-discovery miss is retained. Completed Symfony profiler collectors confirm that the denial never invoked the handler and consumed the second attempt. The application source matches the existing Symfony AI + Hugging Face capture. [Inspect the conversation](https://ronaldtebrake.github.io/symfony-hackathon/?client=claude#native-rehearsal). This proves interoperability for this conversation, not token savings or general isolation of agent-generated code. Private terminal recordings, authentication headers and model reasoning are excluded.
+
 ## Supporting PHP evidence
 
 These captures establish the earlier implementation and its limits. Their costs must not be attributed to the JSON catalog.

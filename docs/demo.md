@@ -174,6 +174,16 @@ The verified run used **5,220 provider tokens** (4,191 input + 1,029 output), si
 
 **Reproduce model evidence:** `php bin/console code-mode:catalog-proof --no-debug` runs operator checks; `--live` adds paid Symfony AI + Hugging Face inference. Both retain attempts. The public catalog capture includes five live scenarios and the independent app's operator proof. The earlier native client rehearsal is a separate file. The film and its new development capture have their own provenance record.
 
+### Native agent Code Mode over HTTP
+
+The [Claude rehearsal](https://ronaldtebrake.github.io/symfony-hackathon/?client=claude#native-rehearsal) is a separate capture from 17 November, using Claude Code 2.1.326 and Sonnet 5.5. Its JavaScript executes in Claude; the unchanged Symfony app receives literal JSON. The original film and Hugging Face evidence remain separate.
+
+To rehearse, connect Claude to the authenticated HTTP app from the quickstart. Start an **interactive terminal session** with `CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=1 claude --model sonnet`; verify the native Code Mode startup banner. The feature is experimental and requires an eligible account and supported model; `claude -p` does not establish this proof. [Current requirements](https://code.claude.com/docs/en/code-mode).
+
+Ask it to discover the article reader and read article 101 exactly once. After its answer, revoke permission with `demo:reader-access revoke`, without resetting the budget. In the same conversation, ask it to repeat the exact read once, then repeat its discovery query. The capture contains the exact prompts, all five generated JavaScript blocks, both client-discovery steps, four actual MCP calls and the model's unedited answers. Symfony's profiler shows no handler invocation for the denial and two consumed execution attempts.
+
+The recorded session exposed only the rehearsal MCP server and the built-in REPL/ToolSearch tools. A loopback forwarding proxy captured the real HTTP bodies; completed profiler collectors were matched by exact request body. Its disposable app used separate credentials and grants, then was removed. Only the reviewed JSON export is published. This is an interoperability check, not a token comparison or a replacement for server authorization.
+
 <details>
 <summary>Supporting PHP evidence: repeated evaluation, timelines and response measurements</summary>
 

@@ -38,6 +38,9 @@ foreach ($reports as $filename => $method) {
     if (in_array($filename, ['native-catalog', 'http-catalog'], true) && true !== ($report['verification']['passed'] ?? null)) {
         throw new RuntimeException('Native catalog rehearsal failed verification.');
     }
+    if ('http-catalog' === $filename && [] === array_filter($report['nativeCodeMode']['attempts'] ?? [], static fn ($run) => $run['verification']['passed'] && $run['currentSourceMatches'])) {
+        throw new RuntimeException('No verified native Code Mode capture matches the application source.');
+    }
     if (false === file_put_contents($output.'/evidence/'.$filename.'.json', $body)) {
         throw new RuntimeException('Cannot write documentation evidence.');
     }
