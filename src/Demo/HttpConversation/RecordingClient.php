@@ -60,6 +60,9 @@ final class RecordingClient implements ClientInterface
             return [];
         }
         $storage = new FileProfilerStorage('file:'.$this->profilerDirectory);
+        // HTTP bodies can arrive before kernel.terminate finishes writing the profile.
+        // Keep one bounded deadline for the whole snapshot; absent evidence stays absent.
+        $deadline = hrtime(true) + 1_000_000_000;
         $records = $this->records;
         foreach ($records as $index => &$row) {
             if ('tools/call' !== $row['request']['method']) {
@@ -67,7 +70,17 @@ final class RecordingClient implements ClientInterface
             }
             $row['profiler'] = null;
             $token = $this->profileTokens[$index];
-            if (null !== $token && null !== $profile = $storage->read($token)) {
+            if (null === $token) {
+                continue;
+            }
+            do {
+                $profile = $storage->read($token);
+                if (null !== $profile) {
+                    break;
+                }
+                usleep(10000);
+            } while (hrtime(true) < $deadline);
+            if (null !== $profile) {
                 if ($profile->hasCollector('code_mode') && ($collector = $profile->getCollector('code_mode')) instanceof CatalogDataCollector) {
                     $row['profiler'] = ['operations' => $collector->getOperations(), 'dropped' => $collector->getDropped()];
                 }
