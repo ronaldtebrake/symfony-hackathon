@@ -41,6 +41,9 @@ foreach ($reports as $filename => $method) {
     if ('http-catalog' === $filename && [] === array_filter($report['nativeCodeMode']['attempts'] ?? [], static fn ($run) => $run['verification']['passed'] && $run['currentSourceMatches'])) {
         throw new RuntimeException('No verified native Code Mode capture matches the application source.');
     }
+    if ('http-catalog' === $filename && ([] === ($report['claudeComparison']['attempts'] ?? []) || [] === array_filter($report['claudeComparison']['pairs'] ?? [], static fn ($pair) => $pair['matched']))) {
+        throw new RuntimeException('Missing matched Claude comparison evidence.');
+    }
     if (false === file_put_contents($output.'/evidence/'.$filename.'.json', $body)) {
         throw new RuntimeException('Cannot write documentation evidence.');
     }

@@ -101,6 +101,10 @@ final class DocumentationBuildTest extends TestCase
         $this->assertTrue($http['nativeCodeMode']['attempts'][0]['verification']['passed']);
         $this->assertTrue($http['nativeCodeMode']['attempts'][0]['currentSourceMatches']);
         $this->assertCount(5, $http['nativeCodeMode']['attempts'][0]['code']);
+        $this->assertCount(2, $http['claudeComparison']['attempts']);
+        $this->assertTrue($http['claudeComparison']['pairs'][0]['matched']);
+        $this->assertSame([44131, 73251], array_column(array_column($http['claudeComparison']['attempts'], 'usage'), 'total'));
+        $this->assertStringContainsString('value="claude-comparison"', $html);
     }
 
     public function testVideoChaptersAndClaimsMatchTheirSeparateCaptures(): void

@@ -193,16 +193,18 @@ async function loadNativeRehearsal() {
 loadNativeRehearsal();
 
 function httpConversationAttempts() {
-  return (byId('http-conversation-client').value === 'claude' ? httpCatalogEvidence?.nativeCodeMode : httpCatalogEvidence?.conversation)?.attempts ?? [];
+  const client = byId('http-conversation-client').value;
+  return (client === 'claude-comparison' ? httpCatalogEvidence?.claudeComparison : client === 'claude' ? httpCatalogEvidence?.nativeCodeMode : httpCatalogEvidence?.conversation)?.attempts ?? [];
 }
 function renderHttpConversationPicker() {
   const attempts = httpConversationAttempts();
   const select = byId('http-conversation-attempt'); select.replaceChildren();
-  attempts.forEach((run, index) => { const option = node('option', `${index + 1} · ${run.verification?.passed ? 'Verified' : 'Review required'} · ${new Date(run.createdAt).toLocaleString()}`); option.value = String(index); select.append(option); });
+  attempts.forEach((run, index) => { const option = node('option', `${index + 1} · ${run.path ? `${run.path === 'native' ? 'Native Code Mode' : 'Regular MCP'} · ` : ''}${run.verification?.passed ? 'Verified' : 'Review required'} · ${new Date(run.createdAt).toLocaleString()}`); option.value = String(index); select.append(option); });
   if (attempts.length) select.value = String(attempts.length - 1);
   renderHttpConversation();
 }
 function renderHttpConversation() {
+  if (byId('http-conversation-client').value === 'claude-comparison') { renderClaudeComparison(); return; }
   if (byId('http-conversation-client').value === 'claude') { renderClaudeCodeMode(); return; }
   const attempts = httpConversationAttempts();
   const run = attempts[Number(byId('http-conversation-attempt').value)];
@@ -243,24 +245,41 @@ function renderHttpConversation() {
 }
 byId('http-conversation-attempt').addEventListener('change',renderHttpConversation);
 byId('http-conversation-client').addEventListener('change',renderHttpConversationPicker);
-if (new URLSearchParams(window.location.search).get('client') === 'claude') byId('http-conversation-client').value = 'claude';
+const requestedHttpClient = new URLSearchParams(window.location.search).get('client');
+if (['claude', 'claude-comparison'].includes(requestedHttpClient)) byId('http-conversation-client').value = requestedHttpClient;
 
 function renderClaudeCodeMode() {
   const run = httpConversationAttempts()[Number(byId('http-conversation-attempt').value)];
   const body = byId('http-conversation-body'); body.replaceChildren();
   if (!run) { body.append(node('p', 'No reviewed native Code Mode capture is available.')); return; }
+  renderClaudeCapture(run, body);
+}
+
+function renderClaudeCapture(run, body) {
   const calls = run.http.filter(row => row.request.method === 'tools/call');
   body.append(node('p', `${run.verification.passed ? 'VERIFIED CONVERSATION' : 'REVIEW REQUIRED'} · ${run.client.name} ${run.client.version} · ${run.client.model}`, 'mode-note'));
-  body.append(node('p', 'Claude writes the JavaScript. Symfony keeps the permissions.', 'lede'));
+  body.append(node('p', run.client.nativeCodeMode ? 'Claude writes the JavaScript. Symfony keeps the permissions.' : 'Claude calls MCP tools directly. Symfony keeps the same permissions.', 'lede'));
   const metrics = node('div', undefined, 'hf-metrics');
   for (const [label, value] of [['Generated JavaScript blocks', run.code.length], ['Actual MCP calls', calls.length], ['Execution attempts, including denial', calls.filter(row => row.request.params.name === 'execute_tools').length]]) {
     const card = node('div'); card.append(node('span', label), node('strong', number(value))); metrics.append(card);
   }
   body.append(metrics);
   let callIndex = 0;
+  const appendCall = row => {
+    const card = nativeCallCard({tool:row.request.params.name, arguments:row.request.params.arguments, response:row.response.result}, callIndex++);
+    const operation = row.profiler?.operations?.[0];
+    if (operation) card.append(node('p', operation.nativeEvents.length ? 'Symfony handler: requested → succeeded.' : `${operation.reason === 'tool_denied' ? 'Permission denied. ' : ''}No article handler invocation.`, 'mode-note'));
+    card.append(catalogDetails('Actual HTTP exchange and Symfony profiler trace', catalogJson(row)));
+    body.append(card);
+  };
   run.turns.forEach((turn, index) => {
-    if (index === 1) body.append(node('span', 'OPERATOR REVOKES PERMISSION', 'eyebrow'), catalogJson({command: run.permissionChange.command, output: run.permissionChange.output}), node('p', 'Same authenticated user and Claude session. No budget reset.', 'measurement-note'));
+    if (index === 1 && run.permissionChange) body.append(node('span', 'OPERATOR REVOKES PERMISSION', 'eyebrow'), catalogJson({command: run.permissionChange.command, output: run.permissionChange.output}), node('p', 'Same authenticated user and Claude session. No budget reset.', 'measurement-note'));
     body.append(node('span', `TURN ${index + 1} · USER → CLAUDE`, 'eyebrow'), node('blockquote', turn.question, 'tour-question'));
+    if (!run.client.nativeCodeMode) {
+      const discoveryCalls = run.agentCalls.filter(call => call.turn === index && !call.name.startsWith('mcp__symfony_catalog__'));
+      if (discoveryCalls.length) body.append(catalogDetails('Actual client discovery', catalogJson(discoveryCalls)));
+      calls.filter(row => row.phase === (index === 0 ? 'lookup' : 'revoked')).forEach(appendCall);
+    }
     const discovery = node('div');
     let discoveryShown = false;
     for (const block of run.code.filter(item => item.turn === index)) {
@@ -270,8 +289,8 @@ function renderClaudeCodeMode() {
         continue;
       }
       if (discovery.childNodes.length && !discoveryShown) {
-        const details = catalogDetails('Client discovery · both steps retained', discovery);
-        body.append(node('p', 'The first client-side search found only ToolSearch. Claude then found the Symfony catalog; both generated steps are retained.', 'measurement-note'), details);
+        const details = catalogDetails('Client discovery · every step retained', discovery);
+        body.append(details);
         discoveryShown = true;
       }
       const source = node('article', undefined, 'catalog-turn');
@@ -279,17 +298,58 @@ function renderClaudeCodeMode() {
       body.append(source);
       for (const call of nested) {
         const row = calls[callIndex];
-        const card = nativeCallCard({tool:row.request.params.name, arguments:row.request.params.arguments, response:row.response.result}, callIndex++);
-        const operation = row.profiler?.operations?.[0];
-        if (operation) card.append(node('p', operation.nativeEvents.length ? 'Symfony handler: requested → succeeded.' : `${operation.reason === 'tool_denied' ? 'Permission denied. ' : ''}No article handler invocation.`, 'mode-note'));
-        card.append(catalogDetails('Actual HTTP exchange and Symfony profiler trace', catalogJson(row)));
-        body.append(card);
+        if (row) appendCall(row);
       }
       source.append(catalogDetails('Actual Code Mode result', sourceBlock(block.result)));
     }
     body.append(catalogDetails('Exact recorded model answer', node('p', turn.answer, 'recorded-agent-answer')));
   });
-  body.append(node('p', 'One native client run. Five JavaScript blocks include two client-discovery steps; the follow-up performs the denied read and visibility check in one block. This is an interoperability proof, with no token-savings claim.', 'measurement-note'));
+  if (!run.path) body.append(node('p', 'Original native rehearsal. Includes an initial client-discovery miss. Its prompt explicitly requested Code Mode, so it is not part of the matched comparison.', 'measurement-note'));
+  if (run.usage) body.append(catalogDetails('Token accounting · unique responses and duplicate rows', catalogJson({usage:run.usage, usageRows:run.usageRows, answerReview:run.answerReview})));
   body.append(catalogDetails('Verification, source binding and capture method', catalogJson({verification:run.verification, currentSourceMatches:run.currentSourceMatches, client:run.client, capture:run.capture, sourceSha256:run.sourceSha256, installation:run.installation, cleanup:run.cleanup, scope:run.scope})));
   if (!run.currentSourceMatches) body.append(node('p', 'The captured application source differs from the current checkout.', 'doc-callout'));
+}
+
+function renderClaudeComparison() {
+  const report = httpCatalogEvidence?.claudeComparison;
+  const body = byId('http-conversation-body'); body.replaceChildren();
+  if (!report?.attempts?.length) { body.append(node('p', 'No matched Claude attempts are available.')); return; }
+  body.append(node('h3', 'Native Code Mode or regular MCP?'), node('p', 'Same model, questions and Symfony permissions. One article lookup, then a revoked read.', 'lede'));
+  for (const pair of report.pairs) {
+    const runs = pair.attemptIds.map(id => report.attempts.find(run => run.id === id));
+    body.append(node('p', `${pair.id} · ${pair.matched ? 'Matched configuration' : 'Not a matched pair'} · ${pair.bothCorrect ? 'Both answers correct; access checks passed' : 'Inspect incomplete or failed checks below'}`, 'mode-note'));
+    const wrap = node('div', undefined, 'table-scroll claude-comparison-table');
+    const table = node('table', undefined, 'live-table');
+    const head = node('thead'); const header = node('tr'); header.append(node('th', 'Measurement'));
+    runs.forEach(run => header.append(node('th', run.path === 'native' ? 'Native Code Mode' : 'Regular MCP'))); head.append(header); table.append(head);
+    const rows = node('tbody');
+    for (const [label, value] of [
+      ['All input + output tokens', run => number(run.usage.total)],
+      ['Uncached input', run => number(run.usage.uncachedInput)],
+      ['Cache write input', run => number(run.usage.cacheWrite)],
+      ['Cache read input', run => number(run.usage.cacheRead)],
+      ['Output', run => number(run.usage.output)],
+      ['Model requests', run => number(run.usage.requests)],
+      ['First request input footprint', run => { const u = run.usage.responses[0]?.usage; return u ? number(u.input_tokens + u.cache_creation_input_tokens + u.cache_read_input_tokens) : 'Unavailable'; }],
+      ['Actual MCP calls', run => number(run.http.filter(row => row.request.method === 'tools/call').length)],
+      ['Prompt-to-answer time¹', run => `${run.activeDurationSeconds.toFixed(1)} s`],
+      ['Correct answers + security checks', run => run.verification.passed ? 'Passed' : 'Review required'],
+    ]) {
+      const row = node('tr', undefined, label === 'All input + output tokens' ? 'live-primary' : ''); const labelCell = node('th', label); labelCell.scope = 'row'; row.append(labelCell);
+      runs.forEach(run => row.append(node('td', run.usage.complete || !label.includes('token') ? value(run) : 'Incomplete usage'))); rows.append(row);
+    }
+    table.append(rows); wrap.append(table); body.append(wrap);
+    const regular = runs.find(run => run.path === 'regular'); const native = runs.find(run => run.path === 'native');
+    if (pair.bothCorrect && regular?.usage.complete && native?.usage.complete) {
+      const delta = native.usage.total - regular.usage.total;
+      body.append(node('p', `In this pair, native Code Mode used ${number(Math.abs(delta))} ${delta > 0 ? 'more' : 'fewer'} tokens (${Math.abs(delta / regular.usage.total * 100).toFixed(1)}%) and ${native.usage.requests} model requests versus ${regular.usage.requests}.`, 'doc-callout'));
+    }
+  }
+  body.append(node('p', 'Total includes cached input. These are main-conversation API counters, not a bill; cache reads and writes have different prices. One short lookup cannot establish general savings or reliability.', 'measurement-note'));
+  body.append(node('p', 'The native follow-up groups the denied read and discovery check in one JavaScript block. Its larger input footprint offsets the saved request here. Both paths expose the same two Symfony catalog tools; this does not compare a catalog against a full tool list.'));
+  body.append(node('p', '¹ Sum of the two prompt-to-answer intervals. Excludes the operator pause; includes hooks, tools and network time. Cache state was not controlled. Internal classifier and background usage is not included.', 'measurement-note'));
+  body.append(catalogDetails('Fairness, cache behavior and counting method', catalogJson(report.protocol)));
+  body.append(node('p', `${report.attempts.length} attempts retained. No retries, answer repairs or failed attempts were removed. Correctness combines exact tool outcomes with a review of the unedited answers, bound to their hashes.`, 'measurement-note'));
+  const run = report.attempts[Number(byId('http-conversation-attempt').value)];
+  if (run) { body.append(node('h3', `Inspect attempt ${Number(byId('http-conversation-attempt').value) + 1} · ${run.path === 'native' ? 'Native Code Mode' : 'Regular MCP'}`)); renderClaudeCapture(run, body); }
 }

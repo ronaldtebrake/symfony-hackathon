@@ -1425,6 +1425,9 @@ footer {
 .hf-proof { margin:48px 0 64px; padding-bottom:40px; border-bottom:1px solid var(--line); scroll-margin-top:24px; }
 .hf-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin:22px 0; }
 #http-conversation-body .hf-metrics { grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); }
+#http-conversation-body .claude-comparison-table { max-height:none; margin:24px 0; }
+#http-conversation-body .claude-comparison-table th { font-size:12px; text-transform:none; letter-spacing:0; }
+#http-conversation-body .claude-comparison-table tbody th { font-weight:500; background:transparent; }
 .hf-metrics > div { padding:18px 22px; background:var(--surface); border:1px solid var(--accent-border); border-radius:12px; }
 .hf-metrics span { display:block; color:var(--muted); font-size:12px; }
 .hf-metrics strong { display:block; color:var(--brand); font-size:26px; margin-top:4px; letter-spacing:-.6px; }
