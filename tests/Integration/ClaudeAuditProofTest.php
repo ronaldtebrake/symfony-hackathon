@@ -5,8 +5,13 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use App\Demo\ClaudeAuditProof;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\TestCase;
 
+// Large capture inspections must not alter the legacy forked worker's memory preconditions.
+#[RunTestsInSeparateProcesses]
+#[PreserveGlobalState(false)]
 final class ClaudeAuditProofTest extends TestCase
 {
     public function testFourActualClientConfigurationsKeepTheFailedAuditAndItsUsage(): void

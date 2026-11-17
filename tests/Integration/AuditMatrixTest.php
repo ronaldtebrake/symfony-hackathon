@@ -7,12 +7,17 @@ namespace App\Tests\Integration;
 use App\Demo\AuditMatrix\Gateway;
 use App\Demo\AuditMatrix\Kernel;
 use App\Demo\AuditMatrix\Tools;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 
 final class AuditMatrixTest extends TestCase
 {
+    // Disposable kernels must not inflate the heap inherited by later 64 MiB broker tests.
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testBothHttpSurfacesUseTheSameContractsAndDenyRestrictedReads(): void
     {
         $contracts = [];
