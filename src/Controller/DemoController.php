@@ -177,6 +177,7 @@ final readonly class DemoController
         $report['conversation'] = \App\Demo\HttpConversation\Proof::load($this->projectDir);
         $report['nativeCodeMode'] = \App\Demo\ClaudeCodeModeProof::load($this->projectDir);
         $report['claudeComparison'] = \App\Demo\ClaudeComparisonProof::load($this->projectDir);
+        $report['claudeAudit'] = \App\Demo\ClaudeAuditProof::load($this->projectDir);
 
         return $this->response(json_encode($report, \JSON_THROW_ON_ERROR), 'application/json');
     }

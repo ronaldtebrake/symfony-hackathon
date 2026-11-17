@@ -184,11 +184,49 @@ Ask it to discover the article reader and read article 101 exactly once. After i
 
 The recorded session exposed only the rehearsal MCP server and the built-in REPL/ToolSearch tools. A loopback forwarding proxy captured the real HTTP bodies; completed profiler collectors were matched by exact request body. Its disposable app used separate credentials and grants, then was removed. Only the reviewed JSON export is published. This is an interoperability check, not a token comparison or a replacement for server authorization.
 
-**Matched comparison:** [Native Code Mode versus regular MCP](https://ronaldtebrake.github.io/symfony-hackathon/?client=claude-comparison#native-rehearsal) uses two new interactive sessions with identical prompts from [the capture](evidence/claude-http-comparison.json). Both use `--model claude-sonnet-5-5 --effort medium --tools REPL,ToolSearch --strict-mcp-config`, the same MCP allowlist and existing auto permission mode. Set `CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=0` for regular MCP and `1` for native Code Mode. Start each with fresh application permissions and budget; revoke only between its two answers. Do not change prompts to favor either path. Both attempts are retained, including all discovery, answers, JSON calls and generated JavaScript.
+**Earlier two-way comparison (catalog only):** [Native Code Mode versus regular MCP](https://ronaldtebrake.github.io/symfony-hackathon/?client=claude-comparison#native-rehearsal) uses two new interactive sessions with identical prompts from [the capture](evidence/claude-http-comparison.json). Both use `--model claude-sonnet-5-5 --effort medium --tools REPL,ToolSearch --strict-mcp-config`, the same MCP allowlist and existing auto permission mode. Set `CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=0` for regular MCP and `1` for native Code Mode. Start each with fresh application permissions and budget; revoke only between its two answers. Do not change prompts to favor either path. Both attempts are retained, including all discovery, answers, JSON calls and generated JavaScript. Both advertise the two catalog tools; this is not a full-tool versus catalog comparison.
 
 Regular MCP used 44,131 main-conversation tokens and seven requests; native Code Mode used 73,251 and six. Both read the right article, denied the revoked call and hid its contract. The native follow-up combined two calls into one generated block, but its first request carried 11,238 input tokens versus 5,281 for regular MCP. This measures the full client mode, including its different runtime instructions, rather than just Symfony's tool schemas. The prompt contents were not captured, so we cannot attribute that extra input precisely.
 
 Token accounting selects the last usage counters for each unique API message ID; repeated transcript content blocks must not be counted twice. Sum uncached input, cache-write input, cache-read input and output. Keep the cache categories visible: regular ran first, native second, sharing an account with potentially warm caches. These are provider counters, not a bill or a controlled cache-cost comparison. Unreported internal classifier/background usage is excluded. Correctness checks exact tool outcomes and binds the review of each unedited final answer to its hash; it is not a general agent reliability score. The comparison is separate from the film and historical audit benchmarks.
+
+### Four-way Claude audit: full tools × JSON catalog × native Code Mode
+
+The [four-way workbench](https://ronaldtebrake.github.io/symfony-hackathon/?client=claude-audit#native-rehearsal) corrects that missing comparison. Four real interactive Claude Code 2.1.326 sessions use Sonnet 5.5 at medium effort, the same audit question, 48 published articles, 24 images and three approved Symfony AI readers. No model answer is repaired or discarded. The [capture](evidence/claude-audit-matrix.json) retains every actual JSON call, generated JavaScript block, public answer, bounded Symfony trace and provider usage record.
+
+| MCP surface | Claude native Code Mode | Total tokens¹ | Model requests | Correct audit |
+| --- | --- | ---: | ---: | --- |
+| All 3 approved readers | Off | 53,749 | 5 | 10 / 10 findings |
+| All 3 approved readers | On | 49,432 | 4 | 10 / 10 findings |
+| Symfony's 2-tool JSON catalog | Off | 54,939 | 6 | Incomplete |
+| Symfony's 2-tool JSON catalog | On | 91,145 | 7 | 10 / 10 findings |
+
+The regular catalog run guessed media IDs beyond the permitted 1–24 range. Two batches stopped on a denied call. Earlier calls ran but their partial results were withheld; Claude stopped without a JSON audit. Its 54,939 tokens remain counted. The native catalog run initially searched the client runtime for “article” and found nothing, then discovered the catalog and completed the audit. These extra steps remain visible too.
+
+The catalog did not establish a token advantage here. Native execution over the full tool list was cheapest by total tokens in this small sample. Catalogs control which schemas are exposed; native Code Mode can compute over returned data. Combining the two adds discovery steps, so their benefits do not automatically add up. Three approved tools cannot test the separate large-catalog scaling claim.
+
+¹ Includes uncached input, cache-write input, cache-read input and output, once per unique API response. This is not a bill. The predeclared execution order was full/regular → catalog/native → catalog/regular → full/native; cache was not controlled and the last run reused substantial cached input. One attempt per cell does not establish average cost or reliability. Internal background/classifier usage is not reported here.
+
+Both surfaces use the same `ApprovedToolbox`, `ToolBroker`, `BatchSession` and persistent identity-bound state. The full surface advertises all three contracts; the catalog advertises `search_tools` and `execute_tools`, then discovers those identical contracts. Each starts with 20 execution submissions and 20 underlying calls; failures consume budget. This separate benchmark does not change the recording app's limits or permissions. Draft denial, revocation, hidden discovery and budget persistence are integration checks; they are not additional prompts in this fixed-permission audit.
+
+To reproduce, start a fresh disposable host for each arm:
+
+```sh
+php scripts/claude-audit-host.php direct var/demo/new-audit/direct-regular
+# For the catalog arms, use "catalog" and a separate new capture directory.
+```
+
+The host creates `mcp.json` and a private `private.json`; supply its token to Claude as `SYMFONY_REHEARSAL_TOKEN` without printing or committing it. In an empty trusted working directory, use the same CLI flags for all four arms:
+
+```sh
+ENABLE_TOOL_SEARCH=false CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=0 claude \
+  --model claude-sonnet-5-5 --effort medium \
+  --strict-mcp-config --mcp-config /absolute/capture/path/mcp.json \
+  --tools REPL,ToolSearch \
+  --allowedTools mcp__symfony_audit__cms_list_articles,mcp__symfony_audit__cms_get_articles,mcp__symfony_audit__cms_get_media,mcp__symfony_audit__search_tools,mcp__symfony_audit__execute_tools
+```
+
+Change only the native flag to `1` for the two native arms; the host sets `alwaysLoad: true` in every MCP config. Keep the same permission mode. Paste `protocol.question` from the retained capture exactly, with no expected findings or corrective hints. Native mode is interactive: do not substitute a scripted model response or a `claude -p` run. Create the host capture directory's `stop` file when finished to remove its disposable application and token. The export script selects public fields from the real transcripts; offline tests verify answers against the fixture and bind calls to their client event IDs. Raw recordings and transcripts stay private.
 
 <details>
 <summary>Supporting PHP evidence: repeated evaluation, timelines and response measurements</summary>

@@ -1443,6 +1443,13 @@ footer {
 .live-table td:first-child { color:var(--muted); }
 .live-table tr.live-primary td { font-weight:700; color:var(--brand); font-size:20px; }
 .live-table tr.live-primary td:first-child { font-size:14px; font-weight:500; }
+#http-conversation-body .claude-audit-table { max-height:none; margin:24px 0; }
+.claude-audit-table .live-table { min-width:720px; }
+.claude-audit-table .live-table th:first-child { width:28%; }
+.claude-audit-table .live-table th { font-size:12px; text-transform:none; letter-spacing:0; }
+.claude-audit-table .live-table tbody th { font-weight:500; background:transparent; }
+.claude-audit-table .live-table td { padding:12px; }
+.claude-audit-table .live-table tr.live-primary td { font-size:20px; }
 .live-table .live-failed { color:#9a3412; font-weight:700; }
 .live-verdict { padding:14px 18px; border-left:3px solid var(--accent); background:var(--surface); font-size:14px; }
 #live-comparison .proof-details pre { max-height:380px; overflow:auto; }
