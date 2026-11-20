@@ -1,45 +1,32 @@
-# Use the Symfony JSON catalog from Codex
+# Connect your agent
 
-This recording setup connects Codex to the [independent Symfony application](../examples/symfony/README.md). Codex manages the conversation; Symfony AI supplies the registered tool schema and handler execution. The agent sends literal JSON to `search_tools` and `execute_tools`. This connection does not execute generated PHP or use gVisor.
+## Connect Symfony Code Mode
 
-## Connect the JSON catalog
+The judge demo uses one MCP server, `symfony_code_mode`, on port 8016. Its two tools are `search_tools` and `execute_tools`. The Symfony Profiler on port 8001 lets you watch the requests.
 
-Install and check the example from the repository root:
+From the repository root, install the project and start the Profiler.
 
 ```sh
+composer install
 composer install --working-dir=examples/symfony
-ADOPTION_MODE=catalog php examples/symfony/bin/console code-mode:doctor
-composer proof:http --working-dir=examples/symfony
+APP_ENV=dev composer start --working-dir=examples/symfony
 ```
 
-Start the example as described in its [HTTP quickstart](../examples/symfony/README.md#start-the-application). Make its bearer token available to the Codex process as `SYMFONY_CATALOG_TOKEN`. The example's `.env.local` is loaded by Symfony, **not by Codex**. Keep the token out of tracked configuration and screenshots.
+Open the [filtered Profiler request list](http://127.0.0.1:8001/_profiler/empty/search/results?method=POST&url=http%3A%2F%2F127.0.0.1%3A8016%2Fmcp&limit=20). In a second terminal, start the MCP server and leave it running.
 
-Add this to the project's ignored `.codex/config.toml`:
+```sh
+php scripts/refund-recording.php serve --catalog --profile
+```
+
+In the trusted project’s ignored `.codex/config.toml`, configure the connection below. Replace both absolute paths with the paths on your machine. The header helper supplies the current fixture credential.
 
 ```toml
-[mcp_servers.symfony_catalog]
-url = "http://127.0.0.1:8001/mcp"
-bearer_token_env_var = "SYMFONY_CATALOG_TOKEN"
+[mcp_servers.symfony_code_mode]
+url = "http://127.0.0.1:8016/mcp"
+http_headers_helper = "/absolute/path/to/php /absolute/path/to/symfony-hackathon/scripts/refund-recording.php headers"
+enabled = true
 enabled_tools = ["search_tools", "execute_tools"]
-startup_timeout_sec = 20
-tool_timeout_sec = 15
-required = true
+required = false
 ```
 
-The Codex process must inherit that environment variable; restart the app from an environment that supplies it if needed. Run `codex mcp get symfony_catalog`, reconnect in MCP settings, and inspect `/mcp`. Project settings require a trusted project. The desktop app and CLI share configuration; the `url` and `bearer_token_env_var` settings are documented in [OpenAI's MCP guide](https://developers.openai.com/codex/mcp/). Client timeouts do not increase server budgets.
-
-The server runs ordinary Symfony HTTP requests with its own dependencies. No worker, Docker, gVisor or Hugging Face key is involved. Codex uses its existing model access. This guide does not automatically change your client configuration.
-
-## Record the actual conversation
-
-Use the [exact prompts and shot list](demo.md#exact-prompts). First discover the tool and read published article **101**. As the operator, run `php examples/symfony/bin/console demo:reader-access revoke`. In the same chat, ask for the identical read using the known contract, then search again. Confirm `tool_denied`, no article data, and an empty discovery result. Keep the same token and connection; an earlier title in the chat is not a fresh result.
-
-Before each new take, run `php examples/symfony/bin/console demo:reader-access grant`, then `php examples/symfony/bin/console code-mode:reset-budget demo-reader`. The local fixture starts without a read grant. There are **two execute submissions, including failures**; discovery does not consume them. Do not reset between the reads. Permission changes, reconnects and server restarts do not reset the budget. Only the operator changes this fixture. Use only this MCP connection to retrieve demo data; its policy cannot control a client's separate shell or filesystem access.
-
-Expand the client's tool records to show exact JSON arguments and responses. Save the conversation/tool export and original footage privately before editing. The stock catalog command does **not** support `--trace-file`; that option is PHP-only. The [workbench](https://ronaldtebrake.github.io/symfony-hackathon/?client=symfony-ai#native-rehearsal) displays a separate recorded Symfony AI + Hugging Face conversation against the HTTP catalog. Save your own take separately.
-
-## Earlier generated PHP connection
-
-The first design used `code-mode:mcp --backend=fixture --no-debug`, exposing `tools_search`, `tools_describe` and `php_execute`. It requires the dedicated [gVisor runtime](../packages/php-code-mode/README.md#sandboxed-php). Keep it separate from `symfony_catalog`; the root demo and the small independent application have different tools and data.
-
-The retained [two-turn conversation](evidence/codex-conversation-2026-11-01.json) shows the PHP audit and repair plan. Inspect the source and calls for each question in the [workbench](https://ronaldtebrake.github.io/symfony-hackathon/#agent-run).
+Open a fresh chat and enter `/mcp`. Expand `symfony_code_mode` to see both tools. The agent uses its own model connection. [Run the judge walkthrough](demo.md#record-the-refund-review-and-the-symfony-profiler)

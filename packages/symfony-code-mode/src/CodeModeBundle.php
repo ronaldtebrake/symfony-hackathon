@@ -130,7 +130,8 @@ final class CodeModeBundle extends AbstractBundle
             if (!interface_exists(\Symfony\AI\Agent\Toolbox\ToolboxInterface::class)) {
                 throw new \LogicException('Install symfony/ai-agent to adapt Symfony AI tools.');
             }
-            $services->set('code_mode.approved_ai_toolbox', ApprovedToolbox::class)->args([new Reference($config['ai_toolbox']), $config['ai_tools'], new Reference($config['ai_authorization'])]);
+            $services->set('code_mode.approved_ai_toolbox', ApprovedToolbox::class)->args([new Reference($config['ai_toolbox']), $config['ai_tools'], new Reference($config['ai_authorization']),
+                $config['profiling'] && [] !== $config['ai_tool_services'] ? new Reference(Profiler\CatalogTrace::class) : null]);
         }
         // An empty installation can boot to run the maker. SessionFactory and doctor
         // still reject execution until at least one explicitly approved tool exists.

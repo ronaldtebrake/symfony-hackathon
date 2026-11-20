@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Demo\Refund;
 
+use App\Demo\GroupSelection\Discovery;
 use CodeMode\BatchResult;
 use CodeMode\BatchSession;
 use CodeMode\ExecutionLimits;
@@ -38,13 +39,11 @@ final readonly class Gateway
 {
     public const LIMIT = 6;
     private CatalogStateStore $states;
-    private CatalogTrace $trace;
     private ToolCatalog $catalog;
     private ToolBroker $broker;
 
-    public function __construct(private string $directory, private string $mode, private SecurityIdentityProvider $identities, private Access $access)
+    public function __construct(private string $directory, private string $mode, private SecurityIdentityProvider $identities, private Access $access, private CatalogTrace $trace)
     {
-        $this->trace = new CatalogTrace();
         $events = new EventDispatcher();
         $events->addSubscriber(new ToolEventSubscriber($this->trace));
         $approved = (new ApprovedToolbox(new Toolbox([new Tools()], eventDispatcher: $events), Tools::NAMES, $access))->tools();
@@ -56,14 +55,23 @@ final readonly class Gateway
     public function __invoke(Request $request): Response
     {
         $this->trace->reset();
-        $builder = Server::builder()->setServerInfo('Symfony refund review', '1.0.0')->setInstructions('Read-only refund review of synthetic orders.')
-            ->setSession(new Server\Session\FileSessionStore($this->directory.'/sessions'))->setSessionLock(new Server\Session\FileSessionLock($this->directory.'/sessions'));
+        foreach ($this->catalog->all() as $definition) {
+            $this->trace->registerLocalContract($definition);
+        }
+        $builder = Server::builder()->setServerInfo('symfony_code_mode', '1.0.0', title: 'Symfony Code Mode')->setInstructions('Read-only refund review of synthetic orders.')
+            ->setSession(new Server\Session\FileSessionStore($this->directory.'/sessions'))->setSessionLock(new Server\Session\FileSessionLock($this->directory.'/sessions'))
+            ->setCapabilities(new ServerCapabilities(tools: true));
+        $visible = fn () => $this->access->canReview($this->identities->identity());
+        $discovery = \in_array($this->mode, ['selection', 'catalog'], true)
+            ? new Discovery($visible, $this->catalog, $this->read(...), $this->broker, $this->identities, $this->states, $this->trace, recordingCatalog: 'catalog' === $this->mode)
+            : new Group($this->mode, $visible, $this->catalog->all(...), $this->read(...));
         if (ProtocolVersion::V2026_07_28->value === $request->headers->get(McpHeader::PROTOCOL_VERSION)) {
-            $visible = fn () => $this->access->canReview($this->identities->identity());
-            $builder->setCapabilities(new ServerCapabilities(tools: true, resources: true))
-                ->enableExtension(new Group($this->mode, $visible, $this->catalog->all(...), $this->read(...)));
+            $builder->setCapabilities(new ServerCapabilities(tools: true, resources: true))->enableExtension($discovery);
             // Build a new SDK file registry on every request, including direct reads of a known URI.
             $this->registerSkills($builder, 'skill' === $this->mode && $visible() ? __DIR__.'/skills' : $this->directory.'/empty-skills');
+        } else {
+            // Handshake clients use core tools/list and tools/call on the same endpoint.
+            $builder->addRequestHandler($discovery);
         }
         $factory = new Psr17Factory();
         $controller = new McpController($builder->build(), new PsrHttpFactory($factory, $factory, $factory, $factory), new HttpFoundationFactory(), $factory, $factory, new MiddlewareFactory());
@@ -83,7 +91,11 @@ final readonly class Gateway
     private function registerSkills(object $builder, string $directory): void
     {
         if (!method_exists($builder, 'addSkillsFromDirectory')) {
-            throw new \RuntimeException('This experiment requires the pinned Skills SDK.');
+            if ('skill' === $this->mode) {
+                throw new \RuntimeException('The linked skill requires the pinned Skills SDK.');
+            }
+
+            return;
         }
         $builder->addSkillsFromDirectory($directory);
     }
@@ -96,9 +108,12 @@ final readonly class Gateway
         try {
             $result = $this->states->withState($identity->subject, function (array $state, \Closure $save) use ($identity, $name, $arguments): array {
                 // Native tools/call has no discovery prerequisite. Authorization still runs inside the broker.
-                $state = ['described' => [$name], 'executions' => $state['executions'] ?? 0, 'toolCalls' => $state['toolCalls'] ?? 0];
                 $this->trace->budget($state, 'before');
-                $session = new BatchSession($this->catalog, $this->broker, $identity, new ExecutionLimits(), maxBatches: self::LIMIT, maxSessionToolCalls: self::LIMIT, state: $state, checkpoint: function (array $next) use ($save): void {
+                $catalogDiscovery = $state['described'] ?? [];
+                $state = ['described' => [$name], 'executions' => $state['executions'] ?? 0, 'toolCalls' => $state['toolCalls'] ?? 0];
+                $session = new BatchSession($this->catalog, $this->broker, $identity, new ExecutionLimits(), maxBatches: self::LIMIT, maxSessionToolCalls: self::LIMIT, state: $state, checkpoint: function (array $next) use ($save, $catalogDiscovery): void {
+                    // Share the reservation without changing what search_tools has disclosed.
+                    $next['described'] = $catalogDiscovery;
                     $save($next);
                     $this->trace->budget($next, 'saved');
                 });

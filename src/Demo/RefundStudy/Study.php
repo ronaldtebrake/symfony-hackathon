@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace App\Demo\RefundStudy;
 
 use App\Demo\BudgetedPlatform;
-use App\Demo\HintEvaluation\Study as HintStudy;
-use App\Demo\HttpConversation\Runner;
 use App\Demo\Mcp\StudyToolset;
 use App\Demo\Refund\Fixture;
 use App\Demo\Refund\Tools;
 use App\Demo\RunTrace;
-use App\Demo\ThreeWayAuditRunner;
 use Symfony\AI\Agent\Agent;
 use Symfony\AI\Platform\Bridge\HuggingFace\Factory;
 use Symfony\AI\Platform\Message\Message;
@@ -28,6 +25,8 @@ final class Study
         'review' => 'Please review refund request R-1042 using the current order and its applicable policy. What is the disposition and why?',
         'revoked' => 'Please refresh just the applicable policy now using the policy ID you already found. With the earlier order facts, what disposition does this fresh check support?',
     ];
+    public const MODEL = 'openai/gpt-oss-120b';
+    public const SETTINGS = ['temperature' => 0, 'max_tokens' => 4096, 'reasoning_effort' => 'medium'];
     public const PROVIDER = 'novita';
     public const LIMIT = 5;
 
@@ -106,13 +105,13 @@ final class Study
                 $trace->captureDetails = true;
                 $http = new TraceableHttpClient(HttpClient::create(['timeout' => 45, 'max_duration' => 60, 'max_redirects' => 0]));
                 $platform = Factory::createPlatform($key, provider: $provider, httpClient: $http);
-                $agent = new Agent(new BudgetedPlatform($platform, $trace, self::LIMIT, captureProviderRouting: true), ThreeWayAuditRunner::MODEL,
+                $agent = new Agent(new BudgetedPlatform($platform, $trace, self::LIMIT, captureProviderRouting: true), self::MODEL,
                     name: 'symfony-refund-review', toolbox: $toolbox, maxToolCalls: 5);
                 $offset = \count($readers->calls);
                 $start = hrtime(true);
                 $turn = ['stage' => $stage, 'question' => $question, 'answer' => null];
                 try {
-                    $result = $agent->call($messages->with(Message::ofUser($question)), Runner::SETTINGS);
+                    $result = $agent->call($messages->with(Message::ofUser($question)), self::SETTINGS);
                     $turn['answer'] = (string) $result->getContent();
                     $messages = $result->getMessages();
                 } catch (\Throwable $error) {
@@ -127,7 +126,7 @@ final class Study
                 foreach ($http->getTracedRequests() as $req) {
                     $turn['providerHttpStatus'][] = $req['info']['http_code'] ?? null;
                 }
-                $turn['usage'] = HintStudy::tokens($trace->providerResponses, $trace->modelRequests);
+                $turn['usage'] = RunTrace::tokens($trace->providerResponses, $trace->modelRequests);
                 $turn['checks'] = self::score($stage, $turn['answer'], $turn['calls']);
                 $out['turns'][] = $turn;
                 if (null === $turn['answer']) {

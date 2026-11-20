@@ -50,6 +50,7 @@ return static function (ContainerConfigurator $container): void {
     if (in_array($container->env(), ['dev', 'test'], true)) {
         $container->extension('framework', ['profiler' => ['enabled' => true, 'collect' => true], 'test' => 'test' === $container->env()]);
         $container->extension('web_profiler', ['toolbar' => false]);
+        $services->set(Adoption\RecordingProfilePanel::class)->args([service('profiler')]);
     }
     if ('dev' === $container->env()) {
         $container->extension('maker', ['root_namespace' => 'Adoption']);

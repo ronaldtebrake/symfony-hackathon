@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 use App\Demo\BackendFactory;
-use App\Demo\HttpConversation\Runner;
 use App\Demo\RefundStudy\Proof;
 use App\Demo\RefundStudy\Study;
-use App\Demo\ThreeWayAuditRunner;
 use Symfony\Component\Dotenv\Dotenv;
 
 $root = dirname(__DIR__);
@@ -38,7 +36,7 @@ if (!is_dir($dir) && !mkdir($dir, 0700, true) && !is_dir($dir)) {
 }
 $file = $dir.'/'.gmdate('Ymd-His').'-'.bin2hex(random_bytes(5)).'.json';
 $report = ['format' => Proof::FORMAT, 'startedAt' => gmdate(\DATE_ATOM), 'protocol' => [
-    'model' => ThreeWayAuditRunner::MODEL, 'provider' => $provider, 'settings' => Runner::SETTINGS,
+    'model' => Study::MODEL, 'provider' => $provider, 'settings' => Study::SETTINGS,
     'agentBridge' => ['package' => 'symfony/ai-mcp-tool', 'toolPrefix' => 'symfony_'],
     'system' => Study::PROMPT, 'questions' => Study::QUESTIONS, 'order' => Study::ARMS, 'maxProviderRequestsPerTurn' => Study::LIMIT,
     'scope' => 'One live Symfony AI conversation per arm against fresh authenticated Symfony HTTP fixtures. The host opens the one named refund group. In the linked arm it confirms the single reviewed manifest and reads the Markdown on the same authenticated server. The two guidance arms supply the same body and role. The model chooses reader calls, arguments and final answers. Each run retains the same conversation and known schemas after revocation. No transaction operation exists.',

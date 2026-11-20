@@ -6,7 +6,7 @@ The package has no application or model-provider dependency. It uses the officia
 
 ## Run the proofs
 
-For JSON without a generated-code runtime, the root checkout provides `php bin/console code-mode:catalog-proof --no-debug` and the [independent Symfony catalog consumer](../../examples/symfony/README.md). Both exercise real broker checks without Docker. The package unit suite covers JSON authorization, call/result bounds and cooperative deadlines.
+From the repository root, run `composer install` and `composer proof:discovery`. The PHP MCP SDK searches and opens a group over authenticated HTTP, reads its order and applicable policy, then checks that revocation denies a fresh read. This proof needs PHP and Composer. [Judge walkthrough](../../docs/demo.md) · [Independent Symfony consumer](../../examples/symfony/README.md)
 
 ### Sandboxed PHP
 
@@ -27,20 +27,7 @@ php examples/proof.php
 
 The image ID must be `sha256:…`; mutable tags are rejected by the library. The build context contains only the runner bootstrap and Dockerfile. The example executes a PHP loop with three `demo.add` calls and returns `sum: 42`, the guest PHP version, and a host-recorded tool-call ledger. No model credentials or network services are needed.
 
-When using the root Symfony checkout, dependencies already come from its Composer path repository. Run `composer test:package`, `composer test:sandbox`, and `composer proof:code-mode` there instead. The sandbox suite fails if the configured image/runtime is unavailable; it never skips or falls back. Run it alone on a dedicated test Docker endpoint: its cleanup assertions check for any remaining package-managed containers.
-
-For this project's macOS development VM:
-
-```bash
-export CODE_MODE_DOCKER_COMMAND='["/opt/homebrew/bin/orb","-m","code-mode-proof","-u","root","docker"]'
-export CODE_MODE_IMAGE="$(orb -m code-mode-proof -u root docker image inspect --format '{{.Id}}' php-code-mode-runner:proof)"
-```
-
-`CODE_MODE_DOCKER_COMMAND` is trusted local argv configuration used by examples/tests, not agent input. A standard Docker SSH context also works without an OrbStack dependency. To build across the OrbStack CLI, send only the runner context:
-
-```bash
-tar -C runner -cf - Dockerfile bootstrap.php .dockerignore | orb -m code-mode-proof -u root docker build -t php-code-mode-runner:proof -
-```
+Run the sandbox suite alone on a dedicated Docker endpoint because the cleanup checks look for any remaining package-managed containers. The examples and tests accept `CODE_MODE_DOCKER_COMMAND` as a host-configured JSON argument list (default `["docker"]`). Only the operator chooses the Docker command and immutable image ID.
 
 ## Embed the library
 
@@ -128,11 +115,7 @@ exactly which tools were disclosed. `catalogToolDefinitions()` supplies the fixe
 `mode: catalog`; the executor, authorization and limits are shared with batches.
 
 This path needs ordinary PHP and JSON; it works inside a web request. There is no worker option. Time checks happen between calls and after a handler returns; a blocked handler cannot be interrupted. Configure hard timeouts and memory limits in the host and downstream clients. HTTP authentication and persistent user budgets are supplied by the Symfony integration. The generated-PHP path uses gVisor and its separate Unix supervisor.
-[Batch contract and hosting limits](../../docs/batching.md).
-
-## Demo for judges
-
-The [product demo](../../docs/demo.md) uses this package’s broker to search approved tools and execute JSON calls through a [Symfony HTTP app](../../examples/symfony/README.md). The prototype that ran agent-written PHP remains reproducible on a configured gVisor host with `composer demo:conversation` and `composer demo:security` from the root checkout.
+[Symfony HTTP state and limits](../symfony-code-mode/README.md#http-state-and-limits).
 
 ## Full schema discovery
 
@@ -148,7 +131,7 @@ Pass the registry's catalog and broker to `CodeModeSession`, with `phpInterface:
 
 `php()->stubs()` emits editor-only PHP interfaces with conservative schema-derived PHPDoc. Complex schemas remain broad; full JSON Schema stays authoritative. Never load the stubs as runtime code. `CodeModeSession::executionCode()` exposes the full guest source, including the fixed proxy, for host diagnostics. The entire program is checked against the original source-byte limit. No image changes, additional network access or new state channel are required.
 
-See the [standalone Symfony/MCP composition proof](../../examples/composition/README.md) for registration, exact PHP, host call traces and denied reads. Its reference program is operator-written; it makes no model-token claim.
+See [ProviderRegistry](src/Provider/ProviderRegistry.php) for registration and collision checks, and the [Symfony integration](../symfony-code-mode/README.md#compose-tool-providers) for service configuration.
 
 ### Capability visibility
 

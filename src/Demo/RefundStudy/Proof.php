@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Demo\RefundStudy;
 
-use App\Demo\HintEvaluation\Study as HintStudy;
-use App\Demo\HttpConversation\Runner;
 use App\Demo\Refund\Fixture;
 use App\Demo\Refund\Tools;
-use App\Demo\ThreeWayAuditRunner;
+use App\Demo\RunTrace;
 
 final class Proof
 {
@@ -17,8 +15,8 @@ final class Proof
     public static function verify(array $report, string $root): void
     {
         $protocol = $report['protocol'];
-        self::check(self::FORMAT === $report['format'] && ThreeWayAuditRunner::MODEL === $protocol['model']
-            && Study::QUESTIONS === $protocol['questions'] && Study::PROMPT === $protocol['system'] && Runner::SETTINGS === $protocol['settings']
+        self::check(self::FORMAT === $report['format'] && Study::MODEL === $protocol['model']
+            && Study::QUESTIONS === $protocol['questions'] && Study::PROMPT === $protocol['system'] && Study::SETTINGS === $protocol['settings']
             && Study::ARMS === $protocol['order'] && Study::LIMIT === $protocol['maxProviderRequestsPerTurn'], 'protocol');
         self::check([] !== $report['attempts'] && 0 === \count($report['attempts']) % \count(Study::ARMS), 'complete arm sets');
         $schemas = [];
@@ -57,7 +55,7 @@ final class Proof
                     self::check(hash('sha256', $protocol['system']) === $evidence['systemPromptSha256'] && $userHashes === $evidence['userMessageSha256'], 'model-visible question and guidance');
                 }
                 $n = $turn['providerRequests'];
-                self::check($n <= Study::LIMIT && HintStudy::tokens($turn['providerResponses'], $n) === $turn['usage'], 'usage');
+                self::check($n <= Study::LIMIT && RunTrace::tokens($turn['providerResponses'], $n) === $turn['usage'], 'usage');
                 if (\is_string($turn['answer'])) {
                     $responses = $turn['providerResponses'];
                     self::check(($responses[array_key_last($responses)]['answerSha256'] ?? null) === hash('sha256', $turn['answer']), 'provider answer');

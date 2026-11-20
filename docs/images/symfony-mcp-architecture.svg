@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1120" height="748" viewBox="0 0 1120 748" role="img" aria-labelledby="title description">
   <title id="title">What Symfony Code Mode adds to MCP</title>
-  <desc id="description">A user asks an agent a question. The Symfony AI agent and MCP bridge use the PHP MCP SDK to contact Symfony over HTTP. Pink diamonds mark our additions. Our package exposes a searchable catalog with search_tools and execute_tools. Our separate prototype implements the working group’s draft groups/list and groups/get methods for discovery. A client calls a group member by name with tools/call. On either route, our package checks the budget, arguments and the application’s current permissions for each read. Only allowed calls reach the Symfony AI Toolbox and the app’s PHP handler. The agent receives the result or denial and can answer the user or request another read. Purple squares mark Symfony and PHP MCP SDK components. Grey circles mark the user and app-owned parts.</desc>
+  <desc id="description">A user asks an agent a question. The Symfony AI agent and MCP bridge use the PHP MCP SDK to contact Symfony over HTTP. Pink diamonds mark our additions. On the refund endpoint, search_tools finds individual tools or a named procedure. The agent can open the procedure, then issue each read with execute_tools. On the same endpoint a client supporting the draft Groups extension can discover the procedure with groups/list and groups/get. A client calls a group member by name with tools/call. On either route, our package checks the budget, arguments and the application’s current permissions for each read. Only allowed calls reach the Symfony AI Toolbox and the app’s PHP handler. The agent receives the result or denial and can answer the user or request another read. Purple squares mark Symfony and PHP MCP SDK components. Grey circles mark the user and app-owned parts.</desc>
 
   <defs>
     <linearGradient id="paper" x2="0" y2="1">
@@ -47,7 +47,7 @@
   <text x="32" y="186" class="section">In the agent app</text>
   <rect x="32" y="205" width="256" height="71" rx="13" class="context-card"/>
   <use href="#context" x="52" y="228"/><text x="65" y="232" class="owner context">USER PROMPT</text>
-  <text x="48" y="259" font-size="20" font-weight="700">“What needs fixing?”</text>
+  <text x="48" y="259" font-size="20" font-weight="700">“Review refund R-1042”</text>
   <path d="M160 276v34" class="connector" marker-end="url(#arrow)"/>
 
   <rect x="32" y="312" width="256" height="115" rx="13" class="base-card"/>
@@ -74,10 +74,10 @@
   </g>
 
   <rect x="374" y="306" width="349" height="157" rx="13" class="our-card"/>
-  <use href="#ours" x="397" y="329"/><text x="411" y="333" class="owner ours">OUR PACKAGE</text>
+  <use href="#ours" x="397" y="329"/><text x="411" y="333" class="owner ours">OUR CATALOG · REFUND DEMO</text>
   <text x="391" y="364" class="name">Searchable catalog</text>
-  <text x="391" y="390" class="body">MCP lists two tools for the whole catalog.</text>
-  <text x="391" y="420" class="mono ours">search_tools</text><text x="525" y="420" class="body">find visible readers</text>
+  <text x="391" y="390" class="body">Two tools for this MCP connection.</text>
+  <text x="391" y="420" class="mono ours">search_tools</text><text x="525" y="420" class="body">find readers or groups</text>
   <text x="391" y="447" class="mono ours">execute_tools</text><text x="525" y="447" class="body">request reads</text>
 
   <rect x="739" y="306" width="349" height="157" rx="13" class="our-card" stroke-dasharray="6 4"/>

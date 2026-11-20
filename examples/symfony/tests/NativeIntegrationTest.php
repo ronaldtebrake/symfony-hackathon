@@ -77,7 +77,9 @@ final class NativeIntegrationTest extends WebTestCase
             $search = $call('search_tools', ['query' => 'publication']);
             $this->assertSame(['publication_read'], array_column($search['tools'], 'name'));
             $operation = $this->operations($client)[0];
-            $this->assertSame(['matched' => 1, 'returned' => 1, 'truncated' => false], $operation['discovery']);
+            $this->assertSame(['matched' => 1, 'returned' => 1, 'truncated' => false], array_diff_key($operation['discovery'], ['toolDefinitions' => true]));
+            $this->assertJsonStringEqualsJsonString(json_encode($search['tools'], \JSON_THROW_ON_ERROR), json_encode($operation['discovery']['toolDefinitions'], \JSON_THROW_ON_ERROR));
+            $searchCollector = $client->getProfile()->getCollector('code_mode');
             $allowed = $call('execute_tools', $read);
             $this->assertSame(['id' => 101, 'title' => 'A Symfony application owns its tools'], $allowed['results'][0]['value']);
             $this->assertArrayNotHasKey('toolCalls', $allowed);
@@ -91,7 +93,8 @@ final class NativeIntegrationTest extends WebTestCase
             $this->assertSame(['requested', 'succeeded'], array_column($operation['nativeEvents'], 'phase'));
             $this->assertSame('succeeded', $operation['calls'][0]['status']);
             $this->assertStringNotContainsString('A Symfony application owns its tools', serialize($collector));
-            $profileToken = $client->getProfile()->getToken();
+            $fullProfile = $client->getProfile();
+            $profileToken = $fullProfile->getToken();
 
             $access->setGranted(false);
             $this->assertSame([], $hint($headers));
@@ -102,11 +105,13 @@ final class NativeIntegrationTest extends WebTestCase
             $operation = $this->operations($client)[0];
             $this->assertSame([], $operation['nativeEvents'], 'Revocation must stop before the native toolbox.');
             $this->assertSame('denied', $operation['calls'][0]['status']);
+            $deniedCollector = $client->getProfile()->getCollector('code_mode');
             $this->assertSame(2, $operation['budget'][1]['attempts']);
             $this->assertSame(2, $operation['budget'][2]['reservedCalls']);
             $client->request('GET', '/articles/101', server: $headers);
             self::assertResponseStatusCodeSame(403);
             $this->assertSame([], $call('search_tools', ['query' => 'publication'])['tools']);
+            $this->assertSame([], $this->operations($client)[0]['discovery']['toolDefinitions']);
             // The native Symfony AI attribute also guards direct host-side toolbox usage.
             // This toolbox is not exposed as a separate MCP tool.
             try {
@@ -124,7 +129,85 @@ final class NativeIntegrationTest extends WebTestCase
             $this->assertSame([], $this->operations($client)[0]['calls']);
             $client->request('GET', '/_profiler/'.$profileToken.'?panel=code_mode');
             self::assertResponseIsSuccessful();
-            $this->assertSame(1, $client->getCrawler()->filterXPath('//h2[contains(., "Approved JSON catalog")]')->count());
+            $this->assertSame(1, $client->getCrawler()->filterXPath('//h2[contains(., "MCP discovery and tool calls")]')->count());
+            $client->request('GET', '/_profiler/'.$profileToken);
+            self::assertResponseIsSuccessful();
+            $this->assertCount(1, $client->getCrawler()->filterXPath('//ul[@id="menu-profiler"]/li[@class="request selected"]'));
+
+            // Refund recordings store only the Code Mode collector, under a normal request token.
+            $recording = clone $fullProfile;
+            $recording->setToken(bin2hex(random_bytes(3)));
+            $recording->setCollectors(['code_mode' => $collector]);
+            $this->assertTrue(self::getContainer()->get('profiler')->saveProfile($recording));
+            $recordingUrl = '/_profiler/'.$recording->getToken();
+            foreach (['/_profiler/latest', $recordingUrl] as $url) {
+                $client->request('GET', $url);
+                self::assertResponseIsSuccessful();
+                $crawler = $client->getCrawler();
+                $this->assertCount(1, $crawler->filterXPath('//ul[@id="menu-profiler"]/li[@class="code_mode selected"]'));
+                $this->assertStringContainsString('publication_read', $crawler->filterXPath('//div[@id="collector-content"]')->text());
+                $this->assertCount(0, $crawler->filterXPath('//ul[@id="menu-profiler"]/li[contains(@class, "request")]'));
+            }
+            $client->request('GET', $recordingUrl.'?panel=request');
+            self::assertResponseStatusCodeSame(404);
+
+            // Mix private recordings with a full HTTP profile for the same endpoint.
+            $endpoint = 'http://127.0.0.1:'.random_int(49152, 65535).'/mcp';
+            $since = time();
+            $expectedRows = [];
+            foreach ([
+                [['code_mode' => $searchCollector], 'search_tools', 'succeeded'],
+                [$fullProfile->getCollectors(), null, null],
+                [['code_mode' => $collector], 'execute_tools', 'succeeded'],
+                [['code_mode' => $deniedCollector], 'execute_tools', 'failed'],
+            ] as [$collectors, $tool, $status]) {
+                $row = clone $fullProfile;
+                $row->setToken(bin2hex(random_bytes(3)));
+                $row->setTime($since);
+                $row->setUrl($endpoint);
+                $row->setCollectors($collectors);
+                $this->assertTrue(self::getContainer()->get('profiler.storage')->write($row));
+                $expectedRows[] = [$row->getToken(), $tool, $status];
+            }
+            $results = '/_profiler/empty/search/results';
+            $query = ['url' => $endpoint, 'method' => 'POST', 'start' => $since, 'limit' => 20];
+            $client->request('GET', $results, $query);
+            self::assertResponseIsSuccessful();
+            $crawler = $client->getCrawler();
+            $this->assertCount(0, $crawler->filterXPath('//ol[@id="mcp-request-order"]'));
+            $table = $crawler->filterXPath('//table[@id="search-results"]');
+            $columns = $table->filterXPath('//th')->each(static fn ($header): string => $header->text());
+            $this->assertContains('MCP call', $columns);
+            $this->assertSame(['Status', 'IP', 'Method', 'URL', 'Time', 'Token'], array_values(array_diff($columns, ['MCP call'])));
+            $rows = $table->filterXPath('//tbody/tr');
+            $this->assertCount(count($expectedRows), $rows);
+            foreach ($expectedRows as $index => [$token, $tool, $status]) {
+                $row = $rows->eq($index);
+                $this->assertSame($token, $row->filterXPath('//a[@href="/_profiler/'.$token.'"]')->text());
+                $this->assertSame('200', $row->filterXPath('//td')->eq(array_search('Status', $columns, true))->text());
+                $this->assertSame('POST', $row->filterXPath('//td')->eq(array_search('Method', $columns, true))->text());
+                $this->assertStringContainsString($endpoint, $row->text());
+                $operationCell = $row->filterXPath('//td[contains(concat(" ", normalize-space(@class), " "), " mcp-operation ")]');
+                $this->assertCount(1, $operationCell);
+                if (null === $tool) {
+                    $this->assertSame('', $operationCell->text());
+                    continue;
+                }
+                $link = $operationCell->filterXPath('//a[@href="/_profiler/'.$token.'?panel=code_mode"]');
+                $this->assertCount(1, $link);
+                $this->assertStringContainsString('tools/call', $operationCell->text());
+                $this->assertStringContainsString($tool, $operationCell->text());
+                $this->assertStringContainsString($status, $operationCell->text());
+            }
+            $this->assertStringNotContainsString('A Symfony application owns its tools', $table->text());
+            $client->click($rows->first()->filterXPath('//td[contains(@class, "mcp-operation")]//a')->link());
+            self::assertResponseIsSuccessful();
+            $this->assertStringContainsString('publication_read', $client->getCrawler()->filterXPath('//div[@id="collector-content"]')->text());
+            $client->request('GET', $results, array_replace($query, ['url' => '/mcp']));
+            self::assertResponseIsSuccessful();
+            $table = $client->getCrawler()->filterXPath('//table[@id="search-results"]');
+            $this->assertCount(1, $table);
+            $this->assertCount(0, $table->filterXPath('//th[normalize-space(.)="MCP call"] | //td[contains(@class, "mcp-operation")]'));
         } finally {
             self::ensureKernelShutdown();
             unlink($path);

@@ -2,7 +2,7 @@
     "name": "ronaldtebrake/symfony-hackathon",
     "type": "project",
     "license": "MIT",
-    "description": "Symfony Code Mode: approved JSON tool catalogs and sandboxed PHP with Symfony AI and the PHP MCP SDK.",
+    "description": "Discover approved Symfony AI tools and named procedures over MCP, with an application permission check on every read.",
     "minimum-stability": "beta",
     "prefer-stable": true,
     "require": {
@@ -90,16 +90,7 @@
         "test:package": "@php bin/phpunit -c packages/php-code-mode/phpunit.dist.xml --testsuite Unit",
         "test:sandbox": "@php bin/phpunit -c packages/php-code-mode/phpunit.dist.xml --testsuite Sandbox",
         "test:demo": "@php bin/phpunit -c phpunit.sandbox.xml",
-        "proof:code-mode": "@php packages/php-code-mode/examples/proof.php",
-        "proof:discovery": [
-            "@php bin/phpunit --testdox tests/Integration/PublishingGroupsTest.php",
-            "@php scripts/check-refund-protocol.php --verify",
-            "@php scripts/compare-refund-skill.php --verify"
-        ],
-        "proof:editorial": "@php scripts/editorial-review-proof.php",
-        "demo": "@php bin/console code-mode:demo",
-        "demo:conversation": "@php bin/console code-mode:replay-conversation",
-        "demo:security": "@php bin/console code-mode:security-proof",
+        "proof:discovery": "@php scripts/verify-demo.php",
         "cs:check": [
             "@php vendor/bin/php-cs-fixer check --config=.php-cs-fixer.dist.php --diff --sequential",
             "@php scripts/check-maker.php style"
@@ -123,9 +114,7 @@
         "docs:build": "@php scripts/build-docs.php"
     },
     "scripts-descriptions": {
-        "demo:conversation": "Run the two captured editorial PHP programs against the Symfony MCP fixture in gVisor",
-        "proof:discovery": "Exercise Publishing catalog and group access in a fresh Symfony kernel, then verify the recorded refund conversation",
-        "proof:editorial": "Run the findings-only editorial review against a disposable Symfony MCP HTTP application",
+        "proof:discovery": "Verify the judge demo over HTTP with the PHP MCP SDK, including a denied read after revocation",
         "start": "Start the local development server at http://127.0.0.1:8000",
         "test": "Run the tests without external API calls",
         "check": "Check Symfony coding standards, static analysis, dependencies, configuration, and tests",

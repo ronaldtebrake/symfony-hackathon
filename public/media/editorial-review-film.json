@@ -10,15 +10,15 @@
   "audio": "none",
   "scope": "Original agent screen footage of an article lookup with the two-tool catalog, followed by a typeset replay of a separate recorded Symfony AI and Hugging Face refund conversation. Its host opened one group and verified its guide. The model selected the reads and answered both user turns. The two-tool catalog and its initial schema measurements are a separate independent HTTP fixture and offline synthetic scaling experiment. The earlier gVisor implementation is a design reference.",
   "catalogFilm": {
-    "file": "public/media/symfony-native-tools-demo-90s.mp4",
+    "url": "https://github.com/ronaldtebrake/symfony-hackathon/blob/e2e1f15baf946b3479bd0e95cb1acb1c7c6927e3/public/media/symfony-native-tools-demo-90s.mp4",
     "sha256": "f2f9ed4eaca611f71c60487a18446447a24ccd179af067c1a48da1505be8beb5"
   },
   "catalogFilmProvenance": {
-    "file": "public/media/video-proof.json",
+    "url": "https://github.com/ronaldtebrake/symfony-hackathon/blob/e2e1f15baf946b3479bd0e95cb1acb1c7c6927e3/public/media/video-proof.json",
     "sha256": "0f8eadf49ce4480a8a013359b5dac2f4dddf52864db7a34b2be075e068592986"
   },
   "sandboxAudit": {
-    "file": "docs/evidence/huggingface-pair.json",
+    "url": "https://github.com/ronaldtebrake/symfony-hackathon/blob/e2e1f15baf946b3479bd0e95cb1acb1c7c6927e3/docs/evidence/huggingface-pair.json",
     "sha256": "b3e62d4a593ab35f1905f008fd90a6e11f69cce04cfcf7194b22abf9e60ff3a1"
   },
   "httpCatalog": {

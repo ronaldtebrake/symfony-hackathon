@@ -18,7 +18,6 @@ parameters:
         - public/index.php
         - bin
         - scripts
-        - docs/contributing/verify-sdk-proposal.php
         - packages/php-code-mode/src
         - packages/php-code-mode/tests
         - packages/php-code-mode/runner

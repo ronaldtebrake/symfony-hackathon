@@ -24,6 +24,28 @@ final class RunTrace
     {
     }
 
+    public static function tokens(array $responses, int $requestCount): ?array
+    {
+        if (0 === $requestCount || \count($responses) !== $requestCount) {
+            return null;
+        }
+        $totals = ['prompt' => 0, 'completion' => 0, 'total' => 0];
+        foreach ($responses as $row) {
+            $u = $row['tokens'] ?? [];
+            foreach ($totals as $key => $sum) {
+                if (!\is_int($u[$key] ?? null) || $u[$key] < 0) {
+                    return null;
+                }
+                $totals[$key] += $u[$key];
+            }
+            if ($u['prompt'] + $u['completion'] !== $u['total']) {
+                return null;
+            }
+        }
+
+        return $totals;
+    }
+
     public function record(string $stage, string $label, array $details = []): void
     {
         $this->events[] = ['stage' => $stage, 'label' => $label, 'details' => $details];

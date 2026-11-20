@@ -1,8 +1,6 @@
 # Security model and runtime decision
 
-Status: runner, broker and Code Mode demo proof, 31 October 2026. These tests demonstrate specific controls; they do not prove the absence of sandbox escapes or make this ready for anonymous multi-tenant hosting.
-
-The only supplied generated-PHP executor is gVisor. JSON batches run trusted approved handlers without a guest. The isolation guarantees and guest resource table below describe **gVisor only**.
+The HTTP catalog dispatches literal JSON to installed application handlers. The optional generated-PHP runner executes code inside gVisor. Each has its own trust boundary and limits. [Verification commands](verification.md)
 
 ## Decision: native PHP in gVisor, deployed through Docker
 
@@ -23,12 +21,9 @@ The executor requires a configured `runsc` binary and rejects unreviewed runtime
 
 ## JSON batch boundary
 
-`BatchSession` accepts bounded literal calls to approved tools. It invokes the
-same broker policies and schema validator in a supervised CLI worker; it never
-interprets PHP, expressions or result references. It needs no Docker or gVisor.
-The JSON format is not an authorization mechanism. Approved handlers remain
-trusted and must preserve application/entity/field access, open connections after
-fork and bound their own upstream work. Returned data remains untrusted.
+`BatchSession` dispatches bounded literal calls through the broker in the application process. The broker checks visibility, per-call authorization and the argument schema. Only installed, approved handlers run. Each handler must preserve resource and field access and bound its own upstream work. Returned data remains untrusted.
+
+JSON deadlines are cooperative. The host checks time between calls and after each handler returns. Configure request and memory limits in the hosting environment and timeouts in downstream clients.
 
 Batch input is capped at 32 KiB and each request at the configured frame limit.
 Call count, per-tool time, aggregate wall time, per-result bytes, aggregate output
@@ -39,7 +34,7 @@ need admission limits, authentication and operational supervision. A timed-out
 remote call may already have caused side effects. No read-only guarantee follows
 from annotations, provider names or using JSON.
 
-[Setup, exact defaults and managed-hosting limits](../../../docs/batching.md).
+[Symfony HTTP state and limits](../../symfony-code-mode/README.md#http-state-and-limits).
 
 ## gVisor trust boundaries
 
@@ -97,21 +92,11 @@ Production deployment still needs:
 - A policy for tool side effects, retries/idempotency, and durable audit logging. Killing a timed-out handler cannot reverse a remote action already committed. Execution exceptions retain completed, denied and incomplete calls before failure, plus a host-generated run ID when allocated. Incomplete does not mean rolled back. Cleanup errors can override the execution exception, and process death can lose the in-memory ledger. Durable logging remains deployment work.
 - Rendering/escaping of guest output and a data-access policy at the tool service. Allowing a generic URL fetcher, SQL tool, filesystem reader, or unrestricted administrative MCP tool can bypass the intended data boundary through the broker. Successful execution does not imply a truthful or safe answer.
 
-## MCP and demo boundary
+## MCP access
 
-The package includes bounded MCP discovery, a fresh-client gateway and progressive discovery sessions. The caller configures the endpoint, transport timeouts and allowed names; generated PHP cannot select a server, credential, transport command or identity. Explicit local policy and upstream account/object access must both allow a call. Do not infer safety from `readOnlyHint` or a tool's prose. The fixture deliberately advertises an unapproved delete tool as read-only to exercise this distinction.
+The application configures the authenticated upstream connection, approved tool names and authorization policies. Schemas and read-only hints describe tools. Only application checks can authorize a caller to read a specific resource. Model output and tool results remain untrusted. A read may still disclose information within the caller’s permissions, so select handlers and limit their output for the intended task.
 
-The demo connects through STDIO to its PHP fixture or through HTTP to a host-configured MCP endpoint. HTTP redirects are disabled; bearer credentials remain in the host client. HTTPS is required except for trusted loopback development. Discovery is limited to 128 upstream tools, 8 continuation cursors and 64 KiB output, with a cooperative 3-second deadline checked after each returned page. Each schema/description is also bounded. The gateway runs in the calling application process; the host-configured transport must enforce response and timeout bounds. The JSON HTTP path does not create a worker.
-
-Symfony AI requests PHP, then receives only tool results. Model/tool prose cannot change runner policy. Code Mode has at most two execution attempts with 15 seconds and 30 broker calls each; individual tools have 3 seconds. The direct baseline uses the same approved tools and per-tool supervisor. Provider/model round counts can differ and are measured, not fixed to favor either path. Model output and CMS content remain untrusted even after an audit matches a fixture.
-
-The browser only reads fixed local reports and a reviewed, checked-in Symfony fixture conversation capture through GET, with local client/Host checks, no-store headers, a restrictive CSP and text-only rendering of untrusted values. Each read is bounded to 1 MiB. HTTP parameters cannot select a path or import a conversation. The Codex viewer displays recorded prompts, PHP, responses and host traces; it cannot execute or synchronize conversations. Execution starts from an operator CLI or locally configured STDIO MCP client. This is not public-service authentication. The HTTP `app_status` MCP endpoint is a separate foundation example and exposes no executor. Approved CMS results can reach the configured model provider and the local report; choose tools/data accordingly.
-
-The workbench has no question-entry UI. Human clarification belongs in the MCP client agent's conversation; server instructions explain this but cannot grant authority. The Symfony AI CLI comparison harness still accepts bounded user questions, with host policies unchanged. It marks custom answers as unverified.
-
-An operator-only security proof runs three fixed PHP probes against the same read-only fixture and writes a separate private report. Its tighter 2-second/three-call profile is chosen by trusted code, never by a question or tool argument. Failed executions carry a host-allocated run ID; `denied` means the broker rejected authorization before invocation, while other interrupted calls remain `incomplete`. The proof queries Docker for each exact run ID after cleanup. It fails if absence cannot be confirmed. The browser exposes only a loopback GET of that report and renders all source and evidence as text. No adversarial-probe tool or execution endpoint is exposed to agents or HTTP clients.
-
-The generic HTTP MCP adapter is protocol-tested against a local Symfony MCP server. Live inference requires a host Hugging Face key and remains a separate verification step. Mutation approval workflows and a public HTTP execution endpoint are outside this proof.
+In the Symfony HTTP adapter, the authenticated user owns the budget. Opening a group or matching a schema confers no permission to read the underlying data. The broker checks current access when it receives the read. [Current permission-revocation proof](../../../docs/evidence/judge-demo.json)
 
 ## Sources
 

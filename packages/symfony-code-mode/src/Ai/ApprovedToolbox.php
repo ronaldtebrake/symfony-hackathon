@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CodeMode\Symfony\Ai;
 
+use CodeMode\Symfony\Profiler\CatalogTrace;
 use CodeMode\Symfony\ReadToolInterface;
 use CodeMode\ToolDefinition;
 use Mcp\Schema\Tool as McpTool;
@@ -13,7 +14,7 @@ use Symfony\AI\Agent\Toolbox\ToolboxInterface;
 final readonly class ApprovedToolbox
 {
     /** @param list<string> $names */
-    public function __construct(private ToolboxInterface $toolbox, private array $names, private ToolAuthorizationInterface $authorization)
+    public function __construct(private ToolboxInterface $toolbox, private array $names, private ToolAuthorizationInterface $authorization, private ?CatalogTrace $trace = null)
     {
         if (!array_is_list($names) || [] === $names || \count($names) > 128 || \count(array_unique($names)) !== \count($names)) {
             throw new \InvalidArgumentException('Approve a non-empty, unique list of at most 128 tool names.');
@@ -44,6 +45,7 @@ final readonly class ApprovedToolbox
                 $output = \is_array($output) ? $output : get_object_vars(json_decode($json, false, 32, \JSON_THROW_ON_ERROR));
             }
             $definition = ToolDefinition::fromMcpTool(new McpTool($name, null, $input, $tool->getDescription(), null, outputSchema: $output));
+            $this->trace?->registerLocalContract($definition);
             $selected[$name] = new ApprovedTool($this->toolbox, $definition, $this->authorization);
         }
         if (\count($selected) !== \count($this->names)) {

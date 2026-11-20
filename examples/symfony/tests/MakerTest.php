@@ -15,7 +15,7 @@ final class MakerTest extends TestCase
         $fs = new Filesystem();
         try {
             // An isolated consumer with its own copied autoloader, not the recording application.
-            foreach (['src', 'config', 'bin', 'public', 'vendor'] as $path) {
+            foreach (['src', 'config', 'bin', 'public', 'templates', 'vendor'] as $path) {
                 $fs->mirror($app.'/'.$path, $directory.'/'.$path);
             }
             $fs->copy($app.'/composer.json', $directory.'/composer.json');

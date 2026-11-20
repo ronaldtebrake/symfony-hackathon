@@ -1,0 +1,119 @@
+{
+    "format": "symfony-code-mode-judge/v1",
+    "protocol": "MCP over HTTP",
+    "server": "symfony_code_mode",
+    "advertised": [
+        "search_tools",
+        "execute_tools"
+    ],
+    "modelRequests": 0,
+    "revokedAfterCall": 4,
+    "calls": [
+        {
+            "tool": "search_tools",
+            "arguments": {
+                "query": "refund review"
+            },
+            "outcome": "succeeded",
+            "members": [
+                "refund_get_policy",
+                "refund_get_order"
+            ],
+            "groups": [
+                "refund-review"
+            ]
+        },
+        {
+            "tool": "search_tools",
+            "arguments": {
+                "group": "refund-review"
+            },
+            "outcome": "succeeded",
+            "members": [
+                "refund_get_order",
+                "refund_get_policy"
+            ],
+            "opened": "refund-review",
+            "instructions": "Read the order, then read the policy named by that order. Compare its age and condition with the policy. If eligible, compare the amount with the manual-review threshold in the same currency. Report the recommendation and the reason. If a required read is denied, keep the facts already received, identify the missing evidence and report the review as incomplete. A review never issues a refund."
+        },
+        {
+            "tool": "execute_tools",
+            "arguments": {
+                "calls": [
+                    {
+                        "name": "refund_get_order",
+                        "arguments": {
+                            "orderId": "R-1042"
+                        }
+                    }
+                ]
+            },
+            "outcome": "succeeded",
+            "reader": "refund_get_order",
+            "handlerEvents": [
+                "requested",
+                "succeeded"
+            ],
+            "result": {
+                "orderId": "R-1042",
+                "policyId": "standard-eu",
+                "currency": "EUR",
+                "amountMinor": 7500,
+                "daysSinceDelivery": 9,
+                "itemCondition": "unopened"
+            }
+        },
+        {
+            "tool": "execute_tools",
+            "arguments": {
+                "calls": [
+                    {
+                        "name": "refund_get_policy",
+                        "arguments": {
+                            "policyId": "standard-eu"
+                        }
+                    }
+                ]
+            },
+            "outcome": "succeeded",
+            "reader": "refund_get_policy",
+            "handlerEvents": [
+                "requested",
+                "succeeded"
+            ],
+            "result": {
+                "policyId": "standard-eu",
+                "currency": "EUR",
+                "returnWindowDays": 30,
+                "acceptedCondition": "unopened",
+                "manualReviewAboveMinor": 5000
+            }
+        },
+        {
+            "tool": "execute_tools",
+            "arguments": {
+                "calls": [
+                    {
+                        "name": "refund_get_policy",
+                        "arguments": {
+                            "policyId": "standard-eu"
+                        }
+                    }
+                ]
+            },
+            "outcome": "denied",
+            "reader": "refund_get_policy",
+            "handlerEvents": [],
+            "reason": "tool_denied"
+        },
+        {
+            "tool": "search_tools",
+            "arguments": {
+                "query": "refund review"
+            },
+            "outcome": "succeeded",
+            "members": [],
+            "groups": []
+        }
+    ]
+}

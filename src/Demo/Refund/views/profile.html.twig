@@ -1,0 +1,13 @@
+{% extends '@CodeMode/Collector/catalog.html.twig' %}
+
+{# Use the native profile metadata. The HTTP request collector could retain bearer headers. #}
+{% block summary %}
+    <div class="status status-success">
+        <h2><span class="status-request-method">{{ profile.method }}</span> {{ profile.url }}</h2>
+        <dl class="metadata">
+            <dt>Response</dt><dd>{{ profile.statusCode }}</dd>
+            <dt>Profiled on</dt><dd>{{ profile.time|date('r') }}</dd>
+            <dt>Token</dt><dd>{{ profile.token }}</dd>
+        </dl>
+    </div>
+{% endblock %}

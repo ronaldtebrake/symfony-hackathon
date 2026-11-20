@@ -33,15 +33,6 @@ jobs:
             # Check the full tree, including packages, examples, tests and CLI commands.
             - run: composer cs:check
 
-    documentation:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: '22'
-            - run: node --test tests/Frontend/*.test.cjs
-
     check:
         runs-on: ubuntu-latest
         strategy:
@@ -62,6 +53,11 @@ jobs:
             - run: composer proof:catalog --working-dir=examples/symfony
             - run: composer install --no-interaction --prefer-dist
             - run: composer check-platform-reqs
+            - name: Reproduce the judge's MCP trace
+              run: |
+                  composer proof:discovery
+                  php scripts/verify-demo.php --json > "$RUNNER_TEMP/judge-demo.json"
+                  cmp docs/evidence/judge-demo.json "$RUNNER_TEMP/judge-demo.json"
             - run: composer check
 
     http-adoption:

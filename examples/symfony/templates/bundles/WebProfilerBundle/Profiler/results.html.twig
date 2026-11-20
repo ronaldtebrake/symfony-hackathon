@@ -1,0 +1,57 @@
+{% extends '@!WebProfiler/Profiler/results.html.twig' %}
+
+{% block panel %}
+    {% set operations = profile_type == 'request' and method == 'POST' ? recorded_mcp_operations(url, tokens) : [] %}
+    {% if operations is empty %}
+        {{ parent() }}
+    {% else %}
+        {% import '@!WebProfiler/Profiler/results.html.twig' as profiler %}
+        <div class="sf-tabs" data-processed="true">
+            <div class="tab-navigation" role="tablist">
+                <button class="tab-control active" role="tab" aria-selected="true"><a href="{{ path('_profiler_search_results', {token: 'empty', limit: 10}) }}">HTTP Requests</a></button>
+                <button class="tab-control" role="tab" tabindex="-1"><a href="{{ path('_profiler_search_results', {token: 'empty', limit: 10, type: 'command'}) }}">Console Commands</a></button>
+            </div>
+        </div>
+
+        <h2>{{ tokens|length }} {{ tokens|length == 1 ? 'request' : 'requests' }} <small>· earliest first</small></h2>
+        <table id="search-results">
+            <thead>
+                <tr>
+                    <th scope="col" class="text-center">Status</th><th scope="col">MCP call</th>
+                    <th scope="col">IP</th><th scope="col">Method</th><th scope="col">URL</th>
+                    <th scope="col">Time</th><th scope="col">Token</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in tokens|reverse %}
+                    {% set status = result.status_code|default(0) %}
+                    <tr>
+                        <td class="text-center"><span class="label {{ status > 399 ? 'status-error' : (status > 299 ? 'status-warning' : 'status-success') }}">{{ result.status_code|default('n/a') }}</span></td>
+                        <td class="mcp-operation">
+                            {% for call in operations[result.token]|default([]) %}
+                                <div>
+                                    <a href="{{ path('_profiler', {token: result.token, panel: 'code_mode'}) }}"><code>{{ call.method }}</code>{% if call.name %} · <strong>{{ call.name }}</strong>{% endif %}</a>
+                                    {% if call.targets %}
+                                        <div class="text-small">
+                                            {% if call.name == 'search_tools' %}{{ call.openedGroup ? 'Opened' : 'Found' }} {% endif %}
+                                            {{ call.targets|slice(0, 3)|join(' · ') }}{% if call.targets|length > 3 %} (+{{ call.targets|length - 3 }}){% endif %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="text-small {{ call.status == 'failed' ? 'text-danger' : 'text-muted' }}">{{ call.status }}</div>
+                                </div>
+                            {% endfor %}
+                        </td>
+                        <td class="nowrap">{{ result.ip }} {{ profiler.profile_search_filter(request, result, 'ip') }}</td>
+                        <td class="nowrap">{{ result.method }} {{ profiler.profile_search_filter(request, result, 'method') }}</td>
+                        <td class="break-long-words">{{ result.url }} {{ profiler.profile_search_filter(request, result, 'url') }}</td>
+                        <td class="text-small">
+                            <time data-convert-to-user-timezone data-render-as-date datetime="{{ result.time|date('c') }}">{{ result.time|date('d-M-Y') }}</time>
+                            <time class="newline" data-convert-to-user-timezone data-render-as-time datetime="{{ result.time|date('c') }}">{{ result.time|date('H:i:s') }}</time>
+                        </td>
+                        <td class="nowrap"><a href="{{ path('_profiler', {token: result.token}) }}">{{ result.token }}</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

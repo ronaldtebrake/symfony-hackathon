@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Demo\Refund;
 
 use CodeMode\Symfony\Http\SecurityIdentityProvider;
+use CodeMode\Symfony\Profiler\CatalogTrace;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\SecurityBundle\SecurityBundle;
@@ -44,9 +45,10 @@ final class Kernel extends BaseKernel
     {
         $container->extension('framework', ['secret' => 'disposable-refund-review', 'http_method_override' => false, 'test' => true]);
         $services = $container->services()->defaults()->autowire()->autoconfigure();
+        $services->set(CatalogTrace::class)->public();
         $services->set(Access::class)->args([$this->directory]);
         $services->set(SecurityIdentityProvider::class)->args([service('security.token_storage'), service('security.authorization_checker'), ['refund.review' => 'ROLE_REVIEWER']]);
-        $services->set(Gateway::class)->args([$this->directory, $this->mode, service(SecurityIdentityProvider::class), service(Access::class)])->public()->tag('controller.service_arguments');
+        $services->set(Gateway::class)->args([$this->directory, $this->mode, service(SecurityIdentityProvider::class), service(Access::class), service(CatalogTrace::class)])->public()->tag('controller.service_arguments');
         $container->extension('security', [
             'providers' => ['unused' => ['memory' => null]],
             'firewalls' => ['mcp' => ['pattern' => '^/mcp$', 'stateless' => true, 'access_token' => ['token_handler' => Access::class]]],

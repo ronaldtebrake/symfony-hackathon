@@ -1,0 +1,410 @@
+{
+  "format": "symfony-codex-refund-fallback/v1",
+  "attempts": [
+    {
+      "status": "captured",
+      "capturedAt": "2026-11-20T12:59:21Z",
+      "clientVersion": "codex-cli 0.167.0-alpha.4.1",
+      "instructions": "Use the Symfony refund MCP connection for current business facts. Use only this connection, without shell, files, writes or delegation. When asked to check a policy again, perform a fresh read. If access is refused, explain the limitation and stop. Reply concisely.",
+      "model": "gpt-6-astra",
+      "turns": [
+        {
+          "question": "Can you review refund R-1042? What should I do, and why?",
+          "calls": [
+            {
+              "tool": "refund_get_order",
+              "arguments": {
+                "orderId": "R-1042"
+              }
+            },
+            {
+              "tool": "refund_get_policy",
+              "arguments": {
+                "policyId": "standard-eu"
+              }
+            }
+          ],
+          "answer": "Send **R-1042 for manual review** rather than approving it automatically.\n\n- It meets the return criteria: delivered **9 days ago** (within 30 days) and **unopened**.\n- The refund is **€75**, above the policy’s **€50 manual-review threshold**.\n\nNo refund has been processed.",
+          "status": "completed"
+        },
+        {
+          "question": "Can you check the applicable policy again before I act?",
+          "calls": [
+            {
+              "tool": "refund_get_policy",
+              "arguments": {
+                "policyId": "standard-eu"
+              }
+            }
+          ],
+          "answer": "The fresh policy check was denied, so I can’t confirm the current policy. My earlier recommendation used the previous read. Please have an authorized reviewer verify the policy before you act.",
+          "status": "completed"
+        }
+      ],
+      "wire": [
+        {
+          "method": "initialize",
+          "httpStatus": 200,
+          "protocolVersion": "2025-06-18"
+        },
+        {
+          "method": "tools/list",
+          "httpStatus": 200,
+          "tools": [
+            "refund_get_order",
+            "refund_get_policy"
+          ]
+        },
+        {
+          "method": "tools/call",
+          "httpStatus": 200,
+          "tool": "refund_get_order",
+          "arguments": {
+            "orderId": "R-1042"
+          },
+          "isError": false,
+          "result": {
+            "orderId": "R-1042",
+            "policyId": "standard-eu",
+            "currency": "EUR",
+            "amountMinor": 7500,
+            "daysSinceDelivery": 9,
+            "itemCondition": "unopened"
+          },
+          "status": "succeeded",
+          "nativeEvents": [
+            "requested",
+            "succeeded"
+          ]
+        },
+        {
+          "method": "tools/call",
+          "httpStatus": 200,
+          "tool": "refund_get_policy",
+          "arguments": {
+            "policyId": "standard-eu"
+          },
+          "isError": false,
+          "result": {
+            "policyId": "standard-eu",
+            "currency": "EUR",
+            "returnWindowDays": 30,
+            "acceptedCondition": "unopened",
+            "manualReviewAboveMinor": 5000
+          },
+          "status": "succeeded",
+          "nativeEvents": [
+            "requested",
+            "succeeded"
+          ]
+        },
+        {
+          "method": "tools/call",
+          "httpStatus": 200,
+          "tool": "refund_get_policy",
+          "arguments": {
+            "policyId": "standard-eu"
+          },
+          "isError": true,
+          "result": {
+            "error": {
+              "reason": "tool_denied",
+              "tool": "refund_get_policy",
+              "index": 0
+            },
+            "completedCalls": 0
+          },
+          "status": "failed",
+          "nativeEvents": []
+        }
+      ],
+      "revokedAfterWire": 4
+    },
+    {
+      "status": "captured",
+      "capturedAt": "2026-11-20T13:04:21Z",
+      "clientVersion": "codex-cli 0.167.0-alpha.4.1",
+      "instructions": "Use the Symfony refund MCP connection for current business facts. Use only this connection, without shell, files, writes or delegation. When asked to check a policy again, perform a fresh read. If access is refused, explain the limitation and stop. Reply concisely.",
+      "model": "gpt-6-astra",
+      "turns": [
+        {
+          "question": "Can you review refund R-1042? What should I do, and why?",
+          "calls": [
+            {
+              "tool": "refund_get_order",
+              "arguments": {
+                "orderId": "R-1042"
+              }
+            },
+            {
+              "tool": "refund_get_policy",
+              "arguments": {
+                "policyId": "standard-eu"
+              }
+            }
+          ],
+          "answer": "**Send R-1042 for manual review rather than automatically approving it.**\n\n- It meets the return criteria: delivered 9 days ago (within 30 days) and unopened.\n- The €75 refund exceeds the policy’s €50 manual-review threshold.\n\nIt appears eligible, but requires manual review. No changes have been made.",
+          "status": "completed"
+        },
+        {
+          "question": "Can you check the applicable policy again before I act?",
+          "calls": [
+            {
+              "tool": "refund_get_policy",
+              "arguments": {
+                "policyId": "standard-eu"
+              }
+            }
+          ],
+          "answer": "The fresh policy check was denied, so I can’t reconfirm the current policy. The earlier read required manual review for refunds above €50. Please verify the policy with an authorized reviewer before acting.",
+          "status": "completed"
+        }
+      ],
+      "wire": [
+        {
+          "method": "initialize",
+          "httpStatus": 200,
+          "protocolVersion": "2025-06-18"
+        },
+        {
+          "method": "tools/list",
+          "httpStatus": 200,
+          "tools": [
+            "refund_get_order",
+            "refund_get_policy"
+          ]
+        },
+        {
+          "method": "tools/call",
+          "httpStatus": 200,
+          "tool": "refund_get_order",
+          "arguments": {
+            "orderId": "R-1042"
+          },
+          "isError": false,
+          "result": {
+            "orderId": "R-1042",
+            "policyId": "standard-eu",
+            "currency": "EUR",
+            "amountMinor": 7500,
+            "daysSinceDelivery": 9,
+            "itemCondition": "unopened"
+          },
+          "status": "succeeded",
+          "nativeEvents": [
+            "requested",
+            "succeeded"
+          ],
+          "profiler": {
+            "operation": "refund_get_order",
+            "status": "succeeded",
+            "reason": null,
+            "nativeEvents": [
+              "requested",
+              "succeeded"
+            ]
+          }
+        },
+        {
+          "method": "tools/call",
+          "httpStatus": 200,
+          "tool": "refund_get_policy",
+          "arguments": {
+            "policyId": "standard-eu"
+          },
+          "isError": false,
+          "result": {
+            "policyId": "standard-eu",
+            "currency": "EUR",
+            "returnWindowDays": 30,
+            "acceptedCondition": "unopened",
+            "manualReviewAboveMinor": 5000
+          },
+          "status": "succeeded",
+          "nativeEvents": [
+            "requested",
+            "succeeded"
+          ],
+          "profiler": {
+            "operation": "refund_get_policy",
+            "status": "succeeded",
+            "reason": null,
+            "nativeEvents": [
+              "requested",
+              "succeeded"
+            ]
+          }
+        },
+        {
+          "method": "tools/call",
+          "httpStatus": 200,
+          "tool": "refund_get_policy",
+          "arguments": {
+            "policyId": "standard-eu"
+          },
+          "isError": true,
+          "result": {
+            "error": {
+              "reason": "tool_denied",
+              "tool": "refund_get_policy",
+              "index": 0
+            },
+            "completedCalls": 0
+          },
+          "status": "failed",
+          "nativeEvents": [],
+          "profiler": {
+            "operation": "refund_get_policy",
+            "status": "failed",
+            "reason": "tool_denied",
+            "nativeEvents": []
+          }
+        }
+      ],
+      "revokedAfterWire": 4
+    },
+    {
+      "status": "captured",
+      "capturedAt": "2026-11-20T13:06:55Z",
+      "clientVersion": "codex-cli 0.167.0-alpha.4.1",
+      "instructions": "Use the Symfony refund MCP connection for current business facts. Use only this connection, without shell, files, writes or delegation. When asked to check a policy again, perform a fresh read. If access is refused, explain the limitation and stop. Reply concisely.",
+      "model": "gpt-6-astra",
+      "turns": [
+        {
+          "question": "Can you review refund R-1042? What should I do, and why?",
+          "calls": [
+            {
+              "tool": "refund_get_order",
+              "arguments": {
+                "orderId": "R-1042"
+              }
+            },
+            {
+              "tool": "refund_get_policy",
+              "arguments": {
+                "policyId": "standard-eu"
+              }
+            }
+          ],
+          "answer": "Send **R-1042 for manual review**.\n\n- It meets the return criteria: delivered **9 days ago**, within the **30-day** window, and **unopened**.\n- The refund is **€75**, above the policy’s **€50 manual-review threshold**.\n\nIt appears eligible, but needs manual review before approval. No action has been taken.",
+          "status": "completed"
+        },
+        {
+          "question": "Can you check the applicable policy again before I act?",
+          "calls": [
+            {
+              "tool": "refund_get_policy",
+              "arguments": {
+                "policyId": "standard-eu"
+              }
+            }
+          ],
+          "answer": "The fresh policy check was denied, so I can’t verify the current policy. My earlier recommendation relied on the previous read. Confirm the policy with an authorized reviewer before acting.",
+          "status": "completed"
+        }
+      ],
+      "wire": [
+        {
+          "method": "initialize",
+          "httpStatus": 200,
+          "protocolVersion": "2025-06-18"
+        },
+        {
+          "method": "tools/list",
+          "httpStatus": 200,
+          "tools": [
+            "refund_get_order",
+            "refund_get_policy"
+          ]
+        },
+        {
+          "method": "tools/call",
+          "httpStatus": 200,
+          "tool": "refund_get_order",
+          "arguments": {
+            "orderId": "R-1042"
+          },
+          "isError": false,
+          "result": {
+            "orderId": "R-1042",
+            "policyId": "standard-eu",
+            "currency": "EUR",
+            "amountMinor": 7500,
+            "daysSinceDelivery": 9,
+            "itemCondition": "unopened"
+          },
+          "status": "succeeded",
+          "nativeEvents": [
+            "requested",
+            "succeeded"
+          ],
+          "profiler": {
+            "operation": "refund_get_order",
+            "status": "succeeded",
+            "reason": null,
+            "nativeEvents": [
+              "requested",
+              "succeeded"
+            ]
+          }
+        },
+        {
+          "method": "tools/call",
+          "httpStatus": 200,
+          "tool": "refund_get_policy",
+          "arguments": {
+            "policyId": "standard-eu"
+          },
+          "isError": false,
+          "result": {
+            "policyId": "standard-eu",
+            "currency": "EUR",
+            "returnWindowDays": 30,
+            "acceptedCondition": "unopened",
+            "manualReviewAboveMinor": 5000
+          },
+          "status": "succeeded",
+          "nativeEvents": [
+            "requested",
+            "succeeded"
+          ],
+          "profiler": {
+            "operation": "refund_get_policy",
+            "status": "succeeded",
+            "reason": null,
+            "nativeEvents": [
+              "requested",
+              "succeeded"
+            ]
+          }
+        },
+        {
+          "method": "tools/call",
+          "httpStatus": 200,
+          "tool": "refund_get_policy",
+          "arguments": {
+            "policyId": "standard-eu"
+          },
+          "isError": true,
+          "result": {
+            "error": {
+              "reason": "tool_denied",
+              "tool": "refund_get_policy",
+              "index": 0
+            },
+            "completedCalls": 0
+          },
+          "status": "failed",
+          "nativeEvents": [],
+          "profiler": {
+            "operation": "refund_get_policy",
+            "status": "failed",
+            "reason": "tool_denied",
+            "nativeEvents": []
+          }
+        }
+      ],
+      "revokedAfterWire": 4
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 Expose two MCP tools from an ordinary Symfony HTTP endpoint. `search_tools` returns the contracts visible to the authenticated user. `execute_tools` accepts literal JSON, checks the current permissions, arguments and budget, and dispatches the approved calls. Symfony AI supplies the tool schemas and invokes the installed handlers.
 
-Start with the [independent Symfony application](../../examples/symfony/README.md) to run the catalog or connect an agent. To add a tool, [generate its service, voter, registration and test](#native-symfony-development), then implement the handler and its access rules. These packages install from this repository using Composer path repositories. The [earlier PHP execution mode](#generated-php-runtime) has its own gVisor runtime.
+To try the live demo, [connect your agent to Symfony Code Mode](../../docs/codex.md#connect-symfony-code-mode). To integrate the package into an application, see the [independent Symfony example](../../examples/symfony/README.md) and the configuration below. These packages install from this repository using Composer path repositories.
 
 ## Enable HTTP
 
@@ -42,7 +42,7 @@ Import the MCP route loader (`resource: .`, `type: mcp`) in `config/routes.yaml`
 
 `SessionFactory` uses `SymfonyCatalogSearch` for full-contract JSON discovery when Symfony AI is installed. It adapts the proposed `ToolSearchInterface` and defaults to BM25, which searches names, descriptions and input schema fields and enum values. No search server, embedding model or additional Composer dependency is required.
 
-The proposal is still open. We keep [three attributed, MIT-licensed search classes at a pinned revision](src/Ai/Search/Upstream/README.md), with only their namespace changed. A compatible installed `Symfony\AI\Agent\Toolbox\ToolSearch\Bm25ToolSearch` takes precedence. This does not install the WIP agent loop or native-provider integration.
+The package includes [three attributed, MIT-licensed search classes at a pinned revision](src/Ai/Search/Upstream/README.md), with only their namespace changed. A compatible installed `Symfony\AI\Agent\Toolbox\ToolSearch\Bm25ToolSearch` takes precedence. This does not install the WIP agent loop or native-provider integration.
 
 Visibility is applied before ranking; the ranker receives detached schemas and no executable toolbox. Exact names, empty-query browsing, eight-result truncation and the existing disclosure budget remain owned by the catalog. Execution still checks discovery, current authorization, argument/result schemas and persistent budgets. The PHP discovery protocol is unchanged.
 
@@ -93,7 +93,7 @@ The default filesystem state lives under `var/code-mode`, outside the container 
 
 The default store and lock support one host with multiple PHP request workers. For multiple hosts, replace `code_mode.http.cache` and `code_mode.http.lock_factory` with a shared persistent store and compatible shared lock. All hosts must use the same identity namespace and budget state. Cache deletion is a budget reset, not routine cleanup.
 
-JSON handlers execute **in process**. Time limits are checked between calls and after each handler returns; a late result is rejected. A blocked handler cannot be interrupted by this package. Configure hard request and memory limits in your hosting, plus database and outbound HTTP timeouts. There is no worker option or per-tool heap isolation. Approved handlers are trusted application code. [Full contract and hosting boundaries](../../docs/batching.md).
+JSON handlers execute **in process**. Time limits are checked between calls and after each handler returns; a late result is rejected. A blocked handler cannot be interrupted by this package. Configure hard request and memory limits in your hosting, plus database and outbound HTTP timeouts. There is no worker option or per-tool heap isolation. Approved handlers are trusted application code.
 
 ## Approve tools and select the catalog
 
@@ -103,13 +103,13 @@ Register `CodeMode\Symfony\CodeModeBundle::class` in `config/bundles.php`, then:
 # config/packages/code_mode.yaml
 code_mode:
     mode: catalog
-    identity_provider: App\CodeMode\DemoIdentityProvider
+    identity_provider: App\CodeMode\OperatorIdentityProvider
     tools:
         - App\CodeMode\ReadArticle
         - App\CodeMode\ListPublishedArticles
 ```
 
-The catalog advertises `search_tools` and `execute_tools`. Set `mode: php` and configure gVisor to use generated PHP instead. Normal Symfony autowiring supplies those services. Only the listed services enter the catalog; implementing an interface does not grant approval. Start from the [read service](../../src/CodeMode/ReadArticle.php) and [identity provider](../../src/CodeMode/DemoIdentityProvider.php). Both are small, executable examples, using a synthetic publishing dataset.
+The catalog advertises `search_tools` and `execute_tools`. Set `mode: php` and configure gVisor to use generated PHP instead. Normal Symfony autowiring supplies those services. Only the listed services enter the catalog; implementing an interface does not grant approval. Implement [ReadToolInterface](src/ReadToolInterface.php) for each reader. For local STDIO, the operator supplies a trusted [IdentityProviderInterface](src/IdentityProviderInterface.php).
 
 A `ReadToolInterface` service supplies:
 
@@ -117,7 +117,7 @@ A `ReadToolInterface` service supplies:
 - `authorize(identity, arguments)`: a host-side capability and resource check, performed on every call **before invocation**. This runs before schema validation, so malformed arguments must fail closed.
 - `invoke(arguments, identity)`: JSON data, with mutable resource/field permissions rechecked at the read. Normal injected database and HTTP clients can be reused in the JSON request. Keep resource and field access checks at the read boundary.
 
-The identity provider is trusted application code. Our example selects a local CLI demonstration account, which is **not remote authentication**. A production host must authenticate its operator/user and supply the appropriate capabilities. Never take the identity, permissions, service IDs or Docker command from agent input. The read-only interface/annotations describe a trusted operator contract; they cannot make an arbitrary PHP handler read-only. Review approved handlers.
+The identity provider is trusted application code. A local CLI account identifies the operator. HTTP requests use the caller authenticated by Symfony Security. A production host must authenticate its operator/user and supply the appropriate capabilities. Never take the identity, permissions, service IDs or Docker command from agent input. The read-only interface/annotations describe a trusted operator contract; they cannot make an arbitrary PHP handler read-only. Review approved handlers.
 
 ## Select fields from list readers
 
@@ -154,11 +154,11 @@ To combine approved Symfony AI tools and an MCP service, register providers expl
 
 ```yaml
 code_mode:
-    identity_provider: App\CodeMode\DemoIdentityProvider
+    identity_provider: App\CodeMode\OperatorIdentityProvider
     providers: [app.catalog_provider, app.media_provider]
 ```
 
-`SymfonyAiProvider` wraps an `ApprovedToolbox`; `McpProvider` wraps a host-configured `McpGateway`. Each takes a namespace and an explicit map from PHP method aliases to approved original tool names. `ReadToolsProvider` adapts existing `ReadToolInterface` services. The [independent composition app](../../examples/composition/README.md) includes complete service wiring and a real allowed/denied execution proof. It does not replace the main demo or its configuration.
+`SymfonyAiProvider` wraps an `ApprovedToolbox`; `McpProvider` wraps a host-configured `McpGateway`. Each takes a namespace and an explicit map from PHP method aliases to approved original tool names. `ReadToolsProvider` adapts existing `ReadToolInterface` services. The [provider registry](../php-code-mode/src/Provider/ProviderRegistry.php) validates namespaces and rejects collisions before creating the catalog and broker.
 
 Discovery still returns full schemas. Selected calls can use `$tools->catalog->getArticles(['ids' => [1]])` or `$tools->call('catalog.getArticles', ['ids' => [1]])`. Both reach the same broker. Host policy, input validation, the disclosed-tool allowlist and execution budgets are unchanged. The generated PHPDoc interfaces describe supported schema shapes; they do not prove program correctness or confer permission. Unknown/complex shapes stay broad.
 
@@ -195,13 +195,13 @@ The JSON path runs in the current PHP process; it does not require CLI, `pcntl`,
 `CodeMode\Symfony\Ai\BatchToolbox` for a Symfony AI conversation. Ordered
 results reach the agent without automatic filtering or joining. Explicit
 `mode: php` keeps gVisor; the default mode is `catalog`. No unsafe local PHP executor is available.
-[Full batch contract, limits and hosted Symfony guidance](../../docs/batching.md).
+[HTTP state and limits](#http-state-and-limits) · [Core JSON batch API](../php-code-mode/README.md#json-batches-without-a-sandbox-dependency).
 
 ## Agent responses and host evidence
 
 Successful gVisor execution returns `{"value": ...}`. A failure returns `{"error":{"reason":"tool_denied","tool":"publishing_read"}}`; the tool name is omitted when no failed call is known. MCP also sets `isError`. Private exception messages and intermediate results are not included. Unknown executors retain their runtime warning on every execution response.
 
-The underlying `ExecutionResult` and `SandboxException` keep their complete host ledgers. For Symfony AI, `CodeModeToolbox::lastExecution()` exposes the latest call's PHP and sanitized trace to trusted application code, outside `ToolResult`. It is cleared before each tool call. The workbench recorder uses this accessor.
+The underlying `ExecutionResult` and `SandboxException` keep their complete host ledgers. For Symfony AI, `CodeModeToolbox::lastExecution()` exposes the latest call's PHP and sanitized trace to trusted application code, outside `ToolResult`. It is cleared before each tool call.
 
 For MCP recording, the operator can enable a separate file:
 
@@ -210,13 +210,7 @@ mkdir -p -m 700 var/code-mode-traces
 php bin/console code-mode:serve --no-debug --trace-file=var/code-mode-traces/take-1.jsonl
 ```
 
-The same option works on `code-mode:mcp` and `code-mode:performance-mcp`. Use a **new filename for each server process**. The sink creates files exclusively with mode 0600, refuses existing files/symlinks and caps each file at 2 MiB. If recording fails, the call reports a sanitized failure; it does not retry execution. Traces contain submitted PHP and returned application data: keep them private and review before sharing. No path or trace option is exposed to the agent, and traces are never added to MCP content, structured results or `_meta`. Fresh recordings are not automatically published in the workbench.
-
-## Boundary recovery
-
-[The recorded conversation](https://ronaldtebrake.github.io/symfony-hackathon/#recovery) asks for article 49, receives `tool_denied`, then audits published articles after the user changes scope. The current server returns `isError: true` with a sanitized reason and affected tool; the original capture retains its older, detailed response. Private content and exception messages never become the explanation. The permitted response is a separate successful execution under the same identity and attempt budget.
-
-For Symfony AI, the same `CodeModeSession` backs `CodeModeToolbox`, a `ToolboxInterface` implementation. Keep one session across user turns; see the [conversation recipe](../../docs/contributing/symfony-ai-recipe.md).
+Use a **new filename for each server process**. The sink creates files exclusively with mode 0600, refuses existing files/symlinks and caps each file at 2 MiB. If recording fails, the call reports a sanitized failure; it does not retry execution. Traces contain submitted PHP and returned application data: keep them private and review before sharing. No path or trace option is exposed to the agent, and traces are never added to MCP content, structured results or `_meta`.
 
 ## Reuse existing Symfony AI tools
 
@@ -224,17 +218,17 @@ Install compatible `symfony/ai-agent` and `symfony/ai-platform` packages (`^1.0@
 
 ```yaml
 code_mode:
-    identity_provider: App\CodeMode\DemoIdentityProvider
+    identity_provider: App\CodeMode\OperatorIdentityProvider
     ai_toolbox: app.publishing_toolbox
     ai_tools: [publishing_read, publishing_list]
     ai_authorization: App\CodeMode\PublishingAuthorization
 ```
 
-The toolbox is an ordinary Symfony AI service. See the executable [tool services](../../src/CodeMode/PublishingTools.php), [authorization policy](../../src/CodeMode/PublishingAuthorization.php) and [demo wiring](../../config/packages/code_mode_adoption.yaml). The demo wires a separate session factory to keep the original MCP conversation unchanged; applications can use the minimal bundle configuration above. Existing `tools` services can also be combined with `ai_tools`.
+Use a registered Symfony AI toolbox and a [ToolAuthorizationInterface](src/Ai/ToolAuthorizationInterface.php) service. An application can combine explicit `tools` services with its `ai_tools` allowlist.
 
 Only named tools with an explicit read-only hint enter the catalog. Missing names, duplicates and absent policy configuration fail closed. The hint is a prerequisite, not proof that a handler is read-only: approve reviewed handlers. `ToolAuthorizationInterface::isGranted()` receives the host identity, tool name and arguments before schema validation and immediately before invocation. It must reject malformed or unauthorized requests. Handlers must retain resource/field checks at the actual read.
 
-Calls go through the original Symfony AI toolbox, preserving its argument resolver and lifecycle events. Results must be safe JSON data. Optional tool metadata `code_mode.output_schema` supplies an output contract, validated before returning data to the sandbox. The publishing example declares object schemas. The installed Symfony AI version represents lifecycle denials as ordinary string results; an object schema rejects these with sanitized `tool_failed`. Do not infer denial by matching text, or use a toolbox that converts private exception diagnostics into public result strings. See the [upstream contribution note](../../docs/contributing/README.md).
+Calls go through the original Symfony AI toolbox, preserving its argument resolver and lifecycle events. Results must be safe JSON data. Optional tool metadata `code_mode.output_schema` supplies an output contract, validated before returning data to the sandbox. The publishing example declares object schemas. The installed Symfony AI version represents lifecycle denials as ordinary string results; an object schema rejects these with sanitized `tool_failed`. Do not infer denial by matching text, or use a toolbox that converts private exception diagnostics into public result strings.
 
 `tools_describe` adds a bounded PHP invocation example and input/output shapes for only the selected tools. JSON objects are `stdClass`, lists are arrays, and unknown/referenced schemas remain `mixed`. These guides are documentation; the broker still checks schemas and authorization for every call.
 
@@ -243,12 +237,6 @@ Calls go through the original Symfony AI toolbox, preserving its argument resolv
 Search returns candidate names and descriptions in a `tools` list, with `matched`, `returned`, `limit` and `truncated`. A truncated or empty result includes refinement guidance. All query terms must match; an exact approved name selects one tool. Search returns at most eight entries and 32 KiB. It never makes a tool callable.
 
 Call `tools_describe` for the selected tools before executing PHP. The response includes the original input/output schemas and a PHP invocation guide. The broker continues to validate arguments and results and authorize every call. Search and describe never reset execution attempts. The core's list-only `search()` API remains available for existing PHP callers.
-
-## Evidence scope
-
-The current [HTTP capture](../../docs/evidence/http-catalog-proof.json) verifies fresh adoption, authentication, authorization and persistent budgets. It contains operator requests, not a live agent conversation.
-
-The retained pre-HTTP [catalog capture](../../docs/evidence/catalog-proof.json) includes real Symfony AI follow-ups and denial/recovery, exact JSON calls, provider usage and control traces. All final answers are correct across five live scenarios, but the injection case attempted a restricted read and fails the agent-behavior check. The host denied it before invocation. Neither schemas nor a catalog prevent a model from following malicious data; application permissions must remain authoritative. An otherwise permitted action can still be outside the user's intent. [Coverage and limits](../../docs/batching.md#evidence-coverage-and-next-captures).
 
 ## Permission-aware discovery
 
@@ -277,4 +265,4 @@ The policy receives the registered tool name (including its provider namespace, 
 
 Execution rechecks visibility before the existing argument/resource policy on **every** underlying call. Previously discovered names and persisted session state never grant permission. Symfony HTTP derives a fresh identity from Security on each request. In long-lived sessions, a policy must query current application permissions if they can change; an `ExecutionIdentity` is an immutable snapshot. Keep mutable resource and field checks at the actual read as well.
 
-The policy is optional for compatibility: without one, discovery lists the host-approved catalog and existing per-call authorization still applies. It works with read services, Symfony AI tools and namespaced providers, for JSON and isolated PHP. No per-user discovery result is shared or cached. The independent HTTP application uses `voter_rules`; its [original visibility policy](../../examples/symfony/src/PublicationVisibility.php) remains for the historical local-operator proofs.
+The policy is optional for compatibility: without one, discovery lists the host-approved catalog and existing per-call authorization still applies. It works with read services, Symfony AI tools and namespaced providers, for JSON and isolated PHP. No per-user discovery result is shared or cached. The independent Symfony application uses `voter_rules` to apply its existing access policy.

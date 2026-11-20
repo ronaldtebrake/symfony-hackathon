@@ -43,15 +43,11 @@ final class HttpMcpAdapterTest extends TestCase
                 }
             } while (!$ready && microtime(true) < $deadline && $server->isRunning());
             $this->assertTrue($ready, 'The local HTTP MCP fixture did not start.');
-            // Every script referenced by the workbench must bypass the PHP router intact.
-            preg_match_all('~src="(/[^"?]+\.js)"~', file_get_contents(\dirname(__DIR__, 2).'/templates/demo.html'), $scripts);
-            foreach ($scripts[1] as $asset) {
-                $response = $http->request('GET', 'http://'.$address.$asset);
-                $this->assertSame(200, $response->getStatusCode(), $asset);
-                $this->assertStringContainsString('javascript', $response->getHeaders()['content-type'][0]);
-                $this->assertSame(file_get_contents(\dirname(__DIR__, 2).'/public'.$asset), $response->getContent());
-            }
-            $movie = '/media/symfony-native-tools-demo-90s.mp4';
+            $style = $http->request('GET', 'http://'.$address.'/demo.css');
+            $this->assertSame(200, $style->getStatusCode());
+            $this->assertStringContainsString('text/css', $style->getHeaders()['content-type'][0]);
+            $this->assertSame(file_get_contents(\dirname(__DIR__, 2).'/public/demo.css'), $style->getContent());
+            $movie = '/media/editorial-review-90s.mp4';
             $response = $http->request('GET', 'http://'.$address.$movie, ['headers' => ['Range' => 'bytes=0-99']]);
             $this->assertSame(206, $response->getStatusCode());
             $this->assertSame('video/mp4', $response->getHeaders()['content-type'][0]);

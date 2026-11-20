@@ -1,5 +1,16 @@
 {% extends '@WebProfiler/Profiler/layout.html.twig' %}
 
+{% block summary %}
+    {% if profile.collectors.request is defined %}
+        {{ parent() }}
+    {% else %}
+        <div class="status status-{{ profile.statusCode >= 400 ? 'error' : 'success' }}">
+            <h2><span class="status-request-method">{{ profile.method }}</span> {{ profile.url }}</h2>
+            <dl class="metadata"><dt>Response</dt><dd>{{ profile.statusCode }}</dd><dt>Token</dt><dd>{{ profile.token }}</dd></dl>
+        </div>
+    {% endif %}
+{% endblock %}
+
 {% block toolbar %}
     {% if collector.operations|length %}
         {% set icon %}<span class="sf-toolbar-value">{ }</span><span class="sf-toolbar-label">{{ collector.operations|length }}</span>{% endset %}
@@ -10,24 +21,55 @@
 
 {% block menu %}<span class="label"><span class="icon">{ }</span><strong>Code Mode</strong></span>{% endblock %}
 {% block panel %}
-    <h2>Approved JSON catalog</h2>
-    <p>Request-local discovery, persistent budget reservations and broker decisions. Arguments, results, user identifiers and exception messages are omitted.</p>
-    <p>Native events show entry into the Symfony AI toolbox and its outcome. A requested event alone does not prove the handler ran. Client model tokens are not observed here.</p>
+    <h2>MCP discovery and tool calls</h2>
     {% for operation in collector.operations %}
         <h3>{{ operation.operation }} · {{ operation.status }} · {{ operation.durationMs|default(0) }} ms</h3>
         {% if operation.reason is defined %}<p class="status-error">{{ operation.reason }}</p>{% endif %}
+        {% if operation.page is defined %}
+            {% if operation.operation == 'groups/list' %}
+                <p>{{ operation.page.groups }} {{ operation.page.groups == 1 ? 'group' : 'groups' }} returned.</p>
+            {% else %}
+                <p>{{ operation.page.tools }} tool {{ operation.page.tools == 1 ? 'definition' : 'definitions' }} returned.</p>
+            {% endif %}
+        {% endif %}
         {% if operation.discovery is defined %}<p>{{ operation.discovery.returned }} visible contracts returned / {{ operation.discovery.matched }} matched. Truncated: {{ operation.discovery.truncated ? 'yes' : 'no' }}.</p>{% endif %}
-        <table><thead><tr><th>Budget checkpoint</th><th>Attempts used</th><th>Calls reserved</th><th>Known contracts</th></tr></thead><tbody>
+        {% set groups = operation.groupDiscovery|default(operation.page|default({})) %}
+        {% if groups.groupSummaries|default([]) %}
+            <h4>Groups returned</h4>
+            <table><thead><tr><th>Group</th><th>Description</th></tr></thead><tbody>
+                {% for group in groups.groupSummaries %}<tr><td><code>{{ group.name }}</code></td><td>{{ group.description }}</td></tr>{% endfor %}
+            </tbody></table>
+        {% endif %}
+        {% if groups.selectedGroup|default(null) %}<p>Opened group <code>{{ groups.selectedGroup }}</code></p>{% endif %}
+        {% if groups.instructions|default(null) %}
+            <h4>Procedure returned to the agent</h4>
+            <p>{{ groups.instructions }}</p>
+        {% endif %}
+        {% set definitions = operation.page.toolDefinitions|default(operation.discovery.toolDefinitions|default([])) %}
+        {% if definitions %}
+            <h4>Tool definitions returned</h4>
+            {% for definition in definitions %}
+                <details><summary><code>{{ definition.name }}</code> · {{ definition.description }}</summary>
+                    <p>Input schema</p><pre>{{ definition.inputSchema|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+                    {% if definition.outputSchema is defined %}<p>Output schema</p><pre>{{ definition.outputSchema|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>{% endif %}
+                </details>
+            {% endfor %}
+        {% endif %}
+        {% if (operation.page.toolDefinitions is defined and operation.page.tools > definitions|length)
+            or (operation.discovery.toolDefinitions is defined and operation.discovery.returned > definitions|length) %}
+            <p>Only verified local tool definitions within the profiler limit are shown.</p>
+        {% endif %}
+        {% if operation.budget %}<table><thead><tr><th>Budget checkpoint</th><th>Attempts used</th><th>Calls reserved</th><th>Known contracts</th></tr></thead><tbody>
         {% for budget in operation.budget %}<tr><td>{{ budget.phase }}</td><td>{{ budget.attempts }}</td><td>{{ budget.reservedCalls }}</td><td>{{ budget.knownContracts }}</td></tr>{% endfor %}
-        </tbody></table>
+        </tbody></table>{% endif %}
         {% if operation.calls %}
             <table><thead><tr><th>Tool</th><th>Broker outcome</th><th>Reason</th><th>Time</th></tr></thead><tbody>
             {% for call in operation.calls %}<tr><td>{{ call.name }}</td><td>{{ call.status }}</td><td>{{ call.reason|default('—') }}</td><td>{{ call.durationMs|default(0) }} ms</td></tr>{% endfor %}
             </tbody></table>
         {% endif %}
-        <h4>Native Symfony AI events</h4>
+        {% if operation.page is not defined %}<h4>Native Symfony AI events</h4>
         {% if operation.nativeEvents %}<ul>{% for event in operation.nativeEvents %}<li>{{ event.name }} · {{ event.phase }}</li>{% endfor %}</ul>
-        {% else %}<p>No native toolbox events observed. Broker denials occur before tool invocation; non-AI providers do not emit Symfony AI events.</p>{% endif %}
+        {% else %}<p>No native toolbox events observed. Broker denials occur before tool invocation; non-AI providers do not emit Symfony AI events.</p>{% endif %}{% endif %}
     {% else %}<p>No catalog operations in this request.</p>{% endfor %}
     {% if collector.dropped %}<p>{{ collector.dropped }} diagnostic entries omitted by the request limit.</p>{% endif %}
 {% endblock %}

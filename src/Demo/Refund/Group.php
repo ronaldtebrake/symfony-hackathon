@@ -8,6 +8,7 @@ use App\Demo\Groups\GetGroupRequest;
 use App\Demo\Groups\GroupDiscoveryResult;
 use App\Demo\Groups\ListGroupsRequest;
 use App\Demo\Groups\PublishingGroups;
+use CodeMode\ToolDefinition;
 use Mcp\Schema\ClientCapabilities;
 use Mcp\Schema\Extension\ExtensionIdentifier;
 use Mcp\Schema\Extension\ExtensionInterface;
@@ -17,8 +18,11 @@ use Mcp\Schema\JsonRpc\Response;
 use Mcp\Schema\JsonRpc\ResultInterface;
 use Mcp\Schema\Request\CallToolRequest;
 use Mcp\Schema\Request\ListResourcesRequest;
+use Mcp\Schema\Request\ListToolsRequest;
 use Mcp\Schema\ResourceDefinition;
 use Mcp\Schema\Result\ListResourcesResult;
+use Mcp\Schema\Result\ListToolsResult;
+use Mcp\Schema\Tool;
 use Mcp\Server\Handler\Request\RequestHandlerInterface;
 use Mcp\Server\RequestContext;
 use Mcp\Server\Session\SessionInterface;
@@ -26,7 +30,7 @@ use Mcp\Server\Session\SessionInterface;
 /** @implements RequestHandlerInterface<ResultInterface> */
 final readonly class Group implements ExtensionInterface, RequestHandlerInterface
 {
-    private const ENTRY = ['name' => 'refund-review', 'title' => 'Refund review', 'description' => 'Review an order against its refund policy.'];
+    public const ENTRY = ['name' => 'refund-review', 'title' => 'Refund review', 'description' => 'Review an order against its refund policy.'];
 
     public function __construct(private string $mode, private \Closure $visible, private \Closure $definitions, private \Closure $read)
     {
@@ -54,7 +58,7 @@ final readonly class Group implements ExtensionInterface, RequestHandlerInterfac
 
     public function supports(Request $request): bool
     {
-        return $request instanceof ListResourcesRequest || $request instanceof ListGroupsRequest || $request instanceof GetGroupRequest
+        return $request instanceof ListToolsRequest || $request instanceof ListResourcesRequest || $request instanceof ListGroupsRequest || $request instanceof GetGroupRequest
             || ($request instanceof CallToolRequest && \in_array($request->name, Tools::NAMES, true));
     }
 
@@ -71,6 +75,17 @@ final readonly class Group implements ExtensionInterface, RequestHandlerInterfac
         }
 
         $extensions = (new RequestContext($session, $request))->getClientCapabilities()?->extensions;
+        if ($request instanceof ListToolsRequest) {
+            if (null !== $request->cursor) {
+                return Error::forInvalidParams('Unknown cursor.', $id);
+            }
+            // Only clients that declare Groups on this request get scoped placement.
+            $definitions = !isset($extensions[PublishingGroups::ID]) && ($this->visible)() ? ($this->definitions)() : [];
+            $tools = array_map(static fn (ToolDefinition $tool): Tool => new Tool($tool->name, null, (array) $tool->inputSchema,
+                $tool->description, null, outputSchema: null === $tool->outputSchema ? null : (array) $tool->outputSchema), $definitions);
+
+            return new Response($id, new ListToolsResult($tools));
+        }
         if (!isset($extensions[PublishingGroups::ID])) {
             return Error::forMissingRequiredClientCapability('Declare support for Groups.', new ClientCapabilities(extensions: [PublishingGroups::ID => []]), $id);
         }

@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Demo\Refund;
 
 use App\Demo\Groups\PublishingGroups;
-use App\Demo\Skills\Fixture as SkillsFixture;
 
 final class ProtocolProof
 {
+    // Exact historical recording used by the judge film, captured at a85cf6d.
+    private const FILM_CAPTURE_SHA256 = '05c8b3ad6bfe85b33701b6a90c97507aede7c091a347f0ce53ef9c66e797e430';
     private const SOURCES = [
         'src/Demo/Mcp/CaptureRequestFactory.php', 'src/Demo/Groups/GroupDiscoveryResult.php',
         'src/Demo/Groups/ListGroupsRequest.php', 'src/Demo/Groups/GetGroupRequest.php', 'src/Demo/Groups/PublishingGroups.php',
@@ -89,20 +90,22 @@ final class ProtocolProof
             $sources[$file] = hash_file('sha256', $root.'/'.$file);
         }
 
-        return ['format' => 'symfony-refund-protocol/v1', 'capturedAt' => gmdate(\DATE_ATOM), 'sdkRevision' => SkillsFixture::REVISION,
-            'protocolVersion' => SkillsFixture::VERSION, 'modelRequests' => 0, 'sourceSha256' => $sources,
+        return ['format' => 'symfony-refund-protocol/v1', 'capturedAt' => gmdate(\DATE_ATOM), 'sdkRevision' => Fixture::SKILLS_REVISION,
+            'protocolVersion' => Fixture::PROTOCOL_VERSION, 'modelRequests' => 0, 'sourceSha256' => $sources,
             'operator' => ['action' => 'revoke', 'grant' => 'refund.review', 'after' => 'order_before_revocation', 'before' => 'denied_policy'],
             'skillRevocation' => ['action' => 'revoke', 'grant' => 'refund.review', 'after' => 'group_before_skill_revoke', 'before' => 'manifest_after_group_revoke'],
             'scope' => 'Three disposable Symfony HTTP apps with synthetic data. The scripted client exercises the group, read-only tools and linked skill. The operator revokes before the policy read on the second app and before the skill fetch on the third. These exchanges test transport and access, without asking a model for a recommendation.',
             'calls' => $calls];
     }
 
-    public static function verify(array $report, string $root): void
+    public static function verify(array $report, string $root, bool $live = false): void
     {
-        self::check('symfony-refund-protocol/v1' === $report['format'] && SkillsFixture::REVISION === $report['sdkRevision']
-            && SkillsFixture::VERSION === $report['protocolVersion'] && 0 === $report['modelRequests'], 'identity');
-        foreach (self::SOURCES as $file) {
-            self::check(hash_file('sha256', $root.'/'.$file) === $report['sourceSha256'][$file], 'source '.$file);
+        self::check('symfony-refund-protocol/v1' === $report['format'] && Fixture::SKILLS_REVISION === $report['sdkRevision']
+            && Fixture::PROTOCOL_VERSION === $report['protocolVersion'] && 0 === $report['modelRequests'], 'identity');
+        if ($live) {
+            foreach (self::SOURCES as $file) {
+                self::check(hash_file('sha256', $root.'/'.$file) === $report['sourceSha256'][$file], 'source '.$file);
+            }
         }
         $calls = $report['calls'];
         $id = 0;
@@ -125,7 +128,7 @@ final class ProtocolProof
         }
         $result = static fn (string $label): array => $calls[$label]['response']['result'];
         $extensions = $result('discover')['capabilities']['extensions'];
-        self::check(isset($extensions[PublishingGroups::ID], $extensions[SkillsFixture::EXTENSION]), 'server extensions');
+        self::check(isset($extensions[PublishingGroups::ID], $extensions[Fixture::SKILLS_EXTENSION]), 'server extensions');
         self::check(['refund-review'] === array_column($result('list')['groups'], 'name'), 'group list');
         $group = $result('open');
         self::check(Tools::NAMES === array_column($group['tools'], 'name') && [Fixture::URI] === array_column($group['resources'], 'uri')
@@ -165,6 +168,10 @@ final class ProtocolProof
             $body = $result($label)['structuredContent'];
             self::check(('budget_exhausted' === $label ? 'execution_limit' : 'tool_denied') === $body['error']['reason']
                 && 0 === $body['completedCalls'] && !isset($body['results']) && [] === $calls[$label]['trace']['operations'][0]['nativeEvents'], 'denial '.$label);
+        }
+        if (!$live) {
+            $original = file_get_contents($root.'/docs/evidence/refund-protocol.json');
+            self::check(self::FILM_CAPTURE_SHA256 === hash('sha256', $original) && $report === json_decode($original, true, flags: \JSON_THROW_ON_ERROR), 'original film recording');
         }
     }
 
