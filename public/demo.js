@@ -4,6 +4,21 @@ const poll = (callback, delay) => { if (!staticDocumentation) setTimeout(callbac
 'use strict';
 
 const byId = (id) => document.getElementById(id);
+// Some reports also feed another chapter (for example, the older film's inspector).
+// Fetch once, when the reader first reaches any view that uses that report.
+function loadWhenVisible(load, ...ids) {
+  if (!window.IntersectionObserver) {
+    load();
+    return;
+  }
+  const observer = new IntersectionObserver(entries => {
+    if (entries.some(entry => entry.isIntersecting)) {
+      observer.disconnect();
+      load();
+    }
+  }, {rootMargin:'180px'});
+  ids.forEach(id => observer.observe(byId(id)));
+}
 let latest = null;
 let lastBody = '';
 // Shared, host-verified evidence for the read-only overview and recording guide.
@@ -135,7 +150,7 @@ async function refresh() {
     poll(refresh, 2500);
   }
 }
-refresh();
+loadWhenVisible(refresh, 'workbench');
 
 function renderSecurity(report) {
   judgeSecurity = report;
@@ -207,7 +222,7 @@ async function refreshSecurity() {
     poll(refreshSecurity, 2500);
   }
 }
-refreshSecurity();
+loadWhenVisible(refreshSecurity, 'security-proof');
 
 let agentCapture = null;
 let selectedAgentTurn = 0;
@@ -348,7 +363,7 @@ async function loadAgentCapture() {
     evidenceChanged();
   }
 }
-loadAgentCapture();
+loadWhenVisible(loadAgentCapture, 'agent-run');
 
 async function loadBoundaryRecovery() {
   const target = byId('recovery-turns');
@@ -408,7 +423,7 @@ async function loadBoundaryRecovery() {
     byId('recovery-note').textContent = 'No complete, verified recovery capture could be loaded. No successful execution is implied.';
   }
 }
-loadBoundaryRecovery();
+loadWhenVisible(loadBoundaryRecovery, 'recovery');
 
 function renderHuggingFaceProof(report) {
   const evidence = byId('hf-evidence');
@@ -480,7 +495,7 @@ async function refreshHuggingFaceProof() {
     byId('hf-note').textContent = 'The live proof could not be loaded or verified. No successful execution is implied.';
   } finally { poll(refreshHuggingFaceProof, 2500); }
 }
-refreshHuggingFaceProof();
+loadWhenVisible(refreshHuggingFaceProof, 'huggingface-proof');
 
 function renderLiveComparison(report) {
   judgeComparison = null;
@@ -575,7 +590,7 @@ async function refreshLiveComparison() {
     byId('live-note').textContent = 'The paired evidence could not be loaded or checked. No comparison is verified.';
   } finally { poll(refreshLiveComparison, 2500); }
 }
-refreshLiveComparison();
+loadWhenVisible(refreshLiveComparison, 'live-comparison');
 
 function adoptionExecution(source, run, label) {
   const block = node('section', undefined, 'hf-program');
@@ -638,7 +653,7 @@ async function refreshAdoption() {
     byId('adoption-note').textContent = 'The adoption evidence could not be loaded or checked. No success is implied.';
   } finally { poll(refreshAdoption, 2500); }
 }
-refreshAdoption();
+loadWhenVisible(refreshAdoption, 'adoption-proof');
 
 let evaluationReport = null;
 function evaluationBatch() { return evaluationReport?.batches?.[Number(byId('evaluation-batch').value)]; }
@@ -777,7 +792,7 @@ async function refreshEvaluation() {
     lastEvaluationBody = ''; byId('evaluation-evidence').hidden = true; byId('evaluation-state').textContent = 'REPORT UNAVAILABLE';
   } finally { poll(refreshEvaluation, 5000); }
 }
-refreshEvaluation();
+loadWhenVisible(refreshEvaluation, 'evaluation');
 
 let performanceReport = null;
 function renderPerformanceTurn() {
@@ -831,7 +846,7 @@ async function refreshPerformance() {
     lastPerformanceBody = ''; byId('performance-evidence').hidden = true; byId('performance-state').textContent = 'REPORT UNAVAILABLE';
   } finally { poll(refreshPerformance, 5000); }
 }
-refreshPerformance();
+loadWhenVisible(refreshPerformance, 'performance');
 
 let performanceLiveAttempts = [];
 let performanceLiveCurrent = null;
@@ -917,7 +932,7 @@ async function refreshPerformanceConversation() {
   } catch { byId('performance-live-state').textContent = 'LIVE CAPTURE UNAVAILABLE'; }
   finally { poll(refreshPerformanceConversation, 5000); }
 }
-refreshPerformanceConversation();
+loadWhenVisible(refreshPerformanceConversation, 'performance');
 
 let performanceBaselineAttempts = [];
 let performanceBaselineCurrent = null;
@@ -980,7 +995,7 @@ async function refreshPerformanceBaseline() {
   } catch { byId('performance-baseline-state').textContent = 'DIRECT BASELINE UNAVAILABLE'; }
   finally { poll(refreshPerformanceBaseline, 5000); }
 }
-refreshPerformanceBaseline();
+loadWhenVisible(refreshPerformanceBaseline, 'performance');
 
 async function loadResponsePayloads() {
   try {
@@ -1010,7 +1025,7 @@ async function loadResponsePayloads() {
     byId('lean-evidence').hidden = true;
   }
 }
-loadResponsePayloads();
+loadWhenVisible(loadResponsePayloads, 'lean-responses');
 
 let threeWayAttempts = [];
 let threeWayCurrent = null;
@@ -1112,4 +1127,4 @@ async function refreshThreeWayAudit() {
   } catch { byId('three-way-state').textContent = 'CAPTURE UNAVAILABLE'; }
   finally { poll(refreshThreeWayAudit, 5000); }
 }
-refreshThreeWayAudit();
+loadWhenVisible(refreshThreeWayAudit, 'three-way', 'article-tour');

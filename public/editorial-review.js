@@ -120,17 +120,16 @@ async function loadEditorialReplay() {
   }
 }
 replayMenu.addEventListener('change', () => showEditorialReplay(replayCapture.runs[replayMenu.value]));
-window.addEventListener('hashchange', loadEditorialReplay);
-loadEditorialReplay();
+loadWhenVisible(loadEditorialReplay, 'editorial-replay-result');
 
-readReviewerEvidence(evidenceUrl('/demo/editorial-review')).then(report => {
+loadWhenVisible(() => readReviewerEvidence(evidenceUrl('/demo/editorial-review')).then(report => {
   if (report.format !== 'symfony-editorial-review/v1' || report.verified !== true) throw new Error();
   editorialEvidence(report);
 }).catch(() => {
   byId('editorial-evidence').textContent = 'The verified reviewer capture could not be loaded.';
-});
+}), 'editorial-evidence');
 
-readReviewerEvidence(evidenceUrl('/demo/editorial-review-agent')).then(report => {
+loadWhenVisible(() => readReviewerEvidence(evidenceUrl('/demo/editorial-review-agent')).then(report => {
   if (report.format !== 'symfony-editorial-review-agent-v1' || report.turns.length !== 4) throw new Error();
   const content = byId('editorial-agent-evidence');
   const list = node('ol', undefined, 'review-exchange');
@@ -157,7 +156,7 @@ readReviewerEvidence(evidenceUrl('/demo/editorial-review-agent')).then(report =>
   content.replaceChildren(list);
 }).catch(() => {
   byId('editorial-agent-evidence').textContent = 'The recorded reviewer conversation could not be loaded.';
-});
+}), 'editorial-agent-evidence');
 
 const groupReceipts = byId('group-receipts');
 const groupRunMenu = byId('group-proof-run');

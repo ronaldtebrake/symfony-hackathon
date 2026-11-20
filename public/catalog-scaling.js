@@ -36,7 +36,7 @@ function renderScalingChart(report) {
   }
   byId('scaling-chart').replaceChildren(svg);
 }
-fetch(evidenceUrl('/demo/catalog-scaling'), {cache:'no-store'}).then(response => {
+loadWhenVisible(() => fetch(evidenceUrl('/demo/catalog-scaling'), {cache:'no-store'}).then(response => {
   if (!response.ok) throw new Error('Schema measurement unavailable');
   return response.json();
 }).then(report => {
@@ -49,4 +49,4 @@ fetch(evidenceUrl('/demo/catalog-scaling'), {cache:'no-store'}).then(response =>
   byId('scaling-table').replaceChildren(scalingTable(report));
   byId('scaling-state').textContent = 'Current HTTP contracts · offline measurement';
   if (typeof showDemoShot === 'function') showDemoShot();
-}).catch(() => { byId('scaling-state').textContent = 'Measurement unavailable — inspect the retained evidence'; });
+}).catch(() => { byId('scaling-state').textContent = 'Measurement unavailable — inspect the retained evidence'; }), 'catalog-cost', 'article-tour');

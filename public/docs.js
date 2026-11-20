@@ -46,7 +46,7 @@ for (const manifest of document.querySelectorAll('[data-film-chapters]')) {
   const section = manifest.closest('section');
   const menu = manifest.closest('.video-links').querySelector('select');
   const film = section.querySelector('video');
-  fetch(manifest.href).then(response => {
+  loadWhenVisible(() => fetch(manifest.href).then(response => {
     if (!response.ok) throw new Error('Film chapters unavailable');
     return response.json();
   }).then(({chapters}) => {
@@ -60,7 +60,7 @@ for (const manifest of document.querySelectorAll('[data-film-chapters]')) {
       if (chapter) menu.value = String(chapter.start);
     });
     menu.closest('label').hidden = false;
-  }).catch(() => { /* Native controls still allow seeking without chapter metadata. */ });
+  }).catch(() => { /* Native controls still allow seeking without chapter metadata. */ }), section.id);
 }
 
 // This guide consumes the same reviewed evidence as the detailed inspectors.
@@ -78,13 +78,13 @@ const demoShots = [
 ];
 const videoMediaUrl = name => `${staticDocumentation ? '' : '/'}media/${name}`;
 let videoProof = null;
-fetch(videoMediaUrl('video-proof.json')).then(response => {
+loadWhenVisible(() => fetch(videoMediaUrl('video-proof.json')).then(response => {
   if (!response.ok) throw new Error('Capture unavailable');
   return response.json();
 }).then(report => {
   videoProof = report;
   showDemoShot();
-}).catch(() => { /* The film and recording guide remain usable without the inspector. */ });
+}).catch(() => { /* The film and recording guide remain usable without the inspector. */ }), 'article-tour');
 
 function latestVerifiedCatalog() {
   return [...threeWayAttempts].reverse().find(attempt => /^audit-catalog-v/.test(attempt.protocol ?? '') && attempt.verification?.passed === true);

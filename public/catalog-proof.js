@@ -128,7 +128,7 @@ async function loadCatalogEvidence() {
   }
 }
 byId('catalog-attempt').addEventListener('change', renderCatalogAttempt);
-loadCatalogEvidence();
+loadWhenVisible(loadCatalogEvidence, 'catalog-evidence', 'catalog-conversation', 'catalog-recovery', 'three-way');
 
 // Reviewed HTTP messages from a detached install, separate from native chat and model benchmarks.
 let httpCatalogEvidence = null;
@@ -221,7 +221,7 @@ async function loadNativeRehearsal() {
     byId('native-implementation-body').textContent = 'Application source unavailable.';
   }
 }
-loadNativeRehearsal();
+loadWhenVisible(loadNativeRehearsal, 'native-rehearsal', 'flow-map', 'mcp-paths', 'catalog-adoption', 'catalog-security', 'article-tour');
 
 function renderMcpPathMetrics() {
   const clientMode = byId('mcp-client-mode').value;
