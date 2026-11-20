@@ -71,8 +71,8 @@
         <h2 id="catalog-guide-heading">From a user’s question to a Symfony tool</h2>
         <p class="lede">The user asks a question in the agent app. The model proposes a tool and its arguments. The host sends that call over MCP, gives the result back to the model, and returns its answer to the user. Symfony checks the actual read each time.</p>
         <figure id="mcp-architecture" class="value-explainer architecture-figure">
-          <a href="/images/symfony-mcp-architecture.svg" aria-label="Open the prompt and tool-call diagram at full size"><img src="/images/symfony-mcp-architecture.svg" width="1120" height="720" alt="A user prompts an agent. The model chooses a read, the MCP client sends its name and arguments, and Symfony checks access before invoking the handler. The result returns to the model for another call or an answer to the user."></a>
-          <figcaption>Illustrated conversation using the Publishing host’s two discovery routes. Its recorded protocol comparison used a scripted client. The separate refund recording below includes the actual user turns and model-selected calls. <a href="/images/symfony-mcp-architecture.svg">Open the full-size diagram ↗</a></figcaption>
+          <a href="/images/symfony-mcp-architecture.svg"><img src="/images/symfony-mcp-architecture.svg" width="1120" height="748" alt="What we built on Symfony AI and the PHP MCP SDK. Our package lets the agent search approved tools and checks each requested read against the app’s current permissions. Our Groups prototype offers a second way to find tools. The agent gets the result or denial. Open the full-size diagram."></a>
+          <figcaption>Pink diamonds mark our code. The solid pink cards ship in the package. The dashed card is our implementation of the MCP working group’s Groups draft. This diagram illustrates Publishing. Its recorded comparison used a scripted client. <a href="#refund-review">See the refund conversation with a real agent →</a></figcaption>
         </figure>
         <section id="what-we-built" aria-labelledby="built-heading">
           <h3 id="built-heading">What did this project add?</h3>

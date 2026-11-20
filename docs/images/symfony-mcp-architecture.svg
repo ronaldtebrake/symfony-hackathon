@@ -1,149 +1,119 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="720" viewBox="0 0 1120 720" role="img" aria-labelledby="title description">
-  <title id="title">From a user’s question to a Symfony tool and back</title>
-  <desc id="description">An illustrative conversation against the Publishing host. The user asks the agent a question in natural language. The agent host can discover tools before asking the model to choose a read. The host’s MCP client sends protocol messages, including a tool name and arguments for a tool call. Symfony authenticates the caller and the PHP MCP SDK dispatches the request. The searchable catalog offers search_tools and execute_tools. A compatible host can also open a named group and call a member directly. Symfony applies the budget, argument validation and current permissions on both execution routes. An allowed call reaches the Symfony AI Toolbox and installed handler. The MCP client receives the result or a denial, and the model can request another read or answer the user.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="748" viewBox="0 0 1120 748" role="img" aria-labelledby="title description">
+  <title id="title">What Symfony Code Mode adds to MCP</title>
+  <desc id="description">A user asks an agent a question. The Symfony AI agent and MCP bridge use the PHP MCP SDK to contact Symfony over HTTP. Pink diamonds mark our additions. Our package exposes a searchable catalog with search_tools and execute_tools. Our separate prototype implements the working group’s draft groups/list and groups/get methods for discovery. A client calls a group member by name with tools/call. On either route, our package checks the budget, arguments and the application’s current permissions for each read. Only allowed calls reach the Symfony AI Toolbox and the app’s PHP handler. The agent receives the result or denial and can answer the user or request another read. Purple squares mark Symfony and PHP MCP SDK components. Grey circles mark the user and app-owned parts.</desc>
+
   <defs>
     <linearGradient id="paper" x2="0" y2="1">
-      <stop stop-color="#ffffff"/><stop offset="1" stop-color="#f8f6fe"/>
+      <stop stop-color="#fff"/><stop offset="1" stop-color="#f7f5fc"/>
     </linearGradient>
-    <linearGradient id="ink" x2="1" y2="1">
-      <stop stop-color="#38224f"/><stop offset="1" stop-color="#20142f"/>
-    </linearGradient>
-    <marker id="violet-arrow" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M1 1l5 3-5 3" fill="none" stroke="#76539f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <marker id="arrow" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="m1 1 5 3-5 3" fill="none" stroke="#746582" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
     </marker>
-    <marker id="grey-arrow" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M1 1l5 3-5 3" fill="none" stroke="#756785" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-    </marker>
+    <g id="ours"><path d="m0 -6 6 6-6 6-6-6z" fill="#ab1769"/></g>
+    <g id="upstream"><rect x="-5" y="-5" width="10" height="10" rx="2" fill="#5643a8"/></g>
+    <g id="context"><circle r="5" fill="#626673"/></g>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #251b30; }
+      .title { font-size: 38px; font-weight: 700; letter-spacing: -1.3px; }
+      .subtitle { font-size: 18px; fill: #554b61; }
+      .section { font-size: 21px; font-weight: 700; letter-spacing: -.4px; }
+      .name { font-size: 22px; font-weight: 700; letter-spacing: -.5px; }
+      .body { font-size: 16px; fill: #504659; }
+      .key { font-size: 15px; font-weight: 700; }
+      .owner { font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+      .mono { font: 15px Menlo, Consolas, monospace; }
+      .ours { fill: #911059; }
+      .upstream { fill: #49348e; }
+      .context { fill: #515562; }
+      .connector { fill: none; stroke: #746582; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+      .base-card { fill: #f1effd; stroke: #b7abe1; }
+      .our-card { fill: #fff0f7; stroke: #d084af; }
+      .context-card { fill: #f6f6f8; stroke: #c6c5ce; }
+    </style>
   </defs>
 
+  <rect x="1" y="1" width="1118" height="746" rx="24" fill="url(#paper)" stroke="#ddd5e8"/>
+  <text x="32" y="55" class="title">What Symfony Code Mode adds to MCP</text>
+  <text x="33" y="86" class="subtitle">An agent can find the right tools for a job. Symfony decides whether each read can run.</text>
 
-  <rect x="1" y="1" width="1118" height="718" rx="24" fill="url(#paper)" stroke="#ddd5e8"/>
-  <g font-family="Arial, Helvetica, sans-serif" fill="#251b30">
-    <text x="34" y="53" font-size="34" font-weight="700" letter-spacing="-1.1">From a user’s question to a Symfony tool and back</text>
-    <text x="35" y="81" fill="#63576e" font-size="17">Example conversation on the Publishing host. The model chooses a read. Symfony decides if it can run.</text>
-
-    <!-- The user faces the agent. Only the host’s MCP client sends protocol requests. -->
-    <rect x="22" y="116" width="278" height="578" rx="16" fill="#f4eff9" stroke="#dcd3e7"/>
-    <text x="41" y="152" font-size="23" font-weight="700" letter-spacing="-.6">User and agent</text>
-    <g fill="none" stroke="#9d80b8" stroke-width="1.8">
-      <path d="M163 238v20" marker-end="url(#violet-arrow)"/>
-      <path d="M163 344v23" marker-end="url(#violet-arrow)"/>
-      <path d="M163 449v32" marker-end="url(#violet-arrow)"/>
-      <path d="M163 555v35" marker-end="url(#violet-arrow)"/>
-      <path d="M49 527H37q-6 0-6-6v-92q0-6 6-6h11" stroke-dasharray="4 5" marker-end="url(#violet-arrow)"/>
-    </g>
-
-    <rect x="49" y="168" width="233" height="70" rx="12" fill="#482864"/>
-    <text x="64" y="194" font-size="15" font-weight="700" fill="#e7cbff">User prompt</text>
-    <text x="64" y="219" font-size="17" font-weight="700" fill="#fff">“What needs fixing?”</text>
-
-    <rect x="49" y="260" width="233" height="84" rx="12" fill="#fff" stroke="#d6c9e2"/>
-    <text x="64" y="287" font-size="19" font-weight="700">Agent host and model</text>
-    <g font-size="14" fill="#63576e">
-      <text x="64" y="311">Host provides tool definitions.</text>
-      <text x="64" y="331">Model picks a tool and inputs.</text>
-    </g>
-
-    <rect x="49" y="369" width="233" height="80" rx="12" fill="#fff" stroke="#aa8dc5" stroke-width="1.4"/>
-    <text x="64" y="395" font-size="19" font-weight="700">Host’s MCP client</text>
-    <g font-size="14" fill="#63576e">
-      <text x="64" y="417">Sends method and parameters.</text>
-      <text x="64" y="437">Receives the server’s reply.</text>
-    </g>
-
-    <rect x="49" y="483" width="233" height="72" rx="12" fill="#fff" stroke="#d6c9e2"/>
-    <text x="64" y="511" font-size="19" font-weight="700">Model reads the result</text>
-    <text x="64" y="536" font-size="14" fill="#63576e">Can ask for another read.</text>
-
-    <rect x="49" y="592" width="233" height="78" rx="12" fill="#e8dbf4" stroke="#c7abd9"/>
-    <text x="64" y="620" font-size="19" font-weight="700" fill="#45225f">Answer to the user</text>
-    <text x="64" y="643" font-size="14" fill="#574364">Findings, including anything</text>
-    <text x="64" y="661" font-size="14" fill="#574364">the agent could not verify.</text>
-
-    <rect x="368" y="116" width="730" height="578" rx="16" fill="#fcfafe" stroke="#d6c7e6"/>
-    <text x="391" y="152" font-size="23" font-weight="700" letter-spacing="-.6">Symfony application</text>
-    <path d="M282 393h29q7 0 7-7V223q0-7 7-7h65" fill="none" stroke="#76539f" stroke-width="2" marker-end="url(#violet-arrow)"/>
-    <text x="351" y="206" text-anchor="middle" font-family="Menlo, Consolas, monospace" font-size="12" fill="#644687">HTTP</text>
-
-    <!-- Both execution routes use the same protected readers on this application. -->
-    <g transform="translate(120 0)">
-      <rect x="271" y="174" width="684" height="82" rx="12" fill="url(#ink)"/>
-      <g fill="#fff">
-        <text x="292" y="207" font-size="21" font-weight="700">Symfony Security</text>
-        <text x="292" y="233" font-size="15" fill="#e1d6ea">Authenticates the caller</text>
-        <path d="M520 215h58m-7-6 7 6-7 6" fill="none" stroke="#bba3d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <text x="612" y="207" font-size="21" font-weight="700">PHP MCP SDK</text>
-        <text x="612" y="233" font-size="15" fill="#e1d6ea">Dispatches the JSON-RPC request</text>
-      </g>
-
-      <!-- The server dispatches requests to one of two discovery and execution interfaces. -->
-      <g fill="none" stroke="#8f75ad" stroke-width="2" stroke-linejoin="round">
-        <path d="M612 256v16"/>
-        <path d="M612 272H437q-5 0-5 5v10" marker-end="url(#violet-arrow)"/>
-        <path d="M612 272h173q5 0 5 5v10" marker-end="url(#violet-arrow)"/>
-      </g>
-      <circle cx="612" cy="272" r="3.5" fill="#775297"/>
-
-      <rect x="271" y="288" width="332" height="174" rx="12" fill="#fff" stroke="#cdbde1"/>
-      <rect x="622" y="288" width="333" height="174" rx="12" fill="#fff" stroke="#cdbde1"/>
-      <g font-size="22" font-weight="700" letter-spacing="-.5">
-        <text x="288" y="322">Searchable catalog</text>
-        <text x="639" y="322">Named group</text>
-      </g>
-      <g fill="#64566e" font-size="14">
-        <text x="288" y="346">Search returns tools visible to the caller</text>
-        <text x="639" y="346">Requires the draft Groups extension</text>
-      </g>
-      <path d="M288 358h298m53 0h299" fill="none" stroke="#e6dfec"/>
-      <g font-size="15.5" font-family="Menlo, Consolas, monospace" fill="#4e2871">
-        <text x="288" y="386">tools/list</text>
-        <text x="288" y="415">tools/call</text>
-        <text x="288" y="444">tools/call</text>
-        <text x="639" y="386">groups/list</text>
-        <text x="639" y="415">groups/get</text>
-        <text x="639" y="444">tools/call</text>
-        <text x="412" y="415">search_tools</text>
-        <text x="412" y="444">execute_tools</text>
-      </g>
-      <g font-size="15.5" fill="#51465c">
-        <text x="412" y="386">2 definitions</text>
-        <text x="772" y="386">Visible groups</text>
-        <text x="772" y="415">Member definitions</text>
-        <text x="772" y="444">Member by name</text>
-      </g>
-
-      <!-- Only operations being executed reach the shared checks. -->
-      <g fill="none" stroke="#8f75ad" stroke-width="2" stroke-linejoin="round">
-        <path d="M432 462v12q0 5 5 5h348q5 0 5-5v-12"/>
-        <path d="M612 479v16" marker-end="url(#violet-arrow)"/>
-      </g>
-      <circle cx="612" cy="479" r="3.5" fill="#775297"/>
-      <rect x="271" y="497" width="684" height="76" rx="12" fill="#eee6f8" stroke="#bda4d4"/>
-      <g transform="translate(290 514)" fill="none" stroke="#63348a" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 1 34 7v11c0 9-7 16-15 20C11 34 4 27 4 18V7z"/>
-        <path d="m12 18 5 5 10-11"/>
-      </g>
-      <text x="343" y="529" fill="#45225f" font-size="21" font-weight="700">Code Mode checks each operation</text>
-      <text x="343" y="554" fill="#574364" font-size="16">Call budget, arguments and current application permissions</text>
-
-      <path d="M411 573v27" fill="none" stroke="#76539f" stroke-width="2" marker-end="url(#violet-arrow)"/>
-      <text x="423" y="592" font-size="13" font-weight="700" fill="#593677">Allowed</text>
-      <rect x="271" y="603" width="684" height="67" rx="12" fill="#fff" stroke="#cebddf"/>
-      <g font-size="19" font-weight="700" letter-spacing="-.3">
-        <text x="293" y="643">Symfony AI Toolbox</text>
-        <text x="612" y="643">Installed PHP handler</text>
-      </g>
-      <path d="M512 636h65m-7-5 7 5-7 5" fill="none" stroke="#9979af" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-
-    </g>
-
-    <!-- Both return paths terminate at the MCP client. -->
-    <g fill="none" stroke="#81758e" stroke-width="1.8" stroke-linejoin="round">
-      <path d="M391 637h-53q-6 0-6-6V442q0-7-7-7h-42" marker-end="url(#grey-arrow)"/>
-      <path d="M391 535h-59"/>
-    </g>
-    <circle cx="332" cy="535" r="3.2" fill="#756785"/>
-    <text x="362" y="524" text-anchor="middle" fill="#8f315c" font-size="13" font-weight="700">Denied</text>
-    <text x="362" y="656" text-anchor="middle" fill="#685777" font-size="13">Result</text>
+  <g class="key">
+    <use href="#ours" x="40" y="122"/><text x="54" y="127" class="ours">Built in this project</text>
+    <use href="#upstream" x="248" y="122"/><text x="262" y="127" class="upstream">Symfony &amp; PHP MCP SDK</text>
+    <use href="#context" x="513" y="122"/><text x="527" y="127" class="context">User &amp; application</text>
   </g>
+  <path d="M32 149h1056" stroke="#dfd8e7"/>
+
+  <!-- The host sends MCP requests. The model sees the tools the host offers it. -->
+  <text x="32" y="186" class="section">In the agent app</text>
+  <rect x="32" y="205" width="256" height="71" rx="13" class="context-card"/>
+  <use href="#context" x="52" y="228"/><text x="65" y="232" class="owner context">USER PROMPT</text>
+  <text x="48" y="259" font-size="20" font-weight="700">“What needs fixing?”</text>
+  <path d="M160 276v34" class="connector" marker-end="url(#arrow)"/>
+
+  <rect x="32" y="312" width="256" height="115" rx="13" class="base-card"/>
+  <use href="#upstream" x="52" y="335"/><text x="65" y="339" class="owner upstream">SYMFONY AI</text>
+  <text x="48" y="367" class="name">Agent &amp; MCP bridge</text>
+  <text x="48" y="393" class="body">The model picks a read.</text>
+  <text x="48" y="415" class="body">The client sends the call.</text>
+  <path d="M288 364h22q8 0 8-8V242q0-8 8-8h46" class="connector" marker-end="url(#arrow)"/>
+
+  <!-- Standard HTTP and protocol handling, followed by the two discovery routes. -->
+  <text x="374" y="186" class="section">In the Symfony application</text>
+  <rect x="374" y="205" width="714" height="71" rx="13" class="base-card"/>
+  <use href="#upstream" x="397" y="228"/>
+  <text x="411" y="233" class="key upstream">Symfony Security</text>
+  <text x="391" y="257" class="body">Authenticates the caller</text>
+  <path d="M591 241h37" class="connector" marker-end="url(#arrow)"/>
+  <use href="#upstream" x="654" y="228"/>
+  <text x="668" y="233" class="key upstream">Symfony MCP bundle &amp; PHP MCP SDK</text>
+  <text x="648" y="257" class="body">Receive and dispatch MCP calls over HTTP</text>
+
+  <g class="connector">
+    <path d="M731 276v13m0 0H551v15" marker-end="url(#arrow)"/>
+    <path d="M731 289h179v15" marker-end="url(#arrow)"/>
+  </g>
+
+  <rect x="374" y="306" width="349" height="157" rx="13" class="our-card"/>
+  <use href="#ours" x="397" y="329"/><text x="411" y="333" class="owner ours">OUR PACKAGE</text>
+  <text x="391" y="364" class="name">Searchable catalog</text>
+  <text x="391" y="390" class="body">MCP lists two tools for the whole catalog.</text>
+  <text x="391" y="420" class="mono ours">search_tools</text><text x="525" y="420" class="body">find visible readers</text>
+  <text x="391" y="447" class="mono ours">execute_tools</text><text x="525" y="447" class="body">request reads</text>
+
+  <rect x="739" y="306" width="349" height="157" rx="13" class="our-card" stroke-dasharray="6 4"/>
+  <use href="#ours" x="762" y="329"/><text x="776" y="333" class="owner ours">OUR PROTOTYPE · MCP GROUPS DRAFT</text>
+  <text x="756" y="364" class="name">Named groups</text>
+  <text x="756" y="390" class="body">The host opens a group for a known job.</text>
+  <text x="756" y="420" class="mono ours">groups/list</text><text x="865" y="420" class="body">→</text><text x="891" y="420" class="mono ours">groups/get</text>
+  <text x="756" y="447" class="mono">tools/call</text><text x="865" y="447" class="body">call a member by name</text>
+
+  <path d="M551 463v14h359v-14m-179 14v13" class="connector" marker-end="url(#arrow)"/>
+  <rect x="374" y="492" width="714" height="84" rx="13" class="our-card"/>
+  <use href="#ours" x="397" y="515"/><text x="411" y="519" class="owner ours">OUR PACKAGE · ON EVERY READ</text>
+  <text x="391" y="545" class="name">Check the call against the app’s rules</text>
+  <text x="391" y="566" class="body">Check the budget, the arguments and the caller’s current permission.</text>
+
+  <path d="M552 576v36" class="connector" marker-end="url(#arrow)"/>
+  <text x="565" y="599" class="key">Allowed</text>
+  <rect x="374" y="615" width="329" height="86" rx="13" class="base-card"/>
+  <use href="#upstream" x="397" y="638"/><text x="411" y="642" class="owner upstream">SYMFONY AI</text>
+  <text x="391" y="676" class="name">Toolbox invokes the tool</text>
+  <path d="M703 658h44" class="connector" marker-end="url(#arrow)"/>
+  <rect x="750" y="615" width="338" height="86" rx="13" class="context-card"/>
+  <use href="#context" x="773" y="638"/><text x="787" y="642" class="owner context">YOUR APPLICATION</text>
+  <text x="767" y="676" class="name">PHP handler reads the data</text>
+
+  <!-- Both denial and data return over MCP, then the model can answer or call again. -->
+  <path d="M919 701v20H320v-87" class="connector"/>
+  <text x="607" y="715" class="key">Result</text>
+  <path d="M374 540h-54v94h-30" class="connector" marker-end="url(#arrow)"/>
+  <circle cx="320" cy="634" r="3.2" fill="#746582"/>
+  <text x="318" y="530" class="key">Denied</text>
+  <rect x="32" y="579" width="256" height="122" rx="13" class="context-card"/>
+  <use href="#context" x="52" y="604"/><text x="65" y="608" class="owner context">BACK IN THE CONVERSATION</text>
+  <text x="48" y="636" font-size="21" font-weight="700">The agent gets a reply</text>
+  <text x="48" y="663" class="body">It can answer the user</text>
+  <text x="48" y="685" class="body">or ask for another read.</text>
+  <path d="M160 579V430" class="connector" stroke-dasharray="4 6" marker-end="url(#arrow)"/>
+  <text x="172" y="504" class="body">Another read</text>
 </svg>

@@ -30,7 +30,9 @@ The choice depends on the job. The sandbox gave the model a place to run a join 
 
 ## How an MCP call reaches Symfony
 
-[![A user asks an agent a question. The host and model use tool definitions to choose reads. The MCP client sends calls to Symfony, then returns results so the model can answer the user or request another read.](images/symfony-mcp-architecture.svg)](images/symfony-mcp-architecture.svg)
+[![What we built on Symfony AI and the PHP MCP SDK. Our package lets an agent search approved tools and checks each read against the app’s current permissions. Our Groups prototype offers another way to find readers. The agent receives the result or denial.](images/symfony-mcp-architecture.svg)](images/symfony-mcp-architecture.svg)
+
+Follow the **pink diamonds** to see what we built. The solid pink cards show the searchable catalog and the checks our package applies to every read. The dashed card shows our prototype of the MCP working group’s Groups draft. **Purple squares** mark the components we reuse, from Symfony AI’s agent and Toolbox to the PHP MCP SDK. The app supplies the PHP handler and decides who can use it.
 
 The human conversation in the diagram illustrates the **Publishing prototype**. Its recorded protocol comparison used a scripted client. The separate refund study captures the agent loop. Its first user message asks for a review of R-1042. The host had already opened the group and given the model the two reader contracts. The model requested the order, used the returned policy ID in its next read, and answered the user. On the wire the client sent tool names and arguments. The follow-up continued the same conversation after permission changed. [User turns and MCP calls](evidence/refund-skill.json) · [Agent host](../src/Demo/RefundStudy/Study.php)
 
