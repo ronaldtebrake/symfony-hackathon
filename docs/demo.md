@@ -4,11 +4,13 @@
 
 ## Submission description
 
-How does an agent find the two tools it needs in a Symfony app with a hundred? Symfony Code Mode exposes a searchable catalog over MCP. The agent sees two entry tools, asks for the contracts it needs, and calls existing Symfony services with JSON. We started with agent-written PHP in a sandbox. For known operations, calling installed handlers let us keep the access checks and use ordinary Symfony hosting.
+Symfony Code Mode started with an audit. With direct tool calls, every batch of articles and images went back to the model so it could match the records. We let the agent write the join in PHP and run it in a gVisor sandbox. It found the same ten issues as direct tool calls and used 71% fewer tokens on that audit.
 
-We also prototyped the MCP working group’s named Groups proposal. In our demo the host opens a refund-review group. A Symfony AI agent using Hugging Face reads the order and follows its policy ID to a second tool. It recommends manual review. We revoke access and ask it to check again. Symfony denies the same policy read before the handler runs, and the agent explains why its review is incomplete.
+The catch was deployment. A Symfony team would have to run a sandbox even for a job as simple as passing an ID from one service to another. So we built a catalog on the PHP MCP SDK. `search_tools` finds readers available to the caller. `execute_tools` calls existing Symfony services with JSON. The application checks permission on every read.
 
-The PHP MCP SDK carries the calls. Our contribution is the catalog integration and a runnable group discovery and revocation case for upstream maintainers. Watch the demo and try the quickstart at https://ronaldtebrake.github.io/symfony-hackathon/
+Search tells a client which tools match a query. The client still has to figure out which ones belong together. A support team already knows a refund review needs the order and its policy. The MCP working group’s Groups draft gave us a way to express that relationship. In our prototype, the host opens `refund-review`. A Symfony AI agent using Hugging Face reads the order, follows its policy ID and recommends manual review. We revoke access and ask it to check again. Symfony denies the same policy read, and the agent tells the user it can no longer verify the decision.
+
+That permission change is a reproducible test we can offer SDK and working-group maintainers. Watch the demo and try it at https://ronaldtebrake.github.io/symfony-hackathon/
 
 ## What the film shows
 
