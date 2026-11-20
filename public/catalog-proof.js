@@ -178,13 +178,44 @@ function renderNativeRehearsal() {
   }
   implementation.append(columns);
 }
+function initializeArticleFlow(report) {
+  const run = report?.conversation?.attempts.findLast(attempt => attempt.verification?.passed);
+  const picker = document.querySelector('#how-it-works .flow-switch');
+  if (!run) {
+    byId('flow-arguments').textContent = 'Evidence unavailable';
+    byId('flow-result').textContent = 'The recorded read could not be verified.';
+    return;
+  }
+  const show = phase => {
+    const call = run.http.find(row => row.phase === phase && row.request.params?.name === 'execute_tools');
+    const result = call.response.result.structuredContent;
+    const operation = call.profiler.operations[0];
+    byId('flow-map').dataset.state = phase;
+    byId('flow-arguments').textContent = JSON.stringify(call.request.params.arguments);
+    byId('flow-decision').textContent = operation.calls[0].status === 'denied' ? 'Broker denied the read' : 'Broker approved the read';
+    const handlerRan = operation.nativeEvents.some(event => event.phase === 'succeeded');
+    byId('flow-invocation').textContent = handlerRan ? 'Run the article reader' : 'Article reader skipped';
+    byId('flow-handler').textContent = handlerRan ? 'Profiler · handler ran' : 'Profiler · handler did not run';
+    byId('flow-result').textContent = result.error
+      ? `${result.error.reason} · ${result.completedCalls} completed calls`
+      : result.results[0].value.title;
+    byId('flow-budget').textContent = `${operation.budget.at(-1).attempts} / ${run.limits.executionAttempts} attempts used`;
+  };
+  picker.addEventListener('change', event => show(event.target.value));
+  picker.disabled = false;
+  show(picker.querySelector(':checked').value);
+}
 async function loadNativeRehearsal() {
   try {
     const response = await fetch(evidenceUrl('/demo/http-catalog'), {cache:'no-store'});
     if (!response.ok) throw new Error('HTTP proof unavailable');
     httpCatalogEvidence = await response.json();
+    initializeArticleFlow(httpCatalogEvidence);
+    renderMcpPathMetrics();
     renderNativeRehearsal(); renderHttpConversationPicker(); renderCatalogAdoption(); renderCatalogControls(); evidenceChanged();
   } catch {
+    if (!httpCatalogEvidence) initializeArticleFlow(null);
+    if (!httpCatalogEvidence) byId('mcp-path-metrics').textContent = 'The recorded audit could not be loaded.';
     byId('http-conversation-body').textContent = 'The reviewed model conversation could not be loaded.';
     byId('native-rehearsal-body').textContent = 'HTTP MCP evidence could not be loaded. Open the retained JSON report.';
     byId('native-implementation-body').textContent = 'Application source unavailable.';
@@ -192,25 +223,65 @@ async function loadNativeRehearsal() {
 }
 loadNativeRehearsal();
 
+function renderMcpPathMetrics() {
+  const clientMode = byId('mcp-client-mode').value;
+  byId('mcp-client-behavior').textContent = clientMode === 'native'
+    ? 'The client runs JavaScript that can join tool results and return just the matching rows to the model.'
+    : 'The model requests tools directly and reads their responses in the conversation.';
+  const report = httpCatalogEvidence?.claudeAudit;
+  if (!report) return;
+  const iteration = report.iterations.find(item => item.id === 'reader-id-contracts');
+  const runs = ['direct', 'catalog'].map(surface => report.attempts.find(run =>
+    run.iterationId === iteration?.id && run.arm === `${surface}-${clientMode}`));
+  const container = byId('mcp-path-metrics');
+  if (!report.matched || !iteration?.matched || !runs.every(run => run?.verification.captureVerified)) {
+    container.textContent = 'A verified, matched pair is unavailable for this client setting.';
+    return;
+  }
+
+  const table = node('table');
+  const head = table.createTHead().insertRow();
+  for (const title of ['Article audit', 'Direct tools', 'Symfony catalog']) {
+    const cell = node('th', title); cell.scope = 'col'; head.append(cell);
+  }
+  const body = table.createTBody();
+  for (const [label, value] of [
+    ['Provider tokens', run => number(run.usage.total)],
+    ['Model requests', run => number(run.usage.requests)],
+    ['MCP tool calls', run => number(run.verification.counts.mcpCalls)],
+    ['Successful reader calls', run => number(run.verification.counts.succeededReads)],
+    ['Audit result', run => run.verification.correctness.passed ? 'All 10 findings' : 'Incomplete'],
+  ]) {
+    const row = body.insertRow();
+    const title = node('th', label); title.scope = 'row'; row.append(title);
+    for (const run of runs) row.insertCell().textContent = value(run);
+  }
+  container.replaceChildren(table);
+}
+byId('mcp-client-mode').addEventListener('change', renderMcpPathMetrics);
+
 function httpConversationAttempts() {
   const client = byId('http-conversation-client').value;
+  if (client === 'claude-fields') return httpCatalogEvidence?.claudeAudit?.fieldSelectionPair?.attempts ?? [];
   return (client === 'claude-audit' ? httpCatalogEvidence?.claudeAudit : client === 'claude-comparison' ? httpCatalogEvidence?.claudeComparison : client === 'claude' ? httpCatalogEvidence?.nativeCodeMode : httpCatalogEvidence?.conversation)?.attempts ?? [];
 }
 function renderHttpConversationPicker() {
   const attempts = httpConversationAttempts();
   const select = byId('http-conversation-attempt'); select.replaceChildren();
-  attempts.forEach((run, index) => { const option = node('option', `${index + 1} · ${run.arm ? `${claudeAuditLabel(run)} · ` : run.path ? `${run.path === 'native' ? 'Native Code Mode' : 'Regular MCP'} · ` : ''}${run.verification?.passed ? 'Verified' : run.verification?.captureVerified ? 'Incomplete audit' : 'Review required'} · ${new Date(run.createdAt).toLocaleString()}`); option.value = String(index); select.append(option); });
+  attempts.forEach((run, index) => { const option = node('option', `${index + 1} · ${run.iterationLabel ? `${run.iterationLabel} · ` : ''}${run.arm ? `${claudeAuditLabel(run)} · ` : run.path ? `${run.path === 'native' ? 'Native Code Mode' : 'Regular MCP'} · ` : ''}${run.verification?.passed ? 'Verified' : run.verification?.captureVerified ? 'Incomplete audit' : 'Review required'} · ${new Date(run.createdAt).toLocaleString()}`); option.value = String(index); select.append(option); });
   if (attempts.length) select.value = String(attempts.length - 1);
   renderHttpConversation();
 }
 function renderHttpConversation() {
-  const audit = byId('http-conversation-client').value === 'claude-audit';
+  const fields = byId('http-conversation-client').value === 'claude-fields';
+  const audit = fields || byId('http-conversation-client').value === 'claude-audit';
   byId('native-single-article-proof').hidden = audit;
-  byId('native-rehearsal-heading').textContent = audit ? 'One audit. Four configurations.' : 'One lookup. One boundary.';
-  byId('native-rehearsal-intro').textContent = audit
+  byId('native-rehearsal-heading').textContent = fields ? 'Let the agent choose its fields.' : audit ? 'One audit. Four configurations.' : 'One lookup. One boundary.';
+  byId('native-rehearsal-intro').textContent = fields ? 'Claude composes reads in JavaScript. Symfony can trim each authorized result before sending it over MCP.' : audit
     ? 'All application tools or a searchable catalog? Native Code Mode on or off? Compare real Claude sessions against the same Symfony HTTP application, with identical data and permissions.'
     : 'A real model discovers an approved Symfony tool and reads article 101. The operator revokes permission. The agent repeats the same read, receives a denial and checks which tools remain visible. Inspect its actual JSON calls and Symfony’s execution traces.';
   if (location.hash === '#native-rehearsal') document.title = `${byId('native-rehearsal-heading').textContent} · Symfony Code Mode`;
+  if (fields) { renderFieldSelection(); return; }
   if (byId('http-conversation-client').value === 'claude-audit') { renderClaudeAudit(); return; }
   if (byId('http-conversation-client').value === 'claude-comparison') { renderClaudeComparison(); return; }
   if (byId('http-conversation-client').value === 'claude') { renderClaudeCodeMode(); return; }
@@ -249,12 +320,17 @@ function renderHttpConversation() {
   const total = attempts.reduce((sum,attempt) => sum + (attempt.trace?.providerTokens?.total ?? 0),0);
   body.append(node('p',`${attempts.length} retained live attempt${attempts.length === 1 ? '' : 's'} · ${number(total)} reported tokens across all attempts. Provider-reported input + output; no baseline, savings percentage or billing claim. No answer review or rewrite was applied.`,'measurement-note'));
   body.append(catalogDetails('Model usage, history digests and verification',catalogJson({verification:run.verification,currentSourceMatches:run.currentSourceMatches,trace:run.trace,systemPrompt:run.systemPrompt,settings:run.settings,permissionChange:run.permissionChange,sourceSha256:run.sourceSha256,scope:run.scope})));
-  if (!run.currentSourceMatches) body.append(node('p','The captured application source differs from the current checkout.','doc-callout'));
+  if (run.currentSourceMatches === false) body.append(node('p','This model run used the earlier application revision. The HTTP rehearsal above exercises the current implementation.','doc-callout'));
 }
 byId('http-conversation-attempt').addEventListener('change',renderHttpConversation);
 byId('http-conversation-client').addEventListener('change',renderHttpConversationPicker);
 const requestedHttpClient = new URLSearchParams(window.location.search).get('client');
-if (['claude', 'claude-comparison', 'claude-audit'].includes(requestedHttpClient)) byId('http-conversation-client').value = requestedHttpClient;
+if (['claude', 'claude-comparison', 'claude-audit', 'claude-fields'].includes(requestedHttpClient)) {
+  const picker = byId('http-conversation-client');
+  picker.value = requestedHttpClient;
+  picker.hidden = false;
+  picker.labels[0].hidden = false;
+}
 
 function renderClaudeCodeMode() {
   const run = httpConversationAttempts()[Number(byId('http-conversation-attempt').value)];
@@ -315,7 +391,7 @@ function renderClaudeCapture(run, body) {
   if (!run.path) body.append(node('p', 'Original native rehearsal. Includes an initial client-discovery miss. Its prompt explicitly requested Code Mode, so it is not part of the matched comparison.', 'measurement-note'));
   if (run.usage) body.append(catalogDetails('Token accounting · unique responses and duplicate rows', catalogJson({usage:run.usage, usageRows:run.usageRows, answerReview:run.answerReview})));
   body.append(catalogDetails('Verification, source binding and capture method', catalogJson({verification:run.verification, currentSourceMatches:run.currentSourceMatches, client:run.client, capture:run.capture, sourceSha256:run.sourceSha256, installation:run.installation, cleanup:run.cleanup, scope:run.scope})));
-  if (!run.currentSourceMatches) body.append(node('p', 'The captured application source differs from the current checkout.', 'doc-callout'));
+  if (run.currentSourceMatches === false) body.append(node('p', 'This model run used the earlier application revision. The HTTP rehearsal above exercises the current implementation.', 'doc-callout'));
 }
 
 function renderClaudeComparison() {
@@ -363,18 +439,60 @@ function renderClaudeComparison() {
 }
 
 function claudeAuditLabel(run) {
+  if (run.arm === 'baseline') return 'Full records';
+  if (run.arm === 'offered') return 'Optional fields offered';
   return `${run.surface === 'direct' ? 'All application tools' : 'Symfony JSON catalog'} · native ${run.client.nativeCodeMode ? 'on' : 'off'}`;
+}
+
+function fieldSelectionCard(proof) {
+  const section = node('section', undefined, 'catalog-turn');
+  section.append(node('h3', 'Request only the fields the audit uses'));
+  if (!proof.verified) {
+    section.append(node('p', 'The field selection proof needs review. Inspect the recorded checks before using these figures.'));
+    section.append(catalogDetails('Recorded checks', catalogJson(proof)));
+    return section;
+  }
+  const {legacy, full, selected} = proof.paths;
+  const reduction = (100 * (full.totalBodyBytes - selected.totalBodyBytes) / full.totalBodyBytes).toFixed(1);
+  section.append(node('p', `Selecting fields reduced total MCP body bytes by ${reduction}% on the same Symfony application. All three runs checked ${number(selected.coverage.articles)} articles and returned the same ${number(selected.findings)} findings.`));
+  const table = node('table', undefined, 'live-table');
+  const header = node('tr');
+  for (const label of ['Catalog path', 'Request bytes', 'Response bytes', 'Total bytes']) {
+    const cell = node('th', label); cell.scope = 'col'; header.append(cell);
+  }
+  const head = node('thead'); head.append(header); table.append(head);
+  const rows = node('tbody');
+  for (const [label, path] of [['Original reader contracts', legacy], ['Field selection available · full rows', full], ['Field selection available · selected fields', selected]]) {
+    const row = node('tr'); const cell = node('th', label); cell.scope = 'row'; row.append(cell);
+    for (const bytes of [path.requestBodyBytes, path.responseBodyBytes, path.totalBodyBytes]) row.append(node('td', number(bytes)));
+    rows.append(row);
+  }
+  table.append(rows); const wrap = node('div', undefined, 'table-scroll'); wrap.append(table); section.append(wrap);
+  section.append(node('p', 'For example, the client can request just id and alt from the media reader. Symfony returns those two fields in the MCP response. A client can still join and filter the rows in its own Code Mode runtime.'));
+  section.append(node('p', 'This local PHP MCP SDK client runs a fixed audit and measures request and response bodies, including discovery and both MCP result representations. The model sessions below measure provider tokens separately.', 'measurement-note'));
+  section.append(catalogDetails('Measured calls and access checks', catalogJson(proof)));
+  return section;
 }
 
 function renderClaudeAudit() {
   const report = httpCatalogEvidence?.claudeAudit;
   const body = byId('http-conversation-body'); body.replaceChildren();
   if (!report?.attempts?.length) { body.append(node('p', 'No four-way audit capture is available.')); return; }
-  body.append(node('h3', 'Two layers. Four real Claude runs.'), node('p', 'Does the benefit come from the Symfony catalog, Claude’s native Code Mode, or both?', 'lede'));
+  const run = report.attempts[Number(byId('http-conversation-attempt').value)];
+  const iteration = report.iterations.find(item => item.id === run?.iterationId);
+  body.append(node('h3', 'Two layers. Four configurations.'), node('p', 'Does the benefit come from the Symfony catalog, Claude’s native Code Mode, or both?', 'lede'));
   body.append(node('p', 'Symfony controls discovery and approved JSON calls. Claude’s native Code Mode adds client-side JavaScript. We tested both switches independently in real interactive Claude sessions. Symfony executes the same trusted PHP handlers in every run.'));
+  const versions = node('div', undefined, 'claude-audit-iterations');
+  report.iterations.forEach(item => {
+    const button = node('button', item.label); button.type = 'button';
+    button.setAttribute('aria-pressed', String(item.id === iteration.id));
+    button.addEventListener('click', () => { byId('http-conversation-attempt').value = String(report.attempts.findIndex(attempt => attempt.id === item.attemptIds[0])); renderClaudeAudit(); });
+    versions.append(button);
+  });
+  body.append(versions, node('h4', iteration.label), node('p', iteration.changes));
   const order = ['direct-regular', 'direct-native', 'catalog-regular', 'catalog-native'];
-  const runs = order.map(arm => report.attempts.find(run => run.arm === arm)).filter(Boolean);
-  body.append(node('p', `${report.matched ? 'MATCHED CONFIGURATION' : 'CONFIGURATION MISMATCH'} · Sonnet 5.5 · medium effort · 48 published articles · 24 images · 3 approved readers`, 'mode-note'));
+  const runs = order.map(arm => report.attempts.find(attempt => attempt.arm === arm && iteration.attemptIds.includes(attempt.id))).filter(Boolean);
+  body.append(node('p', `${report.matched && iteration.matched ? 'MATCHED CONFIGURATION' : 'CONFIGURATION MISMATCH'} · Sonnet 5.5 · medium effort · 48 published articles · 24 images · 3 approved readers`, 'mode-note'));
   const wrap = node('div', undefined, 'table-scroll claude-audit-table');
   const table = node('table', undefined, 'live-table'); const head = node('thead'); const header = node('tr');
   header.append(node('th', 'Measurement'));
@@ -383,6 +501,8 @@ function renderClaudeAudit() {
   for (const [label, value] of [
     ['Complete, correct audit', run => run.verification.passed ? '10 / 10 findings' : 'Incomplete — retained'],
     ['All input + output tokens¹', run => number(run.usage.total)],
+    ['First-request input tokens', run => number(claudeRequestInput(run.usage.responses[0]))],
+    ['Input across later requests', run => number(run.usage.input - claudeRequestInput(run.usage.responses[0]))],
     ['Uncached input', run => number(run.usage.uncachedInput)],
     ['Cache write input', run => number(run.usage.cacheWrite)],
     ['Cache read input', run => number(run.usage.cacheRead)],
@@ -398,17 +518,43 @@ function renderClaudeAudit() {
     runs.forEach(run => row.append(node('td', value(run)))); rows.append(row);
   }
   table.append(rows); wrap.append(table); body.append(wrap);
-  body.append(node('p', 'Full-tool MCP with native Code Mode used the fewest tokens in this sample. The catalog did not save tokens here, and its regular-MCP run failed to complete. Three approved tools is a small catalog: this does not test schema growth across hundreds of tools.', 'doc-callout'));
-  body.append(node('p', 'The failed run guessed media IDs 25–48 instead of following article image_id values. Two batches were denied. Earlier reads in each batch ran, but the error response contains no partial data. Claude stopped with only 12 article rows and no media rows returned. The failed attempt and its full cost remain in the table.'));
+  body.append(node('p', `${runs.every(attempt => attempt.verification.passed) ? 'All four audits are correct in this iteration.' : 'This iteration includes an incomplete audit; its cost is retained.'} Two advertised tools do not guarantee fewer total tokens. With just three application readers, discovery adds work and later model requests repeatedly include conversation history. This does not test schema growth across hundreds of tools.`, 'doc-callout'));
+  if (iteration.id === 'original') {
+    body.append(node('p', 'The catalog-only run guessed media IDs 25–48 instead of following article image_id values. Two batches were denied. Earlier reads ran, but the error responses contain no partial data. Claude stopped with only 12 article rows and no media rows returned. The native catalog run also needed a second client search after “article” found no entry point.'));
+  } else {
+    body.append(node('p', 'The shared contracts now identify where article and media IDs come from. Catalog-only completed without a denial. The domain label removed the observed empty client search, but the native catalog run returned raw intermediate data and then treated a JSON string as an object. A runtime error, inspection and parsing added requests before it recovered. The direct/native run also hit two string/object errors and repeated two reads. Correctness improved in this sample; token savings did not.'));
+  }
   body.append(node('p', '¹ Provider counters include cache reads. Cache was not controlled; native full-tool MCP ran last and reused substantial cached input. These totals are not a bill or an average-cost claim. One attempt per configuration cannot establish reliability.', 'measurement-note'));
   body.append(node('p', '² Denied reads never invoke the handler. Successful reads inside a failed batch still count as work, even though their data is withheld. The host reserves all submitted calls before dispatch. ³ Includes client hooks, tools and network time.', 'measurement-note'));
-  body.append(catalogDetails('Exact shared question and comparison protocol', catalogJson(report.protocol)));
+  const fieldLink = node('a', 'See what changes when Claude can request individual fields →');
+  fieldLink.href = '?client=claude-fields#native-rehearsal'; body.append(fieldLink);
+  body.append(catalogDetails('Exact shared question and comparison protocol', catalogJson({protocol:report.protocol, iterations:report.iterations})));
   const implementation = node('div');
   for (const source of report.implementation ?? []) {
     implementation.append(node('h4', source.path), sourceBlock(source.source, true));
   }
   body.append(catalogDetails('The three Symfony AI readers and their access policy', implementation));
-  const run = report.attempts[Number(byId('http-conversation-attempt').value)];
+  appendAuditAttempt(body, run);
+}
+
+function renderFieldSelection() {
+  const report = httpCatalogEvidence?.claudeAudit;
+  const body = byId('http-conversation-body'); body.replaceChildren();
+  if (!report?.fieldSelectionPair) { body.append(node('p', 'Loading the field selection evidence…')); return; }
+  body.append(fieldSelectionCard(report.fieldSelection));
+  const pair = report.fieldSelectionPair;
+  body.append(node('h3', 'Would Claude use it unprompted?'));
+  if (!pair.matched || !pair.attempts.every(attempt => attempt.verification.passed)) {
+    body.append(node('p', 'The recorded model comparison needs review. See the protocol and checks below.'));
+  }
+  const [baseline, offered] = pair.attempts;
+  body.append(node('p', `Two fresh Sonnet 5.5 sessions received the same audit question. With the option available, Claude requested fields on ${offered.selectedReads} of ${offered.verification.counts.succeededReads} reads. It used ${number(offered.usage.total)} tokens across ${offered.usage.requests} requests. The baseline used ${number(baseline.usage.total)} across ${baseline.usage.requests}.`));
+  body.append(node('p', 'Both audits returned all ten findings. In the second session, Claude reconstructed titles from the fixture’s repeating pattern. Its final answer matched here, but that code would be unreliable with different titles. Both sessions also had JavaScript errors and different cache usage. A single pair cannot establish a token saving.', 'measurement-note'));
+  body.append(catalogDetails('Matched protocol and costs for both sessions', catalogJson({protocol:pair.protocol, matched:pair.matched, attempts:pair.attempts.map(({arm,usage,verification,selectedReads}) => ({arm,usage,verification,selectedReads}))})));
+  appendAuditAttempt(body, pair.attempts[Number(byId('http-conversation-attempt').value)]);
+}
+
+function appendAuditAttempt(body, run) {
   if (!run) return;
   body.append(node('h3', `Inspect: ${claudeAuditLabel(run)}`), node('p', `${run.verification.captureVerified ? 'Capture verified' : 'Capture needs review'} · ${run.verification.correctness.passed ? 'Correct audit' : 'Incomplete audit'} · every attempt retained`, 'mode-note'));
   body.append(node('blockquote', run.turns[0].question, 'tour-question'));
@@ -430,6 +576,34 @@ function renderClaudeAudit() {
   });
   body.append(catalogDetails(`Actual JSON calls and handler traces · ${calls.length} MCP calls`, timeline));
   body.append(catalogDetails('Every client discovery step and nested tool event', catalogJson(run.agentCalls)));
+  body.append(catalogDetails('Where the tokens went · every model request', claudeAuditUsageTimeline(run)));
   body.append(catalogDetails('Usage, verification and source hashes', catalogJson({usage:run.usage, usageRows:run.usageRows, verification:run.verification, client:run.client, currentSourceMatches:run.currentSourceMatches, sourceSha256:run.sourceSha256, capture:run.capture, cleanup:run.cleanup})));
-  if (!run.currentSourceMatches) body.append(node('p', 'The captured application source differs from the current checkout.', 'doc-callout'));
+  if (run.currentSourceMatches === false) body.append(node('p', 'Historical contracts: this capture retains its original source hashes. Compare it with the other runs in the same iteration.', 'measurement-note'));
+}
+
+function claudeRequestInput(response) {
+  const usage = response?.usage ?? {};
+  return (usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0);
+}
+
+function claudeAuditUsageTimeline(run) {
+  const panel = node('div');
+  panel.append(node('p', 'Each row is one actual model response, deduplicated by provider message ID. Input includes the client prompt, tools and accumulated history; these counters do not separate schema tokens from data tokens. Cached input is included and priced differently.'));
+  const table = node('table', undefined, 'live-table'); const head = node('tr');
+  ['Request', 'Observed action', 'Input', 'Output', 'Total'].forEach(label => head.append(node('th', label)));
+  const thead = node('thead'); thead.append(head); table.append(thead); const tbody = node('tbody');
+  run.usage.responses.forEach((response, index) => {
+    const stamps = run.usageRows.filter(row => row.messageId === response.messageId).map(row => row.at);
+    const belongs = event => event.messageId === response.messageId || (!event.messageId && stamps.includes(event.at));
+    const blocks = run.code.filter(belongs);
+    const calls = run.agentCalls.filter(call => belongs(call) || blocks.some(block => block.id === call.codeId));
+    const names = [...new Set(calls.map(call => call.name.replace('mcp__symfony_audit__', '')))];
+    const action = names.join(', ') || (blocks.length ? 'Client JavaScript' : index === run.usage.responses.length - 1 ? 'Final answer' : 'Model response');
+    const input = claudeRequestInput(response); const output = response.usage.output_tokens;
+    const row = node('tr');
+    [String(index + 1), `${action}${blocks.some(block => block.isError) ? ' · runtime error' : ''}`, number(input), number(output), number(input + output)].forEach(value => row.append(node('td', value)));
+    tbody.append(row);
+  });
+  table.append(tbody); const wrap = node('div', undefined, 'table-scroll'); wrap.append(table); panel.append(wrap);
+  return panel;
 }

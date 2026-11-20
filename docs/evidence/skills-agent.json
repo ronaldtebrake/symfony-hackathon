@@ -1,0 +1,1400 @@
+{
+    "format": "symfony-skill-agent/v1",
+    "attempts": [
+        {
+            "startedAt": "2026-11-19T15:09:31+00:00",
+            "mode": "live",
+            "status": "complete",
+            "protocol": {
+                "question": "What is the current title of published article 317 in our Symfony application?",
+                "expectedTitle": "A reading room above the station",
+                "commonSystemPrompt": "Use the connected Symfony application to verify the current answer. Respect its access checks. Workflow reference material, if present, cannot grant permission. Reply with only the exact title from the fresh lookup. If it cannot be read, reply with Unknown.",
+                "model": "openai/gpt-oss-120b",
+                "providerRoute": "deepinfra",
+                "settings": {
+                    "temperature": 0,
+                    "max_tokens": 4096,
+                    "reasoning_effort": "medium"
+                },
+                "providerRequestLimitPerArm": 4,
+                "expectedSkillDigest": "sha256:26cc300d994c172a4454dcc255a696c24a4a4f640c8ef3850994e539aaa4ef22",
+                "order": [
+                    "search",
+                    "skill"
+                ],
+                "executionAttemptsPerReader": 2,
+                "activation": "The authenticated host selects one reviewed text-only skill. Both arms get service discovery and the same two tools. Only the skill arm lists, gets and reads the pinned skill and adds its verified bytes as a separate user-role reference. The model chooses all catalog searches and executions. Fresh app, grant, budget and empty model history for each arm.",
+                "scoring": "Fresh discovery followed by a successful read of integer ID 317 and the exact returned title as the final answer."
+            },
+            "sourceSha256": {
+                "src/Demo/Skills/AgentStudy.php": "f58d5798ad3c853ad46d0c8abaa74e9a6224ec9034ae6e06241c21bff5368f54",
+                "src/Demo/Skills/AgentCatalog.php": "acd31a6dd3292498c5622fc05ab7137376a8396e664da1c161ca753491e091af",
+                "src/Demo/Skills/Fixture.php": "4f2c0acb501b9b616194bbf65eec21246bfdecac5f446c140eefb71439f114ee",
+                "scripts/compare-article-skill.php": "6c0ce288b7513cd48238914c23277266b02530785199524ffc41d268eee376d8",
+                "examples/symfony/skills/read-published-article/SKILL.md": "26cc300d994c172a4454dcc255a696c24a4a4f640c8ef3850994e539aaa4ef22",
+                "examples/symfony/src/SkillExperimentBundle.php": "dbdcfe605b780af38c3479a63b41a5471069d593e848d0f2b479b407604cbfff",
+                "examples/symfony/src/ArticleCatalog.php": "9f4f1b18211711634ea760723a50e62c3fb5875c39e25a5ddc3825d13a6955c9",
+                "examples/symfony/src/ArticleVoter.php": "a200a4ab3da9d697d95dacb2132b04250d5bcbbcf769446496288592a7cebca8",
+                "examples/symfony/src/ArticleTool.php": "c07071747db575e19b400b0e18b30d47a8e6df3b6da94a1a01762b211f6f0921",
+                "composer.lock": "168f0033b15c2bbea7753d409099a67086ce2422fb7e313c607d7a7e5fa85368"
+            },
+            "arms": [
+                {
+                    "arm": "search",
+                    "status": "completed",
+                    "answer": "",
+                    "catalogSha256": "68a3abfb07dfcf8f267f24801669c4434a59615fb96ebfa22196c669518e0c57",
+                    "hostCalls": [
+                        {
+                            "method": "server/discover",
+                            "params": {},
+                            "httpStatus": 200,
+                            "reply": {
+                                "jsonrpc": "2.0",
+                                "id": 1,
+                                "result": {
+                                    "supportedVersions": [
+                                        "2026-07-28"
+                                    ],
+                                    "capabilities": {
+                                        "logging": [],
+                                        "completions": [],
+                                        "resources": {
+                                            "subscribe": true
+                                        },
+                                        "tools": [],
+                                        "extensions": {
+                                            "io.modelcontextprotocol/skills": []
+                                        }
+                                    },
+                                    "resultType": "complete",
+                                    "ttlMs": 0,
+                                    "cacheScope": "private",
+                                    "_meta": {
+                                        "io.modelcontextprotocol/serverInfo": {
+                                            "name": "Symfony approved catalog",
+                                            "version": "0.0.1"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "method": "tools/list",
+                            "params": {},
+                            "httpStatus": 200,
+                            "reply": {
+                                "jsonrpc": "2.0",
+                                "id": 2,
+                                "result": {
+                                    "tools": [
+                                        {
+                                            "name": "search_tools",
+                                            "inputSchema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "query": {
+                                                        "type": "string",
+                                                        "maxLength": 256
+                                                    }
+                                                },
+                                                "required": [
+                                                    "query"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "description": "Search approved Symfony tools and return their complete contracts. Search never grants permission. Use these names and literal JSON arguments in execute_tools."
+                                        },
+                                        {
+                                            "name": "execute_tools",
+                                            "inputSchema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "calls": {
+                                                        "type": "array",
+                                                        "minItems": 1,
+                                                        "maxItems": 100,
+                                                        "items": {
+                                                            "type": "object",
+                                                            "required": [
+                                                                "name",
+                                                                "arguments"
+                                                            ],
+                                                            "additionalProperties": false,
+                                                            "properties": {
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "minLength": 1,
+                                                                    "maxLength": 64,
+                                                                    "pattern": "^[a-zA-Z][a-zA-Z0-9_.-]*$"
+                                                                },
+                                                                "arguments": {
+                                                                    "type": "object"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "calls"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "description": "Call approved tools with literal JSON arguments. No code or expressions. Two execution attempts per authenticated user, including failures, until the operator resets the budget. Calls stop on first error; earlier calls are not rolled back. Submitted calls reserve the call budget before execution. A new MCP connection does not reset it."
+                                        }
+                                    ],
+                                    "resultType": "complete",
+                                    "ttlMs": 0,
+                                    "cacheScope": "private",
+                                    "_meta": {
+                                        "io.modelcontextprotocol/serverInfo": {
+                                            "name": "Symfony approved catalog",
+                                            "version": "0.0.1"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "calls": [],
+                    "score": {
+                        "correct": false,
+                        "discovered": false,
+                        "readHeldOutArticle": false,
+                        "exactAnswer": false
+                    },
+                    "providerResponses": [
+                        {
+                            "request": 1,
+                            "answerSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                            "finishReason": "stop",
+                            "tokens": {
+                                "prompt": 283,
+                                "completion": 0,
+                                "total": 283
+                            },
+                            "reportedModel": "openai/gpt-oss-120b",
+                            "reportedProvider": null
+                        }
+                    ],
+                    "requestEvidence": [
+                        {
+                            "request": 1,
+                            "toolMessages": [],
+                            "systemPromptSha256": "67c0fd65468928bc70dc52dc95a8196ccd7f96fda758e14d35141f4448e6e7fb",
+                            "userMessageSha256": [
+                                "9ab5e7ce51ed78f593f2118ac7c1f23e9ade6b686571900d9f27c67e7a652822"
+                            ],
+                            "assistantMessageSha256": [],
+                            "toolsAvailable": true,
+                            "toolsDeclared": true
+                        }
+                    ],
+                    "requests": {
+                        "provider": 1,
+                        "hostMcp": 2,
+                        "agentMcp": 0
+                    },
+                    "tokens": {
+                        "prompt": 283,
+                        "completion": 0,
+                        "total": 283
+                    },
+                    "providerHttp": [
+                        {
+                            "status": 200,
+                            "requestedModel": "openai/gpt-oss-120b:deepinfra"
+                        }
+                    ]
+                },
+                {
+                    "arm": "skill",
+                    "status": "completed",
+                    "answer": "",
+                    "catalogSha256": "68a3abfb07dfcf8f267f24801669c4434a59615fb96ebfa22196c669518e0c57",
+                    "activatedSkillDigest": "sha256:26cc300d994c172a4454dcc255a696c24a4a4f640c8ef3850994e539aaa4ef22",
+                    "hostCalls": [
+                        {
+                            "method": "server/discover",
+                            "params": {},
+                            "httpStatus": 200,
+                            "reply": {
+                                "jsonrpc": "2.0",
+                                "id": 1,
+                                "result": {
+                                    "supportedVersions": [
+                                        "2026-07-28"
+                                    ],
+                                    "capabilities": {
+                                        "logging": [],
+                                        "completions": [],
+                                        "resources": {
+                                            "subscribe": true
+                                        },
+                                        "tools": [],
+                                        "extensions": {
+                                            "io.modelcontextprotocol/skills": []
+                                        }
+                                    },
+                                    "resultType": "complete",
+                                    "ttlMs": 0,
+                                    "cacheScope": "private",
+                                    "_meta": {
+                                        "io.modelcontextprotocol/serverInfo": {
+                                            "name": "Symfony approved catalog",
+                                            "version": "0.0.1"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "method": "tools/list",
+                            "params": {},
+                            "httpStatus": 200,
+                            "reply": {
+                                "jsonrpc": "2.0",
+                                "id": 2,
+                                "result": {
+                                    "tools": [
+                                        {
+                                            "name": "search_tools",
+                                            "inputSchema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "query": {
+                                                        "type": "string",
+                                                        "maxLength": 256
+                                                    }
+                                                },
+                                                "required": [
+                                                    "query"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "description": "Search approved Symfony tools and return their complete contracts. Search never grants permission. Use these names and literal JSON arguments in execute_tools."
+                                        },
+                                        {
+                                            "name": "execute_tools",
+                                            "inputSchema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "calls": {
+                                                        "type": "array",
+                                                        "minItems": 1,
+                                                        "maxItems": 100,
+                                                        "items": {
+                                                            "type": "object",
+                                                            "required": [
+                                                                "name",
+                                                                "arguments"
+                                                            ],
+                                                            "additionalProperties": false,
+                                                            "properties": {
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "minLength": 1,
+                                                                    "maxLength": 64,
+                                                                    "pattern": "^[a-zA-Z][a-zA-Z0-9_.-]*$"
+                                                                },
+                                                                "arguments": {
+                                                                    "type": "object"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "calls"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "description": "Call approved tools with literal JSON arguments. No code or expressions. Two execution attempts per authenticated user, including failures, until the operator resets the budget. Calls stop on first error; earlier calls are not rolled back. Submitted calls reserve the call budget before execution. A new MCP connection does not reset it."
+                                        }
+                                    ],
+                                    "resultType": "complete",
+                                    "ttlMs": 0,
+                                    "cacheScope": "private",
+                                    "_meta": {
+                                        "io.modelcontextprotocol/serverInfo": {
+                                            "name": "Symfony approved catalog",
+                                            "version": "0.0.1"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "method": "skills/list",
+                            "params": {},
+                            "httpStatus": 200,
+                            "reply": {
+                                "jsonrpc": "2.0",
+                                "id": 3,
+                                "result": {
+                                    "skills": [
+                                        {
+                                            "uri": "skill://read-published-article/SKILL.md",
+                                            "frontmatter": {
+                                                "name": "read-published-article",
+                                                "description": "Look up the current title of a published article by its numeric ID in a Symfony application."
+                                            },
+                                            "resources": [
+                                                {
+                                                    "uri": "skill://read-published-article/SKILL.md",
+                                                    "digest": "sha256:26cc300d994c172a4454dcc255a696c24a4a4f640c8ef3850994e539aaa4ef22",
+                                                    "size": 732
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "resultType": "complete",
+                                    "ttlMs": 0,
+                                    "cacheScope": "private",
+                                    "_meta": {
+                                        "io.modelcontextprotocol/serverInfo": {
+                                            "name": "Symfony approved catalog",
+                                            "version": "0.0.1"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "method": "skills/get",
+                            "params": {
+                                "uri": "skill://read-published-article/SKILL.md"
+                            },
+                            "httpStatus": 200,
+                            "reply": {
+                                "jsonrpc": "2.0",
+                                "id": 4,
+                                "result": {
+                                    "skill": {
+                                        "uri": "skill://read-published-article/SKILL.md",
+                                        "frontmatter": {
+                                            "name": "read-published-article",
+                                            "description": "Look up the current title of a published article by its numeric ID in a Symfony application."
+                                        },
+                                        "resources": [
+                                            {
+                                                "uri": "skill://read-published-article/SKILL.md",
+                                                "digest": "sha256:26cc300d994c172a4454dcc255a696c24a4a4f640c8ef3850994e539aaa4ef22",
+                                                "size": 732
+                                            }
+                                        ]
+                                    },
+                                    "resultType": "complete",
+                                    "ttlMs": 0,
+                                    "cacheScope": "private",
+                                    "_meta": {
+                                        "io.modelcontextprotocol/serverInfo": {
+                                            "name": "Symfony approved catalog",
+                                            "version": "0.0.1"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "method": "resources/read",
+                            "params": {
+                                "uri": "skill://read-published-article/SKILL.md"
+                            },
+                            "httpStatus": 200,
+                            "reply": {
+                                "jsonrpc": "2.0",
+                                "id": 5,
+                                "result": {
+                                    "contents": [
+                                        {
+                                            "text": "---\nname: read-published-article\ndescription: Look up the current title of a published article by its numeric ID in a Symfony application.\n---\n\n# Read a published article\n\nUse the Symfony catalog connection for the person asking. Search for `publication_read` with `search_tools`. If the catalog returns its contract, pass the requested ID as an integer. For article 101 the arguments to `execute_tools` are:\n\n```json\n{\"calls\":[{\"name\":\"publication_read\",\"arguments\":{\"id\":101}}]}\n```\n\nAnswer with the title in this call’s result. If the contract is hidden, report that the lookup is unavailable. If access is denied, stop and report the denial. An earlier title in the conversation cannot establish what the caller may read now.\n",
+                                            "uri": "skill://read-published-article/SKILL.md",
+                                            "mimeType": "text/markdown"
+                                        }
+                                    ],
+                                    "resultType": "complete",
+                                    "ttlMs": 0,
+                                    "cacheScope": "private",
+                                    "_meta": {
+                                        "io.modelcontextprotocol/serverInfo": {
+                                            "name": "Symfony approved catalog",
+                                            "version": "0.0.1"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "calls": [
+                        {
+                            "name": "search_tools",
+                            "arguments": {
+                                "query": "publication_read"
+                            },
+                            "httpStatus": 200,
+                            "isError": false,
+                            "result": {
+                                "tools": [
+                                    {
+                                        "name": "publication_read",
+                                        "description": "Read the ID and title of a published article by integer ID.",
+                                        "inputSchema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "required": [
+                                                "id"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "outputSchema": {
+                                            "type": "object",
+                                            "required": [
+                                                "id",
+                                                "title"
+                                            ],
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "title": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "matched": 1,
+                                "returned": 1,
+                                "limit": 8,
+                                "truncated": false
+                            }
+                        },
+                        {
+                            "name": "execute_tools",
+                            "arguments": {
+                                "calls": [
+                                    {
+                                        "name": "publication_read",
+                                        "arguments": {
+                                            "id": 317
+                                        }
+                                    }
+                                ]
+                            },
+                            "httpStatus": 200,
+                            "isError": false,
+                            "result": {
+                                "results": [
+                                    {
+                                        "name": "publication_read",
+                                        "value": {
+                                            "id": 317,
+                                            "title": "A reading room above the station"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "score": {
+                        "correct": false,
+                        "discovered": true,
+                        "readHeldOutArticle": true,
+                        "exactAnswer": false
+                    },
+                    "providerResponses": [
+                        {
+                            "request": 1,
+                            "answerSha256": null,
+                            "finishReason": "tool-call",
+                            "tokens": {
+                                "prompt": 461,
+                                "completion": 55,
+                                "total": 516
+                            },
+                            "reportedModel": "openai/gpt-oss-120b",
+                            "reportedProvider": null
+                        },
+                        {
+                            "request": 2,
+                            "answerSha256": null,
+                            "finishReason": "tool-call",
+                            "tokens": {
+                                "prompt": 595,
+                                "completion": 55,
+                                "total": 650
+                            },
+                            "reportedModel": "openai/gpt-oss-120b",
+                            "reportedProvider": null
+                        },
+                        {
+                            "request": 3,
+                            "answerSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                            "finishReason": "stop",
+                            "tokens": {
+                                "prompt": 661,
+                                "completion": 0,
+                                "total": 661
+                            },
+                            "reportedModel": "openai/gpt-oss-120b",
+                            "reportedProvider": null
+                        }
+                    ],
+                    "requestEvidence": [
+                        {
+                            "request": 1,
+                            "toolMessages": [],
+                            "systemPromptSha256": "67c0fd65468928bc70dc52dc95a8196ccd7f96fda758e14d35141f4448e6e7fb",
+                            "userMessageSha256": [
+                                "accb4f3f21d309c7215563f8068ddeca17b068ed998aa5d6540edbf1fe6a0241",
+                                "9ab5e7ce51ed78f593f2118ac7c1f23e9ade6b686571900d9f27c67e7a652822"
+                            ],
+                            "assistantMessageSha256": [],
+                            "toolsAvailable": true,
+                            "toolsDeclared": true
+                        },
+                        {
+                            "request": 2,
+                            "toolMessages": [
+                                {
+                                    "bytes": 439,
+                                    "sha256": "b0f774172ae4bd2ee725057574676770a98827f31d37833284dfa5d38d089a24"
+                                }
+                            ],
+                            "systemPromptSha256": "67c0fd65468928bc70dc52dc95a8196ccd7f96fda758e14d35141f4448e6e7fb",
+                            "userMessageSha256": [
+                                "accb4f3f21d309c7215563f8068ddeca17b068ed998aa5d6540edbf1fe6a0241",
+                                "9ab5e7ce51ed78f593f2118ac7c1f23e9ade6b686571900d9f27c67e7a652822"
+                            ],
+                            "assistantMessageSha256": [],
+                            "toolsAvailable": true,
+                            "toolsDeclared": true
+                        },
+                        {
+                            "request": 3,
+                            "toolMessages": [
+                                {
+                                    "bytes": 439,
+                                    "sha256": "b0f774172ae4bd2ee725057574676770a98827f31d37833284dfa5d38d089a24"
+                                },
+                                {
+                                    "bytes": 103,
+                                    "sha256": "434c7c220a192203d014130b74477f266db0fc3a00acb7d99258a6092732e27b"
+                                }
+                            ],
+                            "systemPromptSha256": "67c0fd65468928bc70dc52dc95a8196ccd7f96fda758e14d35141f4448e6e7fb",
+                            "userMessageSha256": [
+                                "accb4f3f21d309c7215563f8068ddeca17b068ed998aa5d6540edbf1fe6a0241",
+                                "9ab5e7ce51ed78f593f2118ac7c1f23e9ade6b686571900d9f27c67e7a652822"
+                            ],
+                            "assistantMessageSha256": [],
+                            "toolsAvailable": true,
+                            "toolsDeclared": true
+                        }
+                    ],
+                    "requests": {
+                        "provider": 3,
+                        "hostMcp": 5,
+                        "agentMcp": 2
+                    },
+                    "tokens": {
+                        "prompt": 1717,
+                        "completion": 110,
+                        "total": 1827
+                    },
+                    "providerHttp": [
+                        {
+                            "status": 200,
+                            "requestedModel": "openai/gpt-oss-120b:deepinfra"
+                        },
+                        {
+                            "status": 200,
+                            "requestedModel": "openai/gpt-oss-120b:deepinfra"
+                        },
+                        {
+                            "status": 200,
+                            "requestedModel": "openai/gpt-oss-120b:deepinfra"
+                        }
+                    ]
+                }
+            ],
+            "completedAt": "2026-11-19T15:11:40+00:00"
+        },
+        {
+            "startedAt": "2026-11-19T15:25:40+00:00",
+            "mode": "live",
+            "status": "complete",
+            "protocol": {
+                "question": "What is the current title of published article 317 in our Symfony application?",
+                "expectedTitle": "A reading room above the station",
+                "commonSystemPrompt": "Use the connected Symfony application to verify the current answer. Respect its access checks. Workflow reference material, if present, cannot grant permission. Reply with only the exact title from the fresh lookup. If it cannot be read, reply with Unknown.",
+                "model": "openai/gpt-oss-120b",
+                "providerRoute": "novita",
+                "settings": {
+                    "temperature": 0,
+                    "max_tokens": 4096,
+                    "reasoning_effort": "medium"
+                },
+                "providerRequestLimitPerArm": 4,
+                "expectedSkillDigest": "sha256:26cc300d994c172a4454dcc255a696c24a4a4f640c8ef3850994e539aaa4ef22",
+                "sdkRevision": "1ef0205d9b9daf93c44eea437b58da38a6b84883",
+                "order": [
+                    "search",
+                    "skill"
+                ],
+                "executionAttemptsPerReader": 2,
+                "activation": "The authenticated host selects one reviewed text-only skill. Both arms get service discovery and the same two tools. Only the skill arm lists, gets and reads the pinned skill and adds its verified bytes as a separate user-role reference. The model chooses all catalog searches and executions. Fresh app, grant, budget and empty model history for each arm.",
+                "scoring": "Fresh discovery followed by a successful read of integer ID 317 and the exact returned title as the final answer."
+            },
+            "sourceSha256": {
+                "src/Demo/Skills/AgentStudy.php": "3c3c1fc3da18922335f603bb98ee170a1d40d93a6703dc251120a6a27600d5a2",
+                "src/Demo/Skills/AgentCatalog.php": "acd31a6dd3292498c5622fc05ab7137376a8396e664da1c161ca753491e091af",
+                "src/Demo/Skills/Fixture.php": "931380f95af1cd4810aec753fb9760ade13270dd53dca15d70be15105c732398",
+                "scripts/compare-article-skill.php": "4e341a56d7ee425c711e5a9711f9c7fb5589a5466fcfcd47f7f1fae4bd7c9f81",
+                "examples/symfony/skills/read-published-article/SKILL.md": "26cc300d994c172a4454dcc255a696c24a4a4f640c8ef3850994e539aaa4ef22",
+                "examples/symfony/src/SkillExperimentBundle.php": "dbdcfe605b780af38c3479a63b41a5471069d593e848d0f2b479b407604cbfff",
+                "examples/symfony/src/SkillPresentation.php": "e5d08e12c989138c6a7ffc45397d0d6373ac113036dbd5a4932c18a6d0c8d12a",
+                "examples/symfony/src/ArticleCatalog.php": "9f4f1b18211711634ea760723a50e62c3fb5875c39e25a5ddc3825d13a6955c9",
+                "examples/symfony/src/ArticleVoter.php": "a200a4ab3da9d697d95dacb2132b04250d5bcbbcf769446496288592a7cebca8",
+                "examples/symfony/src/ArticleTool.php": "c07071747db575e19b400b0e18b30d47a8e6df3b6da94a1a01762b211f6f0921",
+                "composer.lock": "168f0033b15c2bbea7753d409099a67086ce2422fb7e313c607d7a7e5fa85368"
+            },
+            "arms": [
+                {
+                    "arm": "search",
+                    "status": "completed",
+                    "answer": "A reading room above the station",
+                    "catalogSha256": "68a3abfb07dfcf8f267f24801669c4434a59615fb96ebfa22196c669518e0c57",
+                    "hostCalls": [
+                        {
+                            "method": "server/discover",
+                            "params": {},
+                            "httpStatus": 200,
+                            "reply": {
+                                "jsonrpc": "2.0",
+                                "id": 1,
+                                "result": {
+                                    "supportedVersions": [
+                                        "2026-07-28"
+                                    ],
+                                    "capabilities": {
+                                        "logging": [],
+                                        "completions": [],
+                                        "resources": {
+                                            "subscribe": true
+                                        },
+                                        "tools": [],
+                                        "extensions": {
+                                            "io.modelcontextprotocol/skills": []
+                                        }
+                                    },
+                                    "resultType": "complete",
+                                    "ttlMs": 0,
+                                    "cacheScope": "private",
+                                    "_meta": {
+                                        "io.modelcontextprotocol/serverInfo": {
+                                            "name": "Symfony approved catalog",
+                                            "version": "0.0.1"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "method": "tools/list",
+                            "params": {},
+                            "httpStatus": 200,
+                            "reply": {
+                                "jsonrpc": "2.0",
+                                "id": 2,
+                                "result": {
+                                    "tools": [
+                                        {
+                                            "name": "search_tools",
+                                            "inputSchema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "query": {
+                                                        "type": "string",
+                                                        "maxLength": 256
+                                                    }
+                                                },
+                                                "required": [
+                                                    "query"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "description": "Search approved Symfony tools and return their complete contracts. Search never grants permission. Use these names and literal JSON arguments in execute_tools."
+                                        },
+                                        {
+                                            "name": "execute_tools",
+                                            "inputSchema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "calls": {
+                                                        "type": "array",
+                                                        "minItems": 1,
+                                                        "maxItems": 100,
+                                                        "items": {
+                                                            "type": "object",
+                                                            "required": [
+                                                                "name",
+                                                                "arguments"
+                                                            ],
+                                                            "additionalProperties": false,
+                                                            "properties": {
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "minLength": 1,
+                                                                    "maxLength": 64,
+                                                                    "pattern": "^[a-zA-Z][a-zA-Z0-9_.-]*$"
+                                                                },
+                                                                "arguments": {
+                                                                    "type": "object"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "calls"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "description": "Call approved tools with literal JSON arguments. No code or expressions. Two execution attempts per authenticated user, including failures, until the operator resets the budget. Calls stop on first error; earlier calls are not rolled back. Submitted calls reserve the call budget before execution. A new MCP connection does not reset it."
+                                        }
+                                    ],
+                                    "resultType": "complete",
+                                    "ttlMs": 0,
+                                    "cacheScope": "private",
+                                    "_meta": {
+                                        "io.modelcontextprotocol/serverInfo": {
+                                            "name": "Symfony approved catalog",
+                                            "version": "0.0.1"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "calls": [
+                        {
+                            "name": "search_tools",
+                            "arguments": {
+                                "query": "article 317 title"
+                            },
+                            "httpStatus": 200,
+                            "isError": false,
+                            "result": {
+                                "tools": [
+                                    {
+                                        "name": "publication_read",
+                                        "description": "Read the ID and title of a published article by integer ID.",
+                                        "inputSchema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "required": [
+                                                "id"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "outputSchema": {
+                                            "type": "object",
+                                            "required": [
+                                                "id",
+                                                "title"
+                                            ],
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "title": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "matched": 1,
+                                "returned": 1,
+                                "limit": 8,
+                                "truncated": false
+                            }
+                        },
+                        {
+                            "name": "execute_tools",
+                            "arguments": {
+                                "calls": [
+                                    {
+                                        "name": "publication_read",
+                                        "arguments": {
+                                            "id": 317
+                                        }
+                                    }
+                                ]
+                            },
+                            "httpStatus": 200,
+                            "isError": false,
+                            "result": {
+                                "results": [
+                                    {
+                                        "name": "publication_read",
+                                        "value": {
+                                            "id": 317,
+                                            "title": "A reading room above the station"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "score": {
+                        "correct": false,
+                        "discovered": true,
+                        "readHeldOutArticle": true,
+                        "exactAnswer": false
+                    },
+                    "providerResponses": [
+                        {
+                            "request": 1,
+                            "answerSha256": null,
+                            "finishReason": "tool-call",
+                            "tokens": {
+                                "prompt": 295,
+                                "completion": 61,
+                                "total": 356
+                            },
+                            "reportedModel": "openai/gpt-oss-120b",
+                            "reportedProvider": null
+                        },
+                        {
+                            "request": 2,
+                            "answerSha256": null,
+                            "finishReason": "tool-call",
+                            "tokens": {
+                                "prompt": 431,
+                                "completion": 65,
+                                "total": 496
+                            },
+                            "reportedModel": "openai/gpt-oss-120b",
+                            "reportedProvider": null
+                        },
+                        {
+                            "request": 3,
+                            "answerSha256": "898827c1290cb9df50a409b58f2534702bd4857961511bec01b6f95539da1768",
+                            "finishReason": "stop",
+                            "tokens": {
+                                "prompt": 497,
+                                "completion": 14,
+                                "total": 511
+                            },
+                            "reportedModel": "openai/gpt-oss-120b",
+                            "reportedProvider": null
+                        }
+                    ],
+                    "requestEvidence": [
+                        {
+                            "request": 1,
+                            "toolMessages": [],
+                            "systemPromptSha256": "67c0fd65468928bc70dc52dc95a8196ccd7f96fda758e14d35141f4448e6e7fb",
+                            "userMessageSha256": [
+                                "9ab5e7ce51ed78f593f2118ac7c1f23e9ade6b686571900d9f27c67e7a652822"
+                            ],
+                            "assistantMessageSha256": [],
+                            "toolsAvailable": true,
+                            "toolsDeclared": true
+                        },
+                        {
+                            "request": 2,
+                            "toolMessages": [
+                                {
+                                    "bytes": 439,
+                                    "sha256": "b0f774172ae4bd2ee725057574676770a98827f31d37833284dfa5d38d089a24"
+                                }
+                            ],
+                            "systemPromptSha256": "67c0fd65468928bc70dc52dc95a8196ccd7f96fda758e14d35141f4448e6e7fb",
+                            "userMessageSha256": [
+                                "9ab5e7ce51ed78f593f2118ac7c1f23e9ade6b686571900d9f27c67e7a652822"
+                            ],
+                            "assistantMessageSha256": [],
+                            "toolsAvailable": true,
+                            "toolsDeclared": true
+                        },
+                        {
+                            "request": 3,
+                            "toolMessages": [
+                                {
+                                    "bytes": 439,
+                                    "sha256": "b0f774172ae4bd2ee725057574676770a98827f31d37833284dfa5d38d089a24"
+                                },
+                                {
+                                    "bytes": 103,
+                                    "sha256": "434c7c220a192203d014130b74477f266db0fc3a00acb7d99258a6092732e27b"
+                                }
+                            ],
+                            "systemPromptSha256": "67c0fd65468928bc70dc52dc95a8196ccd7f96fda758e14d35141f4448e6e7fb",
+                            "userMessageSha256": [
+                                "9ab5e7ce51ed78f593f2118ac7c1f23e9ade6b686571900d9f27c67e7a652822"
+                            ],
+                            "assistantMessageSha256": [],
+                            "toolsAvailable": true,
+                            "toolsDeclared": true
+                        }
+                    ],
+                    "requests": {
+                        "provider": 3,
+                        "hostMcp": 2,
+                        "agentMcp": 2
+                    },
+                    "tokens": {
+                        "prompt": 1223,
+                        "completion": 140,
+                        "total": 1363
+                    },
+                    "providerHttp": [
+                        {
+                            "status": 200,
+                            "requestedModel": "openai/gpt-oss-120b:novita"
+                        },
+                        {
+                            "status": 200,
+                            "requestedModel": "openai/gpt-oss-120b:novita"
+                        },
+                        {
+                            "status": 200,
+                            "requestedModel": "openai/gpt-oss-120b:novita"
+                        }
+                    ]
+                },
+                {
+                    "arm": "skill",
+                    "status": "completed",
+                    "answer": "A reading room above the station",
+                    "catalogSha256": "68a3abfb07dfcf8f267f24801669c4434a59615fb96ebfa22196c669518e0c57",
+                    "activatedSkillDigest": "sha256:26cc300d994c172a4454dcc255a696c24a4a4f640c8ef3850994e539aaa4ef22",
+                    "hostCalls": [
+                        {
+                            "method": "server/discover",
+                            "params": {},
+                            "httpStatus": 200,
+                            "reply": {
+                                "jsonrpc": "2.0",
+                                "id": 1,
+                                "result": {
+                                    "supportedVersions": [
+                                        "2026-07-28"
+                                    ],
+                                    "capabilities": {
+                                        "logging": [],
+                                        "completions": [],
+                                        "resources": {
+                                            "subscribe": true
+                                        },
+                                        "tools": [],
+                                        "extensions": {
+                                            "io.modelcontextprotocol/skills": []
+                                        }
+                                    },
+                                    "resultType": "complete",
+                                    "ttlMs": 0,
+                                    "cacheScope": "private",
+                                    "_meta": {
+                                        "io.modelcontextprotocol/serverInfo": {
+                                            "name": "Symfony approved catalog",
+                                            "version": "0.0.1"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "method": "tools/list",
+                            "params": {},
+                            "httpStatus": 200,
+                            "reply": {
+                                "jsonrpc": "2.0",
+                                "id": 2,
+                                "result": {
+                                    "tools": [
+                                        {
+                                            "name": "search_tools",
+                                            "inputSchema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "query": {
+                                                        "type": "string",
+                                                        "maxLength": 256
+                                                    }
+                                                },
+                                                "required": [
+                                                    "query"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "description": "Search approved Symfony tools and return their complete contracts. Search never grants permission. Use these names and literal JSON arguments in execute_tools."
+                                        },
+                                        {
+                                            "name": "execute_tools",
+                                            "inputSchema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "calls": {
+                                                        "type": "array",
+                                                        "minItems": 1,
+                                                        "maxItems": 100,
+                                                        "items": {
+                                                            "type": "object",
+                                                            "required": [
+                                                                "name",
+                                                                "arguments"
+                                                            ],
+                                                            "additionalProperties": false,
+                                                            "properties": {
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "minLength": 1,
+                                                                    "maxLength": 64,
+                                                                    "pattern": "^[a-zA-Z][a-zA-Z0-9_.-]*$"
+                                                                },
+                                                                "arguments": {
+                                                                    "type": "object"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "calls"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "description": "Call approved tools with literal JSON arguments. No code or expressions. Two execution attempts per authenticated user, including failures, until the operator resets the budget. Calls stop on first error; earlier calls are not rolled back. Submitted calls reserve the call budget before execution. A new MCP connection does not reset it."
+                                        }
+                                    ],
+                                    "resultType": "complete",
+                                    "ttlMs": 0,
+                                    "cacheScope": "private",
+                                    "_meta": {
+                                        "io.modelcontextprotocol/serverInfo": {
+                                            "name": "Symfony approved catalog",
+                                            "version": "0.0.1"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "method": "skills/list",
+                            "params": {},
+                            "httpStatus": 200,
+                            "reply": {
+                                "jsonrpc": "2.0",
+                                "id": 3,
+                                "result": {
+                                    "skills": [
+                                        {
+                                            "uri": "skill://read-published-article/SKILL.md",
+                                            "frontmatter": {
+                                                "name": "read-published-article",
+                                                "description": "Look up the current title of a published article by its numeric ID in a Symfony application."
+                                            },
+                                            "resources": [
+                                                {
+                                                    "uri": "skill://read-published-article/SKILL.md",
+                                                    "digest": "sha256:26cc300d994c172a4454dcc255a696c24a4a4f640c8ef3850994e539aaa4ef22",
+                                                    "size": 732
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "resultType": "complete",
+                                    "ttlMs": 0,
+                                    "cacheScope": "private",
+                                    "_meta": {
+                                        "io.modelcontextprotocol/serverInfo": {
+                                            "name": "Symfony approved catalog",
+                                            "version": "0.0.1"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "method": "skills/get",
+                            "params": {
+                                "uri": "skill://read-published-article/SKILL.md"
+                            },
+                            "httpStatus": 200,
+                            "reply": {
+                                "jsonrpc": "2.0",
+                                "id": 4,
+                                "result": {
+                                    "skill": {
+                                        "uri": "skill://read-published-article/SKILL.md",
+                                        "frontmatter": {
+                                            "name": "read-published-article",
+                                            "description": "Look up the current title of a published article by its numeric ID in a Symfony application."
+                                        },
+                                        "resources": [
+                                            {
+                                                "uri": "skill://read-published-article/SKILL.md",
+                                                "digest": "sha256:26cc300d994c172a4454dcc255a696c24a4a4f640c8ef3850994e539aaa4ef22",
+                                                "size": 732
+                                            }
+                                        ]
+                                    },
+                                    "resultType": "complete",
+                                    "ttlMs": 0,
+                                    "cacheScope": "private",
+                                    "_meta": {
+                                        "io.modelcontextprotocol/serverInfo": {
+                                            "name": "Symfony approved catalog",
+                                            "version": "0.0.1"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "method": "resources/read",
+                            "params": {
+                                "uri": "skill://read-published-article/SKILL.md"
+                            },
+                            "httpStatus": 200,
+                            "reply": {
+                                "jsonrpc": "2.0",
+                                "id": 5,
+                                "result": {
+                                    "contents": [
+                                        {
+                                            "text": "---\nname: read-published-article\ndescription: Look up the current title of a published article by its numeric ID in a Symfony application.\n---\n\n# Read a published article\n\nUse the Symfony catalog connection for the person asking. Search for `publication_read` with `search_tools`. If the catalog returns its contract, pass the requested ID as an integer. For article 101 the arguments to `execute_tools` are:\n\n```json\n{\"calls\":[{\"name\":\"publication_read\",\"arguments\":{\"id\":101}}]}\n```\n\nAnswer with the title in this call’s result. If the contract is hidden, report that the lookup is unavailable. If access is denied, stop and report the denial. An earlier title in the conversation cannot establish what the caller may read now.\n",
+                                            "uri": "skill://read-published-article/SKILL.md",
+                                            "mimeType": "text/markdown"
+                                        }
+                                    ],
+                                    "resultType": "complete",
+                                    "ttlMs": 0,
+                                    "cacheScope": "private",
+                                    "_meta": {
+                                        "io.modelcontextprotocol/serverInfo": {
+                                            "name": "Symfony approved catalog",
+                                            "version": "0.0.1"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "calls": [
+                        {
+                            "name": "search_tools",
+                            "arguments": {
+                                "query": "publication_read"
+                            },
+                            "httpStatus": 200,
+                            "isError": false,
+                            "result": {
+                                "tools": [
+                                    {
+                                        "name": "publication_read",
+                                        "description": "Read the ID and title of a published article by integer ID.",
+                                        "inputSchema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "required": [
+                                                "id"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "outputSchema": {
+                                            "type": "object",
+                                            "required": [
+                                                "id",
+                                                "title"
+                                            ],
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "title": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "matched": 1,
+                                "returned": 1,
+                                "limit": 8,
+                                "truncated": false
+                            }
+                        },
+                        {
+                            "name": "execute_tools",
+                            "arguments": {
+                                "calls": [
+                                    {
+                                        "name": "publication_read",
+                                        "arguments": {
+                                            "id": 317
+                                        }
+                                    }
+                                ]
+                            },
+                            "httpStatus": 200,
+                            "isError": false,
+                            "result": {
+                                "results": [
+                                    {
+                                        "name": "publication_read",
+                                        "value": {
+                                            "id": 317,
+                                            "title": "A reading room above the station"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "score": {
+                        "correct": true,
+                        "discovered": true,
+                        "readHeldOutArticle": true,
+                        "exactAnswer": true
+                    },
+                    "providerResponses": [
+                        {
+                            "request": 1,
+                            "answerSha256": null,
+                            "finishReason": "tool-call",
+                            "tokens": {
+                                "prompt": 473,
+                                "completion": 61,
+                                "total": 534
+                            },
+                            "reportedModel": "openai/gpt-oss-120b",
+                            "reportedProvider": null
+                        },
+                        {
+                            "request": 2,
+                            "answerSha256": null,
+                            "finishReason": "tool-call",
+                            "tokens": {
+                                "prompt": 607,
+                                "completion": 50,
+                                "total": 657
+                            },
+                            "reportedModel": "openai/gpt-oss-120b",
+                            "reportedProvider": null
+                        },
+                        {
+                            "request": 3,
+                            "answerSha256": "e56913b6773e33f5c899ac2677e62705c3d7b62bfa60c3f689ebc228e21e6ae3",
+                            "finishReason": "stop",
+                            "tokens": {
+                                "prompt": 673,
+                                "completion": 10,
+                                "total": 683
+                            },
+                            "reportedModel": "openai/gpt-oss-120b",
+                            "reportedProvider": null
+                        }
+                    ],
+                    "requestEvidence": [
+                        {
+                            "request": 1,
+                            "toolMessages": [],
+                            "systemPromptSha256": "67c0fd65468928bc70dc52dc95a8196ccd7f96fda758e14d35141f4448e6e7fb",
+                            "userMessageSha256": [
+                                "accb4f3f21d309c7215563f8068ddeca17b068ed998aa5d6540edbf1fe6a0241",
+                                "9ab5e7ce51ed78f593f2118ac7c1f23e9ade6b686571900d9f27c67e7a652822"
+                            ],
+                            "assistantMessageSha256": [],
+                            "toolsAvailable": true,
+                            "toolsDeclared": true
+                        },
+                        {
+                            "request": 2,
+                            "toolMessages": [
+                                {
+                                    "bytes": 439,
+                                    "sha256": "b0f774172ae4bd2ee725057574676770a98827f31d37833284dfa5d38d089a24"
+                                }
+                            ],
+                            "systemPromptSha256": "67c0fd65468928bc70dc52dc95a8196ccd7f96fda758e14d35141f4448e6e7fb",
+                            "userMessageSha256": [
+                                "accb4f3f21d309c7215563f8068ddeca17b068ed998aa5d6540edbf1fe6a0241",
+                                "9ab5e7ce51ed78f593f2118ac7c1f23e9ade6b686571900d9f27c67e7a652822"
+                            ],
+                            "assistantMessageSha256": [],
+                            "toolsAvailable": true,
+                            "toolsDeclared": true
+                        },
+                        {
+                            "request": 3,
+                            "toolMessages": [
+                                {
+                                    "bytes": 439,
+                                    "sha256": "b0f774172ae4bd2ee725057574676770a98827f31d37833284dfa5d38d089a24"
+                                },
+                                {
+                                    "bytes": 103,
+                                    "sha256": "434c7c220a192203d014130b74477f266db0fc3a00acb7d99258a6092732e27b"
+                                }
+                            ],
+                            "systemPromptSha256": "67c0fd65468928bc70dc52dc95a8196ccd7f96fda758e14d35141f4448e6e7fb",
+                            "userMessageSha256": [
+                                "accb4f3f21d309c7215563f8068ddeca17b068ed998aa5d6540edbf1fe6a0241",
+                                "9ab5e7ce51ed78f593f2118ac7c1f23e9ade6b686571900d9f27c67e7a652822"
+                            ],
+                            "assistantMessageSha256": [],
+                            "toolsAvailable": true,
+                            "toolsDeclared": true
+                        }
+                    ],
+                    "requests": {
+                        "provider": 3,
+                        "hostMcp": 5,
+                        "agentMcp": 2
+                    },
+                    "tokens": {
+                        "prompt": 1753,
+                        "completion": 121,
+                        "total": 1874
+                    },
+                    "providerHttp": [
+                        {
+                            "status": 200,
+                            "requestedModel": "openai/gpt-oss-120b:novita"
+                        },
+                        {
+                            "status": 200,
+                            "requestedModel": "openai/gpt-oss-120b:novita"
+                        },
+                        {
+                            "status": 200,
+                            "requestedModel": "openai/gpt-oss-120b:novita"
+                        }
+                    ]
+                }
+            ],
+            "completedAt": "2026-11-19T15:25:47+00:00"
+        }
+    ]
+}

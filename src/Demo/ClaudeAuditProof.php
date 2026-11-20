@@ -12,7 +12,7 @@ final class ClaudeAuditProof
     public static function verify(array $run, string $question): array
     {
         $native = $run['client']['nativeCodeMode'] ?? false;
-        $catalog = 'catalog' === ($run['surface'] ?? null);
+        $catalog = \in_array($run['surface'] ?? null, ['catalog', 'catalog-fields'], true);
         $http = array_values(array_filter($run['http'] ?? [], static fn ($row) => 'tools/call' === ($row['request']['method'] ?? null)));
         $agent = array_values(array_filter($run['agentCalls'] ?? [], static fn ($call) => str_starts_with($call['name'] ?? '', 'mcp__symfony_audit__')));
         $blocks = array_column($run['code'] ?? [], null, 'id');
@@ -79,12 +79,18 @@ final class ClaudeAuditProof
                 if (!$failed) {
                     $actual = $catalog ? ($value['results'][$i]['value'] ?? null) : $value;
                     $expected = self::expectedRead($call);
+                    if (isset($call['arguments']['fields']) && 'catalog-fields' === $run['surface'] && null !== $expected) {
+                        $keys = array_flip($call['arguments']['fields']);
+                        $expected['items'] = array_map(static fn (array $item) => array_intersect_key($item, $keys), $expected['items']);
+                    }
                     $resultsMatch = $resultsMatch && null !== $expected && $actual === $expected;
                     if ($catalog) {
                         $resultsMatch = $resultsMatch && ($value['results'][$i]['name'] ?? null) === $call['name'];
                     }
                     foreach ($actual['items'] ?? [] as $item) {
-                        $coverage[$call['name']][] = $item['id'];
+                        if (isset($item['id'])) {
+                            $coverage[$call['name']][] = $item['id'];
+                        }
                     }
                 }
             }
@@ -113,7 +119,10 @@ final class ClaudeAuditProof
         }
         $onlyApprovedTools = true;
         foreach ($run['agentCalls'] ?? [] as $call) {
-            $onlyApprovedTools = $onlyApprovedTools && (str_starts_with($call['name'], 'mcp__symfony_audit__') || ($native && 'searchTools' === $call['name']));
+            $clientDiscovery = $native && '<synthetic>' === ($call['origin'] ?? null) && isset($blocks[$call['codeId'] ?? ''])
+                && ('searchTools' === $call['name'] || ('describeTool' === $call['name']
+                    && \in_array($call['arguments']['name'] ?? null, ['mcp__symfony_audit__search_tools', 'mcp__symfony_audit__execute_tools'], true)));
+            $onlyApprovedTools = $onlyApprovedTools && (str_starts_with($call['name'], 'mcp__symfony_audit__') || $clientDiscovery);
         }
         $usage = ClaudeUsage::summarize($run['usageRows'] ?? []);
         $usageMatches = $usage['complete'];
@@ -174,8 +183,10 @@ final class ClaudeAuditProof
     public static function load(string $root): array
     {
         $report = json_decode(file_get_contents($root.'/docs/evidence/claude-audit-matrix.json'), true, 64, \JSON_THROW_ON_ERROR);
-        $matched = $report['protocol']['order'] === array_column($report['attempts'], 'arm');
+        $matched = true;
         $first = $report['attempts'][0];
+        $report['iterations'] ??= [['id' => 'original', 'label' => 'Original contracts', 'changes' => 'Original four-way capture.',
+            'order' => $report['protocol']['order'], 'attemptIds' => array_column($report['attempts'], 'id')]];
         foreach ($report['attempts'] as &$run) {
             $run['verification'] = self::verify($run, $report['protocol']['question']);
             $run['usage'] = ClaudeUsage::summarize($run['usageRows']);
@@ -183,18 +194,42 @@ final class ClaudeAuditProof
             foreach ($run['sourceSha256'] as $path => $hash) {
                 $run['currentSourceMatches'] = $run['currentSourceMatches'] && is_file($root.'/'.$path) && hash_file('sha256', $root.'/'.$path) === $hash;
             }
-            foreach (['sourceSha256', 'datasetSha256', 'limits', 'identity', 'runtime'] as $key) {
+            foreach (['datasetSha256', 'limits', 'identity', 'runtime'] as $key) {
                 $matched = $matched && $run[$key] === $first[$key];
             }
             foreach (['version', 'model', 'effort', 'permissionMode', 'builtInTools', 'strictMcpConfig', 'enableToolSearch', 'alwaysLoad'] as $key) {
                 $matched = $matched && $run['client'][$key] === $first['client'][$key];
             }
-            $matched = $matched && $run['verification']['checks']['sameSingleQuestion'] && self::contracts($run) === self::contracts($first);
+            $matched = $matched && $run['verification']['checks']['sameSingleQuestion'] && self::constraints(self::contracts($run)) === self::constraints(self::contracts($first));
             $turn = $run['turns'][0];
             $run['durationSeconds'] = isset($turn['answeredAt']) ? (float) (new \DateTimeImmutable($turn['answeredAt']))->format('U.u') - (float) (new \DateTimeImmutable($turn['askedAt']))->format('U.u') : null;
         }
         unset($run);
+        $byId = array_column($report['attempts'], null, 'id');
+        $assigned = [];
+        foreach ($report['iterations'] as &$iteration) {
+            $runs = array_values(array_intersect_key($byId, array_flip($iteration['attemptIds'])));
+            $iteration['matched'] = 4 === \count($runs) && $iteration['attemptIds'] === array_column($runs, 'id') && $iteration['order'] === array_column($runs, 'arm');
+            foreach ($runs as $run) {
+                $iteration['matched'] = $iteration['matched'] && $run['sourceSha256'] === $runs[0]['sourceSha256'] && self::contracts($run) === self::contracts($runs[0]);
+                $assigned[] = $run['id'];
+            }
+            $matched = $matched && $iteration['matched'];
+        }
+        unset($iteration);
+        foreach ($report['attempts'] as &$run) {
+            foreach ($report['iterations'] as $iteration) {
+                if (\in_array($run['id'], $iteration['attemptIds'], true)) {
+                    $run['iterationId'] = $iteration['id'];
+                    $run['iterationLabel'] = $iteration['label'];
+                }
+            }
+        }
+        unset($run);
+        $matched = $matched && $assigned === array_column($report['attempts'], 'id') && \count($assigned) === \count(array_unique($assigned));
         $report['matched'] = $matched;
+        $report['fieldSelection'] = json_decode(file_get_contents($root.'/docs/evidence/field-selection.json'), true, flags: \JSON_THROW_ON_ERROR);
+        $report['fieldSelectionPair'] = FieldSelection\ClaudePair::load($root, $report['protocol']['question']);
         $report['implementation'] = [];
         foreach (['Tools', 'Access', 'Gateway'] as $class) {
             $path = 'src/Demo/AuditMatrix/'.$class.'.php';
@@ -202,6 +237,19 @@ final class ClaudeAuditProof
         }
 
         return $report;
+    }
+
+    /** Descriptive corrections may change; validation and allowed argument shapes may not. */
+    private static function constraints(array $value): array
+    {
+        unset($value['description']);
+        foreach ($value as &$item) {
+            if (\is_array($item)) {
+                $item = self::constraints($item);
+            }
+        }
+
+        return $value;
     }
 
     private static function expectedRead(array $call): ?array

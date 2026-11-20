@@ -1,8 +1,8 @@
 # Symfony Code Mode integration
 
-Register approved Symfony tools and expose a stable JSON catalog through **normal Symfony HTTP requests**. Symfony AI supplies existing schemas and handler execution; Symfony Security supplies the authenticated user. The broker checks permissions and schemas on every call. No worker, Docker or process-control extensions are needed for JSON.
+Expose two MCP tools from an ordinary Symfony HTTP endpoint. `search_tools` returns the contracts visible to the authenticated user. `execute_tools` accepts literal JSON, checks the current permissions, arguments and budget, and dispatches the approved calls. Symfony AI supplies the tool schemas and invokes the installed handlers.
 
-The [independent Symfony application](../../examples/symfony/README.md) is the runnable quickstart. Its detached fresh-install capture verifies authorized/denied reads, permission revocation and budgets that survive reconnects and restarts. Packages currently use Composer path repositories; they are not published to Packagist.
+Start with the [independent Symfony application](../../examples/symfony/README.md) to run the catalog or connect an agent. To add a tool, [generate its service, voter, registration and test](#native-symfony-development), then implement the handler and its access rules. These packages install from this repository using Composer path repositories. The [earlier PHP execution mode](#generated-php-runtime) has its own gVisor runtime.
 
 ## Enable HTTP
 
@@ -119,6 +119,35 @@ A `ReadToolInterface` service supplies:
 
 The identity provider is trusted application code. Our example selects a local CLI demonstration account, which is **not remote authentication**. A production host must authenticate its operator/user and supply the appropriate capabilities. Never take the identity, permissions, service IDs or Docker command from agent input. The read-only interface/annotations describe a trusted operator contract; they cannot make an arbitrary PHP handler read-only. Review approved handlers.
 
+## Select fields from list readers
+
+When a Symfony AI list reader returns wide rows, configure its provider to accept an optional `fields` argument. This example registers the existing `publishing_list` Symfony AI tool under the MCP name `articles.page`. The publishing toolbox and authorization policy are application services.
+
+```yaml
+# config/services.yaml
+services:
+    app.approved_articles:
+        class: CodeMode\Symfony\Ai\ApprovedToolbox
+        arguments: ['@app.publishing_toolbox', [publishing_list], '@App\CodeMode\PublishingAuthorization']
+
+    app.articles_provider:
+        class: CodeMode\Symfony\Provider\SymfonyAiProvider
+        arguments:
+            $namespace: articles
+            $toolbox: '@app.approved_articles'
+            $methods: { page: publishing_list }
+            $selectableFields: { publishing_list: [id, title, meta_description] }
+            $limits: '@code_mode.limits'
+
+# config/packages/code_mode.yaml (add to your existing configuration)
+code_mode:
+    providers: [app.articles_provider]
+```
+
+After discovery, calling `articles.page` with `{"page":1,"fields":["id"]}` returns each visible row with just its `id` and preserves the surrounding pagination metadata. Omitting `fields` returns the full rows. Selectable names appear in discovery, so configure only names you intend every user of that reader to discover. The original reader controls which records and values the user can access. A field withheld from an authorized row stays absent even when selected.
+
+The decorator accepts readers with ordinary object arguments and an object result containing an `items` array of objects. Each selected name identifies one top-level row key. The decorator strips the selector when calling the original policy and handler. Full reader output must fit the session’s per-tool byte limit before selection. The original Symfony AI tool validates any declared full output schema first. Field selection reduces the response sent to clients. The underlying handler still performs the full read.
+
 ## Compose tool providers
 
 To combine approved Symfony AI tools and an MCP service, register providers explicitly:
@@ -135,7 +164,7 @@ Discovery still returns full schemas. Selected calls can use `$tools->catalog->g
 
 The generic provider contract and MCP adapter live in the PHP core; the Symfony AI adapter stays in this bundle. Other PHP applications can use the core independently of the demo.
 
-## Historical generated-PHP runtime
+## Generated PHP runtime
 
 Use the [runner setup](../php-code-mode/README.md#sandboxed-php) on a dedicated Linux Docker endpoint with gVisor. On macOS a local Linux VM can supply that endpoint; ordinary Docker Desktop/OrbStack alone is insufficient. In ignored `.env.local`:
 

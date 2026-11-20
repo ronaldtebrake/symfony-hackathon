@@ -7,6 +7,9 @@ namespace App\Demo;
 /** Verify retained HTTP messages; no network, credentials or tool execution in the viewer. */
 final class HttpCatalogProof
 {
+    // Original HTTP fixture used in the retained model runs, film and schema measurements.
+    private const RECORDED_SHA256 = '0f80da5915864e447c871faae602885262359e272a90b5f42ccdb27f946a5d56';
+
     public static function verify(array $report): array
     {
         $calls = array_column($report['calls'] ?? [], null, 'label');
@@ -62,11 +65,37 @@ final class HttpCatalogProof
         return ['passed' => !\in_array(false, $checks, true), 'checks' => $checks];
     }
 
-    public static function load(string $root): array
+    public static function historical(string $root): array
     {
         $raw = file_get_contents($root.'/docs/evidence/http-catalog-proof.json');
+        if (self::RECORDED_SHA256 !== hash('sha256', $raw)) {
+            throw new \UnexpectedValueException('The historical HTTP fixture differs from its recorded digest.');
+        }
+        $capture = json_decode($raw, true, 64, \JSON_THROW_ON_ERROR);
+
+        return ['capture' => $capture, 'verification' => self::verify($capture), 'captureSha256' => self::RECORDED_SHA256];
+    }
+
+    /** Validate a retained model run against the source revision it actually exercised. */
+    public static function verifyRunRevision(string $root, array $run): array
+    {
+        $hashes = $run['sourceSha256'] ?? [];
+        $historical = $hashes === self::historical($root)['capture']['sourceSha256'];
+        $current = self::checkoutSources($root);
+        $run['historicalSourceMatches'] = $historical;
+        $run['currentSourceMatches'] = $hashes === $current || ($historical && [] === array_diff_assoc($hashes, $current));
+        $run['verification']['checks']['reviewedSourceRevision'] = $historical || $run['currentSourceMatches'];
+        $run['verification']['passed'] = $run['verification']['passed'] && $run['verification']['checks']['reviewedSourceRevision'];
+
+        return $run;
+    }
+
+    public static function load(string $root): array
+    {
+        $raw = file_get_contents($root.'/docs/evidence/http-catalog-current.json');
         $capture = json_decode($raw, true, 64, \JSON_THROW_ON_ERROR);
         $verification = self::verify($capture);
+        $verification['checks']['installedSourceMatchesCheckout'] = ($capture['sourceSha256'] ?? []) === self::checkoutSources($root);
         $implementation = [];
         foreach (['handler' => 'ArticleTool.php', 'policy' => 'ArticleVoter.php', 'controller' => 'ArticleController.php'] as $role => $file) {
             $path = 'examples/symfony/src/'.$file;
@@ -74,15 +103,14 @@ final class HttpCatalogProof
             $implementation[$role] = ['path' => $path, 'source' => $source, 'sha256' => hash('sha256', $source)];
             $verification['checks'][$role.'SourceMatchesCapture'] = $implementation[$role]['sha256'] === ($capture['sourceSha256']['src/'.$file] ?? null);
         }
-        foreach ($capture['sourceSha256'] as $path => $hash) {
-            $current = str_starts_with($path, 'vendor/ronaldtebrake/')
-                ? $root.'/packages/'.substr($path, \strlen('vendor/ronaldtebrake/'))
-                : $root.'/examples/symfony/'.$path;
-            $verification['checks']['source:'.$path] = is_file($current) && hash_file('sha256', $current) === $hash;
-        }
         $verification['passed'] = !\in_array(false, $verification['checks'], true);
 
         return ['status' => $verification['passed'] ? 'passed' : 'failed', 'capture' => $capture,
             'captureSha256' => hash('sha256', $raw), 'verification' => $verification, 'implementation' => $implementation];
+    }
+
+    private static function checkoutSources(string $root): array
+    {
+        return (require $root.'/examples/symfony/scripts/http-sources.php')($root.'/examples/symfony', $root.'/packages');
     }
 }

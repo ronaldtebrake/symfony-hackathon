@@ -3,28 +3,70 @@ const chapters = [...document.querySelectorAll('#documentation > section')];
 const chapterLinks = [...document.querySelectorAll('.docs-nav a')];
 function openChapter() {
   const requested = decodeURIComponent(location.hash.slice(1));
-  const aliases = {'codex-run': 'agent-run', 'version-one': 'journey', 'version-two': 'journey'};
+  const aliases = {'catalog-tour': 'article-tour', 'editorial-review': 'demo-tour', 'codex-run': 'agent-run', 'version-one': 'journey', 'version-two': 'journey'};
   const id = aliases[requested] ?? (requested || 'overview');
   const target = document.getElementById(id);
   const chapter = chapters.find((item) => item === target || item.contains(target)) ?? chapters[0];
   chapters.forEach((item) => { item.hidden = item !== chapter; });
+  document.querySelectorAll('.doc-page[hidden] video').forEach(film => {
+    if (!film.paused) film.pause();
+  });
+  chapter.parentElement.dataset.ready = 'true';
   chapterLinks.forEach((link) => {
     if (link.hash === `#${chapter.id}`) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   });
   document.title = `${chapter.querySelector('h1,h2')?.innerText.replace(/\s+/g, ' ').trim()} · Symfony Code Mode`;
-  window.scrollTo({top: 0, behavior: 'instant'});
+  if (target && target !== chapter && chapter.contains(target)) {
+    for (let group = target.closest('details'); group; group = group.parentElement.closest('details')) {
+      group.open = true;
+    }
+    target.scrollIntoView({behavior: 'instant'});
+  } else window.scrollTo({top: 0, behavior: 'instant'});
 }
 window.addEventListener('hashchange', openChapter);
 openChapter();
+for (const link of document.querySelectorAll('[data-play-demo]')) {
+  link.addEventListener('click', event => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    location.hash = link.hash;
+    openChapter();
+    const film = document.getElementById('reviewer-film');
+    film.focus();
+    film.play().catch(() => { /* The viewer can still use the native play control. */ });
+  });
+}
 if (document.documentElement.dataset.static === 'true') {
   document.querySelectorAll('a[href^="/demo/"]').forEach((link) => { link.href = evidenceUrl(link.getAttribute('href')); });
+}
+
+// Chapter controls follow the cuts in each published film manifest.
+for (const manifest of document.querySelectorAll('[data-film-chapters]')) {
+  const section = manifest.closest('section');
+  const menu = manifest.closest('.video-links').querySelector('select');
+  const film = section.querySelector('video');
+  fetch(manifest.href).then(response => {
+    if (!response.ok) throw new Error('Film chapters unavailable');
+    return response.json();
+  }).then(({chapters}) => {
+    for (const {start, title} of chapters) {
+      const time = `${Math.floor(start / 60)}:${String(start % 60).padStart(2, '0')}`;
+      menu.add(new Option(`${time} · ${title}`, String(start)));
+    }
+    menu.addEventListener('change', () => { film.currentTime = Number(menu.value); });
+    film.addEventListener('timeupdate', () => {
+      const chapter = chapters.findLast(({start}) => start <= film.currentTime);
+      if (chapter) menu.value = String(chapter.start);
+    });
+    menu.closest('label').hidden = false;
+  }).catch(() => { /* Native controls still allow seeking without chapter metadata. */ });
 }
 
 // This guide consumes the same reviewed evidence as the detailed inspectors.
 // It never invokes a model, MCP endpoint or PHP executor.
 const demoShots = [
-  {kind:19, start:0, end:12, time:'00:00–00:12', label:'Connect through MCP', title:'Your agent. Your Symfony application.', source:'Illustrated product flow · separate schema measurement', href:'#quickstart', caption:'Symfony Code Mode is a reusable MCP catalog inside your Symfony application. An AI agent connects over MCP/HTTP to search_tools and execute_tools; JSON calls reach approved services and Symfony checks access. The second half shows why discovery matters: a synthetic catalog grows from 10 to 100 tools while the two advertised entry schemas stay at 239 tokens. This measures schema footprint, not total conversation usage.'},
+  {kind:19, start:0, end:12, time:'00:00–00:12', label:'Find an article', title:'Find an article with two MCP tools', source:'Illustrated lookup · separate schema measurement', href:'?client=symfony-ai#native-rehearsal', caption:'A reader wants the title of article 101. The agent searches for a tool the reader may use, then asks Symfony to execute the read. In a separate fixture with 10 and 100 approved tools, the two advertised tool definitions used 239 tokens in both cases.'},
   {kind:17, start:12, end:16, time:'00:12–00:16', label:'From PHP to JSON', title:'Easier to adopt in Symfony.', source:'Design journey · existing implementations', href:'#journey', caption:'Sandboxed PHP in gVisor enabled computation near the tools. JSON calls to installed handlers made adoption possible over ordinary Symfony HTTP. Discovery now builds on a proposed Symfony AI BM25 component, through a pinned, attributed adapter. Approved tools and application permissions remain central.'},
   {kind:13, start:16, end:20, time:'00:16–00:20', label:'Generate a tool', title:'One Maker command. Four files.', source:'Actual command output · separate development copy', href:'#quickstart', caption:'make:code-mode-tool InventoryLookup creates a native Symfony AI tool, a voter, explicit registration and a security test. The generated voter test passes. The scaffold stays hidden and denied until you implement access. This is a separate example from the article tool in the recording.'},
   {kind:9, start:20, end:48, time:'00:20–00:48', label:'Discover and read', title:'A real question. A real Symfony tool.', source:'Original agent recording · synthetic article 101', href:'#native-rehearsal', caption:'The user asks for the title of published article 101. The agent discovers publication_read and sends its ID as JSON. Symfony returns “A Symfony application owns its tools”. The actual tool request and response are opened on screen. Seven seconds of waiting are visibly trimmed.'},
@@ -90,7 +132,7 @@ function showDemoShot() {
     }
     content.append(proofLink('#native-rehearsal', 'Inspect full source and HTTP calls →'), node('p', 'Source from this documentation build. Symfony AI registers publication_read through AsTool; the explicit allowlist selects it. The agent supplies JSON arguments.', 'measurement-note'));
   } else if ([15, 19].includes(kind)) {
-    if (kind === 19) content.append(node('p', 'An MCP client connects to Symfony Code Mode inside your application over authenticated HTTP. search_tools retrieves approved contracts for the current user; execute_tools invokes installed services with JSON arguments. Symfony checks access on every call.'), node('p', 'The opening illustrates that connection. The following measurement explains why the advertised interface stays small as the approved catalog grows.'));
+    if (kind === 19) content.append(node('p', 'For article 101, search_tools returns the publication_read contract. The agent sends the article ID to execute_tools. Symfony checks the reader’s permission before invoking the handler.'), node('p', 'The chart shows what the agent sees at discovery time as a separate synthetic catalog grows. It still has to retrieve the contract it needs.'));
     if (typeof catalogScalingEvidence === 'undefined' || !catalogScalingEvidence) { content.append(node('p', 'Current schema measurement is loading.')); return; }
     content.append(scalingTable(catalogScalingEvidence), node('p', 'Offline o200k_harmony counts of one tools/list JSON result. The two contracts match the actual HTTP capture. Synthetic four-field tools; no model or handler runs. The retrieved contract is an additional search response, not included in the advertised-list count.', 'measurement-note'), proofLink('#catalog-cost', 'Explore the scaling visual →'), node('p', 'Total conversation cost still includes retrieved contracts, task data, history and output. Client conversion and caching affect billing.'), proofLink('#three-way', 'Same findings. Fewer tokens: the separate live audit →'));
   } else if (kind === 17) {
@@ -164,3 +206,30 @@ byId('tour-next').addEventListener('click', () => selectDemoShot(demoShot + 1));
 document.addEventListener('proof-evidence-changed', () => { showCostEstimate(); showDemoShot(); });
 showCostEstimate();
 showDemoShot();
+
+const workflowReceipts = byId('workflow-receipts');
+workflowReceipts.addEventListener('toggle', async () => {
+  if (!workflowReceipts.open || workflowReceipts.dataset.loaded) return;
+  const output = byId('workflow-evidence');
+  workflowReceipts.dataset.loaded = 'true';
+  output.textContent = 'Loading the recorded calls…';
+  try {
+    const response = await fetch(evidenceUrl('/demo/skills-proof'));
+    if (!response.ok) throw new Error('Evidence unavailable');
+    const {agent, security} = await response.json();
+    const trial = agent.attempts.find(attempt => attempt.protocol.providerRoute === 'novita');
+    const arm = trial.arms.find(run => run.arm === 'skill');
+    const denied = security.httpIdentityAndRevocation.sameCallAfterRevoke;
+    output.replaceChildren(
+      node('h3', 'The agent answered'),
+      node('blockquote', arm.answer, 'tour-question'),
+      node('p', `Symfony AI · Hugging Face / ${trial.protocol.providerRoute} · ${arm.requests.provider} model requests · ${number(arm.tokens.total)} provider tokens`),
+      catalogDetails('Text skill received from Symfony', sourceBlock(arm.hostCalls.find(call => call.method === 'resources/read').reply.result.contents[0].text)),
+      catalogDetails('Agent-selected tool calls and results', sourceBlock(JSON.stringify(arm.calls, null, 2))),
+      catalogDetails('Separate HTTP check: the same read after revocation', sourceBlock(JSON.stringify(denied, null, 2)))
+    );
+  } catch {
+    delete workflowReceipts.dataset.loaded;
+    output.textContent = 'The recorded calls could not be loaded. Reopen to retry or download the evidence below.';
+  }
+});

@@ -47,7 +47,6 @@ fetch(evidenceUrl('/demo/catalog-scaling'), {cache:'no-store'}).then(response =>
   size.addEventListener('change', renderScalingSelection);
   renderScalingChart(report); renderScalingSelection();
   byId('scaling-table').replaceChildren(scalingTable(report));
-  byId('overview-schema-count').textContent = `${report.samples[0].catalog.tokens} advertised-schema tokens`;
   byId('scaling-state').textContent = 'Current HTTP contracts · offline measurement';
   if (typeof showDemoShot === 'function') showDemoShot();
 }).catch(() => { byId('scaling-state').textContent = 'Measurement unavailable — inspect the retained evidence'; });

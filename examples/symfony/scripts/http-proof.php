@@ -198,10 +198,7 @@ try {
         'rootAutoloaderPresent' => is_file($app.'/../../vendor/autoload.php'), 'pathRepositorySourcesPresent' => is_dir($app.'/../../packages'),
         'disabledFunctions' => explode(',', $disabled), 'phpVersion' => \PHP_VERSION, 'osFamily' => \PHP_OS_FAMILY];
     $report['discovery'] = ['component' => (new CodeMode\Symfony\Ai\Search\SymfonyCatalogSearch())->component(), 'query' => 'publications', 'scope' => 'The ordinary catalog uses the Symfony AI BM25 adapter. This plural query matches publication_read through normalization. No model called.'];
-    $report['sourceSha256'] = [];
-    foreach (['src/ArticleVoter.php', 'src/ArticleController.php', 'src/DemoReaderAccess.php', 'src/ReaderAccessCommand.php', 'scripts/http-proof.php', 'src/ArticleTool.php', 'src/DemoTokenHandler.php', 'public/index.php', 'config/services.php', 'config/routes.php', 'config/bundles.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Http/SecurityIdentityProvider.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Security/VoterToolPolicy.php', 'vendor/ronaldtebrake/symfony-code-mode/src/CodeModeBundle.php', 'vendor/ronaldtebrake/php-code-mode/src/BatchSession.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogTools.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogStateStore.php', 'vendor/ronaldtebrake/php-code-mode/src/ToolCatalog.php', 'vendor/ronaldtebrake/php-code-mode/src/CatalogSearchInterface.php', 'vendor/ronaldtebrake/symfony-code-mode/src/SessionFactory.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Ai/Search/SymfonyCatalogSearch.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Ai/Search/Upstream/Bm25ToolSearch.php', 'vendor/ronaldtebrake/symfony-code-mode/src/Ai/Search/Upstream/ToolSearchInterface.php'] as $source) {
-        $report['sourceSha256'][$source] = hash_file('sha256', $app.'/'.$source);
-    }
+    $report['sourceSha256'] = (require $app.'/scripts/http-sources.php')($app);
     $report['status'] = 'passed';
 } catch (Throwable $error) {
     $report['status'] = 'failed';

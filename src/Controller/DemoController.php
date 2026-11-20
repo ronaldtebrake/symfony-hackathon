@@ -36,6 +36,78 @@ final readonly class DemoController
         return $this->response(json_encode(\App\Demo\CatalogScalingProof::load($this->projectDir), \JSON_THROW_ON_ERROR), 'application/json');
     }
 
+    #[Route('/demo/skills-proof', name: 'app_skills_proof', methods: ['GET'])]
+    public function skillsProof(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+        $evidence = $this->projectDir.'/docs/evidence/';
+        $report = [
+            'http' => json_decode(file_get_contents($evidence.'skills-http.json'), true, flags: \JSON_THROW_ON_ERROR),
+            'sameKernel' => json_decode(file_get_contents($evidence.'skills-kernel-reuse.json'), true, flags: \JSON_THROW_ON_ERROR),
+            'agent' => json_decode(file_get_contents($evidence.'skills-agent.json'), true, flags: \JSON_THROW_ON_ERROR),
+            'security' => json_decode(file_get_contents($evidence.'workflow-security.json'), true, flags: \JSON_THROW_ON_ERROR),
+        ];
+        \App\Demo\Skills\AccessProof::verify($report['http'], file_get_contents($this->projectDir.'/examples/symfony/skills/read-published-article/SKILL.md'));
+
+        return $this->response(json_encode($report, \JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES | \JSON_PRETTY_PRINT), 'application/json');
+    }
+
+    #[Route('/demo/editorial-review', name: 'app_editorial_review', methods: ['GET'])]
+    public function editorialReview(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+
+        return $this->response(file_get_contents($this->projectDir.'/docs/evidence/editorial-review.json'), 'application/json');
+    }
+
+    #[Route('/demo/editorial-review-agent', name: 'app_editorial_review_agent', methods: ['GET'])]
+    public function editorialReviewAgent(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+
+        return $this->response(file_get_contents($this->projectDir.'/docs/evidence/editorial-review-agent.json'), 'application/json');
+    }
+
+    #[Route('/demo/editorial-audit-replay', name: 'app_editorial_audit_replay', methods: ['GET'])]
+    public function editorialAuditReplay(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+
+        return $this->response(file_get_contents($this->projectDir.'/docs/evidence/editorial-audit-replay.json'), 'application/json');
+    }
+
+    #[Route('/demo/editorial-groups', name: 'app_editorial_groups', methods: ['GET'])]
+    public function editorialGroups(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+
+        return $this->response(file_get_contents($this->projectDir.'/docs/evidence/editorial-groups.json'), 'application/json');
+    }
+
+    #[Route('/demo/refund-protocol', name: 'app_refund_protocol', methods: ['GET'])]
+    public function refundProtocol(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+
+        return $this->response(file_get_contents($this->projectDir.'/docs/evidence/refund-protocol.json'), 'application/json');
+    }
+
+    #[Route('/demo/refund-skill', name: 'app_refund_skill', methods: ['GET'])]
+    public function refundSkill(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+
+        return $this->response(file_get_contents($this->projectDir.'/docs/evidence/refund-skill.json'), 'application/json');
+    }
+
+    #[Route('/demo/editorial-groups-footprint', name: 'app_editorial_groups_footprint', methods: ['GET'])]
+    public function editorialGroupsFootprint(Request $request): Response
+    {
+        $this->requireLocalRequest($request);
+
+        return $this->response(file_get_contents($this->projectDir.'/docs/evidence/editorial-groups-footprint.json'), 'application/json');
+    }
+
     #[Route('/demo/report', name: 'app_demo_report', methods: ['GET'])]
     public function report(Request $request): Response
     {
@@ -272,12 +344,13 @@ final readonly class DemoController
         return $this->response(json_encode((new \App\Demo\ResponsePayloadComparison($this->projectDir))->report(), \JSON_THROW_ON_ERROR), 'application/json');
     }
 
-    #[Route('/images/code-mode-value.svg', name: 'app_value_explainer', methods: ['GET'])]
-    public function explainer(Request $request): Response
+    #[Route('/images/code-mode-value.svg', name: 'app_value_explainer', defaults: ['file' => 'code-mode-value.svg'], methods: ['GET'])]
+    #[Route('/images/symfony-mcp-architecture.svg', name: 'app_mcp_architecture', defaults: ['file' => 'symfony-mcp-architecture.svg'], methods: ['GET'])]
+    public function explainer(Request $request, string $file): Response
     {
         $this->requireLocalRequest($request);
 
-        return $this->response(file_get_contents($this->projectDir.'/docs/images/code-mode-value.svg'), 'image/svg+xml');
+        return $this->response(file_get_contents($this->projectDir.'/docs/images/'.$file), 'image/svg+xml');
     }
 
     #[Route('/media/{file}', name: 'app_demo_media', methods: ['GET'])]
@@ -285,6 +358,8 @@ final readonly class DemoController
     {
         $this->requireLocalRequest($request);
         $types = [
+            'server-code-mode-90s.mp4' => 'video/mp4', 'server-code-mode-poster.jpg' => 'image/jpeg', 'server-code-mode-film.json' => 'application/json',
+            'editorial-review-90s.mp4' => 'video/mp4', 'editorial-review-poster.jpg' => 'image/jpeg', 'editorial-review-film.json' => 'application/json',
             'symfony-native-tools-demo-90s.mp4' => 'video/mp4',
             'symfony-native-tools-poster.jpg' => 'image/jpeg',
             'profiler-authorized.png' => 'image/png', 'profiler-denied.png' => 'image/png',

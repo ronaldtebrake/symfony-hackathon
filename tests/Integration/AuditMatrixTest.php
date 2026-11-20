@@ -7,6 +7,7 @@ namespace App\Tests\Integration;
 use App\Demo\AuditMatrix\Gateway;
 use App\Demo\AuditMatrix\Kernel;
 use App\Demo\AuditMatrix\Tools;
+use App\Demo\Groups\PublishingGroups;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
@@ -18,10 +19,10 @@ final class AuditMatrixTest extends TestCase
     // Disposable kernels must not inflate the heap inherited by later 64 MiB broker tests.
     #[RunInSeparateProcess]
     #[PreserveGlobalState(false)]
-    public function testBothHttpSurfacesUseTheSameContractsAndDenyRestrictedReads(): void
+    public function testHandshakeClientsKeepCatalogAccessAndRestrictedReadsStayDenied(): void
     {
         $contracts = [];
-        foreach (['direct', 'catalog'] as $surface) {
+        foreach (['direct', 'catalog', 'groups'] as $surface) {
             $directory = sys_get_temp_dir().'/matrix-test-'.bin2hex(random_bytes(8));
             $fs = new Filesystem();
             $fs->mkdir($directory, 0700);
@@ -49,13 +50,16 @@ final class AuditMatrixTest extends TestCase
             };
             try {
                 $this->assertSame(401, $send('tools/list', [], 'invalid')['status']);
-                $this->assertSame(200, $send('initialize', ['protocolVersion' => '2025-06-18', 'capabilities' => new \stdClass(), 'clientInfo' => ['name' => 'operator-test', 'version' => '1']], $token)['status']);
+                $handshake = $send('initialize', ['protocolVersion' => '2025-06-18', 'capabilities' => new \stdClass(), 'clientInfo' => ['name' => 'operator-test', 'version' => '1']], $token);
+                $this->assertSame(200, $handshake['status']);
+                $this->assertSame('2025-06-18', $handshake['body']['result']['protocolVersion']);
+                $this->assertArrayNotHasKey(PublishingGroups::ID, $handshake['body']['result']['capabilities']['extensions'] ?? []);
                 $list = $send('tools/list', [], $token);
                 $this->assertSame(200, $list['status'], json_encode($list));
                 $this->assertSame('direct' === $surface ? Tools::NAMES : ['search_tools', 'execute_tools'], array_column($list['body']['result']['tools'], 'name'));
                 $gateway = $kernel->getContainer()->get(Gateway::class);
                 $contracts[$surface] = json_decode(json_encode($gateway->contracts()), true);
-                if ('catalog' === $surface) {
+                if ('direct' !== $surface) {
                     $discovery = $send('tools/call', ['name' => 'search_tools', 'arguments' => ['query' => '']], $token);
                     $this->assertCount(3, $discovery['body']['result']['structuredContent']['tools']);
                 }
@@ -75,7 +79,7 @@ final class AuditMatrixTest extends TestCase
                 $this->assertStringNotContainsString('Designing accessible navigation', json_encode($revoked));
                 $hidden = $send('tools/list', [], $token)['body']['result']['tools'];
                 $this->assertSame('direct' === $surface ? [] : ['search_tools', 'execute_tools'], array_column($hidden, 'name'));
-                if ('catalog' === $surface) {
+                if ('direct' !== $surface) {
                     $this->assertSame([], $send('tools/call', ['name' => 'search_tools', 'arguments' => ['query' => '']], $token)['body']['result']['structuredContent']['tools']);
                 }
                 $fs->dumpFile($directory.'/permission', "granted\n");

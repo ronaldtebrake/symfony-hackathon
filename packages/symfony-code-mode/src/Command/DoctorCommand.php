@@ -42,9 +42,9 @@ final class DoctorCommand extends Command
         if ($batch) {
             $check('JSON', static fn () => \extension_loaded('json'), 'JSON available; no process-control extensions required', 'Enable JSON.');
         } else {
-            $check('Historical PHP runtime', static fn () => 'cli' === \PHP_SAPI && \extension_loaded('json') && \extension_loaded('pcntl') && \extension_loaded('posix')
+            $check('PHP runner host', static fn () => 'cli' === \PHP_SAPI && \extension_loaded('json') && \extension_loaded('pcntl') && \extension_loaded('posix')
                 && !array_filter(['pcntl_fork', 'pcntl_waitpid', 'pcntl_alarm', 'pcntl_signal', 'posix_setsid', 'posix_kill', 'stream_socket_pair'], static fn ($function) => !\function_exists($function)),
-                'Unix CLI supervisor available for the historical gVisor path', 'The historical generated-PHP path requires Unix CLI, pcntl, posix and enabled process supervision functions.');
+                'Unix CLI supervisor available for gVisor', 'The PHP runner requires Unix CLI, pcntl, posix and enabled process supervision functions.');
         }
         $check('Approved tools', fn () => \count($this->sessions->catalog()->all()) > 0, 'Explicit tool services form a valid, bounded catalog', 'Configure approved read services or a Symfony AI toolbox with explicit names and authorization.');
         if (!$batch) {

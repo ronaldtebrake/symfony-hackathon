@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CodeMode;
 
+use Mcp\Schema\Tool as McpTool;
+
 /** Metadata from an upstream tool service. Treat descriptions and schemas as untrusted data. */
 final readonly class ToolDefinition implements \JsonSerializable
 {
@@ -14,6 +16,14 @@ final readonly class ToolDefinition implements \JsonSerializable
             || \strlen(json_encode([$inputSchema, $outputSchema], \JSON_THROW_ON_ERROR, 32)) > 32768) {
             throw new \InvalidArgumentException('Tool metadata exceeds the supported bounds.');
         }
+    }
+
+    /** Import the SDK's normalized contracts, applying the same bounds as local definitions. */
+    public static function fromMcpTool(McpTool $tool): self
+    {
+        $asObject = static fn (array $schema): \stdClass => json_decode(json_encode((object) $schema, \JSON_THROW_ON_ERROR, 32), false, 32, \JSON_THROW_ON_ERROR);
+
+        return new self($tool->name, $tool->description ?? '', $asObject($tool->inputSchema), null === $tool->outputSchema ? null : $asObject($tool->outputSchema));
     }
 
     public function jsonSerialize(): array

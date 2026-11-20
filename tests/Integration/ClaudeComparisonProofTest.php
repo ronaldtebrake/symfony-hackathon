@@ -20,7 +20,8 @@ final class ClaudeComparisonProofTest extends TestCase
         $this->assertSame([7, 6], array_column(array_column($report['attempts'], 'usage'), 'requests'));
         $this->assertSame([1, 0], array_column(array_column($report['attempts'], 'usage'), 'duplicateRowsExcluded'));
         foreach ($report['attempts'] as $run) {
-            $this->assertTrue($run['currentSourceMatches']);
+            $this->assertTrue($run['historicalSourceMatches']);
+            $this->assertFalse($run['currentSourceMatches']);
             $this->assertTrue($run['verification']['passed']);
             $this->assertTrue($run['usage']['complete']);
             $this->assertSame($run['usage']['uncachedInput'] + $run['usage']['cacheWrite'] + $run['usage']['cacheRead'] + $run['usage']['output'], $run['usage']['total']);

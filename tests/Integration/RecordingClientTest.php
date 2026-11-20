@@ -7,6 +7,7 @@ namespace App\Tests\Integration;
 use App\Demo\HttpConversation\RecordingClient;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
@@ -76,16 +77,35 @@ final class RecordingClientTest extends TestCase
         }
     }
 
-    private function client(string $directory): RecordingClient
+    #[DataProvider('unexpectedResults')]
+    public function testRejectsAnUnexpectedResponseBeforeTheBridgeCanUseIt(string $method, array $result): void
     {
-        $inner = new class implements ClientInterface {
+        $this->expectException(\UnexpectedValueException::class);
+        $this->client(sys_get_temp_dir(), $method, $result);
+    }
+
+    public static function unexpectedResults(): iterable
+    {
+        yield 'extra catalog page' => ['tools/list', ['tools' => [], 'nextCursor' => 'next']];
+        yield 'different structured and text results' => ['tools/call', ['content' => [['type' => 'text', 'text' => '{"count":1}']], 'structuredContent' => ['count' => 2]]];
+        yield 'extra unchecked content block' => ['tools/call', ['content' => [['type' => 'text', 'text' => '{}'], ['type' => 'text', 'text' => 'extra']], 'structuredContent' => (object) []]];
+    }
+
+    private function client(string $directory, string $method = 'tools/call', ?array $result = null): RecordingClient
+    {
+        $body = json_encode(['jsonrpc' => '2.0', 'id' => 1, 'result' => $result ?? ['content' => [['type' => 'text', 'text' => '{}']], 'structuredContent' => (object) []]], \JSON_THROW_ON_ERROR);
+        $inner = new class($body) implements ClientInterface {
+            public function __construct(private readonly string $body)
+            {
+            }
+
             public function sendRequest(RequestInterface $request): ResponseInterface
             {
-                return new Response(200, ['X-Debug-Token' => 'abcdef'], '{"jsonrpc":"2.0","id":1,"result":{"content":[],"isError":false}}');
+                return new Response(200, ['X-Debug-Token' => 'abcdef'], $this->body);
             }
         };
         $client = new RecordingClient($inner, $directory);
-        $client->sendRequest(new Request('POST', 'http://localhost/mcp', body: '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"search_tools","arguments":{"query":""}}}'));
+        $client->sendRequest(new Request('POST', 'http://localhost/mcp', body: json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => $method], \JSON_THROW_ON_ERROR)));
 
         return $client;
     }

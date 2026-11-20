@@ -77,6 +77,13 @@ final class DocumentationBuildTest extends TestCase
         $this->assertStringNotContainsString('href="/demo', $html);
         $this->assertStringNotContainsString('Codex', $html);
         $this->assertStringContainsString('Content-Security-Policy', $html);
+        $this->assertStringContainsString('href="evidence/editorial-review.json"', $html);
+        $this->assertStringContainsString('href="evidence/editorial-review-agent.json"', $html);
+        $this->assertStringContainsString('src="editorial-review.js"', $html);
+        $this->assertStringContainsString('src="media/server-code-mode-90s.mp4"', $html);
+        $this->assertStringContainsString('poster="media/server-code-mode-poster.jpg"', $html);
+        $this->assertStringContainsString('src="media/editorial-review-90s.mp4?v=11"', $html);
+        $this->assertStringContainsString('poster="media/editorial-review-poster.jpg?v=11"', $html);
         $this->assertStringContainsString('src="media/symfony-native-tools-demo-90s.mp4"', $html);
         $this->assertStringContainsString('poster="media/symfony-native-tools-poster.jpg"', $html);
         $this->assertStringNotContainsString('="/media/', $html);
@@ -86,35 +93,79 @@ final class DocumentationBuildTest extends TestCase
             $this->assertStringNotContainsString('unused-build-sentinel', file_get_contents($file->getPathname()));
         }
         sort($files);
-        $expected = ['.nojekyll', 'index.html', 'demo.css', 'demo.js', 'docs.js', 'catalog-proof.js', 'catalog-scaling.js', 'php-syntax.js', 'images/code-mode-value.svg'];
-        foreach (['symfony-native-tools-demo-90s.mp4', 'symfony-native-tools-poster.jpg', 'profiler-authorized.png', 'profiler-denied.png', 'video-proof.json'] as $name) {
+        $expected = ['.nojekyll', 'index.html', 'demo.css', 'demo.js', 'docs.js', 'editorial-review.js', 'catalog-proof.js', 'catalog-scaling.js', 'php-syntax.js', 'images/code-mode-value.svg', 'images/symfony-mcp-architecture.svg'];
+        foreach (['server-code-mode-90s.mp4', 'server-code-mode-poster.jpg', 'server-code-mode-film.json', 'editorial-review-90s.mp4', 'editorial-review-poster.jpg', 'editorial-review-film.json', 'symfony-native-tools-demo-90s.mp4', 'symfony-native-tools-poster.jpg', 'profiler-authorized.png', 'profiler-denied.png', 'video-proof.json'] as $name) {
             $expected[] = 'media/'.$name;
         }
-        foreach (['report', 'security-report', 'agent-report', 'boundary-report', 'huggingface-report', 'huggingface-comparison', 'adoption-report', 'evaluation-report', 'performance-report', 'performance-conversation', 'performance-baseline', 'response-payloads', 'audit-three-way', 'catalog-proof', 'native-catalog', 'http-catalog', 'catalog-scaling'] as $name) {
+        foreach (['skills-proof', 'refund-protocol', 'refund-skill', 'editorial-groups', 'editorial-groups-footprint', 'editorial-audit-replay', 'editorial-review', 'editorial-review-agent', 'report', 'security-report', 'agent-report', 'boundary-report', 'huggingface-report', 'huggingface-comparison', 'adoption-report', 'evaluation-report', 'performance-report', 'performance-conversation', 'performance-baseline', 'response-payloads', 'audit-three-way', 'catalog-proof', 'native-catalog', 'http-catalog', 'catalog-scaling'] as $name) {
             $expected[] = 'evidence/'.$name.'.json';
         }
         sort($expected);
         $this->assertSame($expected, $files);
+        $this->assertStringContainsString('href="images/symfony-mcp-architecture.svg"', $html);
+        $this->assertStringContainsString('src="images/symfony-mcp-architecture.svg"', $html);
+        $this->assertFileEquals($root.'/docs/images/symfony-mcp-architecture.svg', $root.'/var/pages/images/symfony-mcp-architecture.svg');
+        $this->assertStringContainsString('href="evidence/skills-proof.json"', $html);
+        foreach (['refund-skill', 'refund-protocol'] as $export) {
+            $this->assertStringContainsString('href="evidence/'.$export.'.json"', $html);
+            $this->assertFileEquals($root.'/docs/evidence/'.$export.'.json', $root.'/var/pages/evidence/'.$export.'.json');
+        }
+        $skills = json_decode(file_get_contents($root.'/var/pages/evidence/skills-proof.json'), true, flags: \JSON_THROW_ON_ERROR);
+        foreach (['http' => 'skills-http', 'sameKernel' => 'skills-kernel-reuse', 'agent' => 'skills-agent', 'security' => 'workflow-security'] as $key => $file) {
+            $this->assertSame(json_decode(file_get_contents($root.'/docs/evidence/'.$file.'.json'), true, flags: \JSON_THROW_ON_ERROR), $skills[$key]);
+        }
         $this->assertFileDoesNotExist($root.'/var/pages/evidence/discovery-report.json');
         $this->assertStringNotContainsString('compact-discovery', $html);
         $http = json_decode(file_get_contents($root.'/var/pages/evidence/http-catalog.json'), true, flags: \JSON_THROW_ON_ERROR);
         $this->assertTrue($http['nativeCodeMode']['attempts'][0]['verification']['passed']);
-        $this->assertTrue($http['nativeCodeMode']['attempts'][0]['currentSourceMatches']);
+        $this->assertTrue($http['nativeCodeMode']['attempts'][0]['historicalSourceMatches']);
+        $this->assertFalse($http['nativeCodeMode']['attempts'][0]['currentSourceMatches']);
         $this->assertCount(5, $http['nativeCodeMode']['attempts'][0]['code']);
         $this->assertCount(2, $http['claudeComparison']['attempts']);
         $this->assertTrue($http['claudeComparison']['pairs'][0]['matched']);
         $this->assertSame([44131, 73251], array_column(array_column($http['claudeComparison']['attempts'], 'usage'), 'total'));
         $this->assertStringContainsString('value="claude-comparison"', $html);
         $this->assertTrue($http['claudeAudit']['matched']);
-        $this->assertCount(4, $http['claudeAudit']['attempts']);
-        $this->assertSame([true, true, false, true], array_column(array_column($http['claudeAudit']['attempts'], 'verification'), 'passed'));
+        $this->assertCount(8, $http['claudeAudit']['attempts']);
+        $this->assertSame([true, true], array_column($http['claudeAudit']['iterations'], 'matched'));
+        $this->assertSame([true, true, false, true, true, true, true, true], array_column(array_column($http['claudeAudit']['attempts'], 'verification'), 'passed'));
         $this->assertStringContainsString('value="claude-audit"', $html);
+        $this->assertTrue($http['claudeAudit']['fieldSelection']['verified']);
+        $this->assertTrue($http['claudeAudit']['fieldSelectionPair']['matched']);
+        $this->assertStringContainsString('value="claude-fields"', $html);
+
+        $document = new \DOMDocument();
+        $document->loadHTML($html, \LIBXML_NONET | \LIBXML_NOERROR | \LIBXML_NOWARNING);
+        $xpath = new \DOMXPath($document);
+        $refundStudy = json_decode(file_get_contents($root.'/var/pages/evidence/refund-skill.json'), true, flags: \JSON_THROW_ON_ERROR);
+        $this->assertSame($refundStudy['protocol']['questions']['review'], $xpath->evaluate('string(//*[@id="refund-question"]/p)'));
+        $chapter = $xpath->query('//*[@id="documentation"]/section[@id="mcp-paths"]')->item(0);
+        $this->assertInstanceOf(\DOMElement::class, $chapter, 'The hash router opens only direct chapter sections.');
+        $this->assertSame('mcp-paths-heading', $chapter->getAttribute('aria-labelledby'));
+        $this->assertSame(1, $xpath->query('.//*[@id="mcp-paths-heading"]', $chapter)->length);
+        $this->assertSame(1, $xpath->query('.//select[@id="mcp-client-mode"]', $chapter)->length);
+        $this->assertSame(1, $xpath->query('.//*[@id="mcp-path-metrics"]', $chapter)->length);
+        $this->assertSame(0, $xpath->query('//nav//a[@href="#mcp-paths"]')->length);
+        $this->assertSame(1, $xpath->query('//*[@id="demo-tour"]//video/source[@src="media/editorial-review-90s.mp4?v=11"]')->length);
+        $this->assertSame(1, $xpath->query('//*[@id="demo-tour"]//*[@id="editorial-checkpoint"]//a[@href="evidence/editorial-audit-replay.json"]')->length);
+        $this->assertSame(['revoked', 'control'], array_map(static fn (\DOMElement $option): string => $option->getAttribute('value'), iterator_to_array($xpath->query('//*[@id="editorial-replay-run"]/option'))));
+        $this->assertFileEquals($root.'/docs/evidence/editorial-audit-replay.json', $root.'/var/pages/evidence/editorial-audit-replay.json');
+        foreach (['editorial-groups', 'editorial-groups-footprint'] as $report) {
+            $this->assertSame(1, $xpath->query('//*[@id="publishing-group"]//a[@href="evidence/'.$report.'.json"]')->length);
+            $this->assertFileEquals($root.'/docs/evidence/'.$report.'.json', $root.'/var/pages/evidence/'.$report.'.json');
+        }
+        $this->assertGreaterThan(0, $xpath->query('//*[@id="how-it-works"]//a[@href="?client=symfony-ai#native-rehearsal"]')->length);
+        foreach (['?client=claude-audit#native-rehearsal', '?client=claude-fields#native-rehearsal'] as $href) {
+            $this->assertGreaterThan(0, $xpath->query('.//a[@href="'.$href.'"]', $chapter)->length, 'Keep evidence links relative to the Pages deployment.');
+        }
     }
 
     public function testVideoChaptersAndClaimsMatchTheirSeparateCaptures(): void
     {
         $root = \dirname(__DIR__, 2);
         $video = json_decode(file_get_contents($root.'/public/media/video-proof.json'), true, flags: \JSON_THROW_ON_ERROR);
+        $this->assertStringContainsString('public/media/editorial-review-poster.jpg)](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour)', file_get_contents($root.'/README.md'));
+        $this->assertSame($video['assets']['symfony-native-tools-demo-90s.mp4'], $video['readmeAttachment']['sha256']);
         $this->assertSame(2700, $video['frames']);
         $this->assertSame(90, $video['durationSeconds']);
         $this->assertSame('none', $video['audio']);
@@ -133,7 +184,8 @@ final class DocumentationBuildTest extends TestCase
         $this->assertCount(1, $runs);
         $run = $runs[0];
         $this->assertTrue($run['verification']['passed']);
-        $this->assertTrue($run['currentSourceMatches']);
+        $this->assertTrue($run['historicalSourceMatches']);
+        $this->assertFalse($run['currentSourceMatches']);
         $this->assertSame($run['trace']['providerTokens'], $binding['providerTokens']);
         $this->assertSame($run['trace']['modelRequests'], $binding['modelRequests']);
         $this->assertSame(\count($run['trace']['agentCalls']), $binding['mcpCalls']);

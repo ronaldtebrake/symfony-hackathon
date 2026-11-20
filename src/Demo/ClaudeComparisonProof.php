@@ -114,11 +114,7 @@ final class ClaudeComparisonProof
         foreach ($report['attempts'] as &$run) {
             $run['verification'] = self::verify($run, $report['protocol']['questions']);
             $run['usage'] = ClaudeUsage::summarize($run['usageRows'] ?? []);
-            $run['currentSourceMatches'] = [] !== ($run['sourceSha256'] ?? []);
-            foreach ($run['sourceSha256'] ?? [] as $path => $hash) {
-                $current = str_starts_with($path, 'vendor/ronaldtebrake/') ? $root.'/packages/'.substr($path, \strlen('vendor/ronaldtebrake/')) : $root.'/examples/symfony/'.$path;
-                $run['currentSourceMatches'] = $run['currentSourceMatches'] && is_file($current) && hash_file('sha256', $current) === $hash;
-            }
+            $run = HttpCatalogProof::verifyRunRevision($root, $run);
             $run['activeDurationSeconds'] = array_sum(array_map(static fn ($turn) => isset($turn['answeredAt']) ? (float) (new \DateTimeImmutable($turn['answeredAt']))->format('U.u') - (float) (new \DateTimeImmutable($turn['askedAt']))->format('U.u') : 0, $run['turns'] ?? []));
         }
         unset($run);

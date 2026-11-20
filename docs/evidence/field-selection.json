@@ -1,0 +1,253 @@
+{
+    "format": "symfony-field-selection/v1",
+    "verified": true,
+    "protocol": "Three disposable Symfony HTTP apps. The same PHP MCP SDK client browses both entry tools, discovers the three readers, and checks every published article and associated image. Actual HTTP entity bytes across setup, discovery and execution include text and structured results. HTTP headers, network framing and two subsequent denial probes are excluded. No model runs.",
+    "paths": {
+        "legacy": {
+            "requestBodyBytes": 2864,
+            "responseBodyBytes": 49858,
+            "totalBodyBytes": 52722,
+            "setupBodyBytes": 876,
+            "discoveryBodyBytes": 5887,
+            "executionBodyBytes": 45959,
+            "handlerCalls": 10,
+            "executionSubmissions": 4,
+            "coverage": {
+                "articles": 48,
+                "media": 24
+            },
+            "findings": 10,
+            "answerSha256": "54eb1873a15213f067db5d2c6373add74cbcee5754e032b6fe014bd4e4f3f897",
+            "readArgumentsSha256": "a8896bb6a1eb7cd6995dbfd5d17f93bbe3be97b25b2a4066cbab7315038c6bcd",
+            "datasetSha256": "9630fc83895f46d09f320a15f588698b783d8c4662a1c7eb2002663c7437ece1",
+            "calls": [
+                {
+                    "phase": "setup",
+                    "method": "server/discover",
+                    "tool": null,
+                    "requestBodyBytes": 271,
+                    "responseBodyBytes": 605,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "discovery",
+                    "method": "tools/list",
+                    "tool": null,
+                    "requestBodyBytes": 266,
+                    "responseBodyBytes": 1558,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "discovery",
+                    "method": "tools/call",
+                    "tool": "search_tools",
+                    "requestBodyBytes": 320,
+                    "responseBodyBytes": 3743,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "execution",
+                    "method": "tools/call",
+                    "tool": "execute_tools",
+                    "requestBodyBytes": 378,
+                    "responseBodyBytes": 1907,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "execution",
+                    "method": "tools/call",
+                    "tool": "execute_tools",
+                    "requestBodyBytes": 511,
+                    "responseBodyBytes": 5237,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "execution",
+                    "method": "tools/call",
+                    "tool": "execute_tools",
+                    "requestBodyBytes": 648,
+                    "responseBodyBytes": 29717,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "execution",
+                    "method": "tools/call",
+                    "tool": "execute_tools",
+                    "requestBodyBytes": 470,
+                    "responseBodyBytes": 7091,
+                    "httpStatus": 200
+                }
+            ],
+            "security": {
+                "draft": "tool_denied",
+                "afterRevocation": "tool_denied",
+                "deniedHandlerCalls": 0,
+                "postControlReservedCalls": 12
+            }
+        },
+        "full": {
+            "requestBodyBytes": 2864,
+            "responseBodyBytes": 52374,
+            "totalBodyBytes": 55238,
+            "setupBodyBytes": 876,
+            "discoveryBodyBytes": 8403,
+            "executionBodyBytes": 45959,
+            "handlerCalls": 10,
+            "executionSubmissions": 4,
+            "coverage": {
+                "articles": 48,
+                "media": 24
+            },
+            "findings": 10,
+            "answerSha256": "54eb1873a15213f067db5d2c6373add74cbcee5754e032b6fe014bd4e4f3f897",
+            "readArgumentsSha256": "a8896bb6a1eb7cd6995dbfd5d17f93bbe3be97b25b2a4066cbab7315038c6bcd",
+            "datasetSha256": "9630fc83895f46d09f320a15f588698b783d8c4662a1c7eb2002663c7437ece1",
+            "calls": [
+                {
+                    "phase": "setup",
+                    "method": "server/discover",
+                    "tool": null,
+                    "requestBodyBytes": 271,
+                    "responseBodyBytes": 605,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "discovery",
+                    "method": "tools/list",
+                    "tool": null,
+                    "requestBodyBytes": 266,
+                    "responseBodyBytes": 1558,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "discovery",
+                    "method": "tools/call",
+                    "tool": "search_tools",
+                    "requestBodyBytes": 320,
+                    "responseBodyBytes": 6259,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "execution",
+                    "method": "tools/call",
+                    "tool": "execute_tools",
+                    "requestBodyBytes": 378,
+                    "responseBodyBytes": 1907,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "execution",
+                    "method": "tools/call",
+                    "tool": "execute_tools",
+                    "requestBodyBytes": 511,
+                    "responseBodyBytes": 5237,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "execution",
+                    "method": "tools/call",
+                    "tool": "execute_tools",
+                    "requestBodyBytes": 648,
+                    "responseBodyBytes": 29717,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "execution",
+                    "method": "tools/call",
+                    "tool": "execute_tools",
+                    "requestBodyBytes": 470,
+                    "responseBodyBytes": 7091,
+                    "httpStatus": 200
+                }
+            ],
+            "security": {
+                "draft": "tool_denied",
+                "afterRevocation": "tool_denied",
+                "deniedHandlerCalls": 0,
+                "postControlReservedCalls": 12
+            }
+        },
+        "selected": {
+            "requestBodyBytes": 3188,
+            "responseBodyBytes": 36018,
+            "totalBodyBytes": 39206,
+            "setupBodyBytes": 876,
+            "discoveryBodyBytes": 8403,
+            "executionBodyBytes": 29927,
+            "handlerCalls": 10,
+            "executionSubmissions": 4,
+            "coverage": {
+                "articles": 48,
+                "media": 24
+            },
+            "findings": 10,
+            "answerSha256": "54eb1873a15213f067db5d2c6373add74cbcee5754e032b6fe014bd4e4f3f897",
+            "readArgumentsSha256": "a8896bb6a1eb7cd6995dbfd5d17f93bbe3be97b25b2a4066cbab7315038c6bcd",
+            "datasetSha256": "9630fc83895f46d09f320a15f588698b783d8c4662a1c7eb2002663c7437ece1",
+            "calls": [
+                {
+                    "phase": "setup",
+                    "method": "server/discover",
+                    "tool": null,
+                    "requestBodyBytes": 271,
+                    "responseBodyBytes": 605,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "discovery",
+                    "method": "tools/list",
+                    "tool": null,
+                    "requestBodyBytes": 266,
+                    "responseBodyBytes": 1558,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "discovery",
+                    "method": "tools/call",
+                    "tool": "search_tools",
+                    "requestBodyBytes": 320,
+                    "responseBodyBytes": 6259,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "execution",
+                    "method": "tools/call",
+                    "tool": "execute_tools",
+                    "requestBodyBytes": 394,
+                    "responseBodyBytes": 671,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "execution",
+                    "method": "tools/call",
+                    "tool": "execute_tools",
+                    "requestBodyBytes": 559,
+                    "responseBodyBytes": 1553,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "execution",
+                    "method": "tools/call",
+                    "tool": "execute_tools",
+                    "requestBodyBytes": 864,
+                    "responseBodyBytes": 21191,
+                    "httpStatus": 200
+                },
+                {
+                    "phase": "execution",
+                    "method": "tools/call",
+                    "tool": "execute_tools",
+                    "requestBodyBytes": 514,
+                    "responseBodyBytes": 4181,
+                    "httpStatus": 200
+                }
+            ],
+            "security": {
+                "draft": "tool_denied",
+                "afterRevocation": "tool_denied",
+                "deniedHandlerCalls": 0,
+                "postControlReservedCalls": 12
+            }
+        }
+    }
+}

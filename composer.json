@@ -6,17 +6,18 @@
     "minimum-stability": "beta",
     "prefer-stable": true,
     "require": {
+        "php": ">=8.2",
         "ext-ctype": "*",
         "ext-fileinfo": "*",
         "ext-iconv": "*",
         "mcp/sdk": "^0.9",
         "nyholm/psr7": "^1.8",
-        "php": ">=8.2",
         "ronaldtebrake/php-code-mode": "^0.1",
         "ronaldtebrake/symfony-code-mode": "^0.1",
         "symfony/ai-agent": "^1.0@beta",
         "symfony/ai-bundle": "^1.0@beta",
         "symfony/ai-hugging-face-platform": "^1.0@beta",
+        "symfony/ai-mcp-tool": "^1.0@beta",
         "symfony/ai-platform": "^1.0@beta",
         "symfony/console": "7.4.*",
         "symfony/dotenv": "7.4.*",
@@ -90,7 +91,14 @@
         "test:sandbox": "@php bin/phpunit -c packages/php-code-mode/phpunit.dist.xml --testsuite Sandbox",
         "test:demo": "@php bin/phpunit -c phpunit.sandbox.xml",
         "proof:code-mode": "@php packages/php-code-mode/examples/proof.php",
+        "proof:discovery": [
+            "@php bin/phpunit --testdox tests/Integration/PublishingGroupsTest.php",
+            "@php scripts/check-refund-protocol.php --verify",
+            "@php scripts/compare-refund-skill.php --verify"
+        ],
+        "proof:editorial": "@php scripts/editorial-review-proof.php",
         "demo": "@php bin/console code-mode:demo",
+        "demo:conversation": "@php bin/console code-mode:replay-conversation",
         "demo:security": "@php bin/console code-mode:security-proof",
         "cs:check": [
             "@php vendor/bin/php-cs-fixer check --config=.php-cs-fixer.dist.php --diff --sequential",
@@ -115,6 +123,9 @@
         "docs:build": "@php scripts/build-docs.php"
     },
     "scripts-descriptions": {
+        "demo:conversation": "Run the two captured editorial PHP programs against the Symfony MCP fixture in gVisor",
+        "proof:discovery": "Exercise Publishing catalog and group access in a fresh Symfony kernel, then verify the recorded refund conversation",
+        "proof:editorial": "Run the findings-only editorial review against a disposable Symfony MCP HTTP application",
         "start": "Start the local development server at http://127.0.0.1:8000",
         "test": "Run the tests without external API calls",
         "check": "Check Symfony coding standards, static analysis, dependencies, configuration, and tests",

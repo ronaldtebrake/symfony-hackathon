@@ -1,44 +1,28 @@
 # Symfony Code Mode
 
-**Connect AI agents to your Symfony application through MCP.**
+An agent reviewing a refund needs the order and its policy. How should it find those two tools in a Symfony application with a hundred? We built a searchable MCP catalog and prototyped named groups so a team can tell a client which readers belong together.
 
-**[Watch the 90-second demo](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) · [Explore the visual documentation](https://ronaldtebrake.github.io/symfony-hackathon/) · [Run the proof](#judge-quickstart)**
+[Watch the 90-second demo on GitHub Pages](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) · [See how a prompt reaches Symfony](docs/reusable-workflows.md#how-an-mcp-call-reaches-symfony)
 
-Symfony Code Mode is a reusable Composer package and Symfony bundle that adds a **searchable MCP (Model Context Protocol) tool catalog** to an application. An agent discovers the tools available to its authenticated user, then calls existing Symfony services with JSON arguments. The conversation stays in the agent; your application owns the data and access rules.
+[![Play the Symfony Code Mode demo](public/media/editorial-review-poster.jpg)](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour)
 
-**Why a catalog?** Advertising every tool upfront adds schemas to the agent’s context, including tools it may never use. We expose two stable MCP tools:
+**The reusable catalog** advertises `search_tools` and `execute_tools`. The caller gets matching schemas on demand. With 10 or 100 synthetic tools, the initial two definitions took 239 tokens. Symfony checks the current user, arguments and call budget on each read. [Package](packages/symfony-code-mode/README.md) · [Schema measurement](docs/evidence/catalog-scaling.json)
 
-- `search_tools` returns matching tool contracts visible to the current user.
-- `execute_tools` calls approved handlers, checking current permissions, arguments and budgets.
+**The Groups prototype** implements tool discovery from the MCP working group’s draft. In the recorded demo, the host opens `refund-review`. A Symfony AI agent using Hugging Face reads the order, follows its policy ID and recommends manual review. After revocation, the PHP MCP SDK delivers the repeat call to Symfony. Symfony denies it before the reader runs. [See the actual exchanges](https://ronaldtebrake.github.io/symfony-hackathon/#refund-wire)
 
-Adding tools leaves those two advertised schemas unchanged. Retrieved contracts, results and conversation history still consume tokens.
+## Try it locally
 
-**The demo:** an agent retrieves an article’s title. Revoke permission, and the identical follow-up is denied before the handler runs. A fresh search hides the contract. Knowing a tool’s name does not preserve access to it.
-
-Built for the [Symfony AI & MCP Hackathon](https://symfony.com/hackathon): **Symfony AI** supplies tool schemas and execution, the **PHP MCP SDK** exposes the catalog over HTTP, and **Hugging Face Inference Providers** powers a separately recorded agent conversation. Shared Symfony Security voters, Maker scaffolding and profiler traces support the integration.
-
-## Judge quickstart
-
-You need **PHP 8.2+, Composer 2 and Git**, plus network access for the initial install. Composer checks the required PHP extensions. This proof needs **no model key, Docker or gVisor**.
+With PHP 8.2+ and Composer 2, run these commands.
 
 ```sh
 git clone https://github.com/ronaldtebrake/symfony-hackathon.git
 cd symfony-hackathon
-composer install --working-dir=examples/symfony
-php examples/symfony/bin/console code-mode:doctor
-composer proof:http --working-dir=examples/symfony
+composer install
+composer proof:discovery
 ```
 
-Expected: the doctor reports ready, followed by `"status": "passed"` and **31 passing checks**. Real HTTP requests verify authorized and restricted reads, permission revocation after discovery, cross-user isolation and persistent budgets. The harness starts and stops a temporary Symfony server with disposable credentials; no model is called.
+The command exercises both discovery routes in a fresh Symfony test kernel, then verifies the recorded refund exchanges and model answers. It needs no provider key or sandbox. Run `composer start` to [open the local workbench](http://127.0.0.1:8000/demo).
 
-**Try your own conversation:** follow the [agent connection and revocation walkthrough](https://ronaldtebrake.github.io/symfony-hackathon/#quickstart). It uses your MCP client’s model access. The published video and evidence need no installation.
+## What we can contribute
 
-## Inspect the work
-
-- [Real Symfony AI + Hugging Face conversation](https://ronaldtebrake.github.io/symfony-hackathon/#native-rehearsal): actual JSON calls, authorization decisions, measured usage and both retained attempts.
-- [Token measurements](https://ronaldtebrake.github.io/symfony-hackathon/#catalog-cost): fixed advertised schema size; complete conversation comparisons are reported separately.
-- [The design journey](https://ronaldtebrake.github.io/symfony-hackathon/#journey): sandboxed PHP → ordinary Symfony HTTP/JSON → an adapter to Symfony AI’s proposed discovery components.
-- [Symfony integration guide](packages/symfony-code-mode/README.md) and [independent application](examples/symfony/README.md): registration, shared voters, Maker, profiler and hosting limits. Packages currently use Composer path repositories; they are not on Packagist.
-- [Contribution proposals](docs/contributing/README.md): prepared Symfony AI and PHP MCP SDK feedback, not yet posted.
-
-For code review, run `composer install` and `composer check` from the repository root. This checks coding standards, PHPStan, configuration and tests. CI also verifies HTTP adoption on Linux and Windows.
+The reproducible case for maintainers is a permission change **after discovery**. A client knows the tool and its arguments, yet the next read must honor the current permissions. Next we want to let the model choose among several plausible groups. The host chose the group in this demo. [Upstream contribution notes](docs/contributing/README.md) · [Why we moved from sandboxed PHP to JSON and Groups](docs/reusable-workflows.md)

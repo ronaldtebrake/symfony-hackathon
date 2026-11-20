@@ -1,0 +1,122 @@
+{
+  "format": "symfony-editorial-review-film/v11",
+  "durationSeconds": 90,
+  "fps": 30,
+  "frames": 2700,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "audio": "none",
+  "scope": "Original agent screen footage of an article lookup with the two-tool catalog, followed by a typeset replay of a separate recorded Symfony AI and Hugging Face refund conversation. Its host opened one group and verified its guide. The model selected the reads and answered both user turns. The two-tool catalog and its initial schema measurements are a separate independent HTTP fixture and offline synthetic scaling experiment. The earlier gVisor implementation is a design reference.",
+  "catalogFilm": {
+    "file": "public/media/symfony-native-tools-demo-90s.mp4",
+    "sha256": "f2f9ed4eaca611f71c60487a18446447a24ccd179af067c1a48da1505be8beb5"
+  },
+  "catalogFilmProvenance": {
+    "file": "public/media/video-proof.json",
+    "sha256": "0f8eadf49ce4480a8a013359b5dac2f4dddf52864db7a34b2be075e068592986"
+  },
+  "sandboxAudit": {
+    "file": "docs/evidence/huggingface-pair.json",
+    "sha256": "b3e62d4a593ab35f1905f008fd90a6e11f69cce04cfcf7194b22abf9e60ff3a1"
+  },
+  "httpCatalog": {
+    "file": "docs/evidence/http-catalog-proof.json",
+    "sha256": "0f80da5915864e447c871faae602885262359e272a90b5f42ccdb27f946a5d56"
+  },
+  "catalogScaling": {
+    "file": "docs/evidence/catalog-scaling.json",
+    "sha256": "88fb090eab90e627b70366653566478087be78e8b8a2570624ea4f05bbb8ec9d"
+  },
+  "refundProtocol": {
+    "file": "docs/evidence/refund-protocol.json",
+    "sha256": "05c8b3ad6bfe85b33701b6a90c97507aede7c091a347f0ce53ef9c66e797e430"
+  },
+  "refundStudy": {
+    "file": "docs/evidence/refund-skill.json",
+    "sha256": "45fac932cf07b36777297d5d7fad16ce4d8115347f570fe2c517135d37249550"
+  },
+  "screenRecordingEdit": {
+    "master": "symfony-native-tools-demo-90s.mp4",
+    "sourceSeconds": [
+      37,
+      48
+    ],
+    "filmSeconds": [
+      9,
+      20
+    ],
+    "crop": [
+      558,
+      195,
+      1260,
+      760
+    ],
+    "speed": 1
+  },
+  "designReferences": [
+    "https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/19",
+    "https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/22"
+  ],
+  "segments": [
+    {
+      "start": 0,
+      "end": 9,
+      "title": "Which tools does this job need?",
+      "source": "First user question from the recorded refund conversation"
+    },
+    {
+      "start": 9,
+      "end": 20,
+      "title": "Use the two-tool catalog",
+      "source": "Screen recording of an agent using the independent Symfony HTTP catalog"
+    },
+    {
+      "start": 20,
+      "end": 30,
+      "title": "Measure the opening tool list",
+      "source": "Offline schema token counts at 10 and 100 synthetic tools"
+    },
+    {
+      "start": 30,
+      "end": 42,
+      "title": "Open the refund group",
+      "source": "Host-selected group, two reader schemas and a verified resource in the linked arm"
+    },
+    {
+      "start": 42,
+      "end": 54,
+      "title": "Pass the policy ID to the next read",
+      "source": "Actual model-selected tools/call arguments and returned facts"
+    },
+    {
+      "start": 54,
+      "end": 63,
+      "title": "Read the model’s decision",
+      "source": "Verbatim first-turn model explanation"
+    },
+    {
+      "start": 63,
+      "end": 72,
+      "title": "Revoke permission and ask again",
+      "source": "Second user question and the known policy reader"
+    },
+    {
+      "start": 72,
+      "end": 82,
+      "title": "Receive the denial",
+      "source": "Zero completed reads and the real follow-up answer"
+    },
+    {
+      "start": 82,
+      "end": 90,
+      "title": "Take the revocation case upstream",
+      "source": "The PHP reference fixture and an open question about client selection"
+    }
+  ],
+  "assets": {
+    "editorial-review-90s.mp4": "be06b6626a36397bbc44d35869d46a69b7b5e6e1385cc20cce3ffd726b7dd7b0",
+    "editorial-review-poster.jpg": "fe2f73d487b46ed03ad7182753f5d3b585286b0e5bff0c7f75fc8b9defb3d3b1"
+  }
+}

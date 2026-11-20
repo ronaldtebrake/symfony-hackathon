@@ -1,8 +1,23 @@
 # Upstream contributions
 
-These are prepared proposals, **not submitted issues or pull requests**. No upstream acceptance or Packagist publication is implied. The existing Symfony demo and its matched Hugging Face comparison remain unchanged.
+## What we can offer now
 
-The integration now also exposes a two-tool JSON catalog through the same approved providers. The [three-way audit](../batching.md#live-three-way-symfony-audit) includes real Symfony AI execution through that path and retains all attempts. The captures and recipe below mostly cover sandboxed PHP; they keep their original scope. New contributions can now use the [catalog conversations, control traces and clean consumer proof](../batching.md#evidence-coverage-and-next-captures). Include the injection failure: all answers matched, but the agent made an unwanted restricted call that the host blocked. A repeated matched three-way evaluation and JSON performance arm remain future work.
+We can offer three reproducible cases from the hackathon. These are prepared locally for discussion with maintainers.
+
+| Who | What we can share |
+| --- | --- |
+| Symfony AI | A two-tool catalog recipe using existing read-only `#[AsTool]` services. Tests exercise filtering by caller **before** the proposed BM25 ranking runs, then rechecking the actual read after the grant changes. [Catalog integration](../../packages/symfony-code-mode/README.md) · [Search tests](../../tests/Integration/SymfonyCatalogSearchTest.php) · [Discovery discussion](https://github.com/symfony/ai/issues/2623) |
+| PHP MCP SDK | A PHP interoperability fixture for named groups. A client negotiates Groups, opens a group and calls a member. A client using the older handshake can use the catalog on the same host. Our fixture runs on SDK 0.9. The next port would exercise the extension API in 0.10. [Groups tests](../../tests/Integration/PublishingGroupsTest.php) · [Legacy client test](../../tests/Integration/AuditMatrixTest.php) · [SDK 0.10 release](https://github.com/modelcontextprotocol/php-sdk/releases/tag/v0.10.0) |
+| MCP working group | A refund group that links a skill alongside two readers. Revoking access after group discovery denied both the skill manifest and its file. In a separate conversation, the model could still explain why it could no longer verify the policy. [Access traces](../evidence/refund-protocol.json) · [Groups proposal](https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/19) · [Skills positioning discussion](https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/22) |
+
+## What to test next
+
+Give the agent several plausible groups and let it choose from the user’s question. In the current demo the host made that choice. Compare task correctness, discovery requests and total provider tokens against ordinary catalog search. A later trial could add a policy exception to see when reading the linked checklist changes the decision. [Current findings and study design](../reusable-workflows.md#what-to-test-next)
+
+<details>
+<summary>Earlier work on sandboxed PHP, catalog search and structured results</summary>
+
+These earlier notes explain the proposals in the context of their original captures and dependency versions.
 
 ## 1. Symfony AI: bring a working Code Mode example to #2508
 
@@ -108,16 +123,18 @@ After this milestone, prioritize:
 
 1. **Distribution and runtime setup.** Prepare independently tagged core/bundle releases and test a consumer that installs those releases without path repositories. Verify one documented dedicated-Linux/VM bootstrap from an empty machine, pin the runner image, and fail clearly when runsc is absent. The fresh-app result proves the PHP integration; runtime provisioning and public package distribution remain adoption gaps.
 2. **One small upstream contribution.** Offer the fresh consumer and complete v4 results to [Code Mode #2508](https://github.com/symfony/ai/issues/2508), whose discussion asks for an example, concrete use case, discovery and structured results. Keep the SDK structured-result helper separate. For [tracing #2342](https://github.com/symfony/ai/issues/2342), contribute focused failure/cleanup and deferred-completion regression cases; do not claim our non-streaming captures validate streaming. These pages were consulted again on 4 November; proposals remain unsubmitted.
-3. **Completed: the 90-second recording.** The [current product film](../demo.md) shows real agent footage against authenticated Symfony HTTP, JSON calls, revocation, Maker, a shared voter and the profiler. Attach this film when submitting.
+3. **Completed: the 90-second recording.** The [article lookup film](https://ronaldtebrake.github.io/symfony-hackathon/#article-tour) shows real agent footage against authenticated Symfony HTTP, JSON calls, revocation, Maker, a shared voter and the profiler. The [submission description](../demo.md#submission-description) describes the two-tool catalog and the earlier PHP design.
 4. **Share the permission-aware Symfony integration.** Use the fresh HTTP proof and shared policy tests to demonstrate user-specific discovery, permission revocation and persistent call budgets. Keep future holdout/discovery experiments separate from v4.
 
 The [Symfony performance investigation](../performance.md) now provides a second concrete use case for #2508: compose three approved native readers to find repeated work, correlate log events and verify a prepared alternative. A real synthetic request uses 13 queries; the joined version uses one and returns identical content. Both restricted readers are denied in the passing capture. The earlier inconclusive denial is retained. This reference uses operator-written PHP over the PHP MCP SDK and gVisor. A separate live conversation and matched direct-tool baseline are also captured in the guide; neither is a production profiler integration.
 
 A follow-up could adapt existing [Mate profiler/Monolog extensions](https://symfony.com/doc/current/ai/components/mate.html) behind the same bounded projections. The current example uses Symfony's Profiler and its own PSR-3 collector, not Mate. Verify installed extension contracts and scope/redact every read before using real application data; do not expose raw profiler files, unrestricted logs or shell execution.
 
-Keep any new evaluation separate from v4. A seeded holdout dataset and catalog sizes of 16/64/128 would test generalization and discovery; the existing five scenarios use one small fixture and do not establish either. [Cloudflare's guidance](https://developers.cloudflare.com/agents/tools/codemode/) also recommends direct calls for simple tasks, so include a single-read case rather than claiming Code Mode always wins.
+Keep any new evaluation separate from v4. The five existing scenarios use one small fixture. A seeded holdout dataset and catalogs of 16, 64 and 128 tools would test whether discovery holds up as the catalog grows. Include a single read alongside the multi-step audit so maintainers can see what discovery and orchestration cost on a simple task.
 
 Some GitHub issue/PR pages could not be refreshed and the authenticated API was rate-limited. The #2623/#87/#2878 review above supersedes the earlier discovery notes; #605 and duplicate SDK proposals still need a fresh check before submission. The public hackathon project gallery required SymfonyConnect, so no competitive ranking was established.
+
+</details>
 
 ## Reproduce and share
 

@@ -1,0 +1,194 @@
+{
+  "format": "saved-script-http-replay/v1",
+  "capturedAt": "2026-11-19T12:41:42.277003+00:00",
+  "scope": "Each run executes the saved source in a fresh gVisor guest against authenticated Symfony MCP over loopback HTTP. Events contain actual MCP tool names and arguments, and allowlisted fields from PHP MCP SDK responses. The runners make no model requests. --step pauses between the initial run and the standalone replay.",
+  "stepMode": true,
+  "recipe": "examples/symfony/recipes/article-title.php",
+  "sourceSha256": "afa89102506aed5b6ece91277323b1261f7b3df8e09045c25d6ce463b02d3240",
+  "status": "passed",
+  "identity": "demo-reader",
+  "events": [
+    {
+      "op": "search",
+      "request": {
+        "name": "search_tools",
+        "arguments": {
+          "query": "publication"
+        }
+      },
+      "isError": false,
+      "result": {
+        "tools": [
+          "publication_read"
+        ]
+      }
+    },
+    {
+      "phase": "initial",
+      "http": {
+        "op": "read",
+        "request": {
+          "name": "execute_tools",
+          "arguments": {
+            "calls": [
+              {
+                "name": "publication_read",
+                "arguments": {
+                  "id": 101
+                }
+              }
+            ]
+          }
+        },
+        "isError": false,
+        "result": {
+          "id": 101,
+          "title": "A Symfony application owns its tools"
+        }
+      },
+      "sandbox": {
+        "sourceSha256": "afa89102506aed5b6ece91277323b1261f7b3df8e09045c25d6ce463b02d3240",
+        "guestSha256": "d91b80a57500044ee6baca73e24be2b39d778cf8bd7b0b5e22c53b7cae8d0a41",
+        "image": "sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b",
+        "runId": "code-mode-2f55757a80d5e81bbd3efb935f644c4d",
+        "profile": "gvisor",
+        "containerRemoved": true,
+        "calls": [
+          {
+            "name": "publication_read",
+            "status": "succeeded"
+          }
+        ],
+        "status": "ok",
+        "value": "A Symfony application owns its tools"
+      }
+    },
+    {
+      "op": "reset",
+      "ok": true
+    },
+    {
+      "op": "search",
+      "request": {
+        "name": "search_tools",
+        "arguments": {
+          "query": "publication"
+        }
+      },
+      "isError": false,
+      "result": {
+        "tools": [
+          "publication_read"
+        ]
+      }
+    },
+    {
+      "phase": "standalone-replay",
+      "http": {
+        "op": "read",
+        "request": {
+          "name": "execute_tools",
+          "arguments": {
+            "calls": [
+              {
+                "name": "publication_read",
+                "arguments": {
+                  "id": 101
+                }
+              }
+            ]
+          }
+        },
+        "isError": false,
+        "result": {
+          "id": 101,
+          "title": "A Symfony application owns its tools"
+        }
+      },
+      "sandbox": {
+        "sourceSha256": "afa89102506aed5b6ece91277323b1261f7b3df8e09045c25d6ce463b02d3240",
+        "guestSha256": "d91b80a57500044ee6baca73e24be2b39d778cf8bd7b0b5e22c53b7cae8d0a41",
+        "image": "sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b",
+        "runId": "code-mode-7f3a46e3352293b6c6527046e1ed2cd9",
+        "profile": "gvisor",
+        "containerRemoved": true,
+        "calls": [
+          {
+            "name": "publication_read",
+            "status": "succeeded"
+          }
+        ],
+        "status": "ok",
+        "value": "A Symfony application owns its tools"
+      }
+    },
+    {
+      "op": "revoke",
+      "ok": true
+    },
+    {
+      "phase": "after-revocation",
+      "http": {
+        "op": "read",
+        "request": {
+          "name": "execute_tools",
+          "arguments": {
+            "calls": [
+              {
+                "name": "publication_read",
+                "arguments": {
+                  "id": 101
+                }
+              }
+            ]
+          }
+        },
+        "isError": true,
+        "result": {
+          "error": "tool_denied",
+          "completedCalls": 0
+        }
+      },
+      "sandbox": {
+        "sourceSha256": "afa89102506aed5b6ece91277323b1261f7b3df8e09045c25d6ce463b02d3240",
+        "guestSha256": "d91b80a57500044ee6baca73e24be2b39d778cf8bd7b0b5e22c53b7cae8d0a41",
+        "image": "sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b",
+        "runId": "code-mode-5df1eca55d17b4c67c50081c6043bf05",
+        "profile": "gvisor",
+        "containerRemoved": true,
+        "calls": [
+          {
+            "name": "publication_read",
+            "status": "succeeded"
+          }
+        ],
+        "status": "denied",
+        "reason": "tool_denied"
+      }
+    },
+    {
+      "op": "search",
+      "request": {
+        "name": "search_tools",
+        "arguments": {
+          "query": "publication"
+        }
+      },
+      "isError": false,
+      "result": {
+        "tools": []
+      }
+    }
+  ],
+  "checks": {
+    "sameSourceAndHttpRequest": true,
+    "sameExecutedProgram": true,
+    "freshGuestsAndPinnedImage": true,
+    "sandboxCleanupVerified": true,
+    "twoAuthorizedReads": true,
+    "revokedReadDenied": true,
+    "deniedReadHasNoResult": true,
+    "revokedToolHidden": true,
+    "noOperatorResetBetweenReplayAndDenial": true
+  }
+}

@@ -18,13 +18,17 @@ final class ClaudeAuditProofTest extends TestCase
     {
         $report = ClaudeAuditProof::load(\dirname(__DIR__, 2));
         $this->assertTrue($report['matched']);
-        $this->assertSame(['direct-regular', 'catalog-native', 'catalog-regular', 'direct-native'], array_column($report['attempts'], 'arm'));
-        $this->assertSame([53749, 91145, 54939, 49432], array_column(array_column($report['attempts'], 'usage'), 'total'));
-        $this->assertSame([5, 7, 6, 4], array_column(array_column($report['attempts'], 'usage'), 'requests'));
-        $this->assertSame([true, true, false, true], array_column(array_column($report['attempts'], 'verification'), 'passed'));
+        $this->assertCount(8, $report['attempts']);
+        $this->assertSame([true, true], array_column($report['iterations'], 'matched'));
+        $original = \array_slice($report['attempts'], 0, 4);
+        $this->assertSame(['direct-regular', 'catalog-native', 'catalog-regular', 'direct-native'], array_column($original, 'arm'));
+        $this->assertSame([53749, 91145, 54939, 49432], array_column(array_column($original, 'usage'), 'total'));
+        $this->assertSame([5, 7, 6, 4], array_column(array_column($original, 'usage'), 'requests'));
+        $this->assertSame([true, true, false, true], array_column(array_column($original, 'verification'), 'passed'));
         foreach ($report['attempts'] as $run) {
             $this->assertTrue($run['verification']['captureVerified'], json_encode($run['verification']));
-            $this->assertTrue($run['currentSourceMatches']);
+            // Both iterations predate the gateway's opt-in field selection surface.
+            $this->assertFalse($run['currentSourceMatches']);
             $this->assertTrue($run['usage']['complete']);
         }
         $failed = $report['attempts'][2];
@@ -37,10 +41,32 @@ final class ClaudeAuditProofTest extends TestCase
         $this->assertCount(3, $report['attempts'][3]['code']);
     }
 
+    public function testCorrectedContractsKeepAllFourCorrectAnswersAndClientRuntimeFailures(): void
+    {
+        $report = ClaudeAuditProof::load(\dirname(__DIR__, 2));
+        $runs = \array_slice($report['attempts'], 4);
+        $this->assertSame([54067, 143647, 60781, 94655], array_column(array_column($runs, 'usage'), 'total'));
+        $this->assertSame([5, 9, 6, 7], array_column(array_column($runs, 'usage'), 'requests'));
+        foreach ($runs as $run) {
+            $this->assertTrue($run['verification']['passed'], json_encode($run['verification']));
+            $this->assertSame(0, $run['verification']['counts']['deniedReads']);
+            $this->assertSame(['cms_list_articles' => 48, 'cms_get_articles' => 48, 'cms_get_media' => 24], $run['verification']['coverage']);
+        }
+        $this->assertCount(1, array_filter($runs[1]['code'], static fn ($block) => $block['isError']));
+        $this->assertCount(2, array_filter($runs[3]['code'], static fn ($block) => $block['isError']));
+        $this->assertSame(12, $runs[3]['verification']['counts']['reservedCalls']);
+        // Only metadata was corrected: all security, fixture and dependency sources are unchanged.
+        foreach ($report['attempts'][0]['sourceSha256'] as $path => $hash) {
+            if (!\in_array($path, ['src/Demo/AuditMatrix/Tools.php', 'src/Demo/AuditMatrix/Gateway.php'], true)) {
+                $this->assertSame($hash, $runs[0]['sourceSha256'][$path], $path);
+            }
+        }
+    }
+
     public function testAnswerAndTransportTamperingCannotBecomeAValidAudit(): void
     {
         $report = ClaudeAuditProof::load(\dirname(__DIR__, 2));
-        foreach ([$report['attempts'][0], $report['attempts'][1], $report['attempts'][3]] as $original) {
+        foreach (array_filter($report['attempts'], static fn ($run) => $run['verification']['passed']) as $original) {
             foreach (['answer', 'call', 'data', 'budget', 'handler', 'usage', 'tool'] as $case) {
                 $run = $original;
                 $index = array_key_first(array_filter($run['http'], static fn ($row) => 'tools/call' === $row['request']['method'] && 'search_tools' !== $row['request']['params']['name']));
@@ -81,5 +107,20 @@ final class ClaudeAuditProofTest extends TestCase
         $index = array_key_first(array_filter($failed['http'], static fn ($row) => $row['response']['result']['isError'] ?? false));
         $failed['http'][$index]['trace']['operations'][0]['nativeEvents'][] = ['name' => 'cms_get_media', 'phase' => 'requested'];
         $this->assertFalse(ClaudeAuditProof::verify($failed, $report['protocol']['question'])['captureVerified']);
+    }
+
+    public function testNativeFieldSelectionPairIncludesActualChoicesAndOnlyLocalDiscovery(): void
+    {
+        $pair = ClaudeAuditProof::load(\dirname(__DIR__, 2))['fieldSelectionPair'];
+        $this->assertTrue($pair['matched']);
+        [$baseline, $offered] = $pair['attempts'];
+        $this->assertTrue($baseline['verification']['passed']);
+        $this->assertTrue($offered['verification']['passed']);
+        $this->assertSame([0, 6], array_column($pair['attempts'], 'selectedReads'));
+        $this->assertSame([173097, 167618], array_column(array_column($pair['attempts'], 'usage'), 'total'));
+        $this->assertSame([12, 11], array_column(array_column($pair['attempts'], 'usage'), 'requests'));
+        $index = array_key_first(array_filter($offered['agentCalls'], static fn ($call) => 'describeTool' === $call['name']));
+        $offered['agentCalls'][$index]['arguments']['name'] = 'some_other_server__tool';
+        $this->assertFalse(ClaudeAuditProof::verify($offered, $pair['protocol']['question'])['checks']['noExternalToolCalls']);
     }
 }

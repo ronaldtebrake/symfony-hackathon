@@ -1,4 +1,4 @@
-# Historical root PHP demo; the independent HTTP application uses the JSON default.
+# The publishing demo runs generated PHP. The independent HTTP app uses the JSON default.
 # Only these trusted read services enter Code Mode. Autowiring does not approve other services.
 code_mode:
     mode: php

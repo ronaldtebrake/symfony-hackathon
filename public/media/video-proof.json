@@ -8,6 +8,10 @@
     1080
   ],
   "audio": "none",
+  "readmeAttachment": {
+    "url": "https://github.com/user-attachments/assets/cdc79b9d-7b0b-4923-bd28-78ff0f9791da",
+    "sha256": "f2f9ed4eaca611f71c60487a18446447a24ccd179af067c1a48da1505be8beb5"
+  },
   "scope": "Original user-supplied agent recordings, edited with separate Maker/source inserts and reformatted excerpts of a real Symfony AI + Hugging Face HTTP conversation. No synthetic agent footage, invented calls or audio. Model insert timing is editorial, not measured latency.",
   "sources": [
     {
@@ -23,7 +27,7 @@
     {
       "start": 0,
       "end": 12,
-      "title": "Connect agents to Symfony through MCP"
+      "title": "Find an article with two MCP tools"
     },
     {
       "start": 12,
@@ -76,7 +80,7 @@
       540
     ],
     "revocation": "Caption explains the real operator change between recordings; no operator footage was supplied.",
-    "opening": "First seven seconds illustrate an AI agent connecting over MCP/HTTP to the two-tool catalog inside a Symfony application and its approved services. Seconds 7–12 show the separate offline schema measurement: 10 to 100 synthetic tools; two entry contracts stay at 239 schema tokens.",
+    "opening": "0–7s: An illustrated reader asks for the title of article 101. search_tools finds a service visible to this reader; execute_tools calls the handler with current permissions. 7–12s: At 10 and 100 synthetic services, advertising each schema measures 865 and 8,605 tokens. The two entry contracts measure 239 at both sizes. Search responses add tokens. The title question is paraphrased for the opening.",
     "outro": {
       "changedSeconds": [
         87,
@@ -84,13 +88,26 @@
       ],
       "note": "Clone. Run the proof. Connect your agent. Repository link; PHP and Composer."
     },
-    "presentation": "51 seconds allocated to original agent recordings; existing crop and seven-second wait trim preserved. The 12-second opening explains the MCP connection before the schema comparison. Minimal product captions, no lower-left production notes. An eight-second separately labelled HTTP/Hugging Face insert shows the actual denied follow-up and hidden-contract search. No provider-token total is displayed in the film; measured usage remains in the reviewed evidence.",
+    "presentation": "51 seconds are allocated to original agent recordings, with the existing crop and labelled waiting trim. The opening introduces the reader’s task, both server tools and the measured advertised-schema footprint. A separately labelled eight-second insert shows the Symfony AI + Hugging Face HTTP denial and subsequent search. Total conversation-token usage is available in the evidence.",
     "journey": {
       "seconds": [
         12,
         16
       ],
       "note": "Sandboxed PHP in gVisor, JSON calls over ordinary HTTP, then discovery built on the proposed Symfony AI BM25 component. Historical and current paths remain distinct."
+    },
+    "openingVerification": {
+      "previousFilmSha256": "817c813fe6cfedf7c09731a9942e7812d28e059efe16619c71b40bbb5a334169",
+      "replacedSeconds": [
+        0,
+        12
+      ],
+      "copiedSeconds": [
+        12,
+        90
+      ],
+      "unchangedDecodedFrames": 2340,
+      "scope": "The frames and timestamps from 12 seconds to the end matched the previous cut in a decoded FFmpeg framecrc comparison."
     }
   },
   "recordingVerification": {
@@ -534,10 +551,10 @@
     "shownInCurrentFilm": false
   },
   "assets": {
-    "symfony-native-tools-demo-90s.mp4": "817c813fe6cfedf7c09731a9942e7812d28e059efe16619c71b40bbb5a334169",
+    "symfony-native-tools-demo-90s.mp4": "f2f9ed4eaca611f71c60487a18446447a24ccd179af067c1a48da1505be8beb5",
     "profiler-authorized.png": "91e9d66d32dac1fc826565638ac2308249bcf1746515fb5a96ec13b34887eaa8",
     "profiler-denied.png": "215ecf2a8f3355bad65a97e2d3dfaf62af5fabc715525caaba6642c67e96678a",
-    "symfony-native-tools-poster.jpg": "0e72e7f78605727c76c157393afb5b70dda348c62f88c1396a553868af692eb3"
+    "symfony-native-tools-poster.jpg": "895e85531f6db1dc27a0c68e6d58892a313fd42d6a0dd4fb8d375e338061f8db"
   },
   "schemaScaling": {
     "capture": "docs/evidence/catalog-scaling.json",
@@ -560,8 +577,6 @@
     ],
     "shownSizes": [
       10,
-      20,
-      40,
       100
     ],
     "scope": "Offline tokenization of one serialized MCP tools/list result. The two current HTTP contracts match the authenticated execution capture. Direct catalogs contain synthetic four-field tools. Exact-name searches use the real catalog implementation. No model or tool handler runs; no provider usage, correctness comparison or billing is measured.",

@@ -16,6 +16,7 @@
 ###< phpunit/phpunit ###
 
 # Local editor and OS files
+/scripts/__pycache__/
 /.idea/
 /.vscode/
 /.codex/config.toml

@@ -13,6 +13,7 @@ use Symfony\AI\Platform\Model;
 use Symfony\AI\Platform\ModelCatalog\ModelCatalogInterface;
 use Symfony\AI\Platform\PlatformInterface;
 use Symfony\AI\Platform\Result\DeferredResult;
+use Symfony\AI\Platform\Result\RawHttpResult;
 use Symfony\AI\Platform\Result\ResultInterface;
 use Symfony\AI\Platform\Result\TextResult;
 use Symfony\AI\Platform\TokenUsage\TokenUsageInterface;
@@ -20,7 +21,7 @@ use Symfony\AI\Platform\TokenUsage\TokenUsageInterface;
 /** Admission happens before invoke(), which may already start HTTP I/O before progress is emitted. */
 final readonly class BudgetedPlatform implements PlatformInterface
 {
-    public function __construct(private PlatformInterface $inner, private RunTrace $trace, private int $limit)
+    public function __construct(private PlatformInterface $inner, private RunTrace $trace, private int $limit, private bool $captureProviderRouting = false)
     {
     }
 
@@ -68,10 +69,19 @@ final readonly class BudgetedPlatform implements PlatformInterface
             $deferred->onConvert(function (ResultInterface $result) use ($index): ResultInterface {
                 $usage = $result->getMetadata()->get('token_usage');
                 $finish = $result->getMetadata()->get('finish_reason');
+                $routing = [];
+                if ($this->captureProviderRouting && ($raw = $result->getRawResult()) instanceof RawHttpResult) {
+                    // The converter already consumed this same HTTP response; no additional request.
+                    $data = $raw->getData();
+                    foreach (['model' => 'reportedModel', 'provider' => 'reportedProvider'] as $key => $label) {
+                        $id = $data[$key] ?? null;
+                        $routing[$label] = \is_string($id) && preg_match('~\A[A-Za-z0-9._:/-]{1,200}\z~D', $id) ? $id : null;
+                    }
+                }
                 $this->trace->providerResponses[] = ['request' => $index,
                     'answerSha256' => $result instanceof TextResult ? hash('sha256', $result->getContent()) : null,
                     'finishReason' => $finish instanceof FinishReason ? $finish->getCase()->value : null,
-                    'tokens' => $usage instanceof TokenUsageInterface ? ['prompt' => $usage->getPromptTokens(), 'completion' => $usage->getCompletionTokens(), 'total' => $usage->getTotalTokens()] : null];
+                    'tokens' => $usage instanceof TokenUsageInterface ? ['prompt' => $usage->getPromptTokens(), 'completion' => $usage->getCompletionTokens(), 'total' => $usage->getTotalTokens()] : null] + $routing;
 
                 return $result;
             });

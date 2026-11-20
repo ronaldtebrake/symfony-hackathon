@@ -2,7 +2,7 @@
 
 This small application owns its Composer dependencies, synthetic articles, native Symfony AI `#[AsTool]` service and access policy. It exposes **two MCP tools over authenticated HTTP**: `search_tools` and `execute_tools`. Approved JSON calls run as normal Symfony services. There is no Unix worker, process-control extension, Docker or model-token requirement.
 
-[Judge quickstart: clone → prove → connect → revoke](../../README.md#judge-quickstart).
+This is the application used in the [90-second demo](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour). In the recorded conversation an agent reads article 101, then repeats the same call after the operator revokes its grant. [Inspect the JSON requests and Symfony traces](https://ronaldtebrake.github.io/symfony-hackathon/?client=symfony-ai#native-rehearsal).
 
 ## Install and verify
 
@@ -45,7 +45,7 @@ Search for `publication_read`, execute with `{"id":101}`, then try `{"id":202}`.
 php examples/symfony/bin/console code-mode:reset-budget demo-reader
 ```
 
-For the [90-second recording](../../docs/demo.md), grant access and reset the budget before the take. Discover and read article 101, then run `php examples/symfony/bin/console demo:reader-access revoke` as the operator. Repeat the identical read using the same token and connection: `tool_denied`, with no new article data. Search again: no visible contract. Do not reset or reconnect between these calls. Revocation cannot erase an earlier result already in the conversation and does not interrupt a running handler.
+For the [catalog recording](../../docs/demo.md), grant access and reset the budget before the take. Discover and read article 101, then run `php examples/symfony/bin/console demo:reader-access revoke` as the operator. Repeat the identical read using the same token and connection: `tool_denied`, with no new article data. Search again: no visible contract. Do not reset or reconnect between these calls. Revocation cannot erase an earlier result already in the conversation and does not interrupt a running handler.
 
 There is no reset tool. Preserve that state directory across requests and deploys. The default filesystem storage and lock support one application host. Multiple hosts need a shared store and compatible lock; [integration and hosting limits](../../packages/symfony-code-mode/README.md#http-state-and-limits).
 

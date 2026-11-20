@@ -13,21 +13,46 @@ final class DemoPageTest extends WebTestCase
         $client = self::createClient();
         $crawler = $client->request('GET', '/demo');
         self::assertResponseIsSuccessful();
-        $this->assertStringContainsString('One searchable catalog.', $crawler->filterXPath('//h1')->text());
+        $this->assertCount(1, $crawler->filterXPath('//*[@id="overview"]//a[@class="primary-link" and @href="#demo-tour"]'));
+        $this->assertCount(1, $crawler->filterXPath('//*[@id="sandbox-tour"]//video/source[@src="/media/server-code-mode-90s.mp4"]'));
+        $this->assertCount(1, $crawler->filterXPath('//*[@id="demo-tour"]//video/source[@src="/media/editorial-review-90s.mp4?v=11"]'));
+        $this->assertCount(1, $crawler->filterXPath('//*[@id="article-tour"]//video/source[@src="/media/symfony-native-tools-demo-90s.mp4"]'));
         $nav = $crawler->filterXPath('//nav[@aria-label="Documentation"]');
-        $this->assertStringContainsString('THE DESIGN JOURNEY', $nav->text());
-        $this->assertSame(['#journey'], $nav->filterXPath('.//a[contains(text(),"From PHP to JSON")]')->extract(['href']));
-        $this->assertCount(0, $nav->filterXPath('.//a[@href="#lean-responses" or @href="#adoption-proof"]'));
+        $this->assertSame(['#overview', '#demo-tour', '#how-it-works', '#journey'], $nav->filterXPath('.//a')->extract(['href']));
+        $this->assertCount(1, $crawler->filterXPath('//*[@id="overview"]//*[@id="contributions"]'));
+        $this->assertCount(1, $crawler->filterXPath('//*[@id="overview"]//*[@id="whats-next"]//a[@href="#group-receipts"]'));
         $this->assertCount(1, $crawler->filterXPath('//*[@id="journey"]//img[contains(@src,"code-mode-value.svg")]'));
+        $this->assertCount(1, $crawler->filterXPath('//*[@id="how-it-works"]//*[@id="mcp-architecture"]//img[@src="/images/symfony-mcp-architecture.svg"]'));
+        $this->assertStringContainsString('search_tools', $crawler->filterXPath('//*[@id="how-it-works"]//pre')->text());
+        $this->assertStringContainsString('execute_tools', $crawler->filterXPath('//*[@id="how-it-works"]//pre')->text());
+        $this->assertStringContainsString('composer proof:http --working-dir=examples/symfony', $crawler->filterXPath('//*[@id="quickstart"]')->text());
+        $this->assertSame(['symfony-ai'], $crawler->filterXPath('//select[@id="http-conversation-client" and @hidden]/option[1]')->extract(['value']));
+        $this->assertCount(0, $nav->filterXPath('.//a[contains(@href, "claude") or @href="#mcp-paths"]'));
         self::assertResponseHeaderSame('x-content-type-options', 'nosniff');
         $this->assertStringContainsString("script-src 'self'", $client->getResponse()->headers->get('Content-Security-Policy'));
         $this->assertCount(0, $crawler->filterXPath('//textarea'));
         $this->assertCount(0, $crawler->filterXPath('//form'));
-        // Only local price arithmetic accepts input; there is no prompt or execution form.
-        $this->assertSame(['cost-input-rate', 'cost-output-rate'], $crawler->filterXPath('//input')->extract(['id']));
+        // These inputs select a recorded trace or calculate prices locally.
+        $this->assertSame(['flow-before', 'flow-after', 'cost-input-rate', 'cost-output-rate'], $crawler->filterXPath('//input')->extract(['id']));
+        $this->assertSame(['lookup', 'revoked'], $crawler->filterXPath('//*[@id="how-it-works"]//input[@type="radio"]')->extract(['value']));
         $this->assertCount(2, $crawler->filterXPath('//input[@type="number" and @min="0"]'));
         $this->assertCount(1, $crawler->filterXPath('//*[@id="agent-run"]'));
         $this->assertCount(1, $crawler->filterXPath('//*[@id="security-proof"]'));
+        $client->request('GET', '/images/symfony-mcp-architecture.svg');
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('content-type', 'image/svg+xml');
+        $this->assertSame(file_get_contents(\dirname(__DIR__, 2).'/docs/images/symfony-mcp-architecture.svg'), $client->getResponse()->getContent());
+        foreach (['refund-protocol', 'refund-skill', 'editorial-review', 'editorial-review-agent', 'editorial-audit-replay', 'editorial-groups', 'editorial-groups-footprint'] as $report) {
+            $client->request('GET', '/demo/'.$report);
+            self::assertResponseIsSuccessful();
+            self::assertResponseHeaderSame('content-type', 'application/json');
+            $this->assertSame(file_get_contents(\dirname(__DIR__, 2).'/docs/evidence/'.$report.'.json'), $client->getResponse()->getContent());
+        }
+        foreach (['server-code-mode-90s.mp4' => 'video/mp4', 'server-code-mode-poster.jpg' => 'image/jpeg', 'server-code-mode-film.json' => 'application/json'] as $file => $type) {
+            $client->request('HEAD', '/media/'.$file);
+            self::assertResponseIsSuccessful();
+            self::assertResponseHeaderSame('content-type', $type);
+        }
         $client->request('GET', '/demo/questions');
         self::assertResponseStatusCodeSame(404);
         $client->request('GET', '/demo/security-report');

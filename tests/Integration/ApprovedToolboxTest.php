@@ -20,11 +20,55 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 use Symfony\AI\Agent\Toolbox\Event\ToolCallRequested;
 use Symfony\AI\Agent\Toolbox\Event\ToolCallSucceeded;
 use Symfony\AI\Agent\Toolbox\Toolbox;
+use Symfony\AI\Agent\Toolbox\ToolCallArgumentResolverInterface;
+use Symfony\AI\Agent\Toolbox\ToolFactoryInterface;
+use Symfony\AI\Platform\Result\ToolCall;
+use Symfony\AI\Platform\Tool\ExecutionReference;
+use Symfony\AI\Platform\Tool\Tool as AiTool;
+use Symfony\AI\Platform\Tool\ToolEffectHints;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 final class ApprovedToolboxTest extends TestCase
 {
+    public function testRegisteredServicesUseTheApplicationSchemaFactoryAndArgumentResolver(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.environment', 'test');
+        $container->setParameter('kernel.bundles', ['AiBundle' => \Symfony\AI\AiBundle\AiBundle::class]);
+        $container->setParameter('kernel.build_dir', \dirname(__DIR__, 2).'/var/cache/test');
+        $container->register(PublishingTools::class);
+        $container->register(PublishingAuthorization::class);
+        $container->register(DemoIdentityProvider::class);
+        $container->register('event_dispatcher', EventDispatcher::class);
+        $factory = $this->createMock(ToolFactoryInterface::class);
+        $factory->expects($this->once())->method('getTool')->willReturn([
+            new AiTool(new ExecutionReference(PublishingTools::class, 'list'), 'publishing_list', 'From the application factory',
+                ['type' => 'object', 'properties' => ['page' => ['type' => 'integer', 'description' => 'Page number']], 'required' => ['page'], 'additionalProperties' => false],
+                metadata: ['code_mode.output_schema' => ['type' => 'object', 'properties' => ['items' => ['type' => 'array', 'items' => []]]]],
+                effectHints: new ToolEffectHints(readOnlyHint: true)),
+        ]);
+        $container->register('ai.tool_factory', ToolFactoryInterface::class)->setSynthetic(true)->setPublic(true);
+        $resolver = $this->createMock(ToolCallArgumentResolverInterface::class);
+        $resolver->expects($this->once())->method('resolveArguments')->willReturn(['page' => 1]);
+        $container->register('ai.tool_call_argument_resolver', ToolCallArgumentResolverInterface::class)->setSynthetic(true)->setPublic(true);
+        (new CodeModeBundle())->getContainerExtension()->load([[
+            'identity_provider' => DemoIdentityProvider::class, 'ai_tool_services' => [PublishingTools::class],
+            'ai_authorization' => PublishingAuthorization::class, 'ai_tools' => ['publishing_list'],
+        ]], $container);
+        $container->getDefinition(SessionFactory::class)->setPublic(true);
+        $container->getDefinition('code_mode.native_toolbox')->setPublic(true);
+        $container->compile();
+        $container->set('ai.tool_factory', $factory);
+        $container->set('ai.tool_call_argument_resolver', $resolver);
+        $definition = $container->get(SessionFactory::class)->catalog()->all()[0];
+        $this->assertSame('From the application factory', $definition->description);
+        $this->assertInstanceOf(\stdClass::class, $definition->outputSchema->properties->items->items);
+        $this->assertFalse($definition->inputSchema->additionalProperties);
+        $result = $container->get('code_mode.native_toolbox')->execute(new ToolCall('application-resolver', 'publishing_list', []));
+        $this->assertCount(12, $result->getResult()['items']);
+    }
+
     public function testBundleConfigurationCanUseExistingAiToolsWithoutCustomReadServices(): void
     {
         $container = new ContainerBuilder();

@@ -49,4 +49,4 @@ The workbench is a local GET-only viewer. Tests cover remote-client/Host rejecti
 
 The optional Symfony bundle AI adapter has mocked-provider tests and real MCP/gVisor integration coverage; its paid-provider path is not the Hugging Face audit capture. Windows, rootless Docker, alternate gVisor platforms and a native Linux coordinator were not verified locally. The configured GitHub Actions sandbox job is not evidence of a completed remote run.
 
-Passing these tests does not establish safety for a public multi-tenant execution service. Production deployment still needs independent review, authenticated identity, admission limits and operational supervision. The [90-second manual recording](../../../docs/demo.md) and formal hackathon submission remain pending.
+Passing these tests does not establish safety for a public multi-tenant execution service. Production deployment still needs independent review, authenticated identity, admission limits and operational supervision. The [90-second product demo](../../../docs/demo.md) uses the current Symfony HTTP path. The sandbox checks above cover the earlier generated-PHP design.

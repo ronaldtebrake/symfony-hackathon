@@ -90,10 +90,14 @@ final class CodeModeBundle extends AbstractBundle
             if (!class_exists(\Symfony\AI\Agent\Toolbox\Toolbox::class)) {
                 throw new \LogicException('Install symfony/ai-agent to register native tools.');
             }
-            $services->set('code_mode.native_toolbox', \Symfony\AI\Agent\Toolbox\Toolbox::class)->args([
+            $toolbox = $services->set('code_mode.native_toolbox', \Symfony\AI\Agent\Toolbox\Toolbox::class)->args([
                 '$tools' => array_map(static fn (string $id) => new Reference($id), $config['ai_tool_services']),
                 '$eventDispatcher' => new Reference('event_dispatcher'),
             ])->tag('ai.toolbox');
+            if ($builder->hasParameter('kernel.bundles') && isset($builder->getParameter('kernel.bundles')['AiBundle'])) {
+                $toolbox->arg('$toolFactory', new Reference('ai.tool_factory'))
+                    ->arg('$argumentResolver', new Reference('ai.tool_call_argument_resolver'));
+            }
             $config['ai_toolbox'] = 'code_mode.native_toolbox';
         }
         if ($config['http']['enabled']) {

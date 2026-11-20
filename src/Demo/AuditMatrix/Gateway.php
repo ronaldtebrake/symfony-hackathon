@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Demo\AuditMatrix;
 
+use App\Demo\Groups\PublishingGroups;
 use CodeMode\BatchResult;
 use CodeMode\BatchSession;
 use CodeMode\ExecutionLimits;
 use CodeMode\Symfony\Ai\ApprovedToolbox;
 use CodeMode\Symfony\Ai\Search\SymfonyCatalogSearch;
+use CodeMode\Symfony\Ai\SelectToolFields;
 use CodeMode\Symfony\Http\CatalogStateStore;
 use CodeMode\Symfony\Http\SecurityIdentityProvider;
 use CodeMode\Symfony\Profiler\CatalogTrace;
@@ -17,7 +19,9 @@ use CodeMode\Tool;
 use CodeMode\ToolBroker;
 use CodeMode\ToolCatalog;
 use Mcp\Schema\Content\TextContent;
+use Mcp\Schema\Enum\ProtocolVersion;
 use Mcp\Schema\Result\CallToolResult;
+use Mcp\Schema\Wire\McpHeader;
 use Mcp\Server;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Symfony\AI\Agent\Toolbox\Toolbox;
@@ -44,13 +48,23 @@ final class Gateway
 
     public function __construct(private readonly string $directory, private readonly string $surface, private readonly SecurityIdentityProvider $identities, private readonly Access $access)
     {
-        if (!\in_array($surface, ['direct', 'catalog'], true)) {
-            throw new \InvalidArgumentException('Choose direct or catalog.');
+        if (!\in_array($surface, ['direct', 'catalog', 'catalog-fields', 'groups'], true)) {
+            throw new \InvalidArgumentException('Unknown audit tool surface.');
         }
         $this->trace = new CatalogTrace();
         $events = new EventDispatcher();
         $events->addSubscriber(new ToolEventSubscriber($this->trace));
         $approved = (new ApprovedToolbox(new Toolbox([new Tools()], eventDispatcher: $events), Tools::NAMES, $access))->tools();
+        if (\in_array($surface, ['catalog-fields', 'groups'], true)) {
+            $selectable = [
+                'cms_list_articles' => ['id', 'title'],
+                'cms_get_articles' => ['id', 'title', 'status', 'language', 'path', 'updated', 'meta_description', 'image_id'],
+                'cms_get_media' => ['id', 'alt', 'file_name', 'width', 'height'],
+            ];
+            foreach ($approved as $index => $reader) {
+                $approved[$index] = new SelectToolFields($reader, $selectable[$reader->definition()->name], self::limits());
+            }
+        }
         $this->catalog = new ToolCatalog(array_map(static fn ($tool) => $tool->definition(), $approved), new SymfonyCatalogSearch());
         $this->broker = new ToolBroker(array_map(static fn ($tool) => new Tool($tool->definition()->name, $tool->definition()->inputSchema, $tool->authorize(...), $tool->invoke(...)), $approved));
         $this->states = new CatalogStateStore(new FilesystemAdapter('matrix', 0, $directory.'/budgets'), new LockFactory(new FlockStore($directory)));
@@ -58,12 +72,18 @@ final class Gateway
 
     public function __invoke(Request $request): Response
     {
+        $this->trace->reset();
         $identity = $this->identities->identity();
         $sample = new BatchSession($this->catalog, $this->broker, $identity, self::limits(), maxBatches: self::LIMIT, maxSessionToolCalls: self::LIMIT, visibility: $this->access);
-        $definitions = 'catalog' === $this->surface ? $sample->catalogToolDefinitions() : $this->catalog->visibleTo($identity, $this->access)->all();
+        $definitions = 'direct' === $this->surface ? $this->catalog->visibleTo($identity, $this->access)->all() : $sample->catalogToolDefinitions();
         $builder = Server::builder()->setServerInfo('Symfony audit matrix', '1.0.0')->setInstructions(self::INSTRUCTIONS)
             ->setSession(new Server\Session\FileSessionStore($this->directory.'/sessions'))
             ->setSessionLock(new Server\Session\FileSessionLock($this->directory.'/sessions'));
+        // The pinned Groups draft negotiates through 2026-07-28 per-request capabilities.
+        if ('groups' === $this->surface && ProtocolVersion::V2026_07_28->value === $request->headers->get(McpHeader::PROTOCOL_VERSION)) {
+            $builder->enableExtension(new PublishingGroups(
+                fn () => $this->catalog->visibleTo($this->identities->identity(), $this->access)->all(), $this->call(...)));
+        }
         foreach ($definitions as $definition) {
             $name = $definition->name;
             $handler = match ($name) {
@@ -72,12 +92,19 @@ final class Gateway
                 'cms_list_articles' => fn (int $offset, int $limit) => $this->call($name, ['offset' => $offset, 'limit' => $limit]),
                 default => fn (array $ids) => $this->call($name, ['ids' => $ids]),
             };
-            $builder->addTool($handler, name: $name, description: $definition->description, inputSchema: get_object_vars($definition->inputSchema));
+            // A bounded domain label makes the entry point discoverable to client-side tool search.
+            $description = ('search_tools' === $name ? 'Symfony article and media audit tools. ' : '').$definition->description;
+            $builder->addTool($handler, name: $name, description: $description, inputSchema: get_object_vars($definition->inputSchema));
         }
         $factory = new Psr17Factory();
         $controller = new McpController($builder->build(), new PsrHttpFactory($factory, $factory, $factory, $factory), new HttpFoundationFactory(), $factory, $factory, new MiddlewareFactory());
 
-        return $controller->handle($request);
+        $response = $controller->handle($request);
+        if ('groups' === $this->surface) {
+            $response->headers->set('Cache-Control', 'private, no-store');
+        }
+
+        return $response;
     }
 
     public function contracts(): array
@@ -94,22 +121,30 @@ final class Gateway
         try {
             $value = $this->states->withState($identity->subject, function (array $state, \Closure $save) use ($identity, $name, $arguments) {
                 $this->trace->budget($state, 'before');
-                if ('direct' === $this->surface) {
+                $scoped = 'groups' === $this->surface && \in_array($name, Tools::NAMES, true);
+                $namedReader = $scoped || 'direct' === $this->surface;
+                $catalogDiscovery = $state['described'] ?? [];
+                if ($namedReader) {
                     // Advertisement supplies contracts, never authority. The broker still checks every read.
-                    $state = ['described' => Tools::NAMES, 'executions' => $state['executions'] ?? 0, 'toolCalls' => $state['toolCalls'] ?? 0];
+                    $state = ['described' => $scoped ? [$name] : Tools::NAMES, 'executions' => $state['executions'] ?? 0, 'toolCalls' => $state['toolCalls'] ?? 0];
                 }
                 $session = new BatchSession($this->catalog, $this->broker, $identity, self::limits(), maxBatches: self::LIMIT,
-                    maxSessionToolCalls: self::LIMIT, state: $state, checkpoint: function (array $next) use ($save): void {
+                    maxSessionToolCalls: self::LIMIT, state: $state, checkpoint: function (array $next) use ($save, $scoped, $catalogDiscovery): void {
+                        // A native scoped call has no catalog-discovery prerequisite. It must not
+                        // unlock undiscovered operations on the fallback execute_tools surface.
+                        if ($scoped) {
+                            $next['described'] = $catalogDiscovery;
+                        }
                         $save($next);
                         $this->trace->budget($next, 'saved');
                     }, visibility: $this->access);
-                if ('catalog' === $this->surface && 'search_tools' === $name) {
+                if ('search_tools' === $name) {
                     return $session->searchContracts($arguments['query']);
                 }
-                $result = $session->respond('catalog' === $this->surface ? $arguments['calls'] : [['name' => $name, 'arguments' => $arguments]],
+                $result = $session->respond($namedReader ? [['name' => $name, 'arguments' => $arguments]] : $arguments['calls'],
                     fn (array $calls, array $trace) => $this->trace->ledger($trace));
 
-                return 'direct' === $this->surface ? (array) $result['results'][0]['value'] : $result;
+                return $namedReader ? (array) $result['results'][0]['value'] : $result;
             });
             $failed = false;
         } catch (\Throwable $error) {

@@ -7,6 +7,7 @@ namespace App\Tests\Integration;
 use App\Demo\AuditDataset;
 use App\Demo\AuditVerifier;
 use App\Demo\BackendFactory;
+use App\Demo\EditorialReplay;
 use App\Demo\ReportStore;
 use PHPUnit\Framework\TestCase;
 
@@ -78,12 +79,16 @@ final class RecordedProofTest extends TestCase
 
     public function testFreshConversationResultsMatchIndependentFixture(): void
     {
-        $capture = json_decode((new ReportStore(\dirname(__DIR__, 2)))->readCodexProof(), true, flags: \JSON_THROW_ON_ERROR);
+        $store = new ReportStore(\dirname(__DIR__, 2));
+        $capture = json_decode($store->readCodexProof(), true, flags: \JSON_THROW_ON_ERROR);
+        $replay = new EditorialReplay();
+        $programs = $replay->programs($store);
         $results = [];
         foreach ($capture['turns'] as $turn) {
             $this->assertSame('completed', $turn['status']);
             $executions = array_values(array_filter($turn['items'], static fn ($item) => 'mcpToolCall' === $item['type'] && 'php_execute' === $item['tool']));
             $this->assertCount(1, $executions);
+            $this->assertSame($executions[0]['arguments']['code'], $programs[\count($results)]);
             $this->assertSame('completed', $executions[0]['status']);
             $this->assertNull($executions[0]['error']);
             $result = $executions[0]['result']['structuredContent'];
@@ -91,40 +96,8 @@ final class RecordedProofTest extends TestCase
             $this->assertSame(BackendFactory::FIXTURE_TOOLS, array_values(array_unique(array_column($result['toolCalls'], 'name'))));
             $results[] = $result['value'];
         }
-        $this->assertCount(2, $results);
-        $dataset = new AuditDataset();
-        $findings = array_map(static function (array $article): array {
-            $article['issues'] = array_map(static fn ($issue) => match ($issue) {
-                'missing_meta_description' => 'missing_description',
-                'missing_hero_image_alt_text' => 'missing_alt',
-                default => throw new \LogicException('Unexpected test scenario.'),
-            }, $article['issues']);
-
-            return $article;
-        }, $results[0]['affected_articles']);
-        $this->assertSame($dataset->expected(), ['audited' => $results[0]['total_audited'], 'findings' => $findings]);
-        $this->assertSame(\count($findings), $results[0]['affected_count']);
-
-        $plan = $results[1];
-        $groups = ['missing_description' => array_column($plan['meta_description_fixes'], 'id'), 'missing_alt' => []];
-        $shared = [];
-        $previousImpact = \PHP_INT_MAX;
-        foreach ($plan['hero_image_alt_fixes_ranked_by_impact'] as $fix) {
-            $this->assertSame(\count($fix['affected_article_ids']), $fix['affected_article_count']);
-            $this->assertLessThanOrEqual($previousImpact, $fix['affected_article_count']);
-            $previousImpact = $fix['affected_article_count'];
-            array_push($groups['missing_alt'], ...$fix['affected_article_ids']);
-            if ($fix['affected_article_count'] > 1) {
-                $shared[] = ['image_id' => $fix['image_id'], 'article_ids' => $fix['affected_article_ids']];
-            }
-        }
-        sort($groups['missing_alt']);
-        $this->assertSame($dataset->expectedImpact(), ['audited' => $plan['total_audited'], 'groups' => $groups, 'shared_images' => $shared]);
-        $this->assertSame(\count($shared), $plan['shared_hero_image_fix_count']);
-        $this->assertSame(\count($plan['hero_image_alt_fixes_ranked_by_impact']), $plan['hero_image_alt_fix_count']);
-        $this->assertSame(\count($groups['missing_alt']), $plan['hero_image_alt_affected_article_count']);
-        $this->assertSame(\count($groups['missing_description']), $plan['meta_description_fix_count']);
-        $this->assertSame([], $plan['articles_without_hero_image']);
+        $this->assertCount(2, array_unique($programs));
+        $this->assertSame($replay->expectedAnswers(), $results);
     }
 
     public function testMissingOrOversizedCodexCaptureCannotBeReadAsEvidence(): void

@@ -78,12 +78,7 @@ final readonly class McpGateway
                     if (!isset($this->policies[$tool->name])) {
                         continue;
                     }
-                    $definitions[] = new ToolDefinition(
-                        $tool->name,
-                        $tool->description ?? '',
-                        json_decode(json_encode((object) $tool->inputSchema, \JSON_THROW_ON_ERROR, 32), false, 32, \JSON_THROW_ON_ERROR),
-                        null === $tool->outputSchema ? null : json_decode(json_encode((object) $tool->outputSchema, \JSON_THROW_ON_ERROR, 32), false, 32, \JSON_THROW_ON_ERROR),
-                    );
+                    $definitions[] = ToolDefinition::fromMcpTool($tool);
                 }
                 if ((hrtime(true) - $started) / 1e6 > 3000) {
                     throw new SandboxException('catalog_deadline_exceeded', 'Catalog returned after its cooperative deadline.');

@@ -27,12 +27,17 @@ final readonly class Access implements AccessTokenHandlerInterface, ToolAuthoriz
     public function getUserBadgeFrom(string $accessToken): UserBadge
     {
         $expected = @file_get_contents($this->directory.'/token');
-        if (false === $expected || \strlen($expected) < 32 || !hash_equals($expected, $accessToken)) {
-            throw new BadCredentialsException('Invalid bearer token.');
-        }
-        $roles = $this->granted() ? ['ROLE_AUDITOR'] : ['ROLE_VIEWER'];
+        if (false !== $expected && \strlen($expected) >= 32 && hash_equals($expected, $accessToken)) {
+            $roles = $this->granted() ? ['ROLE_AUDITOR'] : ['ROLE_VIEWER'];
 
-        return new UserBadge('matrix-reader', static fn () => new InMemoryUser('matrix-reader', null, $roles));
+            return new UserBadge('matrix-reader', static fn () => new InMemoryUser('matrix-reader', null, $roles));
+        }
+        $viewer = @file_get_contents($this->directory.'/viewer-token');
+        if (false !== $viewer && \strlen($viewer) >= 32 && hash_equals($viewer, $accessToken)) {
+            return new UserBadge('matrix-viewer', static fn () => new InMemoryUser('matrix-viewer', null, ['ROLE_VIEWER']));
+        }
+
+        throw new BadCredentialsException('Invalid bearer token.');
     }
 
     public function isVisible(ExecutionIdentity $identity, string $tool): bool

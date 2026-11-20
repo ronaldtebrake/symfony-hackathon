@@ -1,0 +1,1262 @@
+{
+    "format": "symfony-http-catalog/v1",
+    "capturedAt": "2026-11-20T09:59:26+00:00",
+    "status": "passed",
+    "scope": "Operator-authored JSON-RPC over actual Symfony MCP HTTP and bearer authentication. Independent Composer application, synthetic articles, no model or generated code. Process-control and child-process functions disabled inside the HTTP application.",
+    "execution": {
+        "mode": "in-process",
+        "hardTermination": false,
+        "budgets": "Persistent per authenticated user; failures and reconnects do not reset them."
+    },
+    "checks": {
+        "own_vendor:CodeMode\\BatchSession": true,
+        "own_vendor:CodeMode\\Symfony\\Http\\CatalogTools": true,
+        "no_root_autoloader": true,
+        "copied_packages": true,
+        "plain_php_runtime": true,
+        "authentication_required": true,
+        "invalid_token_rejected": true,
+        "http_initialize": true,
+        "two_entry_tools": true,
+        "discovery_required": true,
+        "only_approved_contract": true,
+        "authorized_read": true,
+        "controller_shares_authorized_read": true,
+        "controller_restricted_read_denied": true,
+        "restricted_read_denied": true,
+        "failure_consumes_attempt": true,
+        "restart_and_reconnect_preserve_budget": true,
+        "origin_check": true,
+        "identity_argument_rejected": true,
+        "discovery_isolated_by_user": true,
+        "discovery_filters_permissions": true,
+        "security_role_enforced": true,
+        "call_budget_enforced": true,
+        "invalid_attempt_consumed": true,
+        "read_before_revocation": true,
+        "revoked_call_denied": true,
+        "controller_revocation_enforced": true,
+        "revoked_contract_hidden": true,
+        "regrant_does_not_reset_budget": true,
+        "private_data_absent": true,
+        "credentials_absent": true
+    },
+    "httpChecks": {
+        "unauthenticated": {
+            "httpStatus": 401
+        },
+        "invalid_token": {
+            "httpStatus": 401,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tools/list",
+                "params": {}
+            },
+            "response": null
+        },
+        "advertised_tools": {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "tools/list",
+                "params": {}
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "result": {
+                    "tools": [
+                        {
+                            "name": "search_tools",
+                            "inputSchema": {
+                                "type": "object",
+                                "properties": {
+                                    "query": {
+                                        "type": "string",
+                                        "maxLength": 256
+                                    }
+                                },
+                                "required": [
+                                    "query"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "description": "Search approved Symfony tools and return their complete contracts. Search never grants permission. Use these names and literal JSON arguments in execute_tools."
+                        },
+                        {
+                            "name": "execute_tools",
+                            "inputSchema": {
+                                "type": "object",
+                                "properties": {
+                                    "calls": {
+                                        "type": "array",
+                                        "minItems": 1,
+                                        "maxItems": 100,
+                                        "items": {
+                                            "type": "object",
+                                            "required": [
+                                                "name",
+                                                "arguments"
+                                            ],
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "maxLength": 64,
+                                                    "pattern": "^[a-zA-Z][a-zA-Z0-9_.-]*$"
+                                                },
+                                                "arguments": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "calls"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "description": "Call approved tools with literal JSON arguments. No code or expressions. Two execution attempts per authenticated user, including failures, until the operator resets the budget. Calls stop on first error; earlier calls are not rolled back. Submitted calls reserve the call budget before execution. A new MCP connection does not reset it."
+                        }
+                    ]
+                }
+            }
+        },
+        "controller_authorized": {
+            "httpStatus": 200,
+            "response": {
+                "id": 101,
+                "title": "A Symfony application owns its tools"
+            }
+        },
+        "controller_restricted": {
+            "httpStatus": 403,
+            "response": {
+                "type": "https://tools.ietf.org/html/rfc2616#section-10",
+                "title": "An error occurred",
+                "status": 403,
+                "detail": "Forbidden"
+            }
+        },
+        "untrusted_origin": {
+            "httpStatus": 403,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 11,
+                "method": "tools/list",
+                "params": {}
+            },
+            "response": null
+        },
+        "forged_identity": {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 12,
+                "method": "tools/call",
+                "params": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            }
+                        ],
+                        "identity": "admin"
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 12,
+                "error": {
+                    "code": -32602,
+                    "message": "Invalid parameters for tool 'execute_tools': Object contains unexpected additional properties: `identity`.",
+                    "data": {
+                        "validation_errors": [
+                            {
+                                "pointer": "/",
+                                "keyword": "additionalProperties",
+                                "message": "Object contains unexpected additional properties: `identity`."
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "other_user_discovery": {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 13,
+                "method": "tools/call",
+                "params": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 13,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"discovery_required\"},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "discovery_required"
+                        },
+                        "completedCalls": 0
+                    }
+                }
+            }
+        },
+        "other_user_search": {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 14,
+                "method": "tools/call",
+                "params": {
+                    "name": "search_tools",
+                    "arguments": {
+                        "query": "publications"
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 14,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"tools\":[],\"matched\":0,\"returned\":0,\"limit\":8,\"truncated\":false,\"hint\":\"No approved contract matched. Try another name, action or input field.\"}"
+                        }
+                    ],
+                    "isError": false,
+                    "structuredContent": {
+                        "tools": [],
+                        "matched": 0,
+                        "returned": 0,
+                        "limit": 8,
+                        "truncated": false,
+                        "hint": "No approved contract matched. Try another name, action or input field."
+                    }
+                }
+            }
+        },
+        "other_user_permissions": {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 15,
+                "method": "tools/call",
+                "params": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 15,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"discovery_required\"},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "discovery_required"
+                        },
+                        "completedCalls": 0
+                    }
+                }
+            }
+        },
+        "controller_revoked": {
+            "httpStatus": 403,
+            "response": {
+                "type": "https://tools.ietf.org/html/rfc2616#section-10",
+                "title": "An error occurred",
+                "status": 403,
+                "detail": "Forbidden"
+            }
+        }
+    },
+    "calls": [
+        {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "tools/call",
+                "params": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"discovery_required\"},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "discovery_required"
+                        },
+                        "completedCalls": 0
+                    }
+                }
+            },
+            "label": "before_discovery"
+        },
+        {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "method": "tools/call",
+                "params": {
+                    "name": "search_tools",
+                    "arguments": {
+                        "query": "publications"
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"tools\":[{\"name\":\"publication_read\",\"description\":\"Read the ID and title of a published article by integer ID.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"}},\"required\":[\"id\"],\"additionalProperties\":false},\"outputSchema\":{\"type\":\"object\",\"required\":[\"id\",\"title\"],\"additionalProperties\":false,\"properties\":{\"id\":{\"type\":\"integer\"},\"title\":{\"type\":\"string\"}}}}],\"matched\":1,\"returned\":1,\"limit\":8,\"truncated\":false}"
+                        }
+                    ],
+                    "isError": false,
+                    "structuredContent": {
+                        "tools": [
+                            {
+                                "name": "publication_read",
+                                "description": "Read the ID and title of a published article by integer ID.",
+                                "inputSchema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "outputSchema": {
+                                    "type": "object",
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        ],
+                        "matched": 1,
+                        "returned": 1,
+                        "limit": 8,
+                        "truncated": false
+                    }
+                }
+            },
+            "label": "discovery"
+        },
+        {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 6,
+                "method": "tools/call",
+                "params": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 6,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"results\":[{\"name\":\"publication_read\",\"value\":{\"id\":101,\"title\":\"A Symfony application owns its tools\"}}]}"
+                        }
+                    ],
+                    "isError": false,
+                    "structuredContent": {
+                        "results": [
+                            {
+                                "name": "publication_read",
+                                "value": {
+                                    "id": 101,
+                                    "title": "A Symfony application owns its tools"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "label": "authorized"
+        },
+        {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 7,
+                "method": "tools/call",
+                "params": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 202
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 7,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"publication_read\",\"index\":0},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "tool_denied",
+                            "tool": "publication_read",
+                            "index": 0
+                        },
+                        "completedCalls": 0
+                    }
+                }
+            },
+            "label": "restricted"
+        },
+        {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 8,
+                "method": "tools/call",
+                "params": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 8,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"execution_limit\"},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "execution_limit"
+                        },
+                        "completedCalls": 0
+                    }
+                }
+            },
+            "label": "exhausted"
+        },
+        {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 10,
+                "method": "tools/call",
+                "params": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 10,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"execution_limit\"},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "execution_limit"
+                        },
+                        "completedCalls": 0
+                    }
+                }
+            },
+            "label": "after_restart"
+        },
+        {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 16,
+                "method": "tools/call",
+                "params": {
+                    "name": "search_tools",
+                    "arguments": {
+                        "query": "publications"
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 16,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"tools\":[{\"name\":\"publication_read\",\"description\":\"Read the ID and title of a published article by integer ID.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"}},\"required\":[\"id\"],\"additionalProperties\":false},\"outputSchema\":{\"type\":\"object\",\"required\":[\"id\",\"title\"],\"additionalProperties\":false,\"properties\":{\"id\":{\"type\":\"integer\"},\"title\":{\"type\":\"string\"}}}}],\"matched\":1,\"returned\":1,\"limit\":8,\"truncated\":false}"
+                        }
+                    ],
+                    "isError": false,
+                    "structuredContent": {
+                        "tools": [
+                            {
+                                "name": "publication_read",
+                                "description": "Read the ID and title of a published article by integer ID.",
+                                "inputSchema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "outputSchema": {
+                                    "type": "object",
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        ],
+                        "matched": 1,
+                        "returned": 1,
+                        "limit": 8,
+                        "truncated": false
+                    }
+                }
+            },
+            "label": "operator_reset_discovery"
+        },
+        {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 17,
+                "method": "tools/call",
+                "params": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            },
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            },
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            },
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            },
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            },
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            },
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            },
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            },
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            },
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            },
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 17,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"tool_call_limit\"},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "tool_call_limit"
+                        },
+                        "completedCalls": 0
+                    }
+                }
+            },
+            "label": "call_budget"
+        },
+        {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 18,
+                "method": "tools/call",
+                "params": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 18,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"results\":[{\"name\":\"publication_read\",\"value\":{\"id\":101,\"title\":\"A Symfony application owns its tools\"}}]}"
+                        }
+                    ],
+                    "isError": false,
+                    "structuredContent": {
+                        "results": [
+                            {
+                                "name": "publication_read",
+                                "value": {
+                                    "id": 101,
+                                    "title": "A Symfony application owns its tools"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "label": "recovery_after_invalid"
+        },
+        {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 19,
+                "method": "tools/call",
+                "params": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 19,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"execution_limit\"},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "execution_limit"
+                        },
+                        "completedCalls": 0
+                    }
+                }
+            },
+            "label": "invalid_attempt_exhausted"
+        },
+        {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 20,
+                "method": "tools/call",
+                "params": {
+                    "name": "search_tools",
+                    "arguments": {
+                        "query": "publications"
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 20,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"tools\":[{\"name\":\"publication_read\",\"description\":\"Read the ID and title of a published article by integer ID.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"}},\"required\":[\"id\"],\"additionalProperties\":false},\"outputSchema\":{\"type\":\"object\",\"required\":[\"id\",\"title\"],\"additionalProperties\":false,\"properties\":{\"id\":{\"type\":\"integer\"},\"title\":{\"type\":\"string\"}}}}],\"matched\":1,\"returned\":1,\"limit\":8,\"truncated\":false}"
+                        }
+                    ],
+                    "isError": false,
+                    "structuredContent": {
+                        "tools": [
+                            {
+                                "name": "publication_read",
+                                "description": "Read the ID and title of a published article by integer ID.",
+                                "inputSchema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "outputSchema": {
+                                    "type": "object",
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        ],
+                        "matched": 1,
+                        "returned": 1,
+                        "limit": 8,
+                        "truncated": false
+                    }
+                }
+            },
+            "label": "revocation_discovery"
+        },
+        {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 21,
+                "method": "tools/call",
+                "params": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 21,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"results\":[{\"name\":\"publication_read\",\"value\":{\"id\":101,\"title\":\"A Symfony application owns its tools\"}}]}"
+                        }
+                    ],
+                    "isError": false,
+                    "structuredContent": {
+                        "results": [
+                            {
+                                "name": "publication_read",
+                                "value": {
+                                    "id": 101,
+                                    "title": "A Symfony application owns its tools"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "label": "before_revocation"
+        },
+        {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 22,
+                "method": "tools/call",
+                "params": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 22,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"publication_read\",\"index\":0},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "tool_denied",
+                            "tool": "publication_read",
+                            "index": 0
+                        },
+                        "completedCalls": 0
+                    }
+                }
+            },
+            "label": "after_revocation"
+        },
+        {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 23,
+                "method": "tools/call",
+                "params": {
+                    "name": "search_tools",
+                    "arguments": {
+                        "query": "publications"
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 23,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"tools\":[],\"matched\":0,\"returned\":0,\"limit\":8,\"truncated\":false,\"hint\":\"No approved contract matched. Try another name, action or input field.\"}"
+                        }
+                    ],
+                    "isError": false,
+                    "structuredContent": {
+                        "tools": [],
+                        "matched": 0,
+                        "returned": 0,
+                        "limit": 8,
+                        "truncated": false,
+                        "hint": "No approved contract matched. Try another name, action or input field."
+                    }
+                }
+            },
+            "label": "revoked_discovery"
+        },
+        {
+            "httpStatus": 200,
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 24,
+                "method": "tools/call",
+                "params": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 24,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"execution_limit\"},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "execution_limit"
+                        },
+                        "completedCalls": 0
+                    }
+                }
+            },
+            "label": "regrant_exhausted"
+        }
+    ],
+    "doctor": {
+        "ready": true,
+        "runtime": {
+            "executor": "json-batch",
+            "generatedCode": false,
+            "label": "Approved application calls",
+            "execution": "in-process",
+            "deadlineEnforcement": "cooperative",
+            "hardTermination": false
+        },
+        "checks": [
+            {
+                "name": "PHP",
+                "passed": true,
+                "detail": "PHP 8.3.19"
+            },
+            {
+                "name": "JSON",
+                "passed": true,
+                "detail": "JSON available; no process-control extensions required"
+            },
+            {
+                "name": "Approved tools",
+                "passed": true,
+                "detail": "Explicit tool services form a valid, bounded catalog"
+            }
+        ],
+        "limits": {
+            "wallTimeMs": 5000,
+            "toolTimeMs": 1000,
+            "memoryMiB": null,
+            "phpMemoryMiB": null,
+            "brokerMemoryMiB": null,
+            "maxToolCalls": 10,
+            "executionAttempts": 2,
+            "deadlineEnforcement": "cooperative",
+            "hardTermination": false
+        },
+        "scope": "Configuration checks only; no guest execution, application tool invocation or model request. Run the execution proofs separately."
+    },
+    "permissionChange": {
+        "command": "php bin/console demo:reader-access revoke",
+        "output": "demo-reader: publication.read_published revoked",
+        "subject": "demo-reader",
+        "permission": "publication.read_published",
+        "after": "before_revocation",
+        "before": "after_revocation"
+    },
+    "installation": {
+        "composerLockSha256": "7fa44ea91c534c37297a96aec18519c0e477df27e4d7fee3ee5f8e1de0195d8d",
+        "rootAutoloaderPresent": false,
+        "pathRepositorySourcesPresent": false,
+        "disabledFunctions": [
+            "pcntl_fork",
+            "pcntl_waitpid",
+            "pcntl_alarm",
+            "pcntl_signal",
+            "posix_setsid",
+            "posix_kill",
+            "posix_getpid",
+            "proc_open",
+            "popen",
+            "exec",
+            "shell_exec",
+            "system",
+            "passthru"
+        ],
+        "phpVersion": "8.3.19",
+        "osFamily": "Darwin"
+    },
+    "discovery": {
+        "component": "CodeMode\\Symfony\\Ai\\Search\\Upstream\\Bm25ToolSearch",
+        "query": "publications",
+        "scope": "The ordinary catalog uses the Symfony AI BM25 adapter. This plural query matches publication_read through normalization. No model called."
+    },
+    "sourceSha256": {
+        "composer.lock": "7fa44ea91c534c37297a96aec18519c0e477df27e4d7fee3ee5f8e1de0195d8d",
+        "config/bundles.php": "856288516587a38acc1186bff38902c0cd0c7d9f25ba8e43d856cf055433a2f8",
+        "config/packages/capability_hint.php": "503a58c15087c09c2711baeeeac973f55c8bab472b905e9f41f6d4c2f817c2ad",
+        "config/routes.php": "6f5491b506141339fd48352078521241b69744ae15f5e5c8e0e04971124c1d10",
+        "config/routes/capability_hint.php": "4fbfe28110178363a75896e04d608ba373b0be357012082d7a2b30cd2283648c",
+        "config/services.php": "6f7eb4132d0ab9c4faac2ce29ab1d44f1042fd5d1ac708a714c8b41fd3b29678",
+        "public/index.php": "f1b0d41c5c7c35613fa3bc933c412875c37e663c1cf17ff5798500ff29c74fd2",
+        "scripts/http-proof.php": "921e15d50bd5d4ce0bb48d00012e37940f144f090b2f39e99b5fd559674e1fd7",
+        "scripts/http-sources.php": "afe436ff2f65d53dfc1f5f83716c5e36b732d2cd524ee34280805c64092664eb",
+        "src/ArticleCatalog.php": "9f4f1b18211711634ea760723a50e62c3fb5875c39e25a5ddc3825d13a6955c9",
+        "src/ArticleController.php": "731ffcf6bdab90c9b90f987eb32bc54e33fe620d94306f42d5f97b98931d2fb6",
+        "src/ArticleTool.php": "c07071747db575e19b400b0e18b30d47a8e6df3b6da94a1a01762b211f6f0921",
+        "src/ArticleVoter.php": "a200a4ab3da9d697d95dacb2132b04250d5bcbbcf769446496288592a7cebca8",
+        "src/CapabilityHintController.php": "25a49ee031d1d8ee137eff529e9801769501efcaefeb17ea3a91eb1d8929f85a",
+        "src/DemoReaderAccess.php": "cc2949ccca42393ff66b51623236957e5fdc7557aa7969d8515a7d90e7bfcd4f",
+        "src/DemoTokenHandler.php": "6bb5cc30a298a028bb7f059d59d16b4a4f8e9d7449ba7e82ec2612a5ce1e6173",
+        "src/Kernel.php": "a7e53e2600c7dfa4e51d73d58d0a5d75babb3d716f61c8815276c6eb218e8f5b",
+        "src/LocalReader.php": "dacb02705efcbf6253c3fe2ba4fa154d254364398ab6d7437a3921be1f152c93",
+        "src/PublicationVisibility.php": "1a587ac0559115baa6df7f3ebaf6e909a4f62999b797d1f49f776e0eb7cbbd06",
+        "src/ReadPolicy.php": "29015499459d7cbf3221dfff49326ca5acde2b423a62f48ad4b308357447246f",
+        "src/ReaderAccessCommand.php": "f69705cbe4f4dd25e0340af7186485b3d78bd196be1d6e1d6e6a903e7a549cc2",
+        "src/SkillExperimentBundle.php": "dbdcfe605b780af38c3479a63b41a5471069d593e848d0f2b479b407604cbfff",
+        "src/SkillPresentation.php": "e5d08e12c989138c6a7ffc45397d0d6373ac113036dbd5a4932c18a6d0c8d12a",
+        "vendor/ronaldtebrake/php-code-mode/composer.json": "ae1420972c0e286b220422c763d43afe823415125d872e5523201aeb46b7ec92",
+        "vendor/ronaldtebrake/php-code-mode/src/AgentResponse.php": "59cbef7d1c1853a92e4ebb80f5de176d9e06f33078a467507bbd794d2374c918",
+        "vendor/ronaldtebrake/php-code-mode/src/BatchResult.php": "938708856ccc6a12c2c2a9f197eb15aa95daa6d38ff9ab51100944dcc805d359",
+        "vendor/ronaldtebrake/php-code-mode/src/BatchSession.php": "46b5ae35b5cc340878ec063860d3ed976054be57d7a42969b89e9ab63b9d76b2",
+        "vendor/ronaldtebrake/php-code-mode/src/BrokerWorker.php": "4b98ee2374dc25d887f3e4ce6876f6696113d36732388712653017f4b979e825",
+        "vendor/ronaldtebrake/php-code-mode/src/CatalogSearchInterface.php": "d46362259f402956367823bd1fbe689054c4a1af96f80bafb06a60f564418ec6",
+        "vendor/ronaldtebrake/php-code-mode/src/CodeModeSession.php": "99a6333c9ef4b5c52cc1de98228c79338d3328c04f531a61013524c76f4efb08",
+        "vendor/ronaldtebrake/php-code-mode/src/DiscoveryMode.php": "ca53433cb6a53126f6acb18315e0e25b77fdc4f14ffe3bd8ae5df761749966ce",
+        "vendor/ronaldtebrake/php-code-mode/src/DockerEngine.php": "e023bc3bfbdf3cdf3effed879508c35d286b053e5aca6ceb28fd67675124f17a",
+        "vendor/ronaldtebrake/php-code-mode/src/DockerSession.php": "145b68b743d682ee96b50ed60b8f8e1e5dc1dbf5dbd8a804c7f6d05519d4bc65",
+        "vendor/ronaldtebrake/php-code-mode/src/ExecutionIdentity.php": "56eb6bfd27c1a44fd4a8ff015f43d6897a3b1a184c6e55c1cef3bf2406c08c53",
+        "vendor/ronaldtebrake/php-code-mode/src/ExecutionLimits.php": "bb47c216e9ff25e5a934fc3ae210b526f3efc33eb03c52fb86af170b5520d998",
+        "vendor/ronaldtebrake/php-code-mode/src/ExecutionProfile.php": "71683d1af71058f0cd60b8f5554168fed9fb66ec2dcd306bc4ca43576a1922b5",
+        "vendor/ronaldtebrake/php-code-mode/src/ExecutionResult.php": "87de820e984a8d4688d208efbe84ce7f49e0098c305321822c0dc0c13836017a",
+        "vendor/ronaldtebrake/php-code-mode/src/ExecutionTimeline.php": "60da90169d1197e3f5677dc16854ff27d0be0f6f2ee94def7d36287a65157d56",
+        "vendor/ronaldtebrake/php-code-mode/src/ExecutionTraceFile.php": "49fced6e066b6b5d9d03401ccd4e845072bb79a8d37bbd8fdd2dbe451a03b0e3",
+        "vendor/ronaldtebrake/php-code-mode/src/GuestExecution.php": "e48755473ebe2c655e89350bc4d332bf049a927cf1bda07ecdee9e0610b2cce0",
+        "vendor/ronaldtebrake/php-code-mode/src/GvisorSandbox.php": "fb57916eb0bc5886d92b5573848917d072048483624ee04fd9afc3f98821dd2e",
+        "vendor/ronaldtebrake/php-code-mode/src/Mcp/McpGateway.php": "4beb3eb078c7ed287050a4af971596520d997b0e40a700b41fc074e5d9990620",
+        "vendor/ronaldtebrake/php-code-mode/src/PhpToolGuide.php": "7838cbebb386224074e423bce670aa6d8ca9c6763f29bacd3e12051df8c24fad",
+        "vendor/ronaldtebrake/php-code-mode/src/ProcessSession.php": "14b44ddc4136c4d360fcce578c2c12b8f3cd72b3f00c33f0a072c5b2657c535e",
+        "vendor/ronaldtebrake/php-code-mode/src/ProfiledExecutor.php": "9cb5d3f2dbf2c9dffcd953318200be28711e3425ed5e713a3c4f590bd5f9b530",
+        "vendor/ronaldtebrake/php-code-mode/src/Protocol.php": "6580157c56b29b9bccdf6cd4b0485a7e7074048ee67bf2d42bd77e3f8bdfc9f6",
+        "vendor/ronaldtebrake/php-code-mode/src/Provider/McpProvider.php": "9d0717160ff949d614f221215014016acc635e8af12a662225c41a2928aee780",
+        "vendor/ronaldtebrake/php-code-mode/src/Provider/PhpSchemaType.php": "98728fb0e99b4c6c7f2dcef85502d53cfb76ba3a650d31cde0eef72d0e173801",
+        "vendor/ronaldtebrake/php-code-mode/src/Provider/PhpToolInterface.php": "b879cc4460dfe960e1ee9b257b71565f537c6a5f0b94c2dfa6cd401a61c6f142",
+        "vendor/ronaldtebrake/php-code-mode/src/Provider/ProviderRegistry.php": "d2719b3af4d57687f75f264c183c0c41d24814d810d71844396d472702a54af2",
+        "vendor/ronaldtebrake/php-code-mode/src/Provider/ToolBinding.php": "52877a006db1d2bd411195efbc2315b4c0412082d277840245f44718d40c7eed",
+        "vendor/ronaldtebrake/php-code-mode/src/Provider/ToolProviderInterface.php": "d2ca5516d2ab141d3a5cb421bafb15ec93e738d009f8f9f7ff240fa87e88d1cf",
+        "vendor/ronaldtebrake/php-code-mode/src/SandboxException.php": "192a7310fed8d031e7d44e3a8359fac3b68fb18f1b592a0b63967b82d8c8e94d",
+        "vendor/ronaldtebrake/php-code-mode/src/SandboxExecutor.php": "4d97174c500eaf890e05ca97544eb2f42983583e46f4065c6cf98eb96774d809",
+        "vendor/ronaldtebrake/php-code-mode/src/Tool.php": "049559cd38624db8f19ac629ff8e73f09dff0d9234708e3c9762fc8e68cb01c5",
+        "vendor/ronaldtebrake/php-code-mode/src/ToolBroker.php": "f137343c64f4239481e7229b61321c3119e73b490cb7a726cb98f4c312b6293d",
+        "vendor/ronaldtebrake/php-code-mode/src/ToolCatalog.php": "3db26621415fc0b2e36093000c796937b0dfd507de45f9b4ec0421de9849390d",
+        "vendor/ronaldtebrake/php-code-mode/src/ToolDefinition.php": "3b22ebdd5f4657c4651c56ed99b66eaa59aeea61fe2686daa78f4c1a677e3dfe",
+        "vendor/ronaldtebrake/php-code-mode/src/ToolVisibilityInterface.php": "b7bc3571f1bf88f046487a0776308933e9b94a71cea83a6def3d897b3040a8f4",
+        "vendor/ronaldtebrake/php-code-mode/src/WeightedCatalogSearch.php": "48ecc67d3ce6a96f34f0784bec87ed5b73a58fdfc87b5c60f639fde3d8a02f47",
+        "vendor/ronaldtebrake/symfony-code-mode/composer.json": "e3d27f59009192bbd957673d92c9ae17dcc4e2efaefcbaff8d0b86b5ff1e225d",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Ai/ApprovedTool.php": "09c8aa6dda187068a6818d3126a9dc3c8443fca34e0e665ff97772b2352c27be",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Ai/ApprovedToolbox.php": "7490c8271e01fdde9ed5f305be17e8d96e21fde9c9e795d57f0f2ca4808c3f30",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Ai/BatchToolbox.php": "7b391d6604b5ebd17012b293c28fa2197d449df62014b2f4407f251c806d90de",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Ai/CodeModeToolbox.php": "f199d419df70126ac3d482d93f6129e9e7a3eb760f7a8a5991094de60105bef8",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Ai/Search/SymfonyCatalogSearch.php": "59292bd0c262e53e11af530a6668d03b3728f9fe2ca197ed6293c545f3b43507",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Ai/Search/Upstream/Bm25ToolSearch.php": "2dc42def89e45a4e471e82eee9600e8a2fc3045395e9255ba9623c0baec916d0",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Ai/Search/Upstream/KeywordToolSearch.php": "bce7d87a4d85992de249e98bb118514c0bb39dea74ef6ae1c34b63e342fbb6f5",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Ai/Search/Upstream/ToolSearchInterface.php": "4707c15def462a64b454b570985fe64b7186c2fe4e53a26bccc50f2626a8e1d5",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Ai/SelectToolFields.php": "21fece9182446812dc6678c270063b33b698d523e2b4666c753e7458f32f448f",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Ai/ToolAuthorizationInterface.php": "141161fe1d34a3a14d889a9a923f34169cf7803f083a40e46dccbf5af7917cd7",
+        "vendor/ronaldtebrake/symfony-code-mode/src/BatchMcpServerFactory.php": "9a89fd235a6d1b7f0b12870e2adf13207cff5fb9fb3febbef6c918246397b9ab",
+        "vendor/ronaldtebrake/symfony-code-mode/src/CodeModeBundle.php": "2c0393306ef9372eb08751ed890b5080cb80a118c9ae49e8fdccb4114e9526b2",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Command/DoctorCommand.php": "6a07b0966dc6d3c68a2856678d55f4e5a6b88c15c8de5ed2d646f3ae28feeefb",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Command/ResetBudgetCommand.php": "c76bcf033e7f2c0e5e52b51899fa1c0f2084f0014e6587143023921717ac0c43",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Command/ServeCommand.php": "81e53bd940924709be6b9650df4af2c2a5256f86bea4e0893793aedd3f06f8dd",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogStateStore.php": "7d9cdff25f5c746e502bbb23f85750c22f93a0706d7bf3e5a6341595c35db090",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogTools.php": "18a915bdf3634b3de759a8a34944583e2ae2678f4520fe3537b5a05a987276ec",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Http/SecurityIdentityProvider.php": "118ef5c1d9e566cfccc030f973e80e464a75e763c0ffe3ee36b2a1dcac447034",
+        "vendor/ronaldtebrake/symfony-code-mode/src/IdentityProviderInterface.php": "2df6b58d1335b425846fc2f1996c37938866f7c56c9c3a310fc17d9970e1d84c",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Maker/MakeCodeModeTool.php": "8078c6ff9345403cefb698f1b098d8f5a7ea0ccec63f5f91c0da2a566c933499",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Maker/templates/Config.tpl.php": "75beb6e7beb324bc1ff3b6e53b36e124a8ac4ec1714955c1a8e047bbe450a2f7",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Maker/templates/Test.tpl.php": "fe7cdff4aa7a8a71c6a4864f9b985d5400d0cce21adbff93848ec36643575099",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Maker/templates/Tool.tpl.php": "7a08e5466a60c6e7d39389256a1752ede09dd62bdbba3afb651c3505aafd1107",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Maker/templates/Voter.tpl.php": "4ff0679d2e2242bac324ed977abc44c3758c048379c691c8eeaa3e4343a1d682",
+        "vendor/ronaldtebrake/symfony-code-mode/src/McpServerFactory.php": "5009e69aec9c678a51d4b9e90bfcc41feb06f60a91043c52caba627cf2e45f41",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Profiler/CatalogDataCollector.php": "16da672a853e2c345c432c1dd239d779017025b071582cf5fa7445acad6cf876",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Profiler/CatalogTrace.php": "4afc5f325d2e81acaef39a9104f11a912d998a34ee54b818a4996ca916718b41",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Profiler/ToolEventSubscriber.php": "88dd698834900310e4df93bef0e10920ecc687749e43bdfb2a77d19c9beba59c",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Provider/ReadToolsProvider.php": "9be625d58b81d5cc06d15dbccf5eb570e42802b91582ce6fb9f22ef483fa0715",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Provider/SymfonyAiProvider.php": "8d2ae91fcda3d4014d5a522d9639537a65c622a79f0b90febe42ecc83df04165",
+        "vendor/ronaldtebrake/symfony-code-mode/src/ReadToolInterface.php": "e2b14b982ffa8317ae77d6978e10d0b5b6d93781d8163a3781a86321b244b7d6",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Security/VoterToolPolicy.php": "be80ff7cab16ae91cc7bc3955d8a1461ad503c8010c0af32cfca67af76fef6a1",
+        "vendor/ronaldtebrake/symfony-code-mode/src/SessionFactory.php": "5cd61ed3aa5c2db2e02512f40409dc70e13c8f3a1c27bc3f0046c12fd1b3f285"
+    }
+}

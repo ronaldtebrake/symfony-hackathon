@@ -1,0 +1,205 @@
+{
+    "format": "symfony-workflow-handoff/v1",
+    "capturedAt": "2026-11-19T15:27:23+00:00",
+    "sdkRevision": "1ef0205d9b9daf93c44eea437b58da38a6b84883",
+    "protocol": "2026-07-28",
+    "firstClient": {
+        "identity": "demo-reader",
+        "requests": [
+            {
+                "method": "server/discover",
+                "params": [],
+                "httpStatus": 200,
+                "responseSha256": "b9d9157a248155289d2ddfdf80a055dd0e10e154885303d7b4dfdec93345df1d"
+            },
+            {
+                "method": "skills/list",
+                "params": [],
+                "httpStatus": 200,
+                "responseSha256": "010a3ffb4967eb18570507399242986996a1892df1e9e8d3618740e672c49a76"
+            },
+            {
+                "method": "skills/get",
+                "params": {
+                    "uri": "skill://read-published-article/SKILL.md"
+                },
+                "httpStatus": 200,
+                "responseSha256": "744832f0f02e19112cc822d232b5792a25f8e4fcc98907bf533dc114cfe049c1"
+            },
+            {
+                "method": "resources/read",
+                "params": {
+                    "uri": "skill://read-published-article/SKILL.md"
+                },
+                "httpStatus": 200,
+                "responseSha256": "2dedf97c29e1a63e2fe866446d349e8ff2ad6be27233e1ca4a5de80cef183714"
+            },
+            {
+                "method": "tools/call",
+                "params": {
+                    "name": "search_tools",
+                    "arguments": {
+                        "query": "publication_read"
+                    }
+                },
+                "httpStatus": 200,
+                "responseSha256": "9bf6abb693ca0e6ad9827ad3111dec16da9e8b0c6438af3a350a54db06c57dbd"
+            },
+            {
+                "method": "tools/call",
+                "params": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 101
+                                }
+                            }
+                        ]
+                    }
+                },
+                "httpStatus": 200,
+                "responseSha256": "22c5de172e7fd8749537bacecd298fbbacd91a3a3d4c851d06db4560d442a85c"
+            }
+        ],
+        "example": {
+            "id": 101,
+            "title": "A Symfony application owns its tools"
+        }
+    },
+    "handoff": {
+        "skillUri": "skill://read-published-article/SKILL.md",
+        "skillSha256": "26cc300d994c172a4454dcc255a696c24a4a4f640c8ef3850994e539aaa4ef22",
+        "recipe": "examples/symfony/recipes/article-title.php",
+        "recipeSha256": "afa89102506aed5b6ece91277323b1261f7b3df8e09045c25d6ce463b02d3240",
+        "sourceBytes": 391,
+        "fieldsTransferred": [
+            "skillSha256",
+            "recipeSha256",
+            "source"
+        ]
+    },
+    "operator": {
+        "resetBudgetBeforeFreshClient": true,
+        "revokedAfterSuccessfulReplay": true
+    },
+    "secondClient": {
+        "search": {
+            "op": "search",
+            "request": {
+                "name": "search_tools",
+                "arguments": {
+                    "query": "publication_read"
+                }
+            },
+            "isError": false,
+            "result": {
+                "tools": [
+                    "publication_read"
+                ]
+            }
+        },
+        "authorized": {
+            "phase": "fresh-client",
+            "http": {
+                "op": "read",
+                "request": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 317
+                                }
+                            }
+                        ]
+                    }
+                },
+                "isError": false,
+                "result": {
+                    "id": 317,
+                    "title": "A reading room above the station"
+                }
+            },
+            "sandbox": {
+                "sourceSha256": "afa89102506aed5b6ece91277323b1261f7b3df8e09045c25d6ce463b02d3240",
+                "guestSha256": "032d2d914f47401744c2c6d1fb576028c2d2b330b6a35358ce82afdf58454425",
+                "image": "sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b",
+                "runId": "code-mode-0ba7a68c8c4e786cb2ae5262a9214a2c",
+                "profile": "gvisor",
+                "containerRemoved": true,
+                "calls": [
+                    {
+                        "name": "publication_read",
+                        "status": "succeeded"
+                    }
+                ],
+                "status": "ok",
+                "value": "A reading room above the station"
+            }
+        },
+        "denied": {
+            "phase": "after-revocation",
+            "http": {
+                "op": "read",
+                "request": {
+                    "name": "execute_tools",
+                    "arguments": {
+                        "calls": [
+                            {
+                                "name": "publication_read",
+                                "arguments": {
+                                    "id": 317
+                                }
+                            }
+                        ]
+                    }
+                },
+                "isError": true,
+                "result": {
+                    "error": "tool_denied",
+                    "completedCalls": 0
+                }
+            },
+            "sandbox": {
+                "sourceSha256": "afa89102506aed5b6ece91277323b1261f7b3df8e09045c25d6ce463b02d3240",
+                "guestSha256": "032d2d914f47401744c2c6d1fb576028c2d2b330b6a35358ce82afdf58454425",
+                "image": "sha256:686fc2b296b8801cdfb4e9cbcc9b333f2fbe42c31bff447bab9bf1eb73ad1a6b",
+                "runId": "code-mode-1dc3e895b7e7f014876b7e82ae73767c",
+                "profile": "gvisor",
+                "containerRemoved": true,
+                "calls": [
+                    {
+                        "name": "publication_read",
+                        "status": "succeeded"
+                    }
+                ],
+                "status": "denied",
+                "reason": "tool_denied"
+            }
+        },
+        "searchAfterRevocation": {
+            "op": "search",
+            "request": {
+                "name": "search_tools",
+                "arguments": {
+                    "query": "publication_read"
+                }
+            },
+            "isError": false,
+            "result": {
+                "tools": []
+            }
+        },
+        "guestWallMs": {
+            "authorized": 548,
+            "denied": 389
+        },
+        "modelRequests": 0
+    },
+    "modelRequests": 0,
+    "providerTokens": 0
+}

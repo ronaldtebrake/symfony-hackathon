@@ -1,6 +1,6 @@
 # Use the Symfony JSON catalog from Codex
 
-The current product demo connects Codex to the [independent Symfony application](../examples/symfony/README.md). Codex manages the conversation; Symfony AI supplies the registered tool schema and handler execution. The agent sends literal JSON to `search_tools` and `execute_tools`. This connection does not execute generated PHP or use gVisor.
+This recording setup connects Codex to the [independent Symfony application](../examples/symfony/README.md). Codex manages the conversation; Symfony AI supplies the registered tool schema and handler execution. The agent sends literal JSON to `search_tools` and `execute_tools`. This connection does not execute generated PHP or use gVisor.
 
 ## Connect the JSON catalog
 
@@ -36,10 +36,10 @@ Use the [exact prompts and shot list](demo.md#exact-prompts). First discover the
 
 Before each new take, run `php examples/symfony/bin/console demo:reader-access grant`, then `php examples/symfony/bin/console code-mode:reset-budget demo-reader`. The local fixture starts without a read grant. There are **two execute submissions, including failures**; discovery does not consume them. Do not reset between the reads. Permission changes, reconnects and server restarts do not reset the budget. Only the operator changes this fixture. Use only this MCP connection to retrieve demo data; its policy cannot control a client's separate shell or filesystem access.
 
-Expand the client's tool records to show exact JSON arguments and responses. Save the conversation/tool export and original footage privately before editing. The stock catalog command does **not** support `--trace-file`; that option is PHP-only. The [workbench proof](https://ronaldtebrake.github.io/symfony-hackathon/#native-rehearsal) shows the new HTTP operator capture alongside the installed handler and policy. It is not a live mirror of your chat. The earlier native client rehearsal and Hugging Face comparisons remain separately labelled; they predate the HTTP migration. Save new takes separately.
+Expand the client's tool records to show exact JSON arguments and responses. Save the conversation/tool export and original footage privately before editing. The stock catalog command does **not** support `--trace-file`; that option is PHP-only. The [workbench](https://ronaldtebrake.github.io/symfony-hackathon/?client=symfony-ai#native-rehearsal) displays a separate recorded Symfony AI + Hugging Face conversation against the HTTP catalog. Save your own take separately.
 
-## Historical generated-PHP connection
+## Earlier generated PHP connection
 
-The original root-demo connection uses `code-mode:mcp --backend=fixture --no-debug`, exposing `tools_search`, `tools_describe` and `php_execute`. It requires the dedicated [gVisor runtime](../packages/php-code-mode/README.md#sandboxed-php). Keep it separate from `symfony_catalog`; the root demo and the small independent application have different tools and data.
+The first design used `code-mode:mcp --backend=fixture --no-debug`, exposing `tools_search`, `tools_describe` and `php_execute`. It requires the dedicated [gVisor runtime](../packages/php-code-mode/README.md#sandboxed-php). Keep it separate from `symfony_catalog`; the root demo and the small independent application have different tools and data.
 
-The retained [original conversation](evidence/codex-conversation-2026-11-01.json) shows that earlier PHP path. It is not the JSON recording above. Its generated source and execution evidence remain available under Version one in the workbench.
+The retained [two-turn conversation](evidence/codex-conversation-2026-11-01.json) shows the PHP audit and repair plan. Inspect the source and calls for each question in the [workbench](https://ronaldtebrake.github.io/symfony-hackathon/#agent-run).

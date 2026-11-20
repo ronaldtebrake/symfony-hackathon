@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Demo\HttpConversation;
 
-use App\Demo\HttpCatalogProof;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpClient\HttpClient;
@@ -21,13 +20,13 @@ final class Application
     private array $environment;
     private ?Process $server = null;
 
-    public function __construct(private readonly string $root)
+    public function __construct(private readonly string $root, string $environment = 'dev')
     {
         $this->directory = sys_get_temp_dir().'/symfony-http-conversation-'.bin2hex(random_bytes(12));
         $this->token = bin2hex(random_bytes(32));
         $this->environment = array_replace(array_fill_keys(array_keys($_ENV + getenv()), false), [
             'PATH' => getenv('PATH') ?: '', 'SystemRoot' => getenv('SystemRoot') ?: false,
-            'APP_ENV' => 'dev', 'APP_DEBUG' => '1', 'ADOPTION_MODE' => 'catalog',
+            'APP_ENV' => $environment, 'APP_DEBUG' => '1', 'ADOPTION_MODE' => 'catalog',
             'ADOPTION_MCP_TOKEN' => $this->token, 'ADOPTION_VIEWER_TOKEN' => bin2hex(random_bytes(32)),
             'ADOPTION_READER_ACCESS_FILE' => $this->directory.'/var/capture-reader-access',
         ]);
@@ -44,16 +43,10 @@ final class Application
         $files = (new Finder())->in($source)->ignoreDotFiles(false)->exclude(['var', '.git'])
             ->notName('.env.local')->notName('.env.*.local');
         $fs->mirror($source, $this->directory, $files);
-        $proof = HttpCatalogProof::load($this->root);
-        if (!$proof['verification']['passed']) {
-            throw new \RuntimeException('Verify the existing HTTP application proof first.');
-        }
-        foreach ($proof['capture']['sourceSha256'] as $path => $expected) {
-            $actual = hash_file('sha256', $this->directory.'/'.$path);
-            if ($actual !== $expected) {
-                throw new \RuntimeException('The copied application packages do not match current source. Reinstall the example path packages.');
-            }
-            $this->sourceSha256[$path] = $actual;
+        $sources = require $source.'/scripts/http-sources.php';
+        $this->sourceSha256 = $sources($this->directory);
+        if ($this->sourceSha256 !== $sources($source, $this->root.'/packages')) {
+            throw new \RuntimeException('The copied application packages do not match current source. Reinstall the example path packages.');
         }
         $this->control(['demo:reader-access', 'grant']);
         $this->control(['code-mode:reset-budget', 'demo-reader']);

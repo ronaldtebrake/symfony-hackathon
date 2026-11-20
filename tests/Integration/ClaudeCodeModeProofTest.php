@@ -10,14 +10,15 @@ use PHPUnit\Framework\TestCase;
 
 final class ClaudeCodeModeProofTest extends TestCase
 {
-    public function testNativeJavaScriptAndHttpEvidenceAgreeWithoutChangingSymfonySource(): void
+    public function testNativeJavaScriptAndHttpEvidenceAgreeOnTheRecordedSymfonyRevision(): void
     {
         $root = \dirname(__DIR__, 2);
         $report = ClaudeCodeModeProof::load($root);
         $this->assertCount(1, $report['attempts']);
         $run = $report['attempts'][0];
         $this->assertTrue($run['verification']['passed']);
-        $this->assertTrue($run['currentSourceMatches']);
+        $this->assertTrue($run['historicalSourceMatches']);
+        $this->assertFalse($run['currentSourceMatches']);
         $this->assertSame(Proof::load($root)['attempts'][1]['sourceSha256'], $run['sourceSha256']);
         $this->assertCount(5, $run['code']);
         $this->assertCount(6, $run['agentCalls']);

@@ -46,6 +46,17 @@ final class RecordingClient implements ClientInterface
         if (200 !== $response->getStatusCode() || !\is_array($decoded) || !isset($decoded['result']) || ($decoded['id'] ?? null) !== $rpc['id']) {
             throw new \RuntimeException('Unexpected MCP HTTP response.');
         }
+        $result = $decoded['result'];
+        if ('tools/list' === $rpc['method'] && isset($result['nextCursor'])) {
+            throw new \UnexpectedValueException('Unexpected extra page in the two-tool catalog.');
+        }
+        if ('tools/call' === $rpc['method']) {
+            $text = $result['content'][0]['text'] ?? null;
+            if (!\is_string($text) || 1 !== \count($result['content']) || 'text' !== ($result['content'][0]['type'] ?? null)
+                || !isset($result['structuredContent']) || json_decode($text, true, flags: \JSON_THROW_ON_ERROR) !== $result['structuredContent']) {
+                throw new \UnexpectedValueException('MCP text and structured content disagree.');
+            }
+        }
         $this->records[] = ['phase' => $this->phase, 'request' => $rpc, 'response' => $decoded,
             'httpStatus' => $response->getStatusCode(), 'durationMs' => (hrtime(true) - $started) / 1e6];
         $token = $response->getHeaderLine('X-Debug-Token');

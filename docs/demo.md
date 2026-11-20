@@ -1,63 +1,64 @@
-# The 90-second Symfony product demo
+# Symfony Code Mode in 90 seconds
 
-[Watch the silent film and explore its chapters](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) · [Download MP4](../public/media/symfony-native-tools-demo-90s.mp4) · [Capture details and checks](../public/media/video-proof.json).
-
-The film first explains what Symfony Code Mode connects: an AI agent, an MCP catalog inside the Symfony application, and approved services protected by its access rules. It then shows why two entry tools keep advertised schemas small, followed by the journey from sandboxed PHP to JSON and Symfony AI discovery. It keeps **51 seconds of real agent footage** central: discover a published-article tool, read article 101, revoke permission, and repeat the same JSON call. Symfony denies the fresh read even though the agent already knows the contract. Separate inserts show the Maker command, shared voter and fresh **Symfony AI + Hugging Face HTTP/BM25 conversation**, including its actual JSON and profiler outcome. All articles are synthetic. There is **no speech, music or audio track**.
-
-The two original screen recordings were supplied on 14 November. Their chat and tool responses are not reconstructed. The operator changed permission between recordings; that action is explained by a caption. The model insert is labelled as a second recorded conversation. Its JSON and traces are reformatted from the retained capture; it is not footage of a model UI or a real-time replay. Maker and source inserts remain separate because the original footage predates the voter/profiler additions. Original recordings and intermediate renders stay outside the tracked repository; only the final film, poster and compact capture record are updated. Earlier profiler screenshots remain supporting evidence.
-
-On-screen captions focus on the action and its value. The lower-left production notes and repeated footer text have been removed; methodology and source details stay in this guide, the chapter inspector and the capture record.
-
-## Film chapters and text alternative
-
-| Time | On screen | Message and evidence |
-| --- | --- | --- |
-| **00:00–00:12** | What we built, then why. | First seven seconds: “Connect your AI agent to your Symfony app.” An illustrated MCP/HTTP connection reaches search_tools and execute_tools inside the application, which calls approved services and checks access. The next five seconds show the separate schema measurement: “More tools. Same entry cost.” Synthetic catalog: 10 → 100 tools, direct schemas 865 → 8,605 tokens, two HTTP entry contracts **239**. Labelled **“Advertised schemas · measured fixture”**; search results and conversation costs remain additional. |
-| **00:12–00:16** | Three-step design journey. | “Easier to adopt in Symfony.” Sandboxed PHP / gVisor → JSON calls / ordinary HTTP → Symfony AI discovery / proposed BM25 component. Approved tools and application permissions remain central. |
-| **00:16–00:20** | Actual Maker output, reformatted. | `make:code-mode-tool InventoryLookup` creates a native AI tool, voter, registration and test. The generated test passes; the scaffold stays denied until implemented. Separate from the article handler. |
-| **00:20–00:48** | Original lookup footage. | The agent discovers publication_read and reads article 101: **A Symfony application owns its tools**. Original speed, with seven seconds of waiting visibly trimmed. |
-| **00:48–00:52** | Tool and controller source. | `IsGrantedTool` and `IsGranted` share `ArticleVoter::READ`. Installed code, added after the original recording. |
-| **00:52–00:56** | Violet permission-change card. | The operator revoked read permission between recordings. Same user and connection; no budget reset. This explains the real change; it is not operator-terminal footage. |
-| **00:56–01:19** | Full original follow-up, then final still hold. | “Can you refresh that article from the application?” The same JSON read returns `tool_denied`, `completedCalls: 0`. The agent distinguishes the earlier title from a fresh result. |
-| **01:19–01:27** | A second recorded conversation: Symfony AI + Hugging Face. | Two actual HTTP JSON excerpts: the denied follow-up and the subsequent search with no visible contract. The denied call’s profiler trace has no native handler events. The full lookup, measured usage and both attempts remain in the workbench. Presentation timing is editorial, not request latency. |
-| **01:27–01:30** | Repository link and invitation. | “Clone. Run the proof. Connect your agent.” PHP + Composer, running as Symfony HTTP. The quickstart supplies the commands. |
-
-Source views: [handler](../examples/symfony/src/ArticleTool.php), [voter](../examples/symfony/src/ArticleVoter.php), [controller](../examples/symfony/src/ArticleController.php). The workbench supplies a video player, seekable chapters, highlighted source, actual Maker output and recorded HTTP model calls with profiler metadata. Desktop footage, the Hugging Face conversation and operator checks retain separate provenance.
+[Watch the film on GitHub Pages](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) · [Download the film for submission](../public/media/editorial-review-90s.mp4) · [Inspect the actual MCP calls](https://ronaldtebrake.github.io/symfony-hackathon/#refund-wire)
 
 ## Submission description
 
-Draft for the official project entry; not submitted. Project name: **Symfony Code Mode**.
+How does an agent find the two tools it needs in a Symfony app with a hundred? Symfony Code Mode exposes a searchable catalog over MCP. The agent sees two entry tools, asks for the contracts it needs, and calls existing Symfony services with JSON. We started with agent-written PHP in a sandbox. For known operations, calling installed handlers let us keep the access checks and use ordinary Symfony hosting.
 
-**Lead:** Your Symfony tools, on demand. Your application stays in control.
+We also prototyped the MCP working group’s named Groups proposal. In our demo the host opens a refund-review group. A Symfony AI agent using Hugging Face reads the order and follows its policy ID to a second tool. It recommends manual review. We revoke access and ask it to check again. Symfony denies the same policy read before the handler runs, and the agent explains why its review is incomplete.
 
-> Give an AI agent useful access to your Symfony application as its tool catalog grows. Symfony Code Mode exposes two stable MCP entry tools: discover the capabilities available to the authenticated user, then call existing services with JSON. Unused tool schemas stay out of the advertised interface; contracts are retrieved when needed.
->
-> The demo makes the boundary visible. An agent discovers an article reader and returns its title. Revoke the user’s permission and the identical follow-up is denied, even though the agent already knows the tool. A new search hides the contract. The workbench shows real JSON requests, responses and Symfony execution traces.
->
-> Built with Symfony AI and the official PHP MCP SDK, this fits ordinary Symfony development: native tools, shared Security voters, a Maker command and a profiler panel, running in a normal PHP HTTP application. Discovery builds on Johannes Wachter’s proposed Symfony AI search components through a pinned, attributed BM25 adapter with no added Composer dependencies. A fresh Symfony AI conversation using Hugging Face Inference Providers exercises that same HTTP path; its attempts and measured usage are retained.
->
-> We began with sandboxed PHP that could join and filter results near the tools. The experiments led to a simpler default for adoption: searchable JSON calls to installed handlers. The PHP path and matched audit evidence remain available, with their trade-offs documented.
->
-> Clone the repository and run the HTTP access-control proof with PHP and Composer. Explore the real agent video, current model conversation and measured catalog footprint in the visual documentation.
+The PHP MCP SDK carries the calls. Our contribution is the catalog integration and a runnable group discovery and revocation case for upstream maintainers. Watch the demo and try the quickstart at https://ronaldtebrake.github.io/symfony-hackathon/
 
-The catalog fixture measures **239 advertised-schema tokens from 3 to 128 tools**. Retrieved schemas and conversation costs are additional; it is not a claim that total usage stays flat. Historical audit savings remain labelled separately from the fresh HTTP conversation.
+## What the film shows
 
-Submission links:
+| Time | What to look for |
+| --- | --- |
+| 0–30 s | A support question, then real footage of an agent using the searchable catalog in a separate article lookup. The two initial schemas take 239 tokens at both 10 and 100 synthetic tools. That measurement covers the advertised definitions. |
+| 30–63 s | The host opens the draft `refund-review` group. The film replays a recorded model conversation. The order reader returns a policy ID that the model passes to the policy reader. The €75 order crosses the €50 manual-review threshold. |
+| 63–82 s | The operator revokes access. The agent requests a fresh policy read. Symfony returns `tool_denied` before the handler runs, and the agent reports the review as incomplete. |
+| 82–90 s | The permission-change case is ready to share with maintainers. The next experiment is to let the agent choose among several plausible groups. |
 
-- Repository: https://github.com/ronaldtebrake/symfony-hackathon
-- Judge quickstart: https://ronaldtebrake.github.io/symfony-hackathon/#quickstart
-- Video player: https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour
-- Final MP4: https://ronaldtebrake.github.io/symfony-hackathon/media/symfony-native-tools-demo-90s.mp4
+[Initial schema measurement](evidence/catalog-scaling.json) · [Model answers, tool calls and usage](evidence/refund-skill.json) · [Security checks](evidence/refund-protocol.json) · [Contributions](contributing/README.md)
 
-Suggested tags: **MCP**, **MCP SDK**, **Agent**, **Tool Calling**, **symfony-ai**. Attach the final MP4 and complete submission through SymfonyConnect; the repository push does not submit the entry.
+## Run it yourself
 
-Before submitting, replace the earlier PHP-workflow description with the description above and attach the current MP4. On **15 November 2026**, the [public project entry](https://symfony.com/hackathon/projects/symfony-code-mode) still showed the earlier description and **“No video yet”**. Confirm the updated description, repository link and playable video on that page after saving. The deadline is **22 November 2026, 18:00 CET**.
+From a clone, use PHP CLI 8.2+ and Composer 2 with the development dependencies. The judge path runs locally without Docker, gVisor, a model key or a separate checkout of the draft SDK.
 
-## Record another take
+```sh
+composer install
+composer proof:discovery
+composer start
+```
 
-The following prompts are stricter reproduction instructions, not a transcript of the existing film. The additional post-revocation search demonstrates that the contract disappears. It appears in the separate Hugging Face segment; it is not in the supplied desktop footage.
+The first proof exercises a **fresh Symfony kernel** with a reader and a viewer. It opens the Publishing group, checks the catalog and group routes, revokes access and verifies the follow-up is denied under the same budget. The next two checks **verify the recorded refund protocol and model conversations** from the film. Open the [local workbench](http://127.0.0.1:8000/demo) to inspect the receipts.
 
-## Prepare the real application
+### Independent two-tool catalog
+
+For a fresh end-to-end HTTP run, install the separate example from the repository root. Its test harness starts a local server, supplies credentials for two users, and reports 31 checks including an authorized read, revocation and a budget that survives reconnecting.
+
+```sh
+composer install --working-dir=examples/symfony
+composer proof:http --working-dir=examples/symfony
+```
+
+[Verified HTTP receipt](evidence/http-catalog-current.json) · [Connect your own MCP client](../examples/symfony/README.md#start-the-application)
+
+### Repeat the refund study
+
+The refund host loads the [pinned PHP SDK Skills checkout](contributing/permission-aware-skills.md#reproduce) separately. With that checkout installed, the first command makes fresh authenticated HTTP calls. The second also needs a Hugging Face Inference Providers key in the ignored local environment and uses inference credits.
+
+```sh
+php scripts/check-refund-protocol.php --live /tmp/php-sdk-skills
+php scripts/compare-refund-skill.php --live /tmp/php-sdk-skills novita
+```
+
+<details>
+<summary>Earlier film · record the article 101 lookup and revocation</summary>
+
+[Watch the original article film](../public/media/symfony-native-tools-demo-90s.mp4) · [Its chapters and footage](../public/media/video-proof.json)
+
+### Prepare the independent catalog application
 
 From the repository root, before recording:
 
@@ -134,7 +135,7 @@ APP_ENV=dev php vendor/bin/phpunit --no-configuration --bootstrap vendor/autoloa
 
 Show the real generated file list and passing deny-by-default test. Do not imply that this unimplemented scaffold is the article handler used in the conversation. Open the installed tool/controller source to show the shared voter attributes.
 
-The current film uses the bounded profiler metadata attached to the retained Hugging Face conversation. Its two JSON excerpts are reformatted from that capture, and its timestamps are edit timings. Provider usage stays in the detailed workbench evidence; the film shows the access-control outcome without a standalone token total.
+The catalog film uses the bounded profiler metadata attached to the retained Hugging Face conversation. Its two JSON excerpts are reformatted from that capture, and its timestamps are edit timings. Provider usage stays in the detailed workbench evidence; the film shows the access-control outcome without a standalone token total.
 
 For optional operator profiler shots, use `APP_ENV=dev` locally and capture fresh authorized and revoked requests against a separate app copy. In each Symfony profile, open **Code Mode**. Show broker outcomes, native AI events and attempts used. Keep this labelled **“Separate HTTP proof · no model called”** if the requests are operator-authored. The Code Mode collector omits arguments, results and identities; other profiler panels can expose sensitive data. Keep the development profiler private and never record authentication headers.
 
@@ -150,17 +151,22 @@ For optional operator profiler shots, use `APP_ENV=dev` locally and capture fres
 
 ## Edit and deliver
 
-Use chapter cuts at **0, 12, 16, 20, 48, 52, 56, 79, 87 and 90 seconds**, matching the film table above. Export **MP4, H.264, 1080p, 30 fps**, exactly **90 seconds / 2,700 frames**, without an audio track. Keep the denied request and response together. Label waiting trims and separate captures. Store untrimmed footage outside the tracked repository. The finished film is included in Pages; formal hackathon submission remains a separate step.
+Use chapter cuts at **0, 12, 16, 20, 48, 52, 56, 79, 87 and 90 seconds**, matching the original article film manifest. Export **MP4, H.264, 1080p, 30 fps**, exactly **90 seconds / 2,700 frames**, without an audio track. Keep the denied request and response together. Label waiting trims and separate captures. Store untrimmed footage outside the tracked repository. The finished film is included in Pages; formal hackathon submission remains a separate step.
 
 For another take, grant access and reset the budget before starting a new conversation. To leave the local reader disabled when finished, run `demo:reader-access revoke`.
 
 The [hackathon brief](https://symfony.com/hackathon) is the source for submission requirements. The [evidence index](evidence/README.md) identifies supporting captures.
 
+</details>
+
+<details>
+<summary>Supporting experiments and retained comparisons</summary>
+
 ## Optional follow-up material
 
-**The journey:** [From PHP to JSON](https://ronaldtebrake.github.io/symfony-hackathon/#journey) follows the problem, the gVisor proof, the hosting trade-off and the decision to ship a JSON catalog. PHP remains useful for loops, joins and filtering; easier managed isolation could improve its adoption later.
+The [design journey](https://ronaldtebrake.github.io/symfony-hackathon/#journey) explains how the gVisor runner led to JSON calls and permission-aware discovery in a Symfony app.
 
-### Current HTTP model conversation
+### The catalog HTTP model conversation
 
 Install the root dependencies (`composer install`) and independent app (`composer install --working-dir=examples/symfony`), then set `HUGGINGFACE_API_KEY` in the root’s ignored `.env.local`. Never commit or record the key.
 
@@ -173,60 +179,6 @@ The command runs the two user turns through Symfony AI and Hugging Face, with at
 The verified run used **5,220 provider tokens** (4,191 input + 1,029 output), six model requests and four MCP tool calls. Across both retained attempts: 8,937 tokens and 11 model requests. The second system-prompt revision explicitly requires a fresh visibility search after denial. The original attempt remains visible, including its incorrect visibility claim. No answer was rewritten or reviewed by a second model.
 
 **Reproduce model evidence:** `php bin/console code-mode:catalog-proof --no-debug` runs operator checks; `--live` adds paid Symfony AI + Hugging Face inference. Both retain attempts. The public catalog capture includes five live scenarios and the independent app's operator proof. The earlier native client rehearsal is a separate file. The film and its new development capture have their own provenance record.
-
-### Native agent Code Mode over HTTP
-
-The [Claude rehearsal](https://ronaldtebrake.github.io/symfony-hackathon/?client=claude#native-rehearsal) is a separate capture from 17 November, using Claude Code 2.1.326 and Sonnet 5.5. Its JavaScript executes in Claude; the unchanged Symfony app receives literal JSON. The original film and Hugging Face evidence remain separate.
-
-To rehearse, connect Claude to the authenticated HTTP app from the quickstart. Start an **interactive terminal session** with `CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=1 claude --model sonnet`; verify the native Code Mode startup banner. The feature is experimental and requires an eligible account and supported model; `claude -p` does not establish this proof. [Current requirements](https://code.claude.com/docs/en/code-mode).
-
-Ask it to discover the article reader and read article 101 exactly once. After its answer, revoke permission with `demo:reader-access revoke`, without resetting the budget. In the same conversation, ask it to repeat the exact read once, then repeat its discovery query. The capture contains the exact prompts, all five generated JavaScript blocks, both client-discovery steps, four actual MCP calls and the model's unedited answers. Symfony's profiler shows no handler invocation for the denial and two consumed execution attempts.
-
-The recorded session exposed only the rehearsal MCP server and the built-in REPL/ToolSearch tools. A loopback forwarding proxy captured the real HTTP bodies; completed profiler collectors were matched by exact request body. Its disposable app used separate credentials and grants, then was removed. Only the reviewed JSON export is published. This is an interoperability check, not a token comparison or a replacement for server authorization.
-
-**Earlier two-way comparison (catalog only):** [Native Code Mode versus regular MCP](https://ronaldtebrake.github.io/symfony-hackathon/?client=claude-comparison#native-rehearsal) uses two new interactive sessions with identical prompts from [the capture](evidence/claude-http-comparison.json). Both use `--model claude-sonnet-5-5 --effort medium --tools REPL,ToolSearch --strict-mcp-config`, the same MCP allowlist and existing auto permission mode. Set `CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=0` for regular MCP and `1` for native Code Mode. Start each with fresh application permissions and budget; revoke only between its two answers. Do not change prompts to favor either path. Both attempts are retained, including all discovery, answers, JSON calls and generated JavaScript. Both advertise the two catalog tools; this is not a full-tool versus catalog comparison.
-
-Regular MCP used 44,131 main-conversation tokens and seven requests; native Code Mode used 73,251 and six. Both read the right article, denied the revoked call and hid its contract. The native follow-up combined two calls into one generated block, but its first request carried 11,238 input tokens versus 5,281 for regular MCP. This measures the full client mode, including its different runtime instructions, rather than just Symfony's tool schemas. The prompt contents were not captured, so we cannot attribute that extra input precisely.
-
-Token accounting selects the last usage counters for each unique API message ID; repeated transcript content blocks must not be counted twice. Sum uncached input, cache-write input, cache-read input and output. Keep the cache categories visible: regular ran first, native second, sharing an account with potentially warm caches. These are provider counters, not a bill or a controlled cache-cost comparison. Unreported internal classifier/background usage is excluded. Correctness checks exact tool outcomes and binds the review of each unedited final answer to its hash; it is not a general agent reliability score. The comparison is separate from the film and historical audit benchmarks.
-
-### Four-way Claude audit: full tools × JSON catalog × native Code Mode
-
-The [four-way workbench](https://ronaldtebrake.github.io/symfony-hackathon/?client=claude-audit#native-rehearsal) corrects that missing comparison. Four real interactive Claude Code 2.1.326 sessions use Sonnet 5.5 at medium effort, the same audit question, 48 published articles, 24 images and three approved Symfony AI readers. No model answer is repaired or discarded. The [capture](evidence/claude-audit-matrix.json) retains every actual JSON call, generated JavaScript block, public answer, bounded Symfony trace and provider usage record.
-
-| MCP surface | Claude native Code Mode | Total tokens¹ | Model requests | Correct audit |
-| --- | --- | ---: | ---: | --- |
-| All 3 approved readers | Off | 53,749 | 5 | 10 / 10 findings |
-| All 3 approved readers | On | 49,432 | 4 | 10 / 10 findings |
-| Symfony's 2-tool JSON catalog | Off | 54,939 | 6 | Incomplete |
-| Symfony's 2-tool JSON catalog | On | 91,145 | 7 | 10 / 10 findings |
-
-The regular catalog run guessed media IDs beyond the permitted 1–24 range. Two batches stopped on a denied call. Earlier calls ran but their partial results were withheld; Claude stopped without a JSON audit. Its 54,939 tokens remain counted. The native catalog run initially searched the client runtime for “article” and found nothing, then discovered the catalog and completed the audit. These extra steps remain visible too.
-
-The catalog did not establish a token advantage here. Native execution over the full tool list was cheapest by total tokens in this small sample. Catalogs control which schemas are exposed; native Code Mode can compute over returned data. Combining the two adds discovery steps, so their benefits do not automatically add up. Three approved tools cannot test the separate large-catalog scaling claim.
-
-¹ Includes uncached input, cache-write input, cache-read input and output, once per unique API response. This is not a bill. The predeclared execution order was full/regular → catalog/native → catalog/regular → full/native; cache was not controlled and the last run reused substantial cached input. One attempt per cell does not establish average cost or reliability. Internal background/classifier usage is not reported here.
-
-Both surfaces use the same `ApprovedToolbox`, `ToolBroker`, `BatchSession` and persistent identity-bound state. The full surface advertises all three contracts; the catalog advertises `search_tools` and `execute_tools`, then discovers those identical contracts. Each starts with 20 execution submissions and 20 underlying calls; failures consume budget. This separate benchmark does not change the recording app's limits or permissions. Draft denial, revocation, hidden discovery and budget persistence are integration checks; they are not additional prompts in this fixed-permission audit.
-
-To reproduce, start a fresh disposable host for each arm:
-
-```sh
-php scripts/claude-audit-host.php direct var/demo/new-audit/direct-regular
-# For the catalog arms, use "catalog" and a separate new capture directory.
-```
-
-The host creates `mcp.json` and a private `private.json`; supply its token to Claude as `SYMFONY_REHEARSAL_TOKEN` without printing or committing it. In an empty trusted working directory, use the same CLI flags for all four arms:
-
-```sh
-ENABLE_TOOL_SEARCH=false CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=0 claude \
-  --model claude-sonnet-5-5 --effort medium \
-  --strict-mcp-config --mcp-config /absolute/capture/path/mcp.json \
-  --tools REPL,ToolSearch \
-  --allowedTools mcp__symfony_audit__cms_list_articles,mcp__symfony_audit__cms_get_articles,mcp__symfony_audit__cms_get_media,mcp__symfony_audit__search_tools,mcp__symfony_audit__execute_tools
-```
-
-Change only the native flag to `1` for the two native arms; the host sets `alwaysLoad: true` in every MCP config. Keep the same permission mode. Paste `protocol.question` from the retained capture exactly, with no expected findings or corrective hints. Native mode is interactive: do not substitute a scripted model response or a `claude -p` run. Create the host capture directory's `stop` file when finished to remove its disposable application and token. The export script selects public fields from the real transcripts; offline tests verify answers against the fixture and bind calls to their client event IDs. Raw recordings and transcripts stay private.
 
 <details>
 <summary>Supporting PHP evidence: repeated evaluation, timelines and response measurements</summary>
@@ -313,3 +265,5 @@ Security probes use two seconds, 128 MiB and three calls each. Normal audit exec
 The CLI also supports `composer demo -- --mode=live --scenario=impact` and `--question='Count published articles by language. Return counts.'`. Custom answers are marked **review required**; they have no independent correctness badge. Runtime settings and permissions remain host-controlled. Custom-question live inference is outside the captured proof.
 
 The [hackathon brief](https://symfony.com/hackathon), checked **15 November 2026**, calls for Symfony AI, the PHP MCP SDK and Hugging Face Inference Providers, with a public runnable repository and a 90-second real demo by **22 November 2026, 18:00 CET**. The [evidence index](evidence/README.md) identifies the sources for each claim. Upstream feedback is prepared in [the contribution notes](contributing/README.md), but has not been posted.
+
+</details>

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a6018604e0c8cf409386e4b7b3898f22",
+    "content-hash": "9fa24911e9a299b2db46814959a17d80",
     "packages": [
         {
             "name": "doctrine/deprecations",
@@ -1865,6 +1865,94 @@
             ],
             "time": "2026-10-26T14:03:07+00:00",
             "published-time": "2026-10-26T14:09:36+00:00"
+        },
+        {
+            "name": "symfony/ai-mcp-tool",
+            "version": "v1.0.0-BETA1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/ai-mcp-tool.git",
+                "reference": "0d78424a819a8d646d6674325599687f3eecc1c2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/ai-mcp-tool/zipball/0d78424a819a8d646d6674325599687f3eecc1c2",
+                "reference": "0d78424a819a8d646d6674325599687f3eecc1c2",
+                "shasum": ""
+            },
+            "require": {
+                "mcp/sdk": "^0.9",
+                "php": ">=8.2",
+                "symfony/ai-agent": "^1.0",
+                "symfony/clock": "^7.3|^8.0",
+                "symfony/service-contracts": "^2.5|^3"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpstan/phpstan-strict-rules": "^2.0",
+                "phpunit/phpunit": "^11.5.53",
+                "symfony/ai-platform": "^1.0",
+                "symfony/event-dispatcher": "^7.3|^8.0"
+            },
+            "type": "symfony-ai-tool",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/ai",
+                    "name": "symfony/ai"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\AI\\Agent\\Bridge\\Mcp\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Christopher Hertel",
+                    "email": "mail@christopher-hertel.de"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Model Context Protocol AI tool bridge for Symfony applications.",
+            "keywords": [
+                "Agent",
+                "Bridge",
+                "ai",
+                "mcp",
+                "model-context-protocol",
+                "tool"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/ai-mcp-tool/tree/v1.0.0-BETA1"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-10-26T14:03:07+00:00",
+            "published-time": "2026-10-26T14:09:31+00:00"
         },
         {
             "name": "symfony/ai-platform",
@@ -9097,16 +9185,17 @@
         "symfony/ai-agent": 10,
         "symfony/ai-bundle": 10,
         "symfony/ai-hugging-face-platform": 10,
+        "symfony/ai-mcp-tool": 10,
         "symfony/ai-platform": 10,
         "symfony/mcp-bundle": 10
     },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
+        "php": ">=8.2",
         "ext-ctype": "*",
         "ext-fileinfo": "*",
-        "ext-iconv": "*",
-        "php": ">=8.2"
+        "ext-iconv": "*"
     },
     "platform-dev": {},
     "platform-overrides": {

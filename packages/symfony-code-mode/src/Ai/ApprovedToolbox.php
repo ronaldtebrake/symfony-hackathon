@@ -6,6 +6,7 @@ namespace CodeMode\Symfony\Ai;
 
 use CodeMode\Symfony\ReadToolInterface;
 use CodeMode\ToolDefinition;
+use Mcp\Schema\Tool as McpTool;
 use Symfony\AI\Agent\Toolbox\ToolboxInterface;
 
 /** Adapts only explicitly approved read tools. Attributes and discovery never grant access. */
@@ -31,14 +32,18 @@ final readonly class ApprovedToolbox
             if (isset($selected[$name]) || !$tool->isReadOnly()) {
                 throw new \LogicException('Approved tools must have unique names and an explicit read-only hint. Review their handlers separately.');
             }
-            $input = $tool->getParameters() ?? ['type' => 'object', 'properties' => new \stdClass()];
+            $input = $tool->getParameters() ?? ['type' => 'object', 'properties' => []];
             // Do not silently accept arguments absent from the reflected contract.
             $input['additionalProperties'] = false;
-            if ([] === ($input['properties'] ?? null)) {
-                $input['properties'] = new \stdClass();
-            }
             $output = $tool->getMetadataValue('code_mode.output_schema');
-            $definition = new ToolDefinition($name, $tool->getDescription(), $this->schema($input), null === $output ? null : $this->schema($output));
+            if (null !== $output) {
+                $json = json_encode($output, \JSON_THROW_ON_ERROR, 32);
+                if (!str_starts_with($json, '{')) {
+                    throw new \InvalidArgumentException('Tool schemas must be JSON objects.');
+                }
+                $output = \is_array($output) ? $output : get_object_vars(json_decode($json, false, 32, \JSON_THROW_ON_ERROR));
+            }
+            $definition = ToolDefinition::fromMcpTool(new McpTool($name, null, $input, $tool->getDescription(), null, outputSchema: $output));
             $selected[$name] = new ApprovedTool($this->toolbox, $definition, $this->authorization);
         }
         if (\count($selected) !== \count($this->names)) {
@@ -46,15 +51,5 @@ final readonly class ApprovedToolbox
         }
 
         return array_map(static fn (string $name) => $selected[$name], $this->names);
-    }
-
-    private function schema(mixed $value): \stdClass
-    {
-        $schema = json_decode(json_encode($value, \JSON_THROW_ON_ERROR, 32), false, 32, \JSON_THROW_ON_ERROR);
-        if (!$schema instanceof \stdClass) {
-            throw new \InvalidArgumentException('Tool schemas must be JSON objects.');
-        }
-
-        return $schema;
     }
 }

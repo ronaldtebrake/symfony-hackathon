@@ -91,11 +91,7 @@ final class ClaudeCodeModeProof
         $report = json_decode(file_get_contents($root.'/docs/evidence/claude-code-mode-http.json'), true, 64, \JSON_THROW_ON_ERROR);
         foreach ($report['attempts'] as &$run) {
             $run['verification'] = self::verify($run);
-            $run['currentSourceMatches'] = [] !== ($run['sourceSha256'] ?? []);
-            foreach ($run['sourceSha256'] ?? [] as $path => $hash) {
-                $current = str_starts_with($path, 'vendor/ronaldtebrake/') ? $root.'/packages/'.substr($path, \strlen('vendor/ronaldtebrake/')) : $root.'/examples/symfony/'.$path;
-                $run['currentSourceMatches'] = $run['currentSourceMatches'] && is_file($current) && hash_file('sha256', $current) === $hash;
-            }
+            $run = HttpCatalogProof::verifyRunRevision($root, $run);
         }
 
         return $report;

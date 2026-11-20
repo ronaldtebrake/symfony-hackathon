@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Demo\HttpConversation;
 
+use App\Demo\HttpCatalogProof;
 use App\Demo\ThreeWayAuditRunner;
 
 final class Proof
@@ -18,6 +19,8 @@ final class Proof
         $denied = ['error' => ['reason' => 'tool_denied', 'tool' => 'publication_read', 'index' => 0], 'completedCalls' => 0];
         $answers = array_map(static fn ($turn) => json_decode($turn['answer'] ?? '', true), $run['turns'] ?? []);
         $trace = $run['trace'] ?? [];
+        $protocol = $run['protocol'] ?? null;
+        $nativeBridge = 'revocation-v3' === $protocol;
         $consistent = [] !== $calls && \count($calls) === \count($trace['agentCalls'] ?? []);
         foreach ($calls as $i => $call) {
             $result = $call['response']['result'];
@@ -25,9 +28,10 @@ final class Proof
             $consistent = $consistent && 200 === $call['httpStatus'] && $call['request']['id'] === $call['response']['id']
                 && json_decode($result['content'][0]['text'] ?? '', true) === ($result['structuredContent'] ?? null)
                 && ($result['isError'] ?? false) === isset($result['structuredContent']['error'])
-                && ($agent['name'] ?? null) === $call['request']['params']['name']
+                && ($agent['name'] ?? null) === ($nativeBridge ? 'catalog_' : '').$call['request']['params']['name']
                 && ($agent['arguments'] ?? null) === $call['request']['params']['arguments']
-                && ($agent['result'] ?? null) === ($result['content'][0]['text'] ?? null)
+                && ($nativeBridge ? \is_string($agent['result'] ?? null) && json_decode($agent['result'], true) === $result['structuredContent']
+                    : ($agent['result'] ?? null) === ($result['content'][0]['text'] ?? null))
                 && ($agent['bytesToModel'] ?? null) === \strlen($agent['result'] ?? '')
                 && 1 === \count($call['profiler']['operations'] ?? []) && 0 === ($call['profiler']['dropped'] ?? null);
         }
@@ -46,7 +50,11 @@ final class Proof
                 && $tokens['prompt'] >= 0 && $tokens['completion'] >= 0
                 && ($tokens['total'] ?? null) === $tokens['prompt'] + $tokens['completion'];
         }
-        $prompt = 'revocation-v2' === ($run['protocol'] ?? null) ? Runner::PROMPT : Runner::PROMPT_V1;
+        $prompt = match ($protocol) {
+            'revocation-v3' => Runner::BRIDGE_PROMPT,
+            'revocation-v2' => Runner::PROMPT,
+            default => Runner::PROMPT_V1,
+        };
         $history = ($run['systemPrompt'] ?? null) === $prompt && 2 === \count($run['turns'] ?? []);
         foreach ($run['turns'] ?? [] as $i => $turn) {
             $request = $requests[$turn['requestStart']] ?? [];
@@ -74,6 +82,8 @@ final class Proof
         $lastSaved = [] === $saved ? [] : $saved[array_key_last($saved)];
         $checks = [
             'captureProtocol' => 'symfony-http-conversation/v1' === ($run['format'] ?? null)
+                && \in_array($protocol, [null, 'revocation-v2', 'revocation-v3'], true)
+                && ($nativeBridge ? 'symfony/ai-mcp-tool' === ($run['agentBridge'] ?? null) : !isset($run['agentBridge']))
                 && \in_array($run['mode'] ?? null, ['live', 'test'], true)
                 && ('test' === $run['mode'] || 'Hugging Face Inference Providers' === ($run['provider'] ?? null))
                 && ThreeWayAuditRunner::MODEL === ($run['model'] ?? null) && Runner::SETTINGS === ($run['settings'] ?? null)
@@ -121,11 +131,7 @@ final class Proof
             }
             $run['recordedVerification'] = $run['verification'] ?? null;
             $run['verification'] = self::verify($run);
-            $run['currentSourceMatches'] = [] !== ($run['sourceSha256'] ?? []);
-            foreach ($run['sourceSha256'] ?? [] as $path => $hash) {
-                $current = str_starts_with($path, 'vendor/ronaldtebrake/') ? $root.'/packages/'.substr($path, \strlen('vendor/ronaldtebrake/')) : $root.'/examples/symfony/'.$path;
-                $run['currentSourceMatches'] = $run['currentSourceMatches'] && is_file($current) && hash_file('sha256', $current) === $hash;
-            }
+            $run = HttpCatalogProof::verifyRunRevision($root, $run);
         }
 
         return $report;

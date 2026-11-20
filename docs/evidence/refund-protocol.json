@@ -1,0 +1,2450 @@
+{
+    "format": "symfony-refund-protocol/v1",
+    "capturedAt": "2026-11-20T09:53:36+00:00",
+    "sdkRevision": "1ef0205d9b9daf93c44eea437b58da38a6b84883",
+    "protocolVersion": "2026-07-28",
+    "modelRequests": 0,
+    "sourceSha256": {
+        "src/Demo/Mcp/CaptureRequestFactory.php": "44702c28203f7f96bf82dc893cae0decfffa008bf15c3a3e44acff9a1d43eee0",
+        "src/Demo/Groups/GroupDiscoveryResult.php": "7a430afc60a9f4062c9e4c1a52822942b1fed7ded3d1b5afce176d3e8743fe74",
+        "src/Demo/Groups/ListGroupsRequest.php": "0d174b309eb9f963174ef6297f2b21d79e9682566b48bb8279e711655b44ad4a",
+        "src/Demo/Groups/GetGroupRequest.php": "6fda6631e5193255e721e14686ef4f4563b5bdbf2a2f0aa2281ea5054143c9e9",
+        "src/Demo/Groups/PublishingGroups.php": "60cd090f2d1bbcd58d401c850ad2c4edf68139d6cb2e8eba45373588ab60820a",
+        "src/Demo/Refund/Access.php": "00301138fda571b253f58f086c1123d1d3e96bce12948d89137a17be273d9453",
+        "src/Demo/Refund/Fixture.php": "3da45e509639d999691fe2f123171fd5f3e9d68171aa24bd3d28501089fbd48f",
+        "src/Demo/Refund/Gateway.php": "92ef6a6c09a8f189eb41c9a52c93b086eea746ccbab9ca20f2de155e8b0e7eed",
+        "src/Demo/Refund/Group.php": "aa767e5c6549ce0beaa374410e6cca638339c3c558fcafd5cc10288141dab92b",
+        "src/Demo/Refund/Kernel.php": "8f4b77000fa8370d5a7333421cfe0b648ef5c16a7b048cd1f7c50af5faf8c126",
+        "src/Demo/Refund/ProtocolProof.php": "4064227dde0c15092e76759f528ca4535b94975a86a067ae2b07f7c5c0ef838a",
+        "src/Demo/Refund/Tools.php": "9333db5b6e17004354304aad9e6b355d31ab23f814a287be174cee9aeb8cd150",
+        "src/Demo/Refund/skills/refund-review/SKILL.md": "9ba28143dd4ea98722da3b111ea2b1f07eb6d10075a620fbfc0a445528b62d6f",
+        "scripts/refund-server.php": "ec78dc388315c386b668228078a3461ad7bfbf6e1a58cc4bcc0bd7768208a00e",
+        "composer.lock": "b65df4518e1667633476c02b25c0e92e7838c7841d38291783f127330695e986"
+    },
+    "operator": {
+        "action": "revoke",
+        "grant": "refund.review",
+        "after": "order_before_revocation",
+        "before": "denied_policy"
+    },
+    "skillRevocation": {
+        "action": "revoke",
+        "grant": "refund.review",
+        "after": "group_before_skill_revoke",
+        "before": "manifest_after_group_revoke"
+    },
+    "scope": "Three disposable Symfony HTTP apps with synthetic data. The scripted client exercises the group, read-only tools and linked skill. The operator revokes before the policy read on the second app and before the skill fetch on the third. These exchanges test transport and access, without asking a model for a recommendation.",
+    "calls": {
+        "discover": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"server/discover\",\"params\":{\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"supportedVersions\":[\"2026-07-28\"],\"capabilities\":{\"prompts\":{},\"resources\":{},\"tools\":{},\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"instructions\":\"Read-only refund review of synthetic orders.\",\"resultType\":\"complete\",\"ttlMs\":0,\"cacheScope\":\"private\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "server/discover",
+                "params": {
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "result": {
+                    "supportedVersions": [
+                        "2026-07-28"
+                    ],
+                    "capabilities": {
+                        "prompts": {},
+                        "resources": {},
+                        "tools": {},
+                        "extensions": {
+                            "io.modelcontextprotocol/groups": {},
+                            "io.modelcontextprotocol/skills": {}
+                        }
+                    },
+                    "instructions": "Read-only refund review of synthetic orders.",
+                    "resultType": "complete",
+                    "ttlMs": 0,
+                    "cacheScope": "private",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "1cf7694c3d562f57bf32272d28327ec30cec5598e1728ebd8cc1c8348e44d3e7",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "list": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"groups/list\",\"params\":{\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"groups\":[{\"name\":\"refund-review\",\"title\":\"Refund review\",\"description\":\"Review an order against its refund policy.\"}],\"cacheScope\":\"private\",\"ttlMs\":0,\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "groups/list",
+                "params": {
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "result": {
+                    "groups": [
+                        {
+                            "name": "refund-review",
+                            "title": "Refund review",
+                            "description": "Review an order against its refund policy."
+                        }
+                    ],
+                    "cacheScope": "private",
+                    "ttlMs": 0,
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "f075088bec4ba3cccb79f47f9958ced0dc17ad529d480b124dac85eb38d9fbd2",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "open": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"groups/get\",\"params\":{\"name\":\"refund-review\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":3,\"result\":{\"tools\":[{\"name\":\"refund_get_order\",\"description\":\"Read the support order, paid amount in minor units, condition, days since delivery and applicable policy ID.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}},\"required\":[\"orderId\"],\"additionalProperties\":false}},{\"name\":\"refund_get_policy\",\"description\":\"Read the return window, accepted condition, currency and manual review threshold in minor units for a policy.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"policyId\":{\"type\":\"string\"}},\"required\":[\"policyId\"],\"additionalProperties\":false}}],\"resources\":[{\"uri\":\"skill://refund-review/SKILL.md\",\"name\":\"Refund review checklist\",\"mimeType\":\"text/markdown\"}],\"cacheScope\":\"private\",\"ttlMs\":0,\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "groups/get",
+                "params": {
+                    "name": "refund-review",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "result": {
+                    "tools": [
+                        {
+                            "name": "refund_get_order",
+                            "description": "Read the support order, paid amount in minor units, condition, days since delivery and applicable policy ID.",
+                            "inputSchema": {
+                                "type": "object",
+                                "properties": {
+                                    "orderId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "orderId"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        {
+                            "name": "refund_get_policy",
+                            "description": "Read the return window, accepted condition, currency and manual review threshold in minor units for a policy.",
+                            "inputSchema": {
+                                "type": "object",
+                                "properties": {
+                                    "policyId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "policyId"
+                                ],
+                                "additionalProperties": false
+                            }
+                        }
+                    ],
+                    "resources": [
+                        {
+                            "uri": "skill://refund-review/SKILL.md",
+                            "name": "Refund review checklist",
+                            "mimeType": "text/markdown"
+                        }
+                    ],
+                    "cacheScope": "private",
+                    "ttlMs": 0,
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "4b20d3e28a8963195ca1a70fa8114722c804fc2c5bc1ea87a015688b1bb44370",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "manifest": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"skills/get\",\"params\":{\"uri\":\"skill://refund-review/SKILL.md\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":4,\"result\":{\"skill\":{\"uri\":\"skill://refund-review/SKILL.md\",\"frontmatter\":{\"name\":\"refund-review\",\"description\":\"Prepare a read-only refund recommendation from an order and its applicable policy.\"},\"resources\":[{\"uri\":\"skill://refund-review/SKILL.md\",\"digest\":\"sha256:9ba28143dd4ea98722da3b111ea2b1f07eb6d10075a620fbfc0a445528b62d6f\",\"size\":521}]},\"resultType\":\"complete\",\"ttlMs\":0,\"cacheScope\":\"private\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "skills/get",
+                "params": {
+                    "uri": "skill://refund-review/SKILL.md",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "result": {
+                    "skill": {
+                        "uri": "skill://refund-review/SKILL.md",
+                        "frontmatter": {
+                            "name": "refund-review",
+                            "description": "Prepare a read-only refund recommendation from an order and its applicable policy."
+                        },
+                        "resources": [
+                            {
+                                "uri": "skill://refund-review/SKILL.md",
+                                "digest": "sha256:9ba28143dd4ea98722da3b111ea2b1f07eb6d10075a620fbfc0a445528b62d6f",
+                                "size": 521
+                            }
+                        ]
+                    },
+                    "resultType": "complete",
+                    "ttlMs": 0,
+                    "cacheScope": "private",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "45056f559a70fea20a993e9cc79461d9e876a76f2c22bb4703837f5356e87478",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "guide": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"resources/read\",\"params\":{\"uri\":\"skill://refund-review/SKILL.md\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":5,\"result\":{\"contents\":[{\"text\":\"---\\nname: refund-review\\ndescription: Prepare a read-only refund recommendation from an order and its applicable policy.\\n---\\n\\nRead the order, then read the policy named by that order. Compare its age and condition with the policy. If eligible, compare the amount with the manual-review threshold in the same currency. Report the recommendation and the reason. If a required read is denied, keep the facts already received, identify the missing evidence and report the review as incomplete. A review never issues a refund.\\n\",\"uri\":\"skill://refund-review/SKILL.md\",\"mimeType\":\"text/markdown\"}],\"resultType\":\"complete\",\"ttlMs\":0,\"cacheScope\":\"private\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "method": "resources/read",
+                "params": {
+                    "uri": "skill://refund-review/SKILL.md",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "result": {
+                    "contents": [
+                        {
+                            "text": "---\nname: refund-review\ndescription: Prepare a read-only refund recommendation from an order and its applicable policy.\n---\n\nRead the order, then read the policy named by that order. Compare its age and condition with the policy. If eligible, compare the amount with the manual-review threshold in the same currency. Report the recommendation and the reason. If a required read is denied, keep the facts already received, identify the missing evidence and report the review as incomplete. A review never issues a refund.\n",
+                            "uri": "skill://refund-review/SKILL.md",
+                            "mimeType": "text/markdown"
+                        }
+                    ],
+                    "resultType": "complete",
+                    "ttlMs": 0,
+                    "cacheScope": "private",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "8e6818c11110f79efb8a3d865cee1a4b43ca1e55c3b41e59ffe324fefd8f4dfd",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "order": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"tools/call\",\"params\":{\"name\":\"refund_get_order\",\"arguments\":{\"orderId\":\"R-1042\"},\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":6,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"orderId\\\":\\\"R-1042\\\",\\\"policyId\\\":\\\"standard-eu\\\",\\\"currency\\\":\\\"EUR\\\",\\\"amountMinor\\\":7500,\\\"daysSinceDelivery\\\":9,\\\"itemCondition\\\":\\\"unopened\\\"}\"}],\"isError\":false,\"structuredContent\":{\"orderId\":\"R-1042\",\"policyId\":\"standard-eu\",\"currency\":\"EUR\",\"amountMinor\":7500,\"daysSinceDelivery\":9,\"itemCondition\":\"unopened\"},\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 6,
+                "method": "tools/call",
+                "params": {
+                    "name": "refund_get_order",
+                    "arguments": {
+                        "orderId": "R-1042"
+                    },
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 6,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"orderId\":\"R-1042\",\"policyId\":\"standard-eu\",\"currency\":\"EUR\",\"amountMinor\":7500,\"daysSinceDelivery\":9,\"itemCondition\":\"unopened\"}"
+                        }
+                    ],
+                    "isError": false,
+                    "structuredContent": {
+                        "orderId": "R-1042",
+                        "policyId": "standard-eu",
+                        "currency": "EUR",
+                        "amountMinor": 7500,
+                        "daysSinceDelivery": 9,
+                        "itemCondition": "unopened"
+                    },
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "cf933a0169a35b66bf8e07ce6264078bac8ae1a994d91395caf338e50d77fe4e",
+            "trace": {
+                "operations": [
+                    {
+                        "operation": "refund_get_order",
+                        "status": "succeeded",
+                        "budget": [
+                            {
+                                "phase": "before",
+                                "attempts": 0,
+                                "reservedCalls": 0,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 1,
+                                "reservedCalls": 0,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 1,
+                                "reservedCalls": 1,
+                                "knownContracts": 1
+                            }
+                        ],
+                        "calls": [
+                            {
+                                "name": "refund_get_order",
+                                "status": "succeeded",
+                                "durationMs": 3.073
+                            }
+                        ],
+                        "nativeEvents": [
+                            {
+                                "name": "refund_get_order",
+                                "phase": "requested"
+                            },
+                            {
+                                "name": "refund_get_order",
+                                "phase": "succeeded"
+                            }
+                        ],
+                        "durationMs": 4.305
+                    }
+                ],
+                "dropped": 0
+            }
+        },
+        "policy": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"tools/call\",\"params\":{\"name\":\"refund_get_policy\",\"arguments\":{\"policyId\":\"standard-eu\"},\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":7,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"policyId\\\":\\\"standard-eu\\\",\\\"currency\\\":\\\"EUR\\\",\\\"returnWindowDays\\\":30,\\\"acceptedCondition\\\":\\\"unopened\\\",\\\"manualReviewAboveMinor\\\":5000}\"}],\"isError\":false,\"structuredContent\":{\"policyId\":\"standard-eu\",\"currency\":\"EUR\",\"returnWindowDays\":30,\"acceptedCondition\":\"unopened\",\"manualReviewAboveMinor\":5000},\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 7,
+                "method": "tools/call",
+                "params": {
+                    "name": "refund_get_policy",
+                    "arguments": {
+                        "policyId": "standard-eu"
+                    },
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 7,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"policyId\":\"standard-eu\",\"currency\":\"EUR\",\"returnWindowDays\":30,\"acceptedCondition\":\"unopened\",\"manualReviewAboveMinor\":5000}"
+                        }
+                    ],
+                    "isError": false,
+                    "structuredContent": {
+                        "policyId": "standard-eu",
+                        "currency": "EUR",
+                        "returnWindowDays": 30,
+                        "acceptedCondition": "unopened",
+                        "manualReviewAboveMinor": 5000
+                    },
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "a19aeaad032844ba202de1d36b7962d814c95e040b62bceb31f4a2d7f6c0d6a8",
+            "trace": {
+                "operations": [
+                    {
+                        "operation": "refund_get_policy",
+                        "status": "succeeded",
+                        "budget": [
+                            {
+                                "phase": "before",
+                                "attempts": 1,
+                                "reservedCalls": 1,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 2,
+                                "reservedCalls": 1,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 2,
+                                "reservedCalls": 2,
+                                "knownContracts": 1
+                            }
+                        ],
+                        "calls": [
+                            {
+                                "name": "refund_get_policy",
+                                "status": "succeeded",
+                                "durationMs": 0.218
+                            }
+                        ],
+                        "nativeEvents": [
+                            {
+                                "name": "refund_get_policy",
+                                "phase": "requested"
+                            },
+                            {
+                                "name": "refund_get_policy",
+                                "phase": "succeeded"
+                            }
+                        ],
+                        "durationMs": 0.647
+                    }
+                ],
+                "dropped": 0
+            }
+        },
+        "top_level_tools": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":8,\"method\":\"tools/list\",\"params\":{\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":8,\"result\":{\"tools\":[],\"resultType\":\"complete\",\"ttlMs\":0,\"cacheScope\":\"private\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 8,
+                "method": "tools/list",
+                "params": {
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 8,
+                "result": {
+                    "tools": [],
+                    "resultType": "complete",
+                    "ttlMs": 0,
+                    "cacheScope": "private",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "6d499a71c5c94d56d0903539490538b229240d0b8c8d8537671301dcafa6c74b",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "top_level_resources": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"resources/list\",\"params\":{\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":9,\"result\":{\"resources\":[],\"resultType\":\"complete\",\"ttlMs\":0,\"cacheScope\":\"private\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 9,
+                "method": "resources/list",
+                "params": {
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 9,
+                "result": {
+                    "resources": [],
+                    "resultType": "complete",
+                    "ttlMs": 0,
+                    "cacheScope": "private",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "389b5992eff92b96464481e734cf5e7e700870acf6882de05f4da174d10bd7c5",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "viewer_groups": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":10,\"method\":\"groups/list\",\"params\":{\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":10,\"result\":{\"groups\":[],\"cacheScope\":\"private\",\"ttlMs\":0,\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "viewer",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 10,
+                "method": "groups/list",
+                "params": {
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 10,
+                "result": {
+                    "groups": [],
+                    "cacheScope": "private",
+                    "ttlMs": 0,
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "847a8504393dcb41376ea1e1bcf9743d293e64184b8f4c6c9b36bcb78bb9bb88",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "viewer_group": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":11,\"method\":\"groups/get\",\"params\":{\"name\":\"refund-review\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":11,\"error\":{\"code\":-32002,\"message\":\"Group not found.\"}}",
+            "user": "viewer",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 11,
+                "method": "groups/get",
+                "params": {
+                    "name": "refund-review",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 11,
+                "error": {
+                    "code": -32002,
+                    "message": "Group not found."
+                }
+            },
+            "httpStatus": 400,
+            "cacheControl": "no-store, private",
+            "responseSha256": "3d82d7f753d79571297393ff80189bdf9ddaf5225b9d1c5cc30fcb52ad2cffa5",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "viewer_manifest": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":12,\"method\":\"skills/get\",\"params\":{\"uri\":\"skill://refund-review/SKILL.md\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":12,\"error\":{\"code\":-32602,\"message\":\"No skill is served at skill://refund-review/SKILL.md\"}}",
+            "user": "viewer",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 12,
+                "method": "skills/get",
+                "params": {
+                    "uri": "skill://refund-review/SKILL.md",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 12,
+                "error": {
+                    "code": -32602,
+                    "message": "No skill is served at skill://refund-review/SKILL.md"
+                }
+            },
+            "httpStatus": 400,
+            "cacheControl": "no-store, private",
+            "responseSha256": "3cc7849c56b9908eeb370651c508a0ca28a47ed04c1cef41f7b3430316b3ee86",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "viewer_guide": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":13,\"method\":\"resources/read\",\"params\":{\"uri\":\"skill://refund-review/SKILL.md\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":13,\"error\":{\"code\":-32602,\"message\":\"Resource not found for uri: \\\"skill://refund-review/SKILL.md\\\".\",\"data\":{\"uri\":\"skill://refund-review/SKILL.md\"}}}",
+            "user": "viewer",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 13,
+                "method": "resources/read",
+                "params": {
+                    "uri": "skill://refund-review/SKILL.md",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 13,
+                "error": {
+                    "code": -32602,
+                    "message": "Resource not found for uri: \"skill://refund-review/SKILL.md\".",
+                    "data": {
+                        "uri": "skill://refund-review/SKILL.md"
+                    }
+                }
+            },
+            "httpStatus": 400,
+            "cacheControl": "no-store, private",
+            "responseSha256": "c6cdd510a78a81006c3f305b5577836c08a4a2e5fde2607e0f5a7228d7279276",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "viewer_order": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":14,\"method\":\"tools/call\",\"params\":{\"name\":\"refund_get_order\",\"arguments\":{\"orderId\":\"R-1042\"},\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":14,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"error\\\":{\\\"reason\\\":\\\"tool_denied\\\",\\\"tool\\\":\\\"refund_get_order\\\",\\\"index\\\":0},\\\"completedCalls\\\":0}\"}],\"isError\":true,\"structuredContent\":{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"refund_get_order\",\"index\":0},\"completedCalls\":0},\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "viewer",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 14,
+                "method": "tools/call",
+                "params": {
+                    "name": "refund_get_order",
+                    "arguments": {
+                        "orderId": "R-1042"
+                    },
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 14,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"refund_get_order\",\"index\":0},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "tool_denied",
+                            "tool": "refund_get_order",
+                            "index": 0
+                        },
+                        "completedCalls": 0
+                    },
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "8b3957df249e42d64afbb6426344b3d6fee59924a7fff84c0bc9c4aa06482f7d",
+            "trace": {
+                "operations": [
+                    {
+                        "operation": "refund_get_order",
+                        "status": "failed",
+                        "budget": [
+                            {
+                                "phase": "before",
+                                "attempts": 0,
+                                "reservedCalls": 0,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 1,
+                                "reservedCalls": 0,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 1,
+                                "reservedCalls": 1,
+                                "knownContracts": 1
+                            }
+                        ],
+                        "calls": [
+                            {
+                                "name": "refund_get_order",
+                                "status": "denied",
+                                "reason": "tool_denied",
+                                "durationMs": 0.134
+                            }
+                        ],
+                        "nativeEvents": [],
+                        "durationMs": 0.692,
+                        "reason": "tool_denied"
+                    }
+                ],
+                "dropped": 0
+            }
+        },
+        "unassigned_order": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":15,\"method\":\"tools/call\",\"params\":{\"name\":\"refund_get_order\",\"arguments\":{\"orderId\":\"R-2042\"},\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":15,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"error\\\":{\\\"reason\\\":\\\"tool_denied\\\",\\\"tool\\\":\\\"refund_get_order\\\",\\\"index\\\":0},\\\"completedCalls\\\":0}\"}],\"isError\":true,\"structuredContent\":{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"refund_get_order\",\"index\":0},\"completedCalls\":0},\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 15,
+                "method": "tools/call",
+                "params": {
+                    "name": "refund_get_order",
+                    "arguments": {
+                        "orderId": "R-2042"
+                    },
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 15,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"refund_get_order\",\"index\":0},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "tool_denied",
+                            "tool": "refund_get_order",
+                            "index": 0
+                        },
+                        "completedCalls": 0
+                    },
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "0031badcb717549b7590b0899384c0f64b6ca4c2d0d0529acabd9bae50e6ef4b",
+            "trace": {
+                "operations": [
+                    {
+                        "operation": "refund_get_order",
+                        "status": "failed",
+                        "budget": [
+                            {
+                                "phase": "before",
+                                "attempts": 2,
+                                "reservedCalls": 2,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 3,
+                                "reservedCalls": 2,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 3,
+                                "reservedCalls": 3,
+                                "knownContracts": 1
+                            }
+                        ],
+                        "calls": [
+                            {
+                                "name": "refund_get_order",
+                                "status": "denied",
+                                "reason": "tool_denied",
+                                "durationMs": 0.036
+                            }
+                        ],
+                        "nativeEvents": [],
+                        "durationMs": 0.472,
+                        "reason": "tool_denied"
+                    }
+                ],
+                "dropped": 0
+            }
+        },
+        "anonymous": {
+            "user": "anonymous",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 16,
+                "method": "groups/list",
+                "params": {
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": null,
+            "httpStatus": 401,
+            "cacheControl": "no-cache, private",
+            "responseSha256": "0050cfb24e5e8c5bf797af46a0942334fba97c1aa363a3f0a1a6b6f15621b39f",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "still_visible": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":17,\"method\":\"groups/get\",\"params\":{\"name\":\"refund-review\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":17,\"result\":{\"tools\":[{\"name\":\"refund_get_order\",\"description\":\"Read the support order, paid amount in minor units, condition, days since delivery and applicable policy ID.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}},\"required\":[\"orderId\"],\"additionalProperties\":false}},{\"name\":\"refund_get_policy\",\"description\":\"Read the return window, accepted condition, currency and manual review threshold in minor units for a policy.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"policyId\":{\"type\":\"string\"}},\"required\":[\"policyId\"],\"additionalProperties\":false}}],\"resources\":[{\"uri\":\"skill://refund-review/SKILL.md\",\"name\":\"Refund review checklist\",\"mimeType\":\"text/markdown\"}],\"cacheScope\":\"private\",\"ttlMs\":0,\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 17,
+                "method": "groups/get",
+                "params": {
+                    "name": "refund-review",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 17,
+                "result": {
+                    "tools": [
+                        {
+                            "name": "refund_get_order",
+                            "description": "Read the support order, paid amount in minor units, condition, days since delivery and applicable policy ID.",
+                            "inputSchema": {
+                                "type": "object",
+                                "properties": {
+                                    "orderId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "orderId"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        {
+                            "name": "refund_get_policy",
+                            "description": "Read the return window, accepted condition, currency and manual review threshold in minor units for a policy.",
+                            "inputSchema": {
+                                "type": "object",
+                                "properties": {
+                                    "policyId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "policyId"
+                                ],
+                                "additionalProperties": false
+                            }
+                        }
+                    ],
+                    "resources": [
+                        {
+                            "uri": "skill://refund-review/SKILL.md",
+                            "name": "Refund review checklist",
+                            "mimeType": "text/markdown"
+                        }
+                    ],
+                    "cacheScope": "private",
+                    "ttlMs": 0,
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "f5b1a451474e3ac457e65140e171d4881a80f8f7b61e25649cdf068220e98200",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "open_before_revocation": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"groups/get\",\"params\":{\"name\":\"refund-review\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"tools\":[{\"name\":\"refund_get_order\",\"description\":\"Read the support order, paid amount in minor units, condition, days since delivery and applicable policy ID.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}},\"required\":[\"orderId\"],\"additionalProperties\":false}},{\"name\":\"refund_get_policy\",\"description\":\"Read the return window, accepted condition, currency and manual review threshold in minor units for a policy.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"policyId\":{\"type\":\"string\"}},\"required\":[\"policyId\"],\"additionalProperties\":false}}],\"resources\":[{\"uri\":\"skill://refund-review/SKILL.md\",\"name\":\"Refund review checklist\",\"mimeType\":\"text/markdown\"}],\"cacheScope\":\"private\",\"ttlMs\":0,\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "groups/get",
+                "params": {
+                    "name": "refund-review",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "result": {
+                    "tools": [
+                        {
+                            "name": "refund_get_order",
+                            "description": "Read the support order, paid amount in minor units, condition, days since delivery and applicable policy ID.",
+                            "inputSchema": {
+                                "type": "object",
+                                "properties": {
+                                    "orderId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "orderId"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        {
+                            "name": "refund_get_policy",
+                            "description": "Read the return window, accepted condition, currency and manual review threshold in minor units for a policy.",
+                            "inputSchema": {
+                                "type": "object",
+                                "properties": {
+                                    "policyId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "policyId"
+                                ],
+                                "additionalProperties": false
+                            }
+                        }
+                    ],
+                    "resources": [
+                        {
+                            "uri": "skill://refund-review/SKILL.md",
+                            "name": "Refund review checklist",
+                            "mimeType": "text/markdown"
+                        }
+                    ],
+                    "cacheScope": "private",
+                    "ttlMs": 0,
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "7cca800acd541f74fd9363edcc85d39cdaa5cf7f9603a1d7b5537ae8adc9e37f",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "manifest_before_revocation": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"skills/get\",\"params\":{\"uri\":\"skill://refund-review/SKILL.md\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"skill\":{\"uri\":\"skill://refund-review/SKILL.md\",\"frontmatter\":{\"name\":\"refund-review\",\"description\":\"Prepare a read-only refund recommendation from an order and its applicable policy.\"},\"resources\":[{\"uri\":\"skill://refund-review/SKILL.md\",\"digest\":\"sha256:9ba28143dd4ea98722da3b111ea2b1f07eb6d10075a620fbfc0a445528b62d6f\",\"size\":521}]},\"resultType\":\"complete\",\"ttlMs\":0,\"cacheScope\":\"private\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "skills/get",
+                "params": {
+                    "uri": "skill://refund-review/SKILL.md",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "result": {
+                    "skill": {
+                        "uri": "skill://refund-review/SKILL.md",
+                        "frontmatter": {
+                            "name": "refund-review",
+                            "description": "Prepare a read-only refund recommendation from an order and its applicable policy."
+                        },
+                        "resources": [
+                            {
+                                "uri": "skill://refund-review/SKILL.md",
+                                "digest": "sha256:9ba28143dd4ea98722da3b111ea2b1f07eb6d10075a620fbfc0a445528b62d6f",
+                                "size": 521
+                            }
+                        ]
+                    },
+                    "resultType": "complete",
+                    "ttlMs": 0,
+                    "cacheScope": "private",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "8f2b7ab95a3238101ed5d5d372b7b37e70b9f4339f58556cb839586af5de2cfa",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "guide_before_revocation": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"resources/read\",\"params\":{\"uri\":\"skill://refund-review/SKILL.md\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":3,\"result\":{\"contents\":[{\"text\":\"---\\nname: refund-review\\ndescription: Prepare a read-only refund recommendation from an order and its applicable policy.\\n---\\n\\nRead the order, then read the policy named by that order. Compare its age and condition with the policy. If eligible, compare the amount with the manual-review threshold in the same currency. Report the recommendation and the reason. If a required read is denied, keep the facts already received, identify the missing evidence and report the review as incomplete. A review never issues a refund.\\n\",\"uri\":\"skill://refund-review/SKILL.md\",\"mimeType\":\"text/markdown\"}],\"resultType\":\"complete\",\"ttlMs\":0,\"cacheScope\":\"private\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "resources/read",
+                "params": {
+                    "uri": "skill://refund-review/SKILL.md",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "result": {
+                    "contents": [
+                        {
+                            "text": "---\nname: refund-review\ndescription: Prepare a read-only refund recommendation from an order and its applicable policy.\n---\n\nRead the order, then read the policy named by that order. Compare its age and condition with the policy. If eligible, compare the amount with the manual-review threshold in the same currency. Report the recommendation and the reason. If a required read is denied, keep the facts already received, identify the missing evidence and report the review as incomplete. A review never issues a refund.\n",
+                            "uri": "skill://refund-review/SKILL.md",
+                            "mimeType": "text/markdown"
+                        }
+                    ],
+                    "resultType": "complete",
+                    "ttlMs": 0,
+                    "cacheScope": "private",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "d2bec639833efd286737cd386d927c846acd8e8397bce0133def936847a3f5be",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "order_before_revocation": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"refund_get_order\",\"arguments\":{\"orderId\":\"R-1042\"},\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":4,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"orderId\\\":\\\"R-1042\\\",\\\"policyId\\\":\\\"standard-eu\\\",\\\"currency\\\":\\\"EUR\\\",\\\"amountMinor\\\":7500,\\\"daysSinceDelivery\\\":9,\\\"itemCondition\\\":\\\"unopened\\\"}\"}],\"isError\":false,\"structuredContent\":{\"orderId\":\"R-1042\",\"policyId\":\"standard-eu\",\"currency\":\"EUR\",\"amountMinor\":7500,\"daysSinceDelivery\":9,\"itemCondition\":\"unopened\"},\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "tools/call",
+                "params": {
+                    "name": "refund_get_order",
+                    "arguments": {
+                        "orderId": "R-1042"
+                    },
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"orderId\":\"R-1042\",\"policyId\":\"standard-eu\",\"currency\":\"EUR\",\"amountMinor\":7500,\"daysSinceDelivery\":9,\"itemCondition\":\"unopened\"}"
+                        }
+                    ],
+                    "isError": false,
+                    "structuredContent": {
+                        "orderId": "R-1042",
+                        "policyId": "standard-eu",
+                        "currency": "EUR",
+                        "amountMinor": 7500,
+                        "daysSinceDelivery": 9,
+                        "itemCondition": "unopened"
+                    },
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "658218b621e0e2ae5b2362ef211f769f056899465665ee4e8dd8499696f6d80b",
+            "trace": {
+                "operations": [
+                    {
+                        "operation": "refund_get_order",
+                        "status": "succeeded",
+                        "budget": [
+                            {
+                                "phase": "before",
+                                "attempts": 0,
+                                "reservedCalls": 0,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 1,
+                                "reservedCalls": 0,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 1,
+                                "reservedCalls": 1,
+                                "knownContracts": 1
+                            }
+                        ],
+                        "calls": [
+                            {
+                                "name": "refund_get_order",
+                                "status": "succeeded",
+                                "durationMs": 3.126
+                            }
+                        ],
+                        "nativeEvents": [
+                            {
+                                "name": "refund_get_order",
+                                "phase": "requested"
+                            },
+                            {
+                                "name": "refund_get_order",
+                                "phase": "succeeded"
+                            }
+                        ],
+                        "durationMs": 5.346
+                    }
+                ],
+                "dropped": 0
+            }
+        },
+        "denied_policy": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/call\",\"params\":{\"name\":\"refund_get_policy\",\"arguments\":{\"policyId\":\"standard-eu\"},\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":5,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"error\\\":{\\\"reason\\\":\\\"tool_denied\\\",\\\"tool\\\":\\\"refund_get_policy\\\",\\\"index\\\":0},\\\"completedCalls\\\":0}\"}],\"isError\":true,\"structuredContent\":{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"refund_get_policy\",\"index\":0},\"completedCalls\":0},\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "method": "tools/call",
+                "params": {
+                    "name": "refund_get_policy",
+                    "arguments": {
+                        "policyId": "standard-eu"
+                    },
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"refund_get_policy\",\"index\":0},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "tool_denied",
+                            "tool": "refund_get_policy",
+                            "index": 0
+                        },
+                        "completedCalls": 0
+                    },
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "1ce34a56ee353bf4b9433db33b653e8ceaade852414f5d51dfd2599ea574e55e",
+            "trace": {
+                "operations": [
+                    {
+                        "operation": "refund_get_policy",
+                        "status": "failed",
+                        "budget": [
+                            {
+                                "phase": "before",
+                                "attempts": 1,
+                                "reservedCalls": 1,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 2,
+                                "reservedCalls": 1,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 2,
+                                "reservedCalls": 2,
+                                "knownContracts": 1
+                            }
+                        ],
+                        "calls": [
+                            {
+                                "name": "refund_get_policy",
+                                "status": "denied",
+                                "reason": "tool_denied",
+                                "durationMs": 0.145
+                            }
+                        ],
+                        "nativeEvents": [],
+                        "durationMs": 0.59,
+                        "reason": "tool_denied"
+                    }
+                ],
+                "dropped": 0
+            }
+        },
+        "hidden_group": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"groups/list\",\"params\":{\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":6,\"result\":{\"groups\":[],\"cacheScope\":\"private\",\"ttlMs\":0,\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 6,
+                "method": "groups/list",
+                "params": {
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 6,
+                "result": {
+                    "groups": [],
+                    "cacheScope": "private",
+                    "ttlMs": 0,
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "c238313edc5f487d46b208adc9bd8ef8666c019c36c618ffdffc482b9f40328d",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "hidden_known_group": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"groups/get\",\"params\":{\"name\":\"refund-review\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":7,\"error\":{\"code\":-32002,\"message\":\"Group not found.\"}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 7,
+                "method": "groups/get",
+                "params": {
+                    "name": "refund-review",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 7,
+                "error": {
+                    "code": -32002,
+                    "message": "Group not found."
+                }
+            },
+            "httpStatus": 400,
+            "cacheControl": "no-store, private",
+            "responseSha256": "129bb768279e4d6ded2cbc973552e966974dd0f7d831d1a76e901dc76b184cc6",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "hidden_skills": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":8,\"method\":\"skills/list\",\"params\":{\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":8,\"result\":{\"skills\":[],\"resultType\":\"complete\",\"ttlMs\":0,\"cacheScope\":\"private\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 8,
+                "method": "skills/list",
+                "params": {
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 8,
+                "result": {
+                    "skills": [],
+                    "resultType": "complete",
+                    "ttlMs": 0,
+                    "cacheScope": "private",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "6779ba3988f0e9e299cc05de0d056d59af8d5c14c2c42e4eb3d4fedd2710a9c7",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "hidden_manifest": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"skills/get\",\"params\":{\"uri\":\"skill://refund-review/SKILL.md\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":9,\"error\":{\"code\":-32602,\"message\":\"No skill is served at skill://refund-review/SKILL.md\"}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 9,
+                "method": "skills/get",
+                "params": {
+                    "uri": "skill://refund-review/SKILL.md",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 9,
+                "error": {
+                    "code": -32602,
+                    "message": "No skill is served at skill://refund-review/SKILL.md"
+                }
+            },
+            "httpStatus": 400,
+            "cacheControl": "no-store, private",
+            "responseSha256": "df82e922c882696bac26877796e6b2a0b2fef43f7312eeb0bfabfd33999cf009",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "denied_guide": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":10,\"method\":\"resources/read\",\"params\":{\"uri\":\"skill://refund-review/SKILL.md\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":10,\"error\":{\"code\":-32602,\"message\":\"Resource not found for uri: \\\"skill://refund-review/SKILL.md\\\".\",\"data\":{\"uri\":\"skill://refund-review/SKILL.md\"}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 10,
+                "method": "resources/read",
+                "params": {
+                    "uri": "skill://refund-review/SKILL.md",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 10,
+                "error": {
+                    "code": -32602,
+                    "message": "Resource not found for uri: \"skill://refund-review/SKILL.md\".",
+                    "data": {
+                        "uri": "skill://refund-review/SKILL.md"
+                    }
+                }
+            },
+            "httpStatus": 400,
+            "cacheControl": "no-store, private",
+            "responseSha256": "1c223eef3c4fd8f201925ab69a63fbd2d672054459c8f7968500633c3ac22918",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "denied_attempt_3": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":11,\"method\":\"tools/call\",\"params\":{\"name\":\"refund_get_policy\",\"arguments\":{\"policyId\":\"standard-eu\"},\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":11,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"error\\\":{\\\"reason\\\":\\\"tool_denied\\\",\\\"tool\\\":\\\"refund_get_policy\\\",\\\"index\\\":0},\\\"completedCalls\\\":0}\"}],\"isError\":true,\"structuredContent\":{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"refund_get_policy\",\"index\":0},\"completedCalls\":0},\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 11,
+                "method": "tools/call",
+                "params": {
+                    "name": "refund_get_policy",
+                    "arguments": {
+                        "policyId": "standard-eu"
+                    },
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 11,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"refund_get_policy\",\"index\":0},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "tool_denied",
+                            "tool": "refund_get_policy",
+                            "index": 0
+                        },
+                        "completedCalls": 0
+                    },
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "5679ad8d38379a2cb176e533fe4f764d5d6af7fd0d70cd4a0f2be3febae9e367",
+            "trace": {
+                "operations": [
+                    {
+                        "operation": "refund_get_policy",
+                        "status": "failed",
+                        "budget": [
+                            {
+                                "phase": "before",
+                                "attempts": 2,
+                                "reservedCalls": 2,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 3,
+                                "reservedCalls": 2,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 3,
+                                "reservedCalls": 3,
+                                "knownContracts": 1
+                            }
+                        ],
+                        "calls": [
+                            {
+                                "name": "refund_get_policy",
+                                "status": "denied",
+                                "reason": "tool_denied",
+                                "durationMs": 0.037
+                            }
+                        ],
+                        "nativeEvents": [],
+                        "durationMs": 0.502,
+                        "reason": "tool_denied"
+                    }
+                ],
+                "dropped": 0
+            }
+        },
+        "denied_attempt_4": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":12,\"method\":\"tools/call\",\"params\":{\"name\":\"refund_get_policy\",\"arguments\":{\"policyId\":\"standard-eu\"},\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":12,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"error\\\":{\\\"reason\\\":\\\"tool_denied\\\",\\\"tool\\\":\\\"refund_get_policy\\\",\\\"index\\\":0},\\\"completedCalls\\\":0}\"}],\"isError\":true,\"structuredContent\":{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"refund_get_policy\",\"index\":0},\"completedCalls\":0},\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 12,
+                "method": "tools/call",
+                "params": {
+                    "name": "refund_get_policy",
+                    "arguments": {
+                        "policyId": "standard-eu"
+                    },
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 12,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"refund_get_policy\",\"index\":0},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "tool_denied",
+                            "tool": "refund_get_policy",
+                            "index": 0
+                        },
+                        "completedCalls": 0
+                    },
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "b0bf8732e9640a0628acc036015cdddb457630a3fd33726e830599e89d8c48ce",
+            "trace": {
+                "operations": [
+                    {
+                        "operation": "refund_get_policy",
+                        "status": "failed",
+                        "budget": [
+                            {
+                                "phase": "before",
+                                "attempts": 3,
+                                "reservedCalls": 3,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 4,
+                                "reservedCalls": 3,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 4,
+                                "reservedCalls": 4,
+                                "knownContracts": 1
+                            }
+                        ],
+                        "calls": [
+                            {
+                                "name": "refund_get_policy",
+                                "status": "denied",
+                                "reason": "tool_denied",
+                                "durationMs": 0.033
+                            }
+                        ],
+                        "nativeEvents": [],
+                        "durationMs": 0.419,
+                        "reason": "tool_denied"
+                    }
+                ],
+                "dropped": 0
+            }
+        },
+        "denied_attempt_5": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":13,\"method\":\"tools/call\",\"params\":{\"name\":\"refund_get_policy\",\"arguments\":{\"policyId\":\"standard-eu\"},\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":13,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"error\\\":{\\\"reason\\\":\\\"tool_denied\\\",\\\"tool\\\":\\\"refund_get_policy\\\",\\\"index\\\":0},\\\"completedCalls\\\":0}\"}],\"isError\":true,\"structuredContent\":{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"refund_get_policy\",\"index\":0},\"completedCalls\":0},\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 13,
+                "method": "tools/call",
+                "params": {
+                    "name": "refund_get_policy",
+                    "arguments": {
+                        "policyId": "standard-eu"
+                    },
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 13,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"refund_get_policy\",\"index\":0},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "tool_denied",
+                            "tool": "refund_get_policy",
+                            "index": 0
+                        },
+                        "completedCalls": 0
+                    },
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "b2da0357fd1ad64127a04a15b8cc7b16e9708125537cc51263db8983f0395d06",
+            "trace": {
+                "operations": [
+                    {
+                        "operation": "refund_get_policy",
+                        "status": "failed",
+                        "budget": [
+                            {
+                                "phase": "before",
+                                "attempts": 4,
+                                "reservedCalls": 4,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 5,
+                                "reservedCalls": 4,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 5,
+                                "reservedCalls": 5,
+                                "knownContracts": 1
+                            }
+                        ],
+                        "calls": [
+                            {
+                                "name": "refund_get_policy",
+                                "status": "denied",
+                                "reason": "tool_denied",
+                                "durationMs": 0.033
+                            }
+                        ],
+                        "nativeEvents": [],
+                        "durationMs": 0.425,
+                        "reason": "tool_denied"
+                    }
+                ],
+                "dropped": 0
+            }
+        },
+        "denied_attempt_6": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":14,\"method\":\"tools/call\",\"params\":{\"name\":\"refund_get_policy\",\"arguments\":{\"policyId\":\"standard-eu\"},\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":14,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"error\\\":{\\\"reason\\\":\\\"tool_denied\\\",\\\"tool\\\":\\\"refund_get_policy\\\",\\\"index\\\":0},\\\"completedCalls\\\":0}\"}],\"isError\":true,\"structuredContent\":{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"refund_get_policy\",\"index\":0},\"completedCalls\":0},\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 14,
+                "method": "tools/call",
+                "params": {
+                    "name": "refund_get_policy",
+                    "arguments": {
+                        "policyId": "standard-eu"
+                    },
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 14,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"tool_denied\",\"tool\":\"refund_get_policy\",\"index\":0},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "tool_denied",
+                            "tool": "refund_get_policy",
+                            "index": 0
+                        },
+                        "completedCalls": 0
+                    },
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "70de001f85e1255b8805855b12d3a1b52caf2023f97c299bb97a845ce5c53af6",
+            "trace": {
+                "operations": [
+                    {
+                        "operation": "refund_get_policy",
+                        "status": "failed",
+                        "budget": [
+                            {
+                                "phase": "before",
+                                "attempts": 5,
+                                "reservedCalls": 5,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 6,
+                                "reservedCalls": 5,
+                                "knownContracts": 1
+                            },
+                            {
+                                "phase": "saved",
+                                "attempts": 6,
+                                "reservedCalls": 6,
+                                "knownContracts": 1
+                            }
+                        ],
+                        "calls": [
+                            {
+                                "name": "refund_get_policy",
+                                "status": "denied",
+                                "reason": "tool_denied",
+                                "durationMs": 0.038
+                            }
+                        ],
+                        "nativeEvents": [],
+                        "durationMs": 0.472,
+                        "reason": "tool_denied"
+                    }
+                ],
+                "dropped": 0
+            }
+        },
+        "budget_exhausted": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":15,\"method\":\"tools/call\",\"params\":{\"name\":\"refund_get_policy\",\"arguments\":{\"policyId\":\"standard-eu\"},\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":15,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"error\\\":{\\\"reason\\\":\\\"execution_limit\\\"},\\\"completedCalls\\\":0}\"}],\"isError\":true,\"structuredContent\":{\"error\":{\"reason\":\"execution_limit\"},\"completedCalls\":0},\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 15,
+                "method": "tools/call",
+                "params": {
+                    "name": "refund_get_policy",
+                    "arguments": {
+                        "policyId": "standard-eu"
+                    },
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 15,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"error\":{\"reason\":\"execution_limit\"},\"completedCalls\":0}"
+                        }
+                    ],
+                    "isError": true,
+                    "structuredContent": {
+                        "error": {
+                            "reason": "execution_limit"
+                        },
+                        "completedCalls": 0
+                    },
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "f9205b0762f98fce7860919bc808079df68859ae5c35c3fdf334016daeff7113",
+            "trace": {
+                "operations": [
+                    {
+                        "operation": "refund_get_policy",
+                        "status": "failed",
+                        "budget": [
+                            {
+                                "phase": "before",
+                                "attempts": 6,
+                                "reservedCalls": 6,
+                                "knownContracts": 1
+                            }
+                        ],
+                        "calls": [],
+                        "nativeEvents": [],
+                        "durationMs": 0.106,
+                        "reason": "execution_limit"
+                    }
+                ],
+                "dropped": 0
+            }
+        },
+        "group_before_skill_revoke": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"groups/get\",\"params\":{\"name\":\"refund-review\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"tools\":[{\"name\":\"refund_get_order\",\"description\":\"Read the support order, paid amount in minor units, condition, days since delivery and applicable policy ID.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}},\"required\":[\"orderId\"],\"additionalProperties\":false}},{\"name\":\"refund_get_policy\",\"description\":\"Read the return window, accepted condition, currency and manual review threshold in minor units for a policy.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"policyId\":{\"type\":\"string\"}},\"required\":[\"policyId\"],\"additionalProperties\":false}}],\"resources\":[{\"uri\":\"skill://refund-review/SKILL.md\",\"name\":\"Refund review checklist\",\"mimeType\":\"text/markdown\"}],\"cacheScope\":\"private\",\"ttlMs\":0,\"resultType\":\"complete\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"Symfony refund review\",\"version\":\"1.0.0\"}}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "groups/get",
+                "params": {
+                    "name": "refund-review",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "result": {
+                    "tools": [
+                        {
+                            "name": "refund_get_order",
+                            "description": "Read the support order, paid amount in minor units, condition, days since delivery and applicable policy ID.",
+                            "inputSchema": {
+                                "type": "object",
+                                "properties": {
+                                    "orderId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "orderId"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        {
+                            "name": "refund_get_policy",
+                            "description": "Read the return window, accepted condition, currency and manual review threshold in minor units for a policy.",
+                            "inputSchema": {
+                                "type": "object",
+                                "properties": {
+                                    "policyId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "policyId"
+                                ],
+                                "additionalProperties": false
+                            }
+                        }
+                    ],
+                    "resources": [
+                        {
+                            "uri": "skill://refund-review/SKILL.md",
+                            "name": "Refund review checklist",
+                            "mimeType": "text/markdown"
+                        }
+                    ],
+                    "cacheScope": "private",
+                    "ttlMs": 0,
+                    "resultType": "complete",
+                    "_meta": {
+                        "io.modelcontextprotocol/serverInfo": {
+                            "name": "Symfony refund review",
+                            "version": "1.0.0"
+                        }
+                    }
+                }
+            },
+            "httpStatus": 200,
+            "cacheControl": "no-store, private",
+            "responseSha256": "7cca800acd541f74fd9363edcc85d39cdaa5cf7f9603a1d7b5537ae8adc9e37f",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "manifest_after_group_revoke": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"skills/get\",\"params\":{\"uri\":\"skill://refund-review/SKILL.md\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":2,\"error\":{\"code\":-32602,\"message\":\"No skill is served at skill://refund-review/SKILL.md\"}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "skills/get",
+                "params": {
+                    "uri": "skill://refund-review/SKILL.md",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "error": {
+                    "code": -32602,
+                    "message": "No skill is served at skill://refund-review/SKILL.md"
+                }
+            },
+            "httpStatus": 400,
+            "cacheControl": "no-store, private",
+            "responseSha256": "7e9c4def670e94299d21c9ae7553a939fcc45c4ea53e09dfefff65060aed8269",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        },
+        "guide_after_group_revoke": {
+            "requestJson": "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"resources/read\",\"params\":{\"uri\":\"skill://refund-review/SKILL.md\",\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{\"extensions\":{\"io.modelcontextprotocol/groups\":{},\"io.modelcontextprotocol/skills\":{}}},\"io.modelcontextprotocol/clientInfo\":{\"name\":\"refund-review-study\",\"version\":\"1\"}}}}",
+            "responseJson": "{\"jsonrpc\":\"2.0\",\"id\":3,\"error\":{\"code\":-32602,\"message\":\"Resource not found for uri: \\\"skill://refund-review/SKILL.md\\\".\",\"data\":{\"uri\":\"skill://refund-review/SKILL.md\"}}}",
+            "user": "reader",
+            "request": {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "resources/read",
+                "params": {
+                    "uri": "skill://refund-review/SKILL.md",
+                    "_meta": {
+                        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                        "io.modelcontextprotocol/clientCapabilities": {
+                            "extensions": {
+                                "io.modelcontextprotocol/groups": {},
+                                "io.modelcontextprotocol/skills": {}
+                            }
+                        },
+                        "io.modelcontextprotocol/clientInfo": {
+                            "name": "refund-review-study",
+                            "version": "1"
+                        }
+                    }
+                }
+            },
+            "response": {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "error": {
+                    "code": -32602,
+                    "message": "Resource not found for uri: \"skill://refund-review/SKILL.md\".",
+                    "data": {
+                        "uri": "skill://refund-review/SKILL.md"
+                    }
+                }
+            },
+            "httpStatus": 400,
+            "cacheControl": "no-store, private",
+            "responseSha256": "47baee6404c0b8327c99bd65e0a7a60b1843aabb356a06d6503dd1e5a7d5dfad",
+            "trace": {
+                "operations": [],
+                "dropped": 0
+            }
+        }
+    }
+}

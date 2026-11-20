@@ -10,7 +10,7 @@ For JSON without a generated-code runtime, the root checkout provides `php bin/c
 
 ### Sandboxed PHP
 
-For the **historical generated-PHP path only**, the host needs PHP 8.2+ CLI, `pcntl`, `posix`, Composer, and access to a dedicated Linux Docker engine with gVisor `runsc`. macOS can use a Linux VM; ordinary Docker Desktop does not satisfy the runtime requirement. The **guest** uses the pinned PHP 8.4 image. Do not run the broker inside PHP-FPM or a web request; use a dedicated CLI/queue worker.
+For **generated PHP**, the host needs PHP 8.2+ CLI, `pcntl`, `posix`, Composer, and access to a dedicated Linux Docker engine with gVisor `runsc`. macOS can use a Linux VM; ordinary Docker Desktop does not satisfy the runtime requirement. The **guest** uses the pinned PHP 8.4 image. Do not run the broker inside PHP-FPM or a web request; use a dedicated CLI/queue worker.
 
 On a dedicated Ubuntu 24.04 host, review and run `sudo bash scripts/install-gvisor-ubuntu.sh`. It installs the signed, pinned gVisor package and restarts Docker. For other systems, follow the [official gVisor installation instructions](https://gvisor.dev/docs/user_guide/install/). Never expose the Docker socket to the guest or an HTTP client.
 
@@ -68,7 +68,7 @@ $result = (new GvisorSandbox($trustedImageId))->execute(
 
 The PHP body has no `<?php` tag. `ExecutionResult::value` is untrusted guest output; it is never proof that an action occurred. Only `toolCalls` is recorded by the host, with names, statuses, timings and serialized result sizes. Catch `SandboxException` and use its stable `reason` for rejection reporting; its `toolCalls` retains work before a failed execution. An `incomplete` call may already have caused upstream effects. Output from guest `echo`/STDERR is counted and discarded.
 
-In the historical generated-PHP path, handlers run in a supervised fork of the CLI host: open connections inside that handler and do not use parent-memory mutation for state. JSON handlers run normally in the application and can reuse ordinary injected clients. Check object/tenant access in the authorization callback and again at the upstream service. Timeouts do not undo completed side effects. Start with read-only tools.
+When running generated PHP, handlers run in a supervised fork of the CLI host: open connections inside that handler and do not use parent-memory mutation for state. JSON handlers run normally in the application and can reuse ordinary injected clients. Check object/tenant access in the authorization callback and again at the upstream service. Timeouts do not undo completed side effects. Start with read-only tools.
 
 For opt-in host timing, pass an `ExecutionTimeline` as the third `GvisorSandbox` constructor argument and read `snapshot()` after execution, including after a caught failure. It records container setup, PHP execution, broker calls and cleanup on a monotonic clock, capped at 512 spans. Broker spans include **tool arguments**, result byte counts and result digests, so treat the trace as application data and review it before sharing. No tool-result bodies, credentials or exception messages are added by this observer. It grants no capabilities and is not sent to the guest. Spans nest; broker time is already included in execution time. Tracing is disabled by default.
 
@@ -127,12 +127,12 @@ exactly which tools were disclosed. `catalogToolDefinitions()` supplies the fixe
 `search_tools` / `execute_tools` interface. Symfony's adapters expose it with
 `mode: catalog`; the executor, authorization and limits are shared with batches.
 
-This path needs ordinary PHP and JSON; it works inside a web request. There is no worker option. Time checks happen between calls and after a handler returns; a blocked handler cannot be interrupted. Configure hard timeouts and memory limits in the host and downstream clients. HTTP authentication and persistent user budgets are supplied by the Symfony integration. The historical generated-PHP path retains gVisor and its separate Unix supervisor.
+This path needs ordinary PHP and JSON; it works inside a web request. There is no worker option. Time checks happen between calls and after a handler returns; a blocked handler cannot be interrupted. Configure hard timeouts and memory limits in the host and downstream clients. HTTP authentication and persistent user budgets are supplied by the Symfony integration. The generated-PHP path uses gVisor and its separate Unix supervisor.
 [Batch contract and hosting limits](../../docs/batching.md).
 
 ## Demo for judges
 
-The independent Symfony app provides the current authenticated HTTP product demo. The root workbench retains the editorial audit, direct/JSON/PHP comparison, and inspectable historical PHP/MCP traces. See [the walkthrough](../../docs/demo.md). No token-saving claim is inferred from the reference run.
+The [product demo](../../docs/demo.md) uses this package’s broker to search approved tools and execute JSON calls through a [Symfony HTTP app](../../examples/symfony/README.md). The prototype that ran agent-written PHP remains reproducible on a configured gVisor host with `composer demo:conversation` and `composer demo:security` from the root checkout.
 
 ## Full schema discovery
 

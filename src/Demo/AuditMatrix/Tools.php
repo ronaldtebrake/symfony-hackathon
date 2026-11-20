@@ -26,13 +26,13 @@ final readonly class Tools
     }
 
     /** @param list<int> $ids */
-    public function getArticles(#[Schema(minItems: 1, maxItems: 12, uniqueItems: true)] array $ids): array
+    public function getArticles(#[Schema(description: 'Article IDs returned by cms_list_articles. Read this metadata before planning dependent media reads.', minItems: 1, maxItems: 12, uniqueItems: true)] array $ids): array
     {
         return $this->fixture->getArticles($ids)->structuredContent;
     }
 
     /** @param list<int> $ids */
-    public function getMedia(#[Schema(minItems: 1, maxItems: 12, uniqueItems: true)] array $ids): array
+    public function getMedia(#[Schema(description: 'Deduplicated image_id values from returned cms_get_articles metadata. Media IDs are not article IDs. Do not infer IDs from article counts or guessed ranges.', minItems: 1, maxItems: 12, uniqueItems: true)] array $ids): array
     {
         return $this->fixture->getMedia($ids)->structuredContent;
     }

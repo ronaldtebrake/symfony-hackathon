@@ -16,9 +16,9 @@ final class CatalogScalingProof
 {
     public static function payloads(string $root): array
     {
-        $http = HttpCatalogProof::load($root);
+        $http = HttpCatalogProof::historical($root);
         if (!$http['verification']['passed']) {
-            throw new \RuntimeException('The current HTTP proof must pass before measuring its contracts.');
+            throw new \RuntimeException('The recorded HTTP proof must pass before measuring its contracts.');
         }
         $discovery = (new Discoverer())->discover($root, ['packages/symfony-code-mode/src/Http'], namePatterns: ['CatalogTools.php']);
         $entryTools = array_values(array_map(static fn ($reference) => $reference->tool, $discovery->getTools()));

@@ -32,6 +32,19 @@ final class NativeIntegrationTest extends WebTestCase
             // Isolate this test from the recording app's persistent budgets.
             self::getContainer()->set(CatalogStateStore::class, new CatalogStateStore(new ArrayAdapter(), new LockFactory(new InMemoryStore())));
             $headers = ['HTTP_AUTHORIZATION' => 'Bearer '.str_repeat('r', 32), 'HTTP_ACCEPT' => 'application/json, text/event-stream', 'CONTENT_TYPE' => 'application/json'];
+            $viewerHeaders = array_replace($headers, ['HTTP_AUTHORIZATION' => 'Bearer '.str_repeat('v', 32)]);
+            $hint = static function (array $headers) use ($client): array {
+                $client->request('GET', '/articles/capability-hint', server: $headers);
+                self::assertResponseIsSuccessful();
+                self::assertTrue($client->getResponse()->headers->hasCacheControlDirective('no-store'));
+                self::assertContains('Authorization', $client->getResponse()->getVary());
+
+                return json_decode($client->getResponse()->getContent(), true, flags: \JSON_THROW_ON_ERROR)['hints'];
+            };
+            $client->request('GET', '/articles/capability-hint', server: ['HTTP_ACCEPT' => 'application/json']);
+            self::assertResponseStatusCodeSame(401);
+            $this->assertSame(['You can look up published articles.'], $hint($headers));
+            $this->assertSame([], $hint($viewerHeaders));
             $call = static function (string $name, array $arguments, ?array $override = null) use ($client, &$headers): array {
                 $client->enableProfiler();
                 $client->request('POST', '/mcp', server: $override ?? $headers, content: json_encode([
@@ -59,11 +72,12 @@ final class NativeIntegrationTest extends WebTestCase
             ], \JSON_THROW_ON_ERROR));
             self::assertResponseIsSuccessful();
             $headers['HTTP_MCP_SESSION_ID'] = $client->getResponse()->headers->get('mcp-session-id');
+            $read = ['calls' => [['name' => 'publication_read', 'arguments' => ['id' => 101]]]];
+            $this->assertSame('discovery_required', $call('execute_tools', $read)['error']['reason']);
             $search = $call('search_tools', ['query' => 'publication']);
             $this->assertSame(['publication_read'], array_column($search['tools'], 'name'));
             $operation = $this->operations($client)[0];
             $this->assertSame(['matched' => 1, 'returned' => 1, 'truncated' => false], $operation['discovery']);
-            $read = ['calls' => [['name' => 'publication_read', 'arguments' => ['id' => 101]]]];
             $allowed = $call('execute_tools', $read);
             $this->assertSame(['id' => 101, 'title' => 'A Symfony application owns its tools'], $allowed['results'][0]['value']);
             $this->assertArrayNotHasKey('toolCalls', $allowed);
@@ -80,6 +94,7 @@ final class NativeIntegrationTest extends WebTestCase
             $profileToken = $client->getProfile()->getToken();
 
             $access->setGranted(false);
+            $this->assertSame([], $hint($headers));
             $denied = $call('execute_tools', $read);
             $this->assertSame('tool_denied', $denied['error']['reason']);
             $this->assertSame(0, $denied['completedCalls']);
@@ -101,6 +116,7 @@ final class NativeIntegrationTest extends WebTestCase
                 $this->assertInstanceOf(Symfony\Component\Security\Core\Exception\AccessDeniedException::class, $error->getPrevious());
             }
             $access->setGranted(true);
+            $this->assertSame(['You can look up published articles.'], $hint($headers));
             $this->assertSame('execution_limit', $call('execute_tools', $read)['error']['reason']);
             $viewerHeaders = array_replace($headers, ['HTTP_AUTHORIZATION' => 'Bearer '.str_repeat('v', 32)]);
             $this->assertSame([], $call('search_tools', ['query' => 'publication'], $viewerHeaders)['tools']);
