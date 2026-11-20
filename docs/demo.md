@@ -4,13 +4,11 @@
 
 ## Submission description
 
-Symfony Code Mode started with an article audit. We were sending batches of articles and images back to the model just to match them up. A PHP loop could do that, so we let the agent write one and ran it in a gVisor sandbox. It found the same ten issues and used 71% fewer tokens on that audit.
+A Symfony app might have a hundred tools. An agent reviewing a refund only needs to read the order and check its policy. We built a searchable catalog over the Model Context Protocol (MCP) so the agent can ask for the tools it needs. For recurring jobs, we prototyped the MCP working group’s idea of named groups. A team can offer both readers under one name and link its review checklist as a skill.
 
-Running a sandbox is a lot to ask of a team that just wants an agent to use the tools in its Symfony app. So we built a catalog with the PHP MCP SDK. The agent starts with just two tools. It can search for a service it’s allowed to use, then call it with JSON. Symfony checks access each time.
+Our first agent wrote PHP to match articles with images in a gVisor sandbox. It found the same ten issues as direct tool calls and used 71% fewer tokens on that audit. Running a sandbox was a lot to ask just to call services a team already hosts. So we used the PHP MCP SDK to expose two tools over HTTP. `search_tools` finds readers visible to the user. `execute_tools` calls them with JSON, and Symfony checks every read.
 
-Search still left the agent with some guesswork. A support team already knows that it needs the order and its policy to review a refund. We tried the MCP working group’s idea of named groups so the app could offer those two tools together.
-
-In the demo, we open that group for a Symfony AI agent using Hugging Face. It looks up a €75 order, checks the policy and recommends manual review because the amount is over €50. Then we revoke access and ask it to double-check. Symfony refuses the read, and the agent tells us it can’t verify the policy anymore. You can replay that same permission change locally.
+In the demo, the host opens `refund-review`. A Symfony AI agent using Hugging Face reads a €75 order, follows its policy ID and recommends manual review because the amount exceeds €50. When we revoke access and ask it to double-check, Symfony denies the policy read before the handler runs. The agent explains why it can’t verify its answer. The two readers were enough for this case, with or without the checklist.
 
 [Watch the 90-second demo and try it yourself.](https://ronaldtebrake.github.io/symfony-hackathon/)
 

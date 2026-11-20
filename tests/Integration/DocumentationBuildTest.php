@@ -105,6 +105,7 @@ final class DocumentationBuildTest extends TestCase
         $this->assertStringContainsString('href="images/symfony-mcp-architecture.svg"', $html);
         $this->assertStringContainsString('src="images/symfony-mcp-architecture.svg"', $html);
         $this->assertFileEquals($root.'/docs/images/symfony-mcp-architecture.svg', $root.'/var/pages/images/symfony-mcp-architecture.svg');
+        $this->assertStringContainsString('](docs/images/symfony-mcp-architecture.svg)](https://ronaldtebrake.github.io/symfony-hackathon/#mcp-architecture)', file_get_contents($root.'/README.md'));
         $this->assertStringContainsString('href="evidence/skills-proof.json"', $html);
         foreach (['refund-skill', 'refund-protocol'] as $export) {
             $this->assertStringContainsString('href="evidence/'.$export.'.json"', $html);
@@ -164,7 +165,7 @@ final class DocumentationBuildTest extends TestCase
     {
         $root = \dirname(__DIR__, 2);
         $video = json_decode(file_get_contents($root.'/public/media/video-proof.json'), true, flags: \JSON_THROW_ON_ERROR);
-        $this->assertStringContainsString('public/media/editorial-review-poster.jpg)](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour)', file_get_contents($root.'/README.md'));
+        $this->assertStringContainsString('](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour)', file_get_contents($root.'/README.md'));
         $this->assertSame($video['assets']['symfony-native-tools-demo-90s.mp4'], $video['readmeAttachment']['sha256']);
         $this->assertSame(2700, $video['frames']);
         $this->assertSame(90, $video['durationSeconds']);

@@ -1,14 +1,14 @@
 # Symfony Code Mode
 
-An agent reviewing a refund needs the order and its policy. How should it find those two tools in a Symfony application with a hundred? We built a searchable MCP catalog and prototyped named groups so a team can tell a client which readers belong together.
+A Symfony app might have a hundred tools. An agent reviewing a refund only needs to read the order and check its policy. We built a searchable catalog over the Model Context Protocol (MCP) so the agent can ask for the tools it needs. For recurring jobs, we prototyped the MCP working group’s idea of named groups. A team can offer both readers under one name and link its review checklist as a skill.
 
-[Watch the 90-second demo on GitHub Pages](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) · [See how a prompt reaches Symfony](docs/reusable-workflows.md#how-an-mcp-call-reaches-symfony)
+[Watch the 90-second demo](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) · [Explore the GitHub Pages workbench](https://ronaldtebrake.github.io/symfony-hackathon/) · [Try it locally](#try-it-locally)
 
-[![Play the Symfony Code Mode demo](public/media/editorial-review-poster.jpg)](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour)
+Our first agent wrote PHP to match articles with images in a gVisor sandbox. It found the same ten issues as direct tool calls and used 71% fewer tokens on that audit. Running a sandbox was a lot to ask just to call services a team already hosts. So we used the PHP MCP SDK to expose two tools over HTTP. `search_tools` finds readers visible to the user. `execute_tools` calls them with JSON, and Symfony checks every read. [Design journey and measurements](https://ronaldtebrake.github.io/symfony-hackathon/#journey)
 
-**The reusable catalog** advertises `search_tools` and `execute_tools`. The caller gets matching schemas on demand. With 10 or 100 synthetic tools, the initial two definitions took 239 tokens. Symfony checks the current user, arguments and call budget on each read. [Package](packages/symfony-code-mode/README.md) · [Schema measurement](docs/evidence/catalog-scaling.json)
+[![Architecture of Symfony Code Mode. An agent can search the catalog or open a named group. Both routes check the caller’s current access before Symfony AI invokes the application’s reader. Pink diamonds mark what we built and purple squares mark Symfony and PHP MCP SDK components.](docs/images/symfony-mcp-architecture.svg)](https://ronaldtebrake.github.io/symfony-hackathon/#mcp-architecture)
 
-**The Groups prototype** implements tool discovery from the MCP working group’s draft. In the recorded demo, the host opens `refund-review`. A Symfony AI agent using Hugging Face reads the order, follows its policy ID and recommends manual review. After revocation, the PHP MCP SDK delivers the repeat call to Symfony. Symfony denies it before the reader runs. [See the actual exchanges](https://ronaldtebrake.github.io/symfony-hackathon/#refund-wire)
+In the demo, the host opens `refund-review`. A Symfony AI agent using Hugging Face reads a €75 order, follows its policy ID and recommends manual review because the amount exceeds €50. When we revoke access and ask it to double-check, Symfony denies the policy read before the handler runs. The agent explains why it can’t verify its answer. The two readers were enough for this case, with or without the checklist. [See the conversation and actual calls](https://ronaldtebrake.github.io/symfony-hackathon/#refund-attempts)
 
 ## Try it locally
 
@@ -25,4 +25,4 @@ The command exercises both discovery routes in a fresh Symfony test kernel, then
 
 ## What we can contribute
 
-The reproducible case for maintainers is a permission change **after discovery**. A client knows the tool and its arguments, yet the next read must honor the current permissions. Next we want to let the model choose among several plausible groups. The host chose the group in this demo. [Upstream contribution notes](docs/contributing/README.md) · [Why we moved from sandboxed PHP to JSON and Groups](docs/reusable-workflows.md)
+We can share a catalog recipe for existing Symfony AI tools, a Groups compatibility test for the PHP MCP SDK, and traces for the MCP working group showing what happens when access changes after discovery. [Symfony package](packages/symfony-code-mode/README.md) · [Contributions and evidence](https://ronaldtebrake.github.io/symfony-hackathon/#contributions) · [What we’d test next](https://ronaldtebrake.github.io/symfony-hackathon/#whats-next)
