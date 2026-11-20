@@ -19,8 +19,8 @@ final class DemoPageTest extends WebTestCase
         $this->assertCount(1, $crawler->filterXPath('//*[@id="article-tour"]//video/source[@src="/media/symfony-native-tools-demo-90s.mp4"]'));
         $nav = $crawler->filterXPath('//nav[@aria-label="Documentation"]');
         $this->assertSame(['#overview', '#demo-tour', '#how-it-works', '#journey'], $nav->filterXPath('.//a')->extract(['href']));
-        $this->assertCount(1, $crawler->filterXPath('//*[@id="overview"]//*[@id="contributions"]'));
-        $this->assertCount(1, $crawler->filterXPath('//*[@id="overview"]//*[@id="whats-next"]//a[@href="#group-receipts"]'));
+        $this->assertSame(['#catalog-adoption', '#group-receipts', '#refund-wire'], $crawler->filterXPath('//*[@id="overview"]//*[@id="contributions"]//article//a')->extract(['href']));
+        $this->assertSame(['#group-receipts', '#workflow-directions'], $crawler->filterXPath('//*[@id="overview"]//*[@id="whats-next"]//a')->extract(['href']));
         $this->assertCount(1, $crawler->filterXPath('//*[@id="journey"]//img[contains(@src,"code-mode-value.svg")]'));
         $this->assertCount(1, $crawler->filterXPath('//*[@id="how-it-works"]//*[@id="mcp-architecture"]//img[@src="/images/symfony-mcp-architecture.svg"]'));
         $this->assertStringContainsString('search_tools', $crawler->filterXPath('//*[@id="how-it-works"]//pre')->text());

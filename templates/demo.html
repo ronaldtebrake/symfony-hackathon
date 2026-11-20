@@ -32,7 +32,7 @@
         <div class="product-hero">
           <div class="product-copy">
             <h1 id="page-title">Find the Symfony tools <span>a job needs.</span></h1>
-            <p>Advertising every tool gives an agent more schemas to read as an app grows. Our catalog lets it search over the Model Context Protocol (MCP) when it needs a tool. Our Groups prototype lets a Symfony team name the tools that belong together.</p>
+            <p>A growing Symfony app can expose dozens of tools over the Model Context Protocol (MCP). An agent rarely needs them all. We built a searchable catalog for finding a tool on demand and tried the working group’s idea of bundling tools for a familiar job.</p>
             <div class="hero-actions"><a class="primary-link" data-play-demo href="#demo-tour">Watch the 90-second demo <span aria-hidden="true">↗</span></a><a href="#quickstart">Run it locally →</a></div>
           </div>
           <a class="film-preview" data-play-demo href="#demo-tour" aria-label="Play the silent 90-second Symfony Code Mode demo">
@@ -40,29 +40,51 @@
             <span class="preview-play" aria-hidden="true">▶</span>
           </a>
         </div>
-        <section class="workflow-answer" aria-label="What we built">
-          <div>
-            <h2>A searchable catalog</h2>
-            <p>Our reusable package exposes <code>search_tools</code> and <code>execute_tools</code>. Search returns contracts visible to the user. Execute checks each requested read. With 10 and 100 synthetic tools, the initial two definitions used <strong>239 tokens</strong> in both cases.</p>
-            <a href="#catalog-cost">Inspect the schema measurement →</a>
-          </div>
-          <div>
-            <h2>A named group for a job</h2>
-            <p>We implemented tool discovery from the MCP working group’s Groups draft. In the demo the host opens <code>refund-review</code>. The model reads the order, then uses its policy ID to look up the rule. After revocation, Symfony denies that same read.</p>
-            <a href="#refund-attempts">Read the conversation and actual calls →</a>
-          </div>
+        <section class="workflow-answer" aria-label="Two ways to discover tools">
+          <article>
+            <span class="flow-owner">Reusable Symfony package</span>
+            <h2>Search the catalog</h2>
+            <p>When the agent needs one capability, it can search for it. Symfony returns matching tool definitions visible to this user. The agent picks a reader and sends its arguments.</p>
+            <div class="discovery-example"><code>search_tools</code><span aria-hidden="true">→</span><code>execute_tools</code></div>
+            <p>In our test, the two advertised definitions took <strong>239 tokens</strong> with 10 tools in the catalog and the same 239 with 100.</p>
+            <div class="video-links"><a href="#catalog-cost">See what we counted →</a></div>
+          </article>
+          <article>
+            <span class="flow-owner">Our prototype of the MCP Groups draft</span>
+            <h2>Open a named group</h2>
+            <p>A team can bundle the tools it uses for a recurring job. For each refund, the host can open <code>refund-review</code> to get the order and policy readers together. The agent decides how to use them.</p>
+            <div class="discovery-example"><span>Read order</span><span aria-hidden="true">→</span><code>policy ID</code><span aria-hidden="true">→</span><span>Read policy</span></div>
+            <p>Each read is a separate MCP call. When we revoke access, the agent still knows the policy tool’s name, but Symfony denies the next read.</p>
+            <div class="video-links"><a href="#refund-attempts">Follow the refund conversation →</a><a href="https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/19">Read the Groups draft ↗</a></div>
+          </article>
         </section>
-        <section class="workflow-answer" aria-label="Contributions and next experiment">
-          <div id="contributions">
-            <h2>What we can contribute</h2>
-            <p>Symfony AI supplies the agent and toolbox. The PHP MCP SDK carries the calls. We can offer Symfony AI the permission-aware catalog recipe, and SDK and working-group maintainers a Groups test that revokes permission between discovery and execution.</p>
-            <a href="#explore">See the proposals and tests →</a>
+        <section id="contributions" class="judge-contributions" aria-labelledby="contributions-heading">
+          <h2 id="contributions-heading">What we can contribute</h2>
+          <div class="opportunity-grid">
+            <article>
+              <h3>Symfony AI</h3>
+              <p>A recipe for putting existing <code>#[AsTool]</code> services behind a searchable MCP catalog. The app filters tools before search and checks its voter again when the agent requests a read.</p>
+              <a href="#catalog-adoption">Try the recipe in a fresh app →</a>
+            </article>
+            <article>
+              <h3>PHP MCP SDK</h3>
+              <p>A compatibility test for two clients on the same server. One opens a group and calls a member by name. The other uses the catalog. Both must respect a permission change mid-task.</p>
+              <a href="#group-receipts">Compare the clients’ HTTP calls →</a>
+            </article>
+            <article>
+              <h3>MCP working group</h3>
+              <p>A test case for linking a skill to a group. A client finds the refund guide, then loses access. The recorded calls show what happens when it tries to fetch the guide using the link it already has.</p>
+              <a href="#refund-wire">Inspect the denied guide requests →</a>
+            </article>
           </div>
-          <div id="whats-next">
-            <h2>Which group would the agent choose?</h2>
-            <p>Our host picked the refund group. Next we’d give the agent several plausible groups and test whether it can choose the right one from the user’s question.</p>
-            <a href="#group-receipts">Compare the discovery paths we tested →</a>
-          </div>
+          <a href="#explore">Contribution notes and upstream proposals →</a>
+        </section>
+        <section id="whats-next" class="judge-contributions" aria-labelledby="next-heading">
+          <h2 id="next-heading">What’s next?</h2>
+          <dl class="catalog-entries">
+            <div><dt>Let the agent pick the group</dt><dd>Our host chose the refund group in advance. We’d give the agent several plausible groups and compare its choice with catalog search on the same questions and permissions. How often does it finish correctly, and how many requests and tokens does it take? <a href="#group-receipts">See the current discovery comparison →</a></dd></div>
+            <div><dt>Load a skill when the job calls for it</dt><dd>The two readers were enough for our routine refund. We’d add a split-shipment case and let the agent decide when to fetch the team’s checklist. Does it catch the exception while keeping routine reviews simple? <a href="#workflow-directions">See the proposed experiment →</a></dd></div>
+          </dl>
         </section>
       </section>
 
@@ -502,8 +524,8 @@ public function __invoke(int $id): JsonResponse
           <p class="measurement-note">Checked 20 November 2026. The catalog example locks Symfony AI and the MCP bundle at 1.0.0-BETA1 and the PHP MCP SDK at 0.9.0. Open Symfony proposals also address caller-filtered native tool listings and access checks on named MCP tools. <a href="https://github.com/symfony/ai/pull/2507">Native listing filter ↗</a> · <a href="https://github.com/symfony/ai/pull/2830">MCP tool authorization ↗</a></p>
         </section>
         <div class="opportunity-grid">
-          <article><h3>PHP MCP SDK</h3><p>Offer a registry test for scoped skill files. In the refund fixture, the guide appears in the group, stays out of the top-level resource list, and requires permission when fetched by URI.</p><a href="#refund-wire">Inspect the resource calls →</a> · <a href="https://github.com/modelcontextprotocol/php-sdk/pull/372">Skills implementation ↗</a></article>
-          <article><h3>Symfony AI</h3><p>Offer the authenticated lookup fixture to the AgentSkills loader proposal. It shows a user reading a skill, losing access, then being denied the previously authorized operation. A next test would give two servers a skill with the same name and verify that the client keeps their approvals separate.</p><a href="#reusable-workflows">Inspect the lookup evidence →</a> · <a href="https://github.com/symfony/ai/pull/1718">AgentSkills proposal ↗</a></article>
+          <article><h3>PHP MCP SDK</h3><p>Offer the Publishing test as a compatibility fixture. It exercises group discovery and ordinary tool calls alongside the catalog on one HTTP endpoint. The refund fixture adds a registry test for a skill file whose URI the caller learned before losing access.</p><a href="#group-receipts">Inspect the client exchanges →</a> · <a href="#refund-wire">Trace the skill reads →</a></article>
+          <article><h3>Symfony AI</h3><p>Offer the independent app as a catalog recipe for teams with existing tools and voters. Its tests filter tools for the caller before ranking them and recheck each requested read. The authenticated skill lookup also gives the AgentSkills loader proposal a permission-change case.</p><a href="#catalog-adoption">Inspect the catalog recipe →</a> · <a href="https://github.com/symfony/ai/pull/1718">AgentSkills proposal ↗</a></article>
           <article><h3>MCP working group</h3><p>Share a working example of Option 2 and its controls. The same agent task ran with a bare group, an inline checklist and a linked skill. A separate trace shows what happens when the grant changes before the first skill download.</p><a href="#refund-attempts">Compare all three conversations →</a> · <a href="https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/22">Positioning proposal ↗</a></article>
         </div>
         <div class="doc-callout" id="skills-over-mcp">
