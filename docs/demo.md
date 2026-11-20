@@ -4,11 +4,11 @@
 
 ## Submission description
 
-A Symfony app might have a hundred tools. An agent reviewing a refund only needs to read the order and check its policy. We built a searchable catalog over the Model Context Protocol (MCP) so the agent can ask for the tools it needs. For recurring jobs, we prototyped the MCP working group’s idea of named groups. A team can offer both readers under one name and link its review checklist as a skill.
+A growing Symfony app can offer an agent dozens of tools. Sending every definition up front costs tokens, and a long list still tells the agent little about how a team uses those tools together. Symfony Code Mode gives the agent a searchable catalog over the Model Context Protocol (MCP) so it can discover approved tools as it needs them.
 
-Our first agent wrote PHP to match articles with images in a gVisor sandbox. It found the same ten issues as direct tool calls and used 71% fewer tokens on that audit. Running a sandbox was a lot to ask just to call services a team already hosts. So we used the PHP MCP SDK to expose two tools over HTTP. `search_tools` finds readers visible to the user. `execute_tools` calls them with JSON, and Symfony checks every read.
+We started by letting agents write PHP in a sandbox to combine results from several tools. Hosting a sandbox was a lot to ask just to call services a team already runs in Symfony. So we used the PHP MCP SDK to build a catalog that works on ordinary Symfony hosting. The agent starts with two tools, `search_tools` to find operations visible to its user and `execute_tools` to call them with JSON arguments.
 
-In the demo, the host opens `refund-review`. A Symfony AI agent using Hugging Face reads a €75 order, follows its policy ID and recommends manual review because the amount exceeds €50. When we revoke access and ask it to double-check, Symfony denies the policy read before the handler runs. The agent explains why it can’t verify its answer. The two readers were enough for this case, with or without the checklist.
+For recurring work, we prototyped the MCP working group’s idea of named groups. A team can offer related tools under one name and link its written procedure as a skill. The agent chooses its next step, and Symfony checks permissions on every read. In a recorded Symfony AI conversation, we revoked access between steps. Symfony denied the same read that had succeeded moments earlier.
 
 [Watch the 90-second demo and try it yourself.](https://ronaldtebrake.github.io/symfony-hackathon/)
 

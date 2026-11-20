@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Watch a Symfony AI agent use a searchable MCP catalog and a named group of tools. Inspect the refund review, denied follow-up and access checks.">
+  <meta name="description" content="Discover approved Symfony tools over MCP. See how a team can group tools for recurring work, link its procedure and check access on every read.">
   <title>Symfony Code Mode — Visual documentation</title>
   <link rel="stylesheet" href="/demo.css">
   <script src="/php-syntax.js" defer></script>
@@ -32,7 +32,7 @@
         <div class="product-hero">
           <div class="product-copy">
             <h1 id="page-title">Find the Symfony tools <span>a job needs.</span></h1>
-            <p>A Symfony app might have a hundred tools. An agent reviewing a refund only needs to read the order and check its policy. We built a searchable catalog over the Model Context Protocol (MCP) so the agent can ask for the tools it needs. For recurring jobs, we prototyped the MCP working group’s idea of named groups. A team can offer both readers under one name and link its review checklist as a skill.</p>
+            <p>A growing Symfony app can offer an agent dozens of tools. Sending every definition up front costs tokens, and a long list still tells the agent little about how a team uses those tools together. Symfony Code Mode gives the agent a searchable catalog over the Model Context Protocol (MCP) so it can discover approved tools as it needs them.</p>
             <div class="hero-actions"><a class="primary-link" data-play-demo href="#demo-tour">Watch the 90-second demo <span aria-hidden="true">↗</span></a><a href="#quickstart">Run it locally →</a></div>
           </div>
           <a class="film-preview" data-play-demo href="#demo-tour" aria-label="Play the silent 90-second Symfony Code Mode demo">
@@ -52,15 +52,15 @@
           <article>
             <span class="flow-owner">Our prototype of the MCP Groups draft</span>
             <h2>Open a named group</h2>
-            <p>A team can bundle the tools it uses for a recurring job. For each refund, the host can open <code>refund-review</code> to get the order and policy readers together. The agent decides how to use them.</p>
-            <div class="discovery-example"><span>Read order</span><span aria-hidden="true">→</span><code>policy ID</code><span aria-hidden="true">→</span><span>Read policy</span></div>
-            <p>The linked checklist explains how to check eligibility and when to send a refund for manual review. The two readers alone were enough for this order. After we revoke access, Symfony denies the next policy read.</p>
-            <div class="video-links"><a href="#refund-attempts">Follow the refund conversation →</a><a href="https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/19">Read the Groups draft ↗</a></div>
+            <p>Teams already know which tools they use together. In our prototype, the host can open a group by name and get those definitions in one request. The agent can use the result of one call to decide what to ask for next.</p>
+            <div class="discovery-example"><code>groups/get</code><span aria-hidden="true">→</span><span>Choose a tool</span><span aria-hidden="true">→</span><code>tools/call</code></div>
+            <p>The group can also link a skill with the team’s instructions for doing the job. Symfony checks access each time the agent asks to read data, even when the group is already open.</p>
+            <div class="video-links"><a href="#refund-attempts">Follow a recorded conversation →</a><a href="https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/19">Read the Groups draft ↗</a></div>
           </article>
         </section>
         <section class="journey-signpost" aria-labelledby="overview-journey-heading">
           <h2 id="overview-journey-heading">Why we moved from sandboxed PHP to a catalog</h2>
-          <p>Our first agent wrote PHP to match articles with images in a gVisor sandbox. It found the same ten issues as direct tool calls and used 71% fewer tokens on that audit. Teams already had the services for jobs like a refund review. The PHP MCP SDK let us call those services with JSON on ordinary Symfony hosting. Groups gave teams a way to name the tools a job needs.</p>
+          <p>Sandboxed PHP let the agent combine tool results and send only the rows it needed back to the model. Hosting that sandbox was the hard part. For operations the app already supports, we could send a tool name and JSON arguments to an installed Symfony service. The PHP MCP SDK made that possible over ordinary HTTP.</p>
           <a href="#journey">Read the design journey and measurements →</a> · <a href="#mcp-architecture">See what we built on Symfony AI and the PHP MCP SDK →</a>
         </section>
         <section id="contributions" class="judge-contributions" aria-labelledby="contributions-heading">
@@ -78,7 +78,7 @@
             </article>
             <article>
               <h3>MCP working group</h3>
-              <p>A test case for linking a skill to a group. A client finds the refund guide, then loses access. The recorded calls show what happens when it tries to fetch the guide using the link it already has.</p>
+              <p>A test case for linking a skill to a group. A client discovers the team’s guide, then loses access. The recorded calls show what happens when it tries to fetch the guide using the link it already has.</p>
               <a href="#refund-wire">Inspect the denied guide requests →</a>
             </article>
           </div>
@@ -87,8 +87,8 @@
         <section id="whats-next" class="judge-contributions" aria-labelledby="next-heading">
           <h2 id="next-heading">What’s next?</h2>
           <dl class="catalog-entries">
-            <div><dt>Let the agent pick the group</dt><dd>Our host chose the refund group in advance. We’d give the agent several plausible groups and compare its choice with catalog search on the same questions and permissions. How often does it finish correctly, and how many requests and tokens does it take? <a href="#group-receipts">See the current discovery comparison →</a></dd></div>
-            <div><dt>Load a skill when the job calls for it</dt><dd>The two readers were enough for our routine refund. We’d add a split-shipment case and let the agent decide when to fetch the team’s checklist. Does it catch the exception while keeping routine reviews simple? <a href="#workflow-directions">See the proposed experiment →</a></dd></div>
+            <div><dt>Let the agent pick the group</dt><dd>Our host chose the group in advance. We’d give the agent several plausible groups and compare its choice with catalog search on the same questions and permissions. How often does it finish correctly, and how many requests and tokens does it take? <a href="#group-receipts">See the current discovery comparison →</a></dd></div>
+            <div><dt>Load a skill when the job calls for it</dt><dd>The tools alone were enough for the routine task we tested. Next we’d include exceptions that require the team’s written procedure. Can the agent recognize when to fetch it, and does that improve its decision? <a href="#workflow-directions">See the proposed experiment →</a></dd></div>
           </dl>
         </section>
       </section>
