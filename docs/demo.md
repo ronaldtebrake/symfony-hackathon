@@ -4,13 +4,15 @@
 
 ## Submission description
 
-Symfony Code Mode started with an audit. With direct tool calls, every batch of articles and images went back to the model so it could match the records. We let the agent write the join in PHP and run it in a gVisor sandbox. It found the same ten issues as direct tool calls and used 71% fewer tokens on that audit.
+Symfony Code Mode started with an article audit. We were sending batches of articles and images back to the model just to match them up. A PHP loop could do that, so we let the agent write one and ran it in a gVisor sandbox. It found the same ten issues and used 71% fewer tokens on that audit.
 
-The catch was deployment. A Symfony team would have to run a sandbox even for a job as simple as passing an ID from one service to another. So we built a catalog on the PHP MCP SDK. `search_tools` finds readers available to the caller. `execute_tools` calls existing Symfony services with JSON. The application checks permission on every read.
+Running a sandbox is a lot to ask of a team that just wants an agent to use the tools in its Symfony app. So we built a catalog with the PHP MCP SDK. The agent starts with just two tools. It can search for a service it’s allowed to use, then call it with JSON. Symfony checks access each time.
 
-Search tells a client which tools match a query. The client still has to figure out which ones belong together. A support team already knows a refund review needs the order and its policy. The MCP working group’s Groups draft gave us a way to express that relationship. In our prototype, the host opens `refund-review`. A Symfony AI agent using Hugging Face reads the order, follows its policy ID and recommends manual review. We revoke access and ask it to check again. Symfony denies the same policy read, and the agent tells the user it can no longer verify the decision.
+Search still left the agent with some guesswork. A support team already knows that it needs the order and its policy to review a refund. We tried the MCP working group’s idea of named groups so the app could offer those two tools together.
 
-That permission change is a reproducible test we can offer SDK and working-group maintainers. Watch the demo and try it at https://ronaldtebrake.github.io/symfony-hackathon/
+In the demo, we open that group for a Symfony AI agent using Hugging Face. It looks up a €75 order, checks the policy and recommends manual review because the amount is over €50. Then we revoke access and ask it to double-check. Symfony refuses the read, and the agent tells us it can’t verify the policy anymore. You can replay that same permission change locally.
+
+[Watch the 90-second demo and try it yourself.](https://ronaldtebrake.github.io/symfony-hackathon/)
 
 ## What the film shows
 
