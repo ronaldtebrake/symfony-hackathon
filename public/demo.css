@@ -85,7 +85,13 @@ details pre, .command { margin: 0; padding: 1.1rem 1.5rem; color: #f6f1fa; backg
 .profiler img { min-width: 53rem; border: 0; border-radius: 0 }
 .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: clamp(1rem, 3vw, 2rem); margin: 2rem 0 }
 .steps article { border-top: 2px solid #c9a6d8; padding-top: .95rem }
-.architecture { margin: 2rem auto 0 }
+.architecture { margin: 2rem auto 0; container-type: inline-size }
+.diagram-view { display: block; overflow-x: auto; border-radius: .85rem }
+.architecture img { min-width: 64rem }
+.diagram-hint { display: none; margin-bottom: .6rem; font-size: .9rem }
+@container (max-width: 64rem) {
+  .diagram-hint { display: block }
+}
 .decisions { display: grid; gap: 1.25rem }
 .decisions article { display: grid; grid-template-columns: 1fr 2.2fr; gap: 2rem; padding: 1.15rem 0 0; border-top: 1px solid var(--line) }
 .next { padding: 1.7rem; background: var(--soft); border-radius: .75rem; margin-top: 2rem }

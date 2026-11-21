@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1120" height="748" viewBox="0 0 1120 748" role="img" aria-labelledby="title description">
   <title id="title">What Symfony Code Mode adds to MCP</title>
-  <desc id="description">A user asks an agent a question. The Symfony AI agent and MCP bridge use the PHP MCP SDK to contact Symfony over HTTP. Pink diamonds mark our additions. On the refund endpoint, search_tools finds individual tools or a named procedure. The agent can open the procedure, then issue each read with execute_tools. On the same endpoint a client supporting the draft Groups extension can discover the procedure with groups/list and groups/get. A client calls a group member by name with tools/call. On either route, our package checks the budget, arguments and the application’s current permissions for each read. Only allowed calls reach the Symfony AI Toolbox and the app’s PHP handler. The agent receives the result or denial and can answer the user or request another read. Purple squares mark Symfony and PHP MCP SDK components. Grey circles mark the user and app-owned parts.</desc>
+  <desc id="description">A user asks an agent a question. The agent’s MCP client contacts Symfony over HTTP. A Symfony AI agent can use its MCP bridge; Claude Code can call the same endpoint and chain reads in client-side JavaScript. Pink diamonds mark our additions. In the filmed catalog route, search_tools finds tools or Groups visible to the caller. Opening refund-review with search_tools returns the procedure and its member definitions. The client issues the order and policy reads with execute_tools, passing the returned policyId into the second read. On the same endpoint a client supporting the draft Groups extension can discover the procedure with groups/list and groups/get. A client calls a group member by name with tools/call. On either route, our package checks the budget, arguments and the application’s current permissions for each read. Only allowed calls reach the Symfony AI Toolbox and the app’s PHP handler. The agent receives the result or denial and can answer the user or request another read. Purple squares mark Symfony and PHP MCP SDK components. Grey circles mark the user, client and application context.</desc>
 
   <defs>
     <linearGradient id="paper" x2="0" y2="1">
@@ -39,7 +39,7 @@
   <g class="key">
     <use href="#ours" x="40" y="122"/><text x="54" y="127" class="ours">Built in this project</text>
     <use href="#upstream" x="248" y="122"/><text x="262" y="127" class="upstream">Symfony &amp; PHP MCP SDK</text>
-    <use href="#context" x="513" y="122"/><text x="527" y="127" class="context">User &amp; application</text>
+    <use href="#context" x="513" y="122"/><text x="527" y="127" class="context">User, client &amp; application</text>
   </g>
   <path d="M32 149h1056" stroke="#dfd8e7"/>
 
@@ -50,11 +50,11 @@
   <text x="48" y="259" font-size="20" font-weight="700">“Review refund R-1042”</text>
   <path d="M160 276v34" class="connector" marker-end="url(#arrow)"/>
 
-  <rect x="32" y="312" width="256" height="115" rx="13" class="base-card"/>
-  <use href="#upstream" x="52" y="335"/><text x="65" y="339" class="owner upstream">SYMFONY AI</text>
-  <text x="48" y="367" class="name">Agent &amp; MCP bridge</text>
-  <text x="48" y="393" class="body">The model picks a read.</text>
-  <text x="48" y="415" class="body">The client sends the call.</text>
+  <rect x="32" y="312" width="256" height="115" rx="13" class="context-card"/>
+  <use href="#context" x="52" y="335"/><text x="65" y="339" class="owner context">MCP CLIENT</text>
+  <text x="48" y="367" class="name">Agent chooses a tool</text>
+  <text x="48" y="393" class="body">The client sends the call.</text>
+  <text x="48" y="415" class="body">It can chain reads in code.</text>
   <path d="M288 364h22q8 0 8-8V242q0-8 8-8h46" class="connector" marker-end="url(#arrow)"/>
 
   <!-- Standard HTTP and protocol handling, followed by the two discovery routes. -->
@@ -74,16 +74,16 @@
   </g>
 
   <rect x="374" y="306" width="349" height="157" rx="13" class="our-card"/>
-  <use href="#ours" x="397" y="329"/><text x="411" y="333" class="owner ours">OUR CATALOG · REFUND DEMO</text>
+  <use href="#ours" x="397" y="329"/><text x="411" y="333" class="owner ours">CATALOG · FILMED ROUTE</text>
   <text x="391" y="364" class="name">Searchable catalog</text>
-  <text x="391" y="390" class="body">Two tools for this MCP connection.</text>
-  <text x="391" y="420" class="mono ours">search_tools</text><text x="525" y="420" class="body">find readers or groups</text>
-  <text x="391" y="447" class="mono ours">execute_tools</text><text x="525" y="447" class="body">request reads</text>
+  <text x="391" y="390" class="body">Find tools and open a team procedure.</text>
+  <text x="391" y="420" class="mono ours">search_tools</text><text x="525" y="420" class="body">search or open a Group</text>
+  <text x="391" y="447" class="mono ours">execute_tools</text><text x="525" y="447" class="body">call selected tools</text>
 
   <rect x="739" y="306" width="349" height="157" rx="13" class="our-card" stroke-dasharray="6 4"/>
   <use href="#ours" x="762" y="329"/><text x="776" y="333" class="owner ours">OUR PROTOTYPE · MCP GROUPS DRAFT</text>
-  <text x="756" y="364" class="name">Named groups</text>
-  <text x="756" y="390" class="body">The host opens a group for a known job.</text>
+  <text x="756" y="364" class="name">Named Groups</text>
+  <text x="756" y="390" class="body">Open the Group via the negotiated draft.</text>
   <text x="756" y="420" class="mono ours">groups/list</text><text x="865" y="420" class="body">→</text><text x="891" y="420" class="mono ours">groups/get</text>
   <text x="756" y="447" class="mono">tools/call</text><text x="865" y="447" class="body">call a member by name</text>
 
@@ -91,7 +91,7 @@
   <rect x="374" y="492" width="714" height="84" rx="13" class="our-card"/>
   <use href="#ours" x="397" y="515"/><text x="411" y="519" class="owner ours">OUR PACKAGE · ON EVERY READ</text>
   <text x="391" y="545" class="name">Check the call against the app’s rules</text>
-  <text x="391" y="566" class="body">Check the budget, the arguments and the caller’s current permission.</text>
+  <text x="391" y="566" class="body">Both routes share a call budget and check arguments and access to the requested record.</text>
 
   <path d="M552 576v36" class="connector" marker-end="url(#arrow)"/>
   <text x="565" y="599" class="key">Allowed</text>
@@ -115,5 +115,5 @@
   <text x="48" y="663" class="body">It can answer the user</text>
   <text x="48" y="685" class="body">or ask for another read.</text>
   <path d="M160 579V430" class="connector" stroke-dasharray="4 6" marker-end="url(#arrow)"/>
-  <text x="172" y="504" class="body">Another read</text>
+  <text x="172" y="504" class="body">Next read</text>
 </svg>

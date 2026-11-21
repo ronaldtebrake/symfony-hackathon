@@ -12,7 +12,7 @@ Finding the right readers still leaves the agent to work out how they fit togeth
 
 **What makes it Code Mode–ready?** One tool can return a field another tool takes as input. In the film, the agent follows the team’s Group, using the order’s `policyId` to read its policy. Symfony checks permission again for the second order and denies the read. Clients can make these calls one at a time or compose them in code. [See a separate run with Claude’s JavaScript and four MCP calls](https://ronaldtebrake.github.io/symfony-hackathon/#code-mode-ready)
 
-[![Architecture of Symfony Code Mode. An agent can search the catalog or open a named group. Both routes check the caller’s current access before Symfony AI invokes the application’s reader. Pink diamonds mark what we built and purple squares mark Symfony and PHP MCP SDK components.](docs/images/symfony-mcp-architecture.svg)](https://ronaldtebrake.github.io/symfony-hackathon/#mcp-architecture)
+[![Architecture of Symfony Code Mode. An agent opens the procedure through catalog search in the film. A client supporting the Groups draft can open the same Group by name. Both routes check the caller’s current access before Symfony AI invokes the application’s reader. Pink diamonds mark what we built and purple squares mark Symfony and PHP MCP SDK components.](docs/images/symfony-mcp-architecture.svg)](https://ronaldtebrake.github.io/symfony-hackathon/#mcp-architecture)
 
 We started with agent-written PHP in a sandbox. Letting the client run its own code brought the server back to ordinary Symfony hosting. We built the catalog and prototyped the MCP working group’s Groups proposal using Symfony AI tool definitions and the PHP MCP SDK. [Design journey](https://ronaldtebrake.github.io/symfony-hackathon/#journey)
 

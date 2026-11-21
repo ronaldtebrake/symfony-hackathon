@@ -99,8 +99,10 @@ $escape = static fn (string $text): string => htmlspecialchars($text, \ENT_QUOTE
       <h3>Give a frequent read a direct route</h3>
       <p>The featured refund review uses the two-tool default. In the independent Symfony app, adding <code>publication_read</code> to <code>code_mode.http.direct_tools</code> lets an authorized agent call that reader immediately. One direct read and one read through <code>execute_tools</code> returned the same article and used both available calls. After a budget reset and permission revocation, Symfony denied the direct retry before the reader ran. <a href="evidence/direct-tool.json">Inspect the calls and shared budget ↗</a></p>
     </div>
-    <figure id="mcp-architecture" class="architecture"><a href="images/symfony-mcp-architecture.svg"><img src="images/symfony-mcp-architecture.svg" width="1120" height="748" loading="lazy" alt="Agent, MCP client, Symfony catalog, access checks and application handler. Pink diamonds mark this project’s additions and purple squares mark upstream components."></a>
-      <figcaption>The diagram also shows the draft Groups route. A client that negotiates the extension can use <code>groups/list</code> and <code>groups/get</code> on the same refund endpoint, then call a member by name. <a href="https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/19">Read the proposal ↗</a></figcaption>
+    <figure id="mcp-architecture" class="architecture">
+      <p class="diagram-hint">Scroll across the diagram or <a href="images/symfony-mcp-architecture.svg">open it full size</a>.</p>
+      <a class="diagram-view" href="images/symfony-mcp-architecture.svg"><img src="images/symfony-mcp-architecture.svg" width="1120" height="748" loading="lazy" alt="A client finds and opens a procedure through the catalog or negotiated Groups methods. Both paths check each read before the Symfony AI Toolbox invokes the handler. Pink diamonds mark this project’s additions and purple squares mark upstream components."></a>
+      <figcaption>In the film, the client opens the procedure with <code>search_tools</code> and passes the order’s <code>policyId</code> into the next read. A Symfony AI agent can use its MCP bridge to reach this same endpoint. A client that negotiates the Groups extension can use <code>groups/list</code> and <code>groups/get</code> and then call a member by name. <a href="https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/19">Read the proposal ↗</a></figcaption>
     </figure>
   </section>
 
