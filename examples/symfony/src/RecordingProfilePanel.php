@@ -32,9 +32,9 @@ final class RecordingProfilePanel
 
         // Private MCP recordings deliberately omit Symfony's request collector.
         $profile = $this->profiler->loadProfile($token);
-        if (['code_mode'] === array_keys($profile?->getCollectors() ?? [])) {
+        if ($profile?->hasCollector('code_mode') && !$profile->hasCollector('request')) {
             $request->attributes->set('token', $token);
-            $request->query->set('panel', 'code_mode');
+            $request->query->set('panel', $profile->hasCollector('mcp') ? 'mcp' : 'code_mode');
         }
     }
 
@@ -51,7 +51,7 @@ final class RecordingProfilePanel
                 continue;
             }
             $collectors = $this->profiler->loadProfile($row['token'])?->getCollectors() ?? [];
-            if (['code_mode'] !== array_keys($collectors) || !$collectors['code_mode'] instanceof CatalogDataCollector) {
+            if (isset($collectors['request']) || !(($collectors['code_mode'] ?? null) instanceof CatalogDataCollector)) {
                 continue;
             }
             foreach ($collectors['code_mode']->getOperations() as $operation) {
@@ -63,7 +63,7 @@ final class RecordingProfilePanel
                     'execute_tools' => array_column(array_filter($operation['calls'], static fn (array $call): bool => \in_array($call['status'], ['succeeded', 'denied'], true)), 'name'),
                     default => [],
                 };
-                $steps[$row['token']][] = ['method' => $discovery ? $name : 'tools/call',
+                $steps[$row['token']][] = ['panel' => isset($collectors['mcp']) ? 'mcp' : 'code_mode', 'method' => $discovery ? $name : 'tools/call',
                     'name' => $discovery ? ($operation['page']['selectedGroup'] ?? null) : $name, 'targets' => $targets,
                     'openedGroup' => isset($groups['selectedGroup']), 'status' => $operation['status']];
             }

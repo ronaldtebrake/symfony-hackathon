@@ -1,6 +1,6 @@
 {
     "format": "symfony-http-catalog/v1",
-    "capturedAt": "2026-11-21T12:35:41+00:00",
+    "capturedAt": "2026-11-21T16:23:45+00:00",
     "status": "passed",
     "scope": "Operator-authored JSON-RPC over actual Symfony MCP HTTP and bearer authentication. Independent Composer application, synthetic articles, no model or generated code. Process-control and child-process functions disabled inside the HTTP application.",
     "execution": {
@@ -1185,7 +1185,7 @@
         "src/PublicationVisibility.php": "1a587ac0559115baa6df7f3ebaf6e909a4f62999b797d1f49f776e0eb7cbbd06",
         "src/ReadPolicy.php": "29015499459d7cbf3221dfff49326ca5acde2b423a62f48ad4b308357447246f",
         "src/ReaderAccessCommand.php": "f69705cbe4f4dd25e0340af7186485b3d78bd196be1d6e1d6e6a903e7a549cc2",
-        "src/RecordingProfilePanel.php": "0945ec882a5d751240b2e534b927463522729cd019c286ea9d96f64c92d02635",
+        "src/RecordingProfilePanel.php": "61f407d5195fabc290a42babfe84544fce30516e14fb7b75512e3107d0a3a060",
         "src/SkillExperimentBundle.php": "dbdcfe605b780af38c3479a63b41a5471069d593e848d0f2b479b407604cbfff",
         "src/SkillPresentation.php": "e5d08e12c989138c6a7ffc45397d0d6373ac113036dbd5a4932c18a6d0c8d12a",
         "vendor/ronaldtebrake/php-code-mode/composer.json": "ae1420972c0e286b220422c763d43afe823415125d872e5523201aeb46b7ec92",
@@ -1253,7 +1253,7 @@
         "vendor/ronaldtebrake/symfony-code-mode/src/Maker/templates/Tool.tpl.php": "7a08e5466a60c6e7d39389256a1752ede09dd62bdbba3afb651c3505aafd1107",
         "vendor/ronaldtebrake/symfony-code-mode/src/Maker/templates/Voter.tpl.php": "4ff0679d2e2242bac324ed977abc44c3758c048379c691c8eeaa3e4343a1d682",
         "vendor/ronaldtebrake/symfony-code-mode/src/McpServerFactory.php": "5009e69aec9c678a51d4b9e90bfcc41feb06f60a91043c52caba627cf2e45f41",
-        "vendor/ronaldtebrake/symfony-code-mode/src/Profiler/CatalogDataCollector.php": "16da672a853e2c345c432c1dd239d779017025b071582cf5fa7445acad6cf876",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Profiler/CatalogDataCollector.php": "985b70e248b1ec57ec3db5e0af773ff81dd9ce806c3d0a65ecce9a9d7d865dcc",
         "vendor/ronaldtebrake/symfony-code-mode/src/Profiler/CatalogTrace.php": "4b7b26508f33b5456292ff4ea7fe2ef4daf67192e55008bec5a7c6f8b3b67fab",
         "vendor/ronaldtebrake/symfony-code-mode/src/Profiler/ToolEventSubscriber.php": "88dd698834900310e4df93bef0e10920ecc687749e43bdfb2a77d19c9beba59c",
         "vendor/ronaldtebrake/symfony-code-mode/src/Provider/ReadToolsProvider.php": "9be625d58b81d5cc06d15dbccf5eb570e42802b91582ce6fb9f22ef483fa0715",

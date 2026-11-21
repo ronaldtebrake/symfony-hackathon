@@ -81,6 +81,7 @@ final class DemoPageTest extends WebTestCase
             'evidence/direct-tool.json' => 'application/json',
             'evidence/judge-demo.json' => 'application/json',
             'evidence/programmatic-refund.json' => 'application/json',
+            'images/symfony-mcp-profiler.png' => 'image/png',
             'images/symfony-mcp-architecture.svg' => 'image/svg+xml',
             'evidence/claude-structured-refund.json' => 'application/json',
             'evidence/catalog-scaling.json' => 'application/json',

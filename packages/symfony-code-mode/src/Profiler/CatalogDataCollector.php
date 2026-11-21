@@ -10,13 +10,14 @@ use Symfony\Component\HttpKernel\DataCollector\DataCollector;
 
 final class CatalogDataCollector extends DataCollector
 {
-    public function __construct(private readonly CatalogTrace $trace)
+    public function __construct(private readonly CatalogTrace $trace, private readonly array $reviewedExchange = [])
     {
     }
 
     public function collect(Request $request, Response $response, ?\Throwable $exception = null): void
     {
         $this->data = $this->trace->snapshot();
+        $this->data['exchange'] = $this->reviewedExchange;
     }
 
     public function getName(): string
@@ -27,6 +28,11 @@ final class CatalogDataCollector extends DataCollector
     public function getOperations(): array
     {
         return $this->data['operations'] ?? [];
+    }
+
+    public function getExchange(): array
+    {
+        return $this->data['exchange'] ?? [];
     }
 
     public function getDropped(): int

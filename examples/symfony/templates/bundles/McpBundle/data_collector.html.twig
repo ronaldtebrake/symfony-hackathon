@@ -1,0 +1,14 @@
+{% extends '@!Mcp/data_collector.html.twig' %}
+
+{% block summary %}
+    {% if profile.collectors.request is defined %}{{ parent() }}
+    {% else %}<h2>{{ profile.method }} {{ profile.url }}</h2>{% endif %}
+{% endblock %}
+
+{% block panel %}
+    {% set trace = profile.collectors.code_mode|default(null) %}
+    {% if trace and trace.operations %}
+        {% with {collector: trace} %}{{ block('panel', '@CodeMode/Collector/catalog.html.twig') }}{% endwith %}
+    {% endif %}
+    {% if collector.servers or not (trace and trace.operations) %}{{ parent() }}{% endif %}
+{% endblock %}

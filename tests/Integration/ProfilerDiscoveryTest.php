@@ -7,6 +7,7 @@ namespace App\Tests\Integration;
 use App\Demo\Refund\Fixture;
 use App\Demo\Refund\RecordingProfiler;
 use App\Demo\Refund\Tools;
+use CodeMode\Symfony\Profiler\CatalogDataCollector;
 use CodeMode\Symfony\Profiler\CatalogTrace;
 use CodeMode\ToolDefinition;
 use Mcp\Schema\JsonRpc\Error;
@@ -15,6 +16,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Profiler\FileProfilerStorage;
 
 final class ProfilerDiscoveryTest extends TestCase
 {
@@ -101,6 +103,30 @@ final class ProfilerDiscoveryTest extends TestCase
             $this->assertSame($expected, $op['page']['instructions'] ?? null);
             $this->assertSame([], $op['calls']);
             $this->assertSame([], $op['nativeEvents']);
+        }
+    }
+
+    public function testRecordedExchangeStoresOnlyReviewedFixtureValues(): void
+    {
+        $trace = new CatalogTrace();
+        $args = ['calls' => [['name' => 'refund_get_order', 'arguments' => ['orderId' => 'R-1042']]]];
+        $request = Request::create('/mcp', 'POST', content: json_encode(['jsonrpc' => '2.0', 'id' => 7, 'method' => 'tools/call',
+            'params' => ['name' => 'execute_tools', 'arguments' => $args]], \JSON_THROW_ON_ERROR));
+        $value = ['orderId' => 'R-1042', 'policyId' => 'standard-eu', 'amountMinor' => 'PRIVATE_AMOUNT', 'notes' => 'PRIVATE_NOTES'];
+        foreach ([false, true] as $failed) {
+            $trace->reset();
+            $trace->begin('execute_tools');
+            $trace->finish([], $failed, 1);
+            $result = ['isError' => $failed, 'structuredContent' => ['results' => [['name' => 'refund_get_order', 'value' => $value]]]];
+            $token = RecordingProfiler::capture($this->directory, $request, new JsonResponse(['jsonrpc' => '2.0', 'id' => 7, 'result' => $result]), $trace, 1);
+            $profile = (new FileProfilerStorage('file:'.$this->directory.'/profiles'))->read($token);
+            $this->assertTrue($profile->hasCollector('mcp'));
+            $collector = $profile->getCollector('code_mode');
+            $this->assertInstanceOf(CatalogDataCollector::class, $collector);
+            $exchange = $collector->getExchange();
+            $this->assertSame($args['calls'][0], $exchange['Requested read']);
+            $this->assertSame($failed ? null : ['orderId' => 'R-1042', 'policyId' => 'standard-eu'], $exchange['Returned fields'] ?? null);
+            $this->assertStringNotContainsString('PRIVATE', serialize($profile));
         }
     }
 

@@ -22,6 +22,9 @@
 {% block menu %}<span class="label"><span class="icon">{ }</span><strong>Code Mode</strong></span>{% endblock %}
 {% block panel %}
     <h2>MCP discovery and tool calls</h2>
+    {% for label, value in collector.exchange %}
+        <h3>{{ label }}</h3><pre>{{ value|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+    {% endfor %}
     {% for operation in collector.operations %}
         <h3>{{ operation.operation }} · {{ operation.status }} · {{ operation.durationMs|default(0) }} ms</h3>
         {% if operation.reason is defined %}<p class="status-error">{{ operation.reason }}</p>{% endif %}

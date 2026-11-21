@@ -32,6 +32,7 @@ $files->dumpFile($output.'/index.html', $page->getContent());
 $files->dumpFile($output.'/.nojekyll', '');
 foreach ([
     'demo.css' => 'public/demo.css',
+    'images/symfony-mcp-profiler.png' => 'docs/images/symfony-mcp-profiler.png',
     'images/symfony-mcp-architecture.svg' => 'docs/images/symfony-mcp-architecture.svg',
     'media/judge-workflow-voiceover.txt' => $narration,
 ] as $path => $source) {

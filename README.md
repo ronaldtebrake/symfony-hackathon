@@ -1,8 +1,10 @@
 # Symfony Code Mode
 
-**Give agents the right Symfony tools and a procedure they can follow.**
+**Find the right Symfony tools, then follow the team’s procedure.**
 
-An agent shouldn’t have to load every tool your application offers to answer one question. Symfony Code Mode exposes two tools over the Model Context Protocol (MCP) by default. `search_tools` finds the definitions the user can access. `execute_tools` calls the approved Symfony AI handlers. When a job needs several tools, a team can publish them together in a **Group**, with instructions for when to use each one.
+We started with a growing catalog. Why load every tool definition into an agent’s context to answer one question? Symfony Code Mode exposes two tools over the Model Context Protocol (MCP) by default. `search_tools` finds tools the caller can access. `execute_tools` calls their Symfony AI handlers.
+
+Finding the right readers still leaves the agent to work out how they fit together. A **Group** lets a team publish its procedure alongside the tools it uses. We prototyped the MCP working group’s draft so a client can discover both on the same connection.
 
 [![Watch the 90-second desktop demo of the refund Group](public/media/symfony-code-mode-judge-poster.jpg)](https://ronaldtebrake.github.io/symfony-hackathon/#judge-demo)
 
@@ -30,6 +32,10 @@ Open the **`examples/support` folder** as a local project in Claude Code or Code
 > Please find and follow our team’s refund procedure for order R-1042. What should I tell the customer?
 
 [Connect another MCP client, try revocation, or inspect the native Groups trace](docs/codex.md#run-the-film-prompts)
+
+**What you’ll see in Symfony Profiler.** In this PHP MCP SDK replay, search finds and opens the refund Group. The order and policy reads succeed for R-1042. Symfony denies the order read for R-1043.
+
+[![Symfony Profiler request list showing discovery, the two successful reads and the denied follow-up](docs/images/symfony-mcp-profiler.png)](https://ronaldtebrake.github.io/symfony-hackathon/#mcp-profiler)
 
 ## What we can contribute
 

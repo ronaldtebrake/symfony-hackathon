@@ -8,13 +8,15 @@ use App\Demo\GroupSelection\Discovery;
 use CodeMode\Symfony\Profiler\CatalogDataCollector;
 use CodeMode\Symfony\Profiler\CatalogTrace;
 use Mcp\Schema\JsonRpc\Error;
+use Symfony\AI\McpBundle\Profiler\DataCollector as McpDataCollector;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Profiler\FileProfilerStorage;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 
-/** Collect only the Code Mode panel. The MCP transport never receives profiler headers or routes. */
+/** Collect only reviewed MCP diagnostics. The MCP transport never receives profiler headers or routes. */
 final class RecordingProfiler
 {
     public static function capture(string $directory, Request $request, Response $response, CatalogTrace $trace, float $durationMs): ?string
@@ -64,13 +66,16 @@ final class RecordingProfiler
             return null;
         }
         $profiler = new Profiler(self::storage($directory));
-        $profiler->add(new CatalogDataCollector($trace));
+        $profiler->add(new CatalogDataCollector($trace, self::reviewedExchange($message, $response)));
+        // This fixture registers its catalog dynamically. The bundle has no static registry to enumerate.
+        $empty = new ServiceLocator([]);
+        $profiler->add(new McpDataCollector($empty, $empty));
         // Symfony normally emits X-Debug-Token on the response it collects.
         $profile = $profiler->collect($request, clone $response);
         if (null === $profile || !$profiler->saveProfile($profile)) {
             throw new \RuntimeException('Cannot store the local Symfony profile.');
         }
-        if (is_file($directory.'/share-dev-profiles') && ['code_mode'] === array_keys($profile->getCollectors())) {
+        if (is_file($directory.'/share-dev-profiles') && ['code_mode', 'mcp'] === array_keys($profile->getCollectors())) {
             // The operator's dev app can open this request without access to the fixture directory.
             $store = new FileProfilerStorage('file:'.\dirname(__DIR__, 3).'/examples/symfony/var/cache/dev/profiler');
             try {
@@ -139,6 +144,58 @@ final class RecordingProfiler
         }
 
         return $paths;
+    }
+
+    /** Only the public synthetic inputs and result fields used in the judge demo may enter storage. */
+    private static function reviewedExchange(array $message, Response $response): array
+    {
+        if ('tools/call' !== ($message['method'] ?? null)) {
+            return [];
+        }
+        $params = $message['params'] ?? [];
+        $args = $params['arguments'] ?? [];
+        if ('search_tools' === ($params['name'] ?? null)) {
+            if (isset($args['query'])) {
+                return ['Search query' => \in_array($args['query'], ['refund', 'refund procedure', 'refund review', 'refund-review'], true) ? $args['query'] : '[redacted]'];
+            }
+
+            return [];
+        }
+        if ('execute_tools' !== ($params['name'] ?? null) || 1 !== \count((array) ($args['calls'] ?? []))) {
+            return [];
+        }
+        $call = $args['calls'][0] ?? [];
+        $input = $call['arguments'] ?? null;
+        $tool = $call['name'] ?? '';
+        $allowed = match ($tool) {
+            'refund_get_order' => [['orderId' => 'R-1042'], ['orderId' => 'R-1043']],
+            'refund_get_policy' => [['policyId' => 'standard-eu']],
+            default => [],
+        };
+        if (!\in_array($input, $allowed, true)) {
+            return [];
+        }
+        $exchange = ['Requested read' => ['name' => $tool, 'arguments' => $input]];
+        $body = $response->getContent();
+        if (!\is_string($body) || \strlen($body) > 65536) {
+            return $exchange;
+        }
+        $reply = json_decode(preg_match('/^data: ?(.+)$/m', $body, $part) ? $part[1] : $body, true, 40);
+        if (!isset($message['id']) || ($reply['id'] ?? null) !== $message['id'] || ($reply['result']['isError'] ?? false)) {
+            return $exchange;
+        }
+        $result = $reply['result']['structuredContent']['results'][0] ?? [];
+        if (($result['name'] ?? null) !== $tool) {
+            return $exchange;
+        }
+        $expected = 'refund_get_order' === $tool ? ['orderId' => 'R-1042', 'policyId' => 'standard-eu', 'amountMinor' => 7500] : ['policyId' => 'standard-eu', 'manualReviewAboveMinor' => 5000];
+        foreach ($expected as $key => $publicValue) {
+            if (($result['value'][$key] ?? null) === $publicValue) {
+                $exchange['Returned fields'][$key] = $publicValue;
+            }
+        }
+
+        return $exchange;
     }
 
     /** Project only the public group summaries owned by this application. */

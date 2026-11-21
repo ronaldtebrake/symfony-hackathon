@@ -30,7 +30,7 @@
                         <td class="mcp-operation">
                             {% for call in operations[result.token]|default([]) %}
                                 <div>
-                                    <a href="{{ path('_profiler', {token: result.token, panel: 'code_mode'}) }}"><code>{{ call.method }}</code>{% if call.name %} · <strong>{{ call.name }}</strong>{% endif %}</a>
+                                    <a href="{{ path('_profiler', {token: result.token, panel: call.panel}) }}"><code>{{ call.method }}</code>{% if call.name %} · <strong>{{ call.name }}</strong>{% endif %}</a>
                                     {% if call.targets %}
                                         <div class="text-small">
                                             {% if call.name == 'search_tools' %}{{ call.openedGroup ? 'Opened' : 'Found' }} {% endif %}

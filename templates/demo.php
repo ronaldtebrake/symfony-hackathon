@@ -28,8 +28,9 @@ $escape = static fn (string $text): string => htmlspecialchars($text, \ENT_QUOTE
   <section id="overview" class="hero">
     <div>
       <p class="eyebrow">Symfony AI × PHP MCP SDK</p>
-      <h1>Give agents a procedure <em>they can follow.</em></h1>
-      <p>A growing catalog still starts with two MCP tools. <code>search_tools</code> finds a reader or a Group with your team’s instructions. <code>execute_tools</code> calls the reader. The agent can write code that feeds one result into the next call. Symfony checks access each time.</p>
+      <h1>Find the right tools. <em>Follow the team’s procedure.</em></h1>
+      <p>We started with a question. As a Symfony app grows, why should an agent read every tool definition before it can answer a user? Our MCP catalog starts with just <code>search_tools</code> and <code>execute_tools</code>. The agent looks up what it needs and calls it.</p>
+      <p>Finding a tool answers “what can I call?” A team procedure answers “what should I do next?” We prototyped the MCP working group’s named Groups draft so a team can publish instructions alongside the tools for a job. A client can follow them call by call, or write a program that passes one result into the next. Symfony runs its existing handlers and checks each read. The application needs no sandbox.</p>
       <div class="actions"><a class="button" href="#judge-demo">Watch the narrated 90-second demo</a><a href="#quickstart">Try the same question →</a></div>
     </div>
     <figure id="judge-demo">
@@ -38,6 +39,68 @@ $escape = static fn (string $text): string => htmlspecialchars($text, \ENT_QUOTE
         <a href="media/symfony-code-mode-judge-90s.mp4">Download the 90-second demo</a>
       </video>
       <figcaption>The agent opens the team’s refund Group, checks the policy for R-1042 and recommends manual review. When it tries the same procedure for R-1043, Symfony denies the order read.<span class="film-links"><a href="media/judge-workflow-voiceover.txt">Read the transcript</a><a href="#quickstart">Try the same questions</a><a href="#code-mode-ready">Inspect the JavaScript proof</a></span></figcaption>
+    </figure>
+  </section>
+
+  <section id="how-it-works">
+    <p class="eyebrow">Architecture</p>
+    <h2>One tool, or a team procedure?</h2>
+    <div class="steps">
+      <article><h3>Find one tool</h3><p><code>search_tools</code> retrieves the definition. <code>execute_tools</code> calls the Symfony service with the arguments it expects.</p></article>
+      <article><h3>Open a Group</h3><p>A Group pairs the team’s instructions with the tool definitions they use. Claude opens it through <code>search_tools</code>. Clients that support the MCP Groups draft can also list and open it by name.</p></article>
+      <article><h3>Follow the procedure</h3><p>Claude writes and runs the JavaScript. It passes the field returned by one tool into the next. Symfony checks access before the Symfony AI Toolbox runs each reader.</p></article>
+    </div>
+
+    <figure id="mcp-profiler" class="profiler">
+      <h3>Follow the calls in Symfony Profiler</h3>
+      <a href="images/symfony-mcp-profiler.png"><img src="images/symfony-mcp-profiler.png" width="1425" height="789" loading="lazy" alt="Six MCP requests in order: list tools, find the refund Group, open it, read the order, read its policy, then fail to read the second order."></a>
+      <figcaption>In this PHP MCP SDK replay, search finds and opens <code>refund-review</code>. Execution reads R-1042 and its policy. The last request also returns HTTP 200, but the tool reports a denial for R-1043. <a href="images/symfony-mcp-profiler.png">Open the full-size trace</a></figcaption>
+    </figure>
+
+    <div id="support-calls" class="trace programmatic-trace">
+      <details><summary>What does a catalog cost at startup?</summary>
+        <p>In our <?php echo (int) $largestCatalog['availableTools']; ?>-tool synthetic catalog, advertising every definition took <?php echo number_format($largestCatalog['direct']['tokens']); ?> tokens. Advertising the two catalog tools took <?php echo number_format($largestCatalog['catalog']['tokens']); ?>. We measured startup definitions only. <a href="evidence/catalog-scaling.json">See the measurements</a></p>
+      </details>
+      <details><summary>See the draft Groups methods on the wire</summary>
+        <p>After the server advertised Groups, a PHP client made these calls in order.</p>
+        <ol>
+<?php foreach ($groupTrace['groups']['calls'] as $call) {
+    $method = $call['request']['method'];
+    $params = $call['request']['params'];
+    $result = $call['response']['result'];
+    $line = match ($method) {
+        'groups/list' => implode(', ', array_column($result['groups'], 'name')),
+        'groups/get' => $params['name'].' → '.implode(', ', array_column($result['tools'], 'name')),
+        'tools/call' => $params['name'].' '.json_encode($params['arguments'], \JSON_THROW_ON_ERROR),
+        default => null,
+    };
+    if (null !== $line) { ?>
+          <li><code><?php echo $escape($method); ?></code> · <?php echo $escape($line); ?></li>
+<?php }
+    } ?>
+        </ol>
+        <p><a href="evidence/refund-group-discovery.json">Inspect the HTTP exchanges</a>. In an earlier Symfony AI run, the host listed the Groups and the model chose <code>refund-review</code>. Its two reads led to manual review. <a href="evidence/group-selection.json">See the model-run comparison</a></p>
+      </details>
+    </div>
+    <article id="programmatic-refund">
+      <h3>A client runs the refund procedure in code</h3>
+      <p>In a separate run, <?php echo $escape($programmatic['client']); ?> opened the same Group and wrote JavaScript that used the order’s policy ID for its next read. The operator revoked access between the reads. Symfony denied the policy call and the script stopped. The client could still inspect the order it already held and reported the review as incomplete.</p>
+      <div class="trace programmatic-trace">
+        <details><summary>Read the script the agent ran</summary><pre><code><?php echo $escape($programmatic['script']); ?></code></pre></details>
+<?php foreach ($programmatic['events'] as $event) { ?>
+        <details class="event"><summary><?php echo $escape($event['label']); ?></summary><pre><?php echo $escape(json_encode($event, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR)); ?></pre></details>
+<?php } ?>
+        <details class="execution-result"><summary>See the client execution result</summary><pre><?php echo $escape($programmatic['stdout']); ?></pre></details>
+        <details><summary>Read the agent’s answer</summary><pre><?php echo $escape($programmatic['answer']); ?></pre></details>
+      </div>
+      <p class="caption"><a href="evidence/programmatic-refund.json">Download the script and recorded calls ↗</a> · <a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/demo.md#run-the-client-written-refund-review">Run it with a client ↗</a></p>
+    </article>
+    <div id="direct-tool" class="next">
+      <h3>Give a frequent read a direct route</h3>
+      <p>The featured refund review uses the two-tool default. In the independent Symfony app, adding <code>publication_read</code> to <code>code_mode.http.direct_tools</code> lets an authorized agent call that reader immediately. One direct read and one read through <code>execute_tools</code> returned the same article and used both available calls. After a budget reset and permission revocation, Symfony denied the direct retry before the reader ran. <a href="evidence/direct-tool.json">Inspect the calls and shared budget ↗</a></p>
+    </div>
+    <figure id="mcp-architecture" class="architecture"><a href="images/symfony-mcp-architecture.svg"><img src="images/symfony-mcp-architecture.svg" width="1120" height="748" loading="lazy" alt="Agent, MCP client, Symfony catalog, access checks and application handler. Pink diamonds mark this project’s additions and purple squares mark upstream components."></a>
+      <figcaption>The diagram also shows the draft Groups route. A client that negotiates the extension can use <code>groups/list</code> and <code>groups/get</code> on the same refund endpoint, then call a member by name. <a href="https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/19">Read the proposal ↗</a></figcaption>
     </figure>
   </section>
 
@@ -114,62 +177,6 @@ $escape = static fn (string $text): string => htmlspecialchars($text, \ENT_QUOTE
     <p class="caption"><?php echo $escape($session['model']); ?> made these calls through Symfony AI using fixture data. <a href="evidence/agent-procedure.json">Download the recorded session ↗</a></p>
   </section>
 
-  <section id="how-it-works">
-    <p class="eyebrow">Architecture</p>
-    <h2>One tool, or a team procedure?</h2>
-    <div class="steps">
-      <article><h3>Find one tool</h3><p><code>search_tools</code> retrieves the definition. <code>execute_tools</code> calls the Symfony service with the arguments it expects.</p></article>
-      <article><h3>Open a Group</h3><p>A Group pairs the team’s instructions with the tool definitions they use. Claude opens it through <code>search_tools</code>. Clients that support the MCP Groups draft can also list and open it by name.</p></article>
-      <article><h3>Follow the procedure</h3><p>Claude writes and runs the JavaScript. It passes the field returned by one tool into the next. Symfony checks access before the Symfony AI Toolbox runs each reader.</p></article>
-    </div>
-
-    <div id="support-calls" class="trace programmatic-trace">
-      <details><summary>What does a catalog cost at startup?</summary>
-        <p>In our <?php echo (int) $largestCatalog['availableTools']; ?>-tool synthetic catalog, advertising every definition took <?php echo number_format($largestCatalog['direct']['tokens']); ?> tokens. Advertising the two catalog tools took <?php echo number_format($largestCatalog['catalog']['tokens']); ?>. We measured startup definitions only. <a href="evidence/catalog-scaling.json">See the measurements</a></p>
-      </details>
-      <details><summary>See the draft Groups methods on the wire</summary>
-        <p>After the server advertised Groups, a PHP client made these calls in order.</p>
-        <ol>
-<?php foreach ($groupTrace['groups']['calls'] as $call) {
-    $method = $call['request']['method'];
-    $params = $call['request']['params'];
-    $result = $call['response']['result'];
-    $line = match ($method) {
-        'groups/list' => implode(', ', array_column($result['groups'], 'name')),
-        'groups/get' => $params['name'].' → '.implode(', ', array_column($result['tools'], 'name')),
-        'tools/call' => $params['name'].' '.json_encode($params['arguments'], \JSON_THROW_ON_ERROR),
-        default => null,
-    };
-    if (null !== $line) { ?>
-          <li><code><?php echo $escape($method); ?></code> · <?php echo $escape($line); ?></li>
-<?php }
-    } ?>
-        </ol>
-        <p><a href="evidence/refund-group-discovery.json">Inspect the HTTP exchanges</a>. In an earlier Symfony AI run, the host listed the Groups and the model chose <code>refund-review</code>. Its two reads led to manual review. <a href="evidence/group-selection.json">See the model-run comparison</a></p>
-      </details>
-    </div>
-    <article id="programmatic-refund">
-      <h3>A client runs the refund procedure in code</h3>
-      <p>In a separate run, <?php echo $escape($programmatic['client']); ?> opened the same Group and wrote JavaScript that used the order’s policy ID for its next read. The operator revoked access between the reads. Symfony denied the policy call and the script stopped. The client could still inspect the order it already held and reported the review as incomplete.</p>
-      <div class="trace programmatic-trace">
-        <details><summary>Read the script the agent ran</summary><pre><code><?php echo $escape($programmatic['script']); ?></code></pre></details>
-<?php foreach ($programmatic['events'] as $event) { ?>
-        <details class="event"><summary><?php echo $escape($event['label']); ?></summary><pre><?php echo $escape(json_encode($event, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR)); ?></pre></details>
-<?php } ?>
-        <details class="execution-result"><summary>See the client execution result</summary><pre><?php echo $escape($programmatic['stdout']); ?></pre></details>
-        <details><summary>Read the agent’s answer</summary><pre><?php echo $escape($programmatic['answer']); ?></pre></details>
-      </div>
-      <p class="caption"><a href="evidence/programmatic-refund.json">Download the script and recorded calls ↗</a> · <a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/demo.md#run-the-client-written-refund-review">Run it with a client ↗</a></p>
-    </article>
-    <div id="direct-tool" class="next">
-      <h3>Give a frequent read a direct route</h3>
-      <p>The featured refund review uses the two-tool default. In the independent Symfony app, adding <code>publication_read</code> to <code>code_mode.http.direct_tools</code> lets an authorized agent call that reader immediately. One direct read and one read through <code>execute_tools</code> returned the same article and used both available calls. After a budget reset and permission revocation, Symfony denied the direct retry before the reader ran. <a href="evidence/direct-tool.json">Inspect the calls and shared budget ↗</a></p>
-    </div>
-    <figure id="mcp-architecture" class="architecture"><a href="images/symfony-mcp-architecture.svg"><img src="images/symfony-mcp-architecture.svg" width="1120" height="748" loading="lazy" alt="Agent, MCP client, Symfony catalog, access checks and application handler. Pink diamonds mark this project’s additions and purple squares mark upstream components."></a>
-      <figcaption>The diagram also shows the draft Groups route. A client that negotiates the extension can use <code>groups/list</code> and <code>groups/get</code> on the same refund endpoint, then call a member by name. <a href="https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/19">Read the proposal ↗</a></figcaption>
-    </figure>
-  </section>
-
   <section id="quickstart">
     <p class="eyebrow">Reproduce the demo</p>
     <h2>Try the conversation yourself.</h2>
@@ -187,9 +194,9 @@ composer demo:serve</code></pre>
 
   <section id="journey">
     <p class="eyebrow">Design journey</p>
-    <h2>Why we moved from PHP to a catalog.</h2>
+    <h2>From a growing catalog to a team procedure</h2>
     <div class="decisions">
-      <article><h3>Let PHP do the work</h3><p>We started with agent-written PHP in gVisor. A program could join several tool results and return just the findings. That helped on a data-heavy audit, but it asked every adopting team to host a sandbox.</p></article>
+      <article><h3>Let PHP do the work</h3><p>Every extra tool meant another definition for the agent to read. Once it found the tools, intermediate results also filled the conversation. We tried Code Mode for that second problem first: the agent wrote PHP and ran it in gVisor. A program could join several tool results and return just the findings. That helped on a data-heavy audit, but it asked every adopting team to host a sandbox.</p></article>
       <article><h3>Bring retrieval to ordinary Symfony hosting</h3><p>Our next question was whether an agent needed to write PHP for a known read. A tool name and JSON arguments were enough. We kept Symfony AI’s definitions and handlers and used the PHP MCP SDK to carry the calls. The same endpoint handles Codex’s individual calls and Claude Code’s calls from a script. <a href="#programmatic-refund">Read the script and trace →</a> · <a href="https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#what-changed-for-me">Pushpak Chhajed’s account of a similar choice ↗</a></p></article>
       <article><h3>Help the agent find the procedure</h3><p>A searchable list solves discovery one tool at a time. Sometimes a team already knows which tools belong together. The MCP working group’s Groups draft gave us a way to describe that knowledge. Our refund prototype lets ordinary clients retrieve the same procedure through search.</p></article>
       <article><h3>Give the script a field it can use</h3><p>An earlier Claude run used a regular expression to extract the policy ID from text. We declared the field and made the result path visible in Claude’s short tool preview. On the third run, its script read that field directly. <a href="#code-mode-ready">See the three attempts →</a></p></article>

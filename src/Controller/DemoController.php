@@ -55,6 +55,7 @@ final readonly class DemoController
     #[Route('/media/symfony-code-mode-judge-poster.jpg', name: 'app_judge_workflow_poster', defaults: ['file' => 'public/media/symfony-code-mode-judge-poster.jpg', 'type' => 'image/jpeg'], methods: ['GET'])]
     #[Route('/media/symfony-code-mode-judge-film.json', name: 'app_judge_workflow_film_sources', defaults: ['file' => 'public/media/symfony-code-mode-judge-film.json', 'type' => 'application/json'], methods: ['GET'])]
     #[Route('/media/judge-workflow-voiceover.txt', name: 'app_judge_workflow_voiceover', defaults: ['file' => 'docs/judge-workflow-voiceover.txt', 'type' => 'text/plain; charset=UTF-8'], methods: ['GET'])]
+    #[Route('/images/symfony-mcp-profiler.png', name: 'app_profiler_screenshot', defaults: ['file' => 'docs/images/symfony-mcp-profiler.png', 'type' => 'image/png'], methods: ['GET'])]
     #[Route('/images/symfony-mcp-architecture.svg', name: 'app_architecture', defaults: ['file' => 'docs/images/symfony-mcp-architecture.svg', 'type' => 'image/svg+xml'], methods: ['GET'])]
     public function asset(Request $request, string $file, string $type): Response
     {

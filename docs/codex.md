@@ -57,6 +57,8 @@ Press **Ctrl+O** to inspect the tool activity. In the earlier JavaScript proof, 
 
 For the judge quickstart on port 8017, you can also watch the calls in the native Symfony Profiler. Start the dev app below and open the [Profiler for port 8017](http://127.0.0.1:8001/_profiler/empty/search/results?method=POST&url=http%3A%2F%2F127.0.0.1%3A8017%2Fmcp&limit=20) before starting `composer demo:serve` so the server can share the dev profile store. Refresh after each prompt.
 
+Click an operation in the filtered request list to open the **MCP** panel. For the refund demo, follow the search for `refund procedure`, the opened Group’s instructions and tool definitions, then the two reads. Compare the returned `policyId` on the order with the argument on the policy call. The R-1043 read shows `tool_denied` and no toolbox invocation. The panel shows selected public fixture fields and redacts unfamiliar search text.
+
 The following alternative uses port 8016 for the original Codex recording and port 8001 for the Profiler.
 
 From the repository root, install the project and start the Profiler.

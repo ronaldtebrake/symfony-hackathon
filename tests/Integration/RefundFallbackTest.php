@@ -152,7 +152,7 @@ final class RefundFallbackTest extends TestCase
             if ('bare' === $mode) {
                 $storage = new FileProfilerStorage('file:'.$directory.'/profiles');
                 foreach ($storage->find(null, null, 30, 'POST') as $profile) {
-                    $this->assertSame(['code_mode'], array_keys($storage->read($profile['token'])->getCollectors()));
+                    $this->assertSame(['code_mode', 'mcp'], array_keys($storage->read($profile['token'])->getCollectors()));
                 }
                 $panels = RecordingProfiler::panels($directory);
                 $this->assertNotEmpty($panels);

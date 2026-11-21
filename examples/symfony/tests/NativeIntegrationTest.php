@@ -127,6 +127,12 @@ final class NativeIntegrationTest extends WebTestCase
             $this->assertSame([], $call('search_tools', ['query' => 'publication'], $viewerHeaders)['tools']);
             self::assertToolCallCount(0);
             $this->assertSame([], $this->operations($client)[0]['calls']);
+            $client->request('GET', '/_profiler/'.$profileToken.'?panel=mcp');
+            self::assertResponseIsSuccessful();
+            $panel = $client->getCrawler()->filterXPath('//div[@id="collector-content"]')->text();
+            $this->assertStringContainsString('MCP Capabilities', $panel);
+            $this->assertStringContainsString('MCP discovery and tool calls', $panel);
+            $this->assertStringContainsString('publication_read', $panel);
             $client->request('GET', '/_profiler/'.$profileToken.'?panel=code_mode');
             self::assertResponseIsSuccessful();
             $this->assertSame(1, $client->getCrawler()->filterXPath('//h2[contains(., "MCP discovery and tool calls")]')->count());
