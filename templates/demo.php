@@ -196,17 +196,30 @@ composer demo:serve</code></pre>
     <p class="eyebrow">Design journey</p>
     <h2>From a growing catalog to a team procedure</h2>
     <div class="decisions">
-      <article><h3>Let PHP do the work</h3><p>Every extra tool meant another definition for the agent to read. Once it found the tools, intermediate results also filled the conversation. We tried Code Mode for that second problem first: the agent wrote PHP and ran it in gVisor. A program could join several tool results and return just the findings. That helped on a data-heavy audit, but it asked every adopting team to host a sandbox.</p></article>
-      <article><h3>Bring retrieval to ordinary Symfony hosting</h3><p>Our next question was whether an agent needed to write PHP for a known read. A tool name and JSON arguments were enough. We kept Symfony AI’s definitions and handlers and used the PHP MCP SDK to carry the calls. The same endpoint handles Codex’s individual calls and Claude Code’s calls from a script. <a href="#programmatic-refund">Read the script and trace →</a> · <a href="https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#what-changed-for-me">Pushpak Chhajed’s account of a similar choice ↗</a></p></article>
-      <article><h3>Help the agent find the procedure</h3><p>A searchable list solves discovery one tool at a time. Sometimes a team already knows which tools belong together. The MCP working group’s Groups draft gave us a way to describe that knowledge. Our refund prototype lets ordinary clients retrieve the same procedure through search.</p></article>
+      <article><h3>Let PHP do the work</h3><p>Every extra tool meant another definition for the agent to read. Once it found the tools, intermediate results also filled the conversation. We tried Code Mode for that second problem first: the agent wrote PHP and ran it in gVisor. A program could join several tool results and return just the findings. That helped on a data-heavy audit, but it asked every adopting team to host a sandbox. <a href="https://blog.cloudflare.com/code-mode-mcp/">The server-side Code Mode idea ↗</a></p></article>
+      <article><h3>Bring retrieval to ordinary Symfony hosting</h3><p>Our next question was whether an agent needed to write PHP for a known read. A tool name and JSON arguments were enough. We kept Symfony AI’s definitions and handlers and used the PHP MCP SDK to carry the calls. The same endpoint handles Codex’s individual calls and Claude Code’s calls from a script. <a href="#programmatic-refund">Read the script and trace →</a> · <a href="https://github.com/symfony/ai/issues/2623">Symfony AI’s discovery discussion ↗</a> · <a href="https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#what-changed-for-me">Pushpak Chhajed’s account of a similar choice ↗</a></p></article>
+      <article><h3>Help the agent find the procedure</h3><p>A searchable list solves discovery one tool at a time. Sometimes a team already knows which tools belong together. The MCP working group’s Groups draft gave us a way to describe that knowledge. A client that negotiates Groups can list them, open one and call its members. We also made the same procedure discoverable through our catalog for clients that use ordinary MCP tools. <a href="https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/19">Read the named Groups proposal ↗</a> · <a href="evidence/refund-group-discovery.json">See the actual MCP calls</a></p></article>
       <article><h3>Give the script a field it can use</h3><p>An earlier Claude run used a regular expression to extract the policy ID from text. We declared the field and made the result path visible in Claude’s short tool preview. On the third run, its script read that field directly. <a href="#code-mode-ready">See the three attempts →</a></p></article>
     </div>
-    <div id="contributions" class="next">
-      <h3>What we can contribute</h3>
-      <p>A Symfony AI recipe for permission-aware search, a PHP MCP SDK compatibility test for both discovery routes, and revocation results for the MCP working group. <a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/contributing/README.md">Contribution notes ↗</a></p>
-      <h3 id="whats-next">What’s next</h3>
-      <p>What happens when several Groups share the same tools? We want to test how often an agent picks the right procedure as the catalog grows.</p>
-      <p>The PHP MCP SDK draft can serve a Skill. With experimental MCP support enabled, Codex could read its Markdown by URI. The remote Skill didn’t appear in the CLI’s Skills picker. Once Codex supports that step, we’d like to test whether a shared reporting template makes answers more consistent than the Group’s instructions alone. <a href="https://github.com/modelcontextprotocol/ext-skills/blob/main/docs/implementations.md#hosts-including-agent-harnesses-ides-and-web-applications">Skills over MCP client support ↗</a></p>
+  </section>
+
+  <section id="contributions">
+    <h2>What we can contribute</h2>
+    <p>Three pieces from the demo that maintainers can try independently.</p>
+    <div class="topic-cards">
+      <article><p class="eyebrow">Symfony AI</p><h3>A permission-aware tool catalog</h3><p>Expose the tool definitions a caller can discover. When the agent asks to run one, check access again before the Toolbox calls the Symfony service.</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/src/Demo/GroupSelection/Discovery.php">Read the discovery implementation →</a></article>
+      <article><p class="eyebrow">PHP MCP SDK</p><h3>One endpoint, two client paths</h3><p>Our compatibility test compares the definitions returned through catalog search and through the Groups draft. It also checks the shared call budget and what happens after permission is revoked.</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/tests/Integration/RefundFallbackTest.php">Inspect the compatibility test →</a></article>
+      <article><p class="eyebrow">MCP working group</p><h3>A procedure on the wire</h3><p>A recorded exchange shows what an agent sees before it chooses a Group, which instructions it gets on opening it, and how it calls a member by name.</p><a href="evidence/refund-group-discovery.json">Inspect the protocol exchange →</a></article>
+    </div>
+    <a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/contributing/README.md">Contribution notes and upstream discussions ↗</a>
+  </section>
+
+  <section id="whats-next">
+    <h2>What’s next</h2>
+    <div class="topic-cards">
+      <article><h3>Can the agent pick the right procedure?</h3><p>Give several Groups overlapping tools and similar names. Compare the agent’s first choice with the procedure the team intended.</p></article>
+      <article><h3>When does a Skill help?</h3><p>Our experimental client could read a remote guide by URI. With a client that can select the Skill, we’d compare the same task with Group instructions alone and with a shared reporting template.</p><a href="https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/22">Groups and Skills discussion ↗</a></article>
+      <article><h3>What does a whole task cost?</h3><p>We measured how many tokens it takes to advertise the catalog. Next we’d run matched conversations and compare correct answers, total tokens and requests as the catalog grows.</p><a href="evidence/catalog-scaling.json">See the startup measurement →</a></article>
     </div>
     <p class="caption">Explore the evidence · <a href="#support-calls">Client tool calls</a> · <a href="#proof">Symfony AI conversation</a></p>
   </section>

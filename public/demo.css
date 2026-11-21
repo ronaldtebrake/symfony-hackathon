@@ -28,7 +28,7 @@ section { padding: clamp(3rem, 7vw, 5.5rem) 0; border-bottom: 1px solid var(--li
 .eyebrow { color: var(--purple); font-size: .75rem; text-transform: uppercase; letter-spacing: .15em; font-weight: 720 }
 h1, h2, h3 { line-height: 1.1; text-wrap: balance; letter-spacing: -.045em }
 h1 { margin: .9rem 0 1.4rem; font-size: clamp(2.65rem, 4.5vw, 4.15rem); font-weight: 740 }
-h1 em { font-style: normal; color: var(--pink); background: linear-gradient(110deg, var(--purple), var(--pink)); background-clip: text; -webkit-text-fill-color: transparent }
+h1 em { display: block; font-style: normal; color: var(--pink); background: linear-gradient(110deg, var(--purple), var(--pink)); background-clip: text; -webkit-text-fill-color: transparent }
 h2 { font-size: clamp(2rem, 4.5vw, 3.3rem); margin: .7rem 0 1.5rem }
 h3 { font-size: 1.4rem; margin-bottom: .65rem }
 p { color: var(--muted); overflow-wrap: break-word }
@@ -89,6 +89,11 @@ details pre, .command { margin: 0; padding: 1.1rem 1.5rem; color: #f6f1fa; backg
 .decisions { display: grid; gap: 1.25rem }
 .decisions article { display: grid; grid-template-columns: 1fr 2.2fr; gap: 2rem; padding: 1.15rem 0 0; border-top: 1px solid var(--line) }
 .next { padding: 1.7rem; background: var(--soft); border-radius: .75rem; margin-top: 2rem }
+.topic-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: 1rem; margin: 1.5rem 0 }
+.topic-cards article { display: flex; flex-direction: column; gap: .8rem; padding: clamp(1.2rem, 2.4vw, 2rem); border: 1px solid var(--line); border-radius: .85rem; background: linear-gradient(145deg, var(--soft), white) }
+.topic-cards h3 { margin: 0 }
+.topic-cards a { margin-top: auto; padding-top: .45rem }
+#whats-next .topic-cards article { border: 0; border-radius: 0; border-top: 2px solid var(--pink); background: transparent; padding-inline: 0 }
 footer { flex-wrap: wrap; border: 0; font-size: .87rem }
 @media (max-width: 800px) {
   .site-header { flex-wrap: wrap }
