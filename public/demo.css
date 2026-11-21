@@ -73,11 +73,8 @@ pre { overflow: auto; font-size: .87rem; line-height: 1.65 }
 details pre, .command { margin: 0; padding: 1.1rem 1.5rem; color: #f6f1fa; background: #20142e }
 .command { border-radius: .7rem; margin: 1.3rem 0; max-width: 80ch }
 #support-calls details p { padding: .65rem 1rem .85rem; margin: 0 }
-#support-calls ol, #plain-claude ol { margin: .15rem 1rem .6rem; padding-left: 1.5rem; overflow-wrap: anywhere }
+#support-calls ol { margin: .15rem 1rem .6rem; padding-left: 1.5rem; overflow-wrap: anywhere }
 #support-calls details pre { white-space: pre-wrap }
-#plain-claude p, #plain-claude blockquote { margin: .7rem 1rem; color: var(--muted) }
-#plain-claude blockquote { padding-left: .8rem; border-left: 3px solid var(--purple); color: var(--ink) }
-#plain-claude pre { white-space: pre-wrap; overflow-wrap: anywhere }
 .structured-review pre { white-space: pre-wrap; overflow-wrap: anywhere }
 .structured-review blockquote { margin: 1rem 1.5rem; padding-left: .8rem; border-left: 3px solid var(--purple) }
 .field-handoff { display: flex; flex-wrap: wrap; gap: .75rem 2.5rem; margin: 1.2rem 0; padding: 1rem 1.25rem; border-left: 3px solid var(--purple); background: var(--soft) }

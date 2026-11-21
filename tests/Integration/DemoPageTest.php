@@ -21,24 +21,13 @@ final class DemoPageTest extends WebTestCase
         $this->assertCount(1, $page->filterXPath('//*[@id="judge-demo"]/video[@poster="media/symfony-code-mode-judge-poster.jpg"]/source[@src="media/symfony-code-mode-judge-90s.mp4"]'));
         $this->assertCount(1, $page->filterXPath('//*[@id="judge-demo"]//a[@href="media/judge-workflow-voiceover.txt"]'));
         $this->assertCount(1, $page->filterXPath('//*[@id="support-calls"]//a[@href="evidence/refund-group-discovery.json"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="support-calls"]//a[@href="evidence/claude-support-review.json"]'));
         $this->assertCount(1, $page->filterXPath('//*[@id="direct-tool"]//a[@href="evidence/direct-tool.json"]'));
         $this->assertSame(['#judge-demo', '#how-it-works', '#journey', '#quickstart'], $page->filterXPath('//nav/a')->extract(['href']));
-        $support = json_decode(file_get_contents(\dirname(__DIR__, 2).'/docs/evidence/claude-support-review.json'), true, flags: \JSON_THROW_ON_ERROR);
-        $attempt = $support['attempts'][$support['featuredAttempt'] - 1];
         $commands = $page->filterXPath('//*[@id="quickstart"]//pre/code')->each(static fn ($node): string => $node->getNode(0)->textContent);
         $this->assertStringEndsWith('composer demo:serve', $commands[0]);
         $this->assertStringContainsString('examples/support', $page->filterXPath('//*[@id="quickstart"]')->text());
-        $this->assertSame(array_column($attempt['programs'], 'source'), $page->filterXPath('//*[@id="support-calls"]//pre/code')->each(static fn ($node): string => $node->getNode(0)->textContent));
-        $this->assertSame($attempt['answer'], $page->filterXPath('//*[@id="support-calls"]//details[@class="support-answer"]/pre')->getNode(0)->textContent);
-        $plain = json_decode(file_get_contents(\dirname(__DIR__, 2).'/docs/evidence/claude-plain-launch.json'), true, flags: \JSON_THROW_ON_ERROR);
-        $this->assertSame($plain['question'], $page->filterXPath('//*[@id="quickstart"]/blockquote')->text());
-        $this->assertSame(array_column($plain['calls'], 'tool'), $page->filterXPath('//*[@id="plain-claude"]//li/code[1]')->each(static fn ($node): string => $node->text()));
-        $this->assertSame(array_column($plain['calls'], 'arguments'), $page->filterXPath('//*[@id="plain-claude"]//li/code[2]')->each(static fn ($node): array => json_decode($node->text(), true, flags: \JSON_THROW_ON_ERROR)));
-        $this->assertCount(1, $page->filterXPath('//*[@id="plain-claude"]/details[not(@open)]//a[@href="evidence/claude-plain-launch.json"]'));
-        $this->assertSame($plain['script'], $page->filterXPath('//*[@id="plain-claude"]//pre/code')->getNode(0)->textContent);
-        $this->assertSame(explode("\n\n", $plain['answer'], 2)[0], $page->filterXPath('//*[@id="plain-claude"]//blockquote')->getNode(0)->textContent);
-        $this->assertSame($attempt['question'], $plain['question']);
+        $structured = json_decode(file_get_contents(\dirname(__DIR__, 2).'/docs/evidence/claude-structured-refund.json'), true, flags: \JSON_THROW_ON_ERROR);
+        $this->assertSame($structured['question'], $page->filterXPath('//*[@id="quickstart"]/blockquote')->text());
         $session = json_decode(file_get_contents(\dirname(__DIR__, 2).'/docs/evidence/agent-procedure.json'), true, flags: \JSON_THROW_ON_ERROR);
         $calls = $page->filterXPath('//*[@id="proof"]//details/pre')->each(static fn ($node): array => json_decode($node->text(null, false), true, flags: \JSON_THROW_ON_ERROR));
         $this->assertSame(array_merge(...array_column($session['turns'], 'calls')), $calls);
@@ -49,9 +38,7 @@ final class DemoPageTest extends WebTestCase
     {
         $proof = self::createClient()->request('GET', '/demo')->filterXPath('//*[@id="code-mode-ready"]');
         $dir = \dirname(__DIR__, 2).'/docs/evidence';
-        $before = json_decode(file_get_contents($dir.'/claude-plain-launch.json'), true, flags: \JSON_THROW_ON_ERROR);
         $after = json_decode(file_get_contents($dir.'/claude-structured-refund.json'), true, flags: \JSON_THROW_ON_ERROR);
-        $this->assertSame($before['question'], $after['question']);
         $verified = array_values(array_filter($after['attempts'], static fn (array $attempt): bool => 'verified' === $attempt['status']));
         $this->assertCount(1, $verified);
         $attempt = $verified[0];
@@ -95,8 +82,6 @@ final class DemoPageTest extends WebTestCase
             'evidence/judge-demo.json' => 'application/json',
             'evidence/programmatic-refund.json' => 'application/json',
             'images/symfony-mcp-architecture.svg' => 'image/svg+xml',
-            'evidence/claude-support-review.json' => 'application/json',
-            'evidence/claude-plain-launch.json' => 'application/json',
             'evidence/claude-structured-refund.json' => 'application/json',
             'evidence/catalog-scaling.json' => 'application/json',
             'evidence/refund-group-discovery.json' => 'application/json',

@@ -24,9 +24,6 @@ final readonly class DemoController
         $this->requireLocalRequest($request);
         $session = json_decode(file_get_contents($this->projectDir.'/docs/evidence/agent-procedure.json'), true, flags: \JSON_THROW_ON_ERROR);
         $programmatic = json_decode(file_get_contents($this->projectDir.'/docs/evidence/programmatic-refund.json'), true, flags: \JSON_THROW_ON_ERROR);
-        $support = json_decode(file_get_contents($this->projectDir.'/docs/evidence/claude-support-review.json'), true, flags: \JSON_THROW_ON_ERROR);
-        $supportAttempt = $support['attempts'][$support['featuredAttempt'] - 1];
-        $plainChat = json_decode(file_get_contents($this->projectDir.'/docs/evidence/claude-plain-launch.json'), true, flags: \JSON_THROW_ON_ERROR);
         $structured = json_decode(file_get_contents($this->projectDir.'/docs/evidence/claude-structured-refund.json'), true, flags: \JSON_THROW_ON_ERROR);
         $groupTrace = json_decode(file_get_contents($this->projectDir.'/docs/evidence/refund-group-discovery.json'), true, flags: \JSON_THROW_ON_ERROR);
         $scale = json_decode(file_get_contents($this->projectDir.'/docs/evidence/catalog-scaling.json'), true, flags: \JSON_THROW_ON_ERROR)['samples'];
@@ -50,8 +47,6 @@ final readonly class DemoController
     #[Route('/evidence/direct-tool.json', name: 'app_direct_tool_trace', defaults: ['file' => 'docs/evidence/direct-tool.json', 'type' => 'application/json'], methods: ['GET'])]
     #[Route('/evidence/agent-procedure.json', name: 'app_agent_transcript', defaults: ['file' => 'docs/evidence/agent-procedure.json', 'type' => 'application/json'], methods: ['GET'])]
     #[Route('/evidence/programmatic-refund.json', name: 'app_programmatic_refund', defaults: ['file' => 'docs/evidence/programmatic-refund.json', 'type' => 'application/json'], methods: ['GET'])]
-    #[Route('/evidence/claude-support-review.json', name: 'app_support_session', defaults: ['file' => 'docs/evidence/claude-support-review.json', 'type' => 'application/json'], methods: ['GET'])]
-    #[Route('/evidence/claude-plain-launch.json', name: 'app_plain_claude_session', defaults: ['file' => 'docs/evidence/claude-plain-launch.json', 'type' => 'application/json'], methods: ['GET'])]
     #[Route('/evidence/claude-structured-refund.json', name: 'app_structured_refund_session', defaults: ['file' => 'docs/evidence/claude-structured-refund.json', 'type' => 'application/json'], methods: ['GET'])]
     #[Route('/evidence/refund-group-discovery.json', name: 'app_refund_discovery_trace', defaults: ['file' => 'docs/evidence/refund-group-discovery.json', 'type' => 'application/json'], methods: ['GET'])]
     #[Route('/evidence/group-selection.json', name: 'app_group_selection', defaults: ['file' => 'docs/evidence/group-selection.json', 'type' => 'application/json'], methods: ['GET'])]

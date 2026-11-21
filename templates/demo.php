@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 /** @var array $session */
 /** @var array $programmatic */
-/** @var array $supportAttempt */
-/** @var array $plainChat */
 /** @var array $structured */
 /** @var array $groupTrace */
 /** @var array $largestCatalog */
@@ -75,7 +73,7 @@ $escape = static fn (string $text): string => htmlspecialchars($text, \ENT_QUOTE
 <?php } ?>
         </ol>
       </details>
-      <p class="caption"><a href="evidence/claude-structured-refund.json">Download all three runs</a> · <a href="#programmatic-refund">See a separate run with access revoked</a> · <a href="#plain-calls">Compare the earlier script</a></p>
+      <p class="caption"><a href="evidence/claude-structured-refund.json">Download all three runs</a> · <a href="#programmatic-refund">See a separate run with access revoked</a></p>
   </section>
 
   <section id="proof">
@@ -149,32 +147,7 @@ $escape = static fn (string $text): string => htmlspecialchars($text, \ENT_QUOTE
         </ol>
         <p><a href="evidence/refund-group-discovery.json">Inspect the HTTP exchanges</a>. In an earlier Symfony AI run, the host listed the Groups and the model chose <code>refund-review</code>. Its two reads led to manual review. <a href="evidence/group-selection.json">See the model-run comparison</a></p>
       </details>
-      <details><summary>Read the four programs from the separate Claude run</summary>
-        <p>Claude Code opened the Group through <code>search_tools</code>. It wrote separate JavaScript blocks for the order and policy reads.</p>
-<?php foreach ($supportAttempt['programs'] as $program) { ?>
-        <pre><code><?php echo $escape($program['source']); ?></code></pre>
-<?php } ?>
-      </details>
-      <details class="support-answer"><summary>See Claude’s answer in the separate run</summary>
-        <p><?php echo $escape($supportAttempt['question']); ?></p>
-        <pre><?php echo $escape($supportAttempt['answer']); ?></pre>
-        <p><a href="evidence/claude-support-review.json">Inspect Claude’s code and MCP calls</a></p>
-      </details>
     </div>
-      <aside id="plain-claude" class="trace programmatic-trace">
-        <details>
-          <summary>Inspect Claude’s four calls and the JavaScript that links the reads</summary>
-          <p id="plain-calls">Claude searched for the Group, opened it and followed its procedure. The final two calls ran inside the same JavaScript block.</p>
-          <ol>
-<?php foreach ($plainChat['calls'] as $call) { ?>
-            <li><code><?php echo $escape($call['tool']); ?></code> <code><?php echo $escape(json_encode($call['arguments'], \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR)); ?></code></li>
-<?php } ?>
-          </ol>
-          <pre><code><?php echo $escape($plainChat['script']); ?></code></pre>
-          <blockquote><?php echo $escape(explode("\n\n", $plainChat['answer'], 2)[0]); ?></blockquote>
-          <p><a href="evidence/claude-plain-launch.json">Inspect the tool arguments, results and full answer</a></p>
-        </details>
-      </aside>
     <article id="programmatic-refund">
       <h3>A client runs the refund procedure in code</h3>
       <p>In a separate run, <?php echo $escape($programmatic['client']); ?> opened the same Group and wrote JavaScript that used the order’s policy ID for its next read. The operator revoked access between the reads. Symfony denied the policy call and the script stopped. The client could still inspect the order it already held and reported the review as incomplete.</p>
