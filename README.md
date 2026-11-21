@@ -6,7 +6,7 @@ An agent shouldn’t have to load every tool your application offers to answer o
 
 [![Watch the 90-second desktop demo of the refund Group](public/media/symfony-code-mode-judge-poster.jpg)](https://ronaldtebrake.github.io/symfony-hackathon/#judge-demo)
 
-[Watch the 90-second demo](https://ronaldtebrake.github.io/symfony-hackathon/#judge-demo) · [Try it in your MCP client](#try-it-locally)
+[Watch the narrated 90-second demo](https://ronaldtebrake.github.io/symfony-hackathon/#judge-demo) · [Try it in your MCP client](#try-it-locally)
 
 **What makes it Code Mode–ready?** One tool can return a field another tool takes as input. In the film, the agent follows the team’s Group, using the order’s `policyId` to read its policy. Symfony checks permission again for the second order and denies the read. Clients can make these calls one at a time or compose them in code. [See a separate run with Claude’s JavaScript and four MCP calls](https://ronaldtebrake.github.io/symfony-hackathon/#code-mode-ready)
 

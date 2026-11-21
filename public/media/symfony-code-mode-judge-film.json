@@ -3,14 +3,14 @@
   "durationSeconds": 90,
   "fps": 30,
   "frames": 2700,
-  "audio": "Sound effects only",
+  "audio": "Ronald narration (ElevenLabs v4) and sound effects",
   "assets": {
-    "symfony-code-mode-judge-90s.mp4": "5aab5079226659cea5be29d966846da68acf2864256ed935118418cb63936cc3",
+    "symfony-code-mode-judge-90s.mp4": "1fa679bf2fd86470b6969a98e6272b733defc45cd3a15823805dba478c4f790a",
     "symfony-code-mode-judge-poster.jpg": "d1702ba834cb7df8c4625e66de8a89b7dd00c3027bad379b097aa456c5030e78"
   },
   "narration": {
     "file": "docs/judge-workflow-voiceover.txt",
-    "sha256": "521d7e4d64db80bdce6d8eca4843e69c01ac1e92a699fd33cbcd7015f86658ca",
+    "sha256": "59f0f06c1c210270e5509910139825ea31af51a30b0afc37904324369384ed35",
     "cuesSeconds": [
       0,
       12,
@@ -21,7 +21,8 @@
       58,
       65,
       80
-    ]
+    ],
+    "model": "eleven_v4"
   },
   "sources": [
     "Desktop recording of the R-1042 review and its tool calls",

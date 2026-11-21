@@ -40,46 +40,17 @@ final class DocumentationBuildTest extends TestCase
         $this->assertFileEquals($root.'/docs/evidence/claude-support-review.json', $output.'/evidence/claude-support-review.json');
         $this->assertFileEquals($root.'/docs/evidence/claude-plain-launch.json', $output.'/evidence/claude-plain-launch.json');
         $this->assertFileEquals($root.'/docs/evidence/claude-structured-refund.json', $output.'/evidence/claude-structured-refund.json');
-        $this->assertFileEquals($root.'/docs/judge-support-voiceover.txt', $output.'/media/judge-support-voiceover.txt');
         $this->assertFileEquals($root.'/docs/judge-workflow-voiceover.txt', $output.'/media/judge-workflow-voiceover.txt');
-        $this->assertFileEquals($root.'/docs/judge-ready-voiceover.txt', $output.'/media/judge-ready-voiceover.txt');
-        $this->assertFileEquals($root.'/docs/judge-plain-voiceover.txt', $output.'/media/judge-plain-voiceover.txt');
-        $this->assertFileEquals($root.'/docs/judge-voiceover.txt', $output.'/media/judge-voiceover.txt');
-        $this->assertFileEquals($root.'/docs/judge-live-voiceover.txt', $output.'/media/judge-live-voiceover.txt');
-        $this->assertFileEquals($root.'/docs/judge-native-explainer-voiceover.txt', $output.'/media/judge-native-explainer-voiceover.txt');
-        foreach (['symfony-code-mode-ready-90s.mp4', 'symfony-code-mode-ready-poster.jpg', 'symfony-code-mode-ready-film.json', 'symfony-code-mode-plain-90s.mp4', 'symfony-code-mode-plain-poster.jpg', 'symfony-code-mode-plain-film.json', 'symfony-code-mode-support-90s.mp4', 'symfony-code-mode-support-poster.jpg', 'symfony-code-mode-support-film.json', 'symfony-code-mode-native-explainer-90s.mp4', 'symfony-code-mode-native-explainer-poster.jpg', 'symfony-code-mode-native-explainer-film.json', 'symfony-code-mode-live-90s.mp4', 'symfony-code-mode-live-poster.jpg', 'symfony-code-mode-live-film.json'] as $filename) {
-            $this->assertFileEquals($root.'/public/media/'.$filename, $output.'/media/'.$filename);
-        }
-        $plainFilm = json_decode(file_get_contents($output.'/media/symfony-code-mode-plain-film.json'), true, flags: \JSON_THROW_ON_ERROR);
         $plainRun = json_decode(file_get_contents($output.'/evidence/claude-plain-launch.json'), true, flags: \JSON_THROW_ON_ERROR);
         [$orderRead, $policyRead] = \array_slice($plainRun['calls'], 2);
-        $this->assertSame($plainFilm['capture']['receipt']['programId'], $orderRead['programId']);
         $this->assertSame($orderRead['programId'], $policyRead['programId']);
         $this->assertSame($orderRead['result']['results'][0]['value']['policyId'], $policyRead['arguments']['calls'][0]['arguments']['policyId']);
-        $explainer = json_decode(file_get_contents($output.'/media/symfony-code-mode-native-explainer-film.json'), true, flags: \JSON_THROW_ON_ERROR);
-        $this->assertSame([0, 6, 23, 39, 56, 61, 82], array_map(intval(...), array_column($explainer['chapters'], 'startSeconds')));
-        $this->assertSame(['x' => 48, 'y' => 654, 'width' => 452, 'height' => 376], $explainer['avatarSafeArea']);
-        $terminal = json_decode(file_get_contents($output.'/media/symfony-code-mode-terminal-film.json'), true, flags: \JSON_THROW_ON_ERROR);
-        $this->assertFileEquals($root.'/public/media/symfony-code-mode-terminal-film.json', $output.'/media/symfony-code-mode-terminal-film.json');
-        foreach (['symfony-code-mode-terminal-90s.mp4', 'symfony-code-mode-terminal-full.mp4', 'symfony-code-mode-terminal-operator.mp4', 'symfony-code-mode-terminal-poster.jpg'] as $filename) {
-            $this->assertSame($terminal['assets'][$filename], hash_file('sha256', $output.'/media/'.$filename));
-        }
         $this->assertSame(['agent-procedure.json', 'catalog-scaling.json', 'claude-plain-launch.json', 'claude-refund-film-session.json', 'claude-structured-refund.json', 'claude-support-review.json', 'direct-tool.json', 'group-selection.json', 'judge-demo.json', 'programmatic-refund.json', 'refund-group-discovery.json'], array_map(basename(...), glob($output.'/evidence/*')));
         $this->assertSame([
-            'codex-refund-review-film.json', 'codex-refund-review-poster.jpg', 'codex-refund-review.mp4',
-            'editorial-review-90s.mp4', 'editorial-review-film.json', 'editorial-review-poster.jpg',
-            'judge-live-voiceover.txt', 'judge-native-explainer-voiceover.txt', 'judge-plain-voiceover.txt', 'judge-ready-voiceover.txt', 'judge-support-voiceover.txt', 'judge-voiceover.txt', 'judge-workflow-voiceover.txt',
-            'symfony-code-mode-90s.mp4', 'symfony-code-mode-film.json', 'symfony-code-mode-judge-90s.mp4', 'symfony-code-mode-judge-film.json', 'symfony-code-mode-judge-poster.jpg', 'symfony-code-mode-live-90s.mp4',
-            'symfony-code-mode-live-film.json', 'symfony-code-mode-live-poster.jpg', 'symfony-code-mode-native-explainer-90s.mp4',
-            'symfony-code-mode-native-explainer-film.json', 'symfony-code-mode-native-explainer-poster.jpg',
-            'symfony-code-mode-plain-90s.mp4', 'symfony-code-mode-plain-film.json', 'symfony-code-mode-plain-poster.jpg', 'symfony-code-mode-poster.jpg',
-            'symfony-code-mode-ready-90s.mp4', 'symfony-code-mode-ready-film.json', 'symfony-code-mode-ready-poster.jpg',
-            'symfony-code-mode-support-90s.mp4', 'symfony-code-mode-support-film.json', 'symfony-code-mode-support-poster.jpg',
-            'symfony-code-mode-terminal-90s.mp4', 'symfony-code-mode-terminal-film.json', 'symfony-code-mode-terminal-full.mp4',
-            'symfony-code-mode-terminal-operator.mp4', 'symfony-code-mode-terminal-poster.jpg',
+            'judge-workflow-voiceover.txt', 'symfony-code-mode-judge-90s.mp4', 'symfony-code-mode-judge-film.json', 'symfony-code-mode-judge-poster.jpg',
         ], array_map(basename(...), glob($output.'/media/*')));
-        $manifest = json_decode(file_get_contents($output.'/media/symfony-code-mode-film.json'), true, flags: \JSON_THROW_ON_ERROR);
-        foreach ($manifest['assets'] + $manifest['sources'] as $filename => $digest) {
+        $manifest = json_decode(file_get_contents($output.'/media/symfony-code-mode-judge-film.json'), true, flags: \JSON_THROW_ON_ERROR);
+        foreach ($manifest['assets'] as $filename => $digest) {
             $this->assertSame($digest, hash_file('sha256', $output.'/media/'.$filename), $filename);
         }
         $document = new \DOMDocument();

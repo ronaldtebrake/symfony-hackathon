@@ -1,5 +1,0 @@
-Tool retrieval starts with a search. In our catalog of a hundred and twenty-eight sample tools, one definition matches. Symfony Code Mode exposes search and execute by default through the PHP MCP SDK. Search returns definitions the caller can use. Here Codex asks for a refund procedure and finds the team’s review group.
-
-Retrieval finds the readers. A Group tells Codex how the team uses them together. Codex opens the refund group by name. The team says to read the order first, then use the policy named on that order. The group supplies both reader definitions. Watch Codex send a JSON call to the first Symfony AI tool. The order returns standard E U. Codex passes that ID to the policy reader. Seventy-five euros exceeds the fifty-euro threshold, so Codex recommends manual review.
-
-Can Codex still read that policy? Between turns, the operator revokes permission. We ask Codex to check again. It remembers the reader and sends the same policy ID. Symfony checks permission on every call. Tool denied. Zero calls completed. The trace shows the policy handler never ran.

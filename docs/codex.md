@@ -33,7 +33,7 @@ In the same chat, try a second order:
 
 The reviewer is assigned R-1042 only. In the Profiler, open the second order read to see `tool_denied` and zero handler events. Leave permissions granted for this take.
 
-### Reproduce the filmed Claude Code session
+### Try the procedure in Claude Code
 
 In another terminal at the same root, start your signed-in Claude Code CLI.
 
@@ -84,4 +84,4 @@ enabled_tools = ["search_tools", "execute_tools"]
 required = false
 ```
 
-Open a fresh chat and enter `/mcp`. Expand `symfony_code_mode` to see both tools. The agent uses its own model connection. [Run the judge walkthrough](demo.md#record-the-refund-review-and-the-symfony-profiler)
+Open a fresh chat and enter `/mcp`. Expand `symfony_code_mode` to see both tools. The agent uses its own model connection. [Run the judge walkthrough](demo.md)

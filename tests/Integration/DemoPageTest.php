@@ -16,30 +16,12 @@ final class DemoPageTest extends WebTestCase
         self::assertResponseHeaderSame('x-content-type-options', 'nosniff');
         $this->assertStringContainsString("script-src 'none'", $client->getResponse()->headers->get('Content-Security-Policy'));
         $this->assertCount(0, $page->filterXPath('//form | //script'));
-        $this->assertCount(8, $page->filterXPath('//video'));
-        $this->assertCount(8, $page->filterXPath('//video[@controls and @playsinline and @preload="none" and not(@autoplay)]'));
+        $this->assertCount(1, $page->filterXPath('//video'));
+        $this->assertCount(1, $page->filterXPath('//video[@controls and @playsinline and @preload="none" and not(@autoplay)]'));
         $this->assertCount(1, $page->filterXPath('//*[@id="judge-demo"]/video[@poster="media/symfony-code-mode-judge-poster.jpg"]/source[@src="media/symfony-code-mode-judge-90s.mp4"]'));
         $this->assertCount(1, $page->filterXPath('//*[@id="judge-demo"]//a[@href="media/judge-workflow-voiceover.txt"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="ready-demo"]/video[@poster="media/symfony-code-mode-ready-poster.jpg"]/source[@src="media/symfony-code-mode-ready-90s.mp4"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="ready-demo"]//a[@href="media/judge-ready-voiceover.txt"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="ready-demo"]//a[@href="#code-mode-ready"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="plain-demo"]/video[@poster="media/symfony-code-mode-plain-poster.jpg"]/source[@src="media/symfony-code-mode-plain-90s.mp4"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="plain-demo"]//a[@href="media/judge-plain-voiceover.txt"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="support-demo"]/video[@poster="media/symfony-code-mode-support-poster.jpg"]/source[@src="media/symfony-code-mode-support-90s.mp4"]'));
         $this->assertCount(1, $page->filterXPath('//*[@id="support-calls"]//a[@href="evidence/refund-group-discovery.json"]'));
         $this->assertCount(1, $page->filterXPath('//*[@id="support-calls"]//a[@href="evidence/claude-support-review.json"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="native-explainer"]/video[@poster="media/symfony-code-mode-native-explainer-poster.jpg"]/source[@src="media/symfony-code-mode-native-explainer-90s.mp4"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="native-explainer"]//a[@href="media/judge-native-explainer-voiceover.txt"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="native-explainer"]//a[@href="#demo-tour"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="demo-tour"]//a[@href="#live-demo"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="demo-tour"]//a[@href="#terminal-demo"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="terminal-demo"]//video[@poster="media/symfony-code-mode-terminal-poster.jpg"]/source[@src="media/symfony-code-mode-terminal-90s.mp4"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="terminal-demo"]//a[@href="media/symfony-code-mode-terminal-full.mp4"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="terminal-demo"]//a[@href="media/symfony-code-mode-terminal-film.json"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="live-demo"]//video[@poster="media/symfony-code-mode-live-poster.jpg"]/source[@src="media/symfony-code-mode-live-90s.mp4"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="live-demo"]//a[@href="media/judge-live-voiceover.txt"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="demo-tour"]/video[@controls and @poster="media/symfony-code-mode-poster.jpg"]/source[@src="media/symfony-code-mode-90s.mp4"]'));
-        $this->assertCount(1, $page->filterXPath('//*[@id="demo-tour"]/figcaption/a[@href="media/symfony-code-mode-film.json"]'));
         $this->assertCount(1, $page->filterXPath('//*[@id="direct-tool"]//a[@href="evidence/direct-tool.json"]'));
         $this->assertSame(['#judge-demo', '#how-it-works', '#journey', '#quickstart'], $page->filterXPath('//nav/a')->extract(['href']));
         $support = json_decode(file_get_contents(\dirname(__DIR__, 2).'/docs/evidence/claude-support-review.json'), true, flags: \JSON_THROW_ON_ERROR);
@@ -113,10 +95,6 @@ final class DemoPageTest extends WebTestCase
             'evidence/judge-demo.json' => 'application/json',
             'evidence/programmatic-refund.json' => 'application/json',
             'images/symfony-mcp-architecture.svg' => 'image/svg+xml',
-            'media/symfony-code-mode-90s.mp4' => 'video/mp4',
-            'media/symfony-code-mode-poster.jpg' => 'image/jpeg',
-            'media/symfony-code-mode-film.json' => 'application/json',
-            'media/judge-voiceover.txt' => 'text/plain; charset=UTF-8',
             'evidence/claude-refund-film-session.json' => 'application/json',
             'evidence/claude-support-review.json' => 'application/json',
             'evidence/claude-plain-launch.json' => 'application/json',
@@ -124,47 +102,16 @@ final class DemoPageTest extends WebTestCase
             'evidence/catalog-scaling.json' => 'application/json',
             'evidence/refund-group-discovery.json' => 'application/json',
             'evidence/group-selection.json' => 'application/json',
-            'media/symfony-code-mode-ready-90s.mp4' => 'video/mp4',
-            'media/symfony-code-mode-ready-poster.jpg' => 'image/jpeg',
-            'media/symfony-code-mode-ready-film.json' => 'application/json',
             'media/judge-workflow-voiceover.txt' => 'text/plain; charset=UTF-8',
             'media/symfony-code-mode-judge-90s.mp4' => 'video/mp4',
             'media/symfony-code-mode-judge-poster.jpg' => 'image/jpeg',
-            'media/judge-ready-voiceover.txt' => 'text/plain; charset=UTF-8',
-            'media/symfony-code-mode-plain-90s.mp4' => 'video/mp4',
-            'media/symfony-code-mode-plain-poster.jpg' => 'image/jpeg',
-            'media/symfony-code-mode-plain-film.json' => 'application/json',
-            'media/judge-plain-voiceover.txt' => 'text/plain; charset=UTF-8',
-            'media/symfony-code-mode-support-90s.mp4' => 'video/mp4',
-            'media/symfony-code-mode-support-poster.jpg' => 'image/jpeg',
-            'media/symfony-code-mode-support-film.json' => 'application/json',
-            'media/judge-support-voiceover.txt' => 'text/plain; charset=UTF-8',
-            'media/symfony-code-mode-native-explainer-90s.mp4' => 'video/mp4',
-            'media/symfony-code-mode-native-explainer-poster.jpg' => 'image/jpeg',
-            'media/symfony-code-mode-native-explainer-film.json' => 'application/json',
-            'media/judge-native-explainer-voiceover.txt' => 'text/plain; charset=UTF-8',
-            'media/symfony-code-mode-live-90s.mp4' => 'video/mp4',
-            'media/symfony-code-mode-live-poster.jpg' => 'image/jpeg',
-            'media/symfony-code-mode-live-film.json' => 'application/json',
-            'media/symfony-code-mode-terminal-90s.mp4' => 'video/mp4',
-            'media/symfony-code-mode-terminal-full.mp4' => 'video/mp4',
-            'media/symfony-code-mode-terminal-operator.mp4' => 'video/mp4',
-            'media/symfony-code-mode-terminal-poster.jpg' => 'image/jpeg',
-            'media/symfony-code-mode-terminal-film.json' => 'application/json',
-            'media/judge-live-voiceover.txt' => 'text/plain; charset=UTF-8',
-            'media/editorial-review-90s.mp4' => 'video/mp4',
-            'media/editorial-review-film.json' => 'application/json',
-            'media/editorial-review-poster.jpg' => 'image/jpeg',
-            'media/codex-refund-review.mp4' => 'video/mp4',
-            'media/codex-refund-review-poster.jpg' => 'image/jpeg',
-            'media/codex-refund-review-film.json' => 'application/json',
         ];
         foreach ($expectedFiles as $path => $type) {
             $client->request('HEAD', '/'.$path.'?file=../../.env.local');
             self::assertResponseIsSuccessful();
             self::assertResponseHeaderSame('content-type', $type);
         }
-        foreach (['/demo', '/evidence/judge-demo.json', '/evidence/programmatic-refund.json', '/media/symfony-code-mode-90s.mp4', '/media/symfony-code-mode-film.json', '/media/symfony-code-mode-native-explainer-90s.mp4', '/media/judge-native-explainer-voiceover.txt', '/evidence/claude-support-review.json', '/media/symfony-code-mode-support-90s.mp4', '/media/symfony-code-mode-plain-90s.mp4', '/media/judge-plain-voiceover.txt', '/media/symfony-code-mode-ready-90s.mp4', '/media/judge-ready-voiceover.txt'] as $path) {
+        foreach (['/demo', '/evidence/judge-demo.json', '/evidence/programmatic-refund.json', '/media/symfony-code-mode-judge-90s.mp4', '/media/symfony-code-mode-judge-film.json', '/media/judge-workflow-voiceover.txt'] as $path) {
             $client->request('POST', $path);
             self::assertResponseStatusCodeSame(405);
             foreach ([['REMOTE_ADDR' => '203.0.113.1'], ['HTTP_HOST' => 'other.example']] as $server) {

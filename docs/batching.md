@@ -16,7 +16,7 @@ The response contains a `results` array in call order. The agent uses the policy
 
 ### How this fits Code Mode
 
-The client can write and run a program that calls these same tools over MCP. In the film, Claude opens the refund Group with `search_tools`. Its JavaScript decodes the first `execute_tools` reply, reads the order at `results[0].value`, then passes its `policyId` into the policy reader. Both reads succeed. The order reader declares that field as a required string in its output schema. [See the exact code and four calls](evidence/claude-structured-refund.json)
+The client can write and run a program that calls these same tools over MCP. In a recorded run, Claude opens the refund Group with `search_tools`. Its JavaScript decodes the first `execute_tools` reply, reads the order at `results[0].value`, then passes its `policyId` into the policy reader. Both reads succeed. The order reader declares that field as a required string in its output schema. [See the exact code and four calls](evidence/claude-structured-refund.json)
 
 Symfony enforces the user’s current permissions each time the program calls a reader. A separate run revoked access between reads. The program still had the order it had already received. Symfony denied the policy read before its handler ran, and Claude explained why the review was incomplete. [Revocation trace](evidence/programmatic-refund.json) · [MCP client guidance](https://modelcontextprotocol.io/docs/develop/clients/client-best-practices#combining-both-patterns)
 
