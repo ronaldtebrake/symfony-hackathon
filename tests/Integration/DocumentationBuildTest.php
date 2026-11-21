@@ -22,7 +22,6 @@ final class DocumentationBuildTest extends TestCase
         $this->assertFileEquals($root.'/docs/evidence/judge-demo.json', $output.'/evidence/judge-demo.json');
         $this->assertFileEquals($root.'/docs/evidence/direct-tool.json', $output.'/evidence/direct-tool.json');
         $this->assertFileEquals($root.'/docs/evidence/programmatic-refund.json', $output.'/evidence/programmatic-refund.json');
-        $this->assertFileEquals($root.'/docs/evidence/claude-refund-film-session.json', $output.'/evidence/claude-refund-film-session.json');
         $this->assertFileEquals($root.'/docs/evidence/refund-group-discovery.json', $output.'/evidence/refund-group-discovery.json');
         $wire = (new Process([\PHP_BINARY, 'scripts/trace-refund-group.php'], $root))->mustRun();
         $current = json_decode($wire->getOutput(), true, flags: \JSON_THROW_ON_ERROR);
@@ -45,7 +44,7 @@ final class DocumentationBuildTest extends TestCase
         [$orderRead, $policyRead] = \array_slice($plainRun['calls'], 2);
         $this->assertSame($orderRead['programId'], $policyRead['programId']);
         $this->assertSame($orderRead['result']['results'][0]['value']['policyId'], $policyRead['arguments']['calls'][0]['arguments']['policyId']);
-        $this->assertSame(['agent-procedure.json', 'catalog-scaling.json', 'claude-plain-launch.json', 'claude-refund-film-session.json', 'claude-structured-refund.json', 'claude-support-review.json', 'direct-tool.json', 'group-selection.json', 'judge-demo.json', 'programmatic-refund.json', 'refund-group-discovery.json'], array_map(basename(...), glob($output.'/evidence/*')));
+        $this->assertSame(['agent-procedure.json', 'catalog-scaling.json', 'claude-plain-launch.json', 'claude-structured-refund.json', 'claude-support-review.json', 'direct-tool.json', 'group-selection.json', 'judge-demo.json', 'programmatic-refund.json', 'refund-group-discovery.json'], array_map(basename(...), glob($output.'/evidence/*')));
         $this->assertSame([
             'judge-workflow-voiceover.txt', 'symfony-code-mode-judge-90s.mp4', 'symfony-code-mode-judge-film.json', 'symfony-code-mode-judge-poster.jpg',
         ], array_map(basename(...), glob($output.'/media/*')));

@@ -1,9 +1,0 @@
-# How a procedure became discoverable over MCP
-
-Our first question was whether an agent could do useful work between tool calls. We let it write PHP in a gVisor sandbox, fetch records and filter them before sending findings back to the model. That gave the agent room to compute. It also meant anyone adopting the integration had to operate an execution sandbox.
-
-Most of the work we wanted to expose already had a Symfony handler. Could we keep those handlers and let the agent send ordinary arguments? We moved to JSON over MCP. Pushpak Chhajed reached a similar conclusion while building a Laravel MCP server. The catalog starts with two tools. The agent searches for an operation, then executes it against the caller's current permissions. [Pushpak’s account of the move from PHP to JSON](https://laravel.com/blog/a-better-way-to-build-mcp-servers-with-laravel#version-four-switching-from-php-to-json)
-
-Finding a single reader still leaves a question for an agent doing a team’s work. Which readers go together, and which result supplies the next input? The MCP working group’s proposed Groups extension gave that knowledge a name. A group can describe when to use it, then return a procedure and the relevant tool definitions when opened. The agent chooses what to call next. [MCP Groups proposal](https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/19)
-
-Today a regular MCP client can find individual tools and named groups through the same Symfony Code Mode catalog. A client that supports the draft can open the same group through its protocol methods. In the film Claude’s JavaScript uses the order’s policy ID for the next read. In a separate revocation test, Symfony denies that read after the operator removes permission. [Run the demo](../README.md#try-it-locally) · [Actual MCP calls](evidence/judge-demo.json) · [What we can contribute](contributing/README.md)

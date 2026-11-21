@@ -11,3 +11,5 @@ For the no-model integration check, run `composer proof:discovery`. The [six-cal
 The independent Symfony example also exercises an opted-in direct reader and the default catalog route. Replay it with `composer proof:direct --working-dir=examples/symfony` after installing the example's dependencies. [Direct calls, revocation and shared budget](direct-tool.json)
 
 The [earlier Symfony AI conversation](refund-skill.json) and [protocol check](refund-protocol.json) cover the linked guide experiment. The [catalog sizing measurement](catalog-scaling.json) counts the initial tool definitions in a separate offline test.
+
+To verify the saved working-group experiments locally, run `php scripts/check-refund-protocol.php --verify` and `php scripts/compare-group-selection.php --verify`. Both read the committed evidence without calling a model.

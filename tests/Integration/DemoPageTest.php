@@ -95,7 +95,6 @@ final class DemoPageTest extends WebTestCase
             'evidence/judge-demo.json' => 'application/json',
             'evidence/programmatic-refund.json' => 'application/json',
             'images/symfony-mcp-architecture.svg' => 'image/svg+xml',
-            'evidence/claude-refund-film-session.json' => 'application/json',
             'evidence/claude-support-review.json' => 'application/json',
             'evidence/claude-plain-launch.json' => 'application/json',
             'evidence/claude-structured-refund.json' => 'application/json',

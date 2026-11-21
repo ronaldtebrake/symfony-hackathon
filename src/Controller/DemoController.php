@@ -50,7 +50,6 @@ final readonly class DemoController
     #[Route('/evidence/direct-tool.json', name: 'app_direct_tool_trace', defaults: ['file' => 'docs/evidence/direct-tool.json', 'type' => 'application/json'], methods: ['GET'])]
     #[Route('/evidence/agent-procedure.json', name: 'app_agent_transcript', defaults: ['file' => 'docs/evidence/agent-procedure.json', 'type' => 'application/json'], methods: ['GET'])]
     #[Route('/evidence/programmatic-refund.json', name: 'app_programmatic_refund', defaults: ['file' => 'docs/evidence/programmatic-refund.json', 'type' => 'application/json'], methods: ['GET'])]
-    #[Route('/evidence/claude-refund-film-session.json', name: 'app_live_film_session', defaults: ['file' => 'docs/evidence/claude-refund-film-session.json', 'type' => 'application/json'], methods: ['GET'])]
     #[Route('/evidence/claude-support-review.json', name: 'app_support_session', defaults: ['file' => 'docs/evidence/claude-support-review.json', 'type' => 'application/json'], methods: ['GET'])]
     #[Route('/evidence/claude-plain-launch.json', name: 'app_plain_claude_session', defaults: ['file' => 'docs/evidence/claude-plain-launch.json', 'type' => 'application/json'], methods: ['GET'])]
     #[Route('/evidence/claude-structured-refund.json', name: 'app_structured_refund_session', defaults: ['file' => 'docs/evidence/claude-structured-refund.json', 'type' => 'application/json'], methods: ['GET'])]

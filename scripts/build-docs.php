@@ -40,7 +40,7 @@ foreach ([
 foreach ([...$media, 'symfony-code-mode-judge-film.json'] as $filename) {
     $files->copy($mediaDir.'/'.$filename, $output.'/media/'.$filename);
 }
-foreach (['agent-procedure.json', 'judge-demo.json', 'catalog-scaling.json', 'refund-group-discovery.json', 'direct-tool.json', 'programmatic-refund.json', 'claude-plain-launch.json', 'claude-structured-refund.json', 'claude-support-review.json', 'claude-refund-film-session.json', 'group-selection.json'] as $filename) {
+foreach (['agent-procedure.json', 'judge-demo.json', 'catalog-scaling.json', 'refund-group-discovery.json', 'direct-tool.json', 'programmatic-refund.json', 'claude-plain-launch.json', 'claude-structured-refund.json', 'claude-support-review.json', 'group-selection.json'] as $filename) {
     $files->copy($root.'/docs/evidence/'.$filename, $output.'/evidence/'.$filename);
 }
 echo "Built the judge workbench in var/pages.\n";
