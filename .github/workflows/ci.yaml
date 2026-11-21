@@ -77,6 +77,8 @@ jobs:
             - run: composer install --no-interaction --prefer-dist --working-dir=examples/symfony
             - run: composer check --working-dir=examples/symfony
             - run: composer proof:http --working-dir=examples/symfony
+            - name: Reproduce the direct-tool receipt
+              run: php examples/symfony/scripts/direct-proof.php --compare=docs/evidence/direct-tool.json
 
     sandbox:
         runs-on: ubuntu-24.04

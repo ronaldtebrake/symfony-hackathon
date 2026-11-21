@@ -47,6 +47,13 @@ return static function (ContainerConfigurator $container): void {
         'profiling' => in_array($container->env(), ['dev', 'test'], true),
         'http' => ['enabled' => $http, 'permissions' => ['publication.read_published' => 'ROLE_READER']],
     ]);
+    if ('direct' === $container->env()) {
+        $container->extension('code_mode', ['http' => ['direct_tools' => ['publication_read']], 'profiling' => true]);
+        $container->extension('framework', ['profiler' => ['enabled' => true, 'collect' => true]]);
+        // The proof runs with its own cache directory, including its persisted per-user budgets.
+        $services->set('code_mode.http.cache', Symfony\Component\Cache\Adapter\FilesystemAdapter::class)->args(['code_mode', 0, '%kernel.cache_dir%/budgets']);
+        $services->set('code_mode.http.lock_store', Symfony\Component\Lock\Store\FlockStore::class)->args(['%kernel.cache_dir%/locks']);
+    }
     if (in_array($container->env(), ['dev', 'test'], true)) {
         $container->extension('framework', ['profiler' => ['enabled' => true, 'collect' => true], 'test' => 'test' === $container->env()]);
         $container->extension('web_profiler', ['toolbar' => false]);

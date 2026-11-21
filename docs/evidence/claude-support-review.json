@@ -1,0 +1,907 @@
+{
+  "format": "symfony-claude-support-review/v1",
+  "client": {
+    "name": "Claude Code",
+    "version": "2.1.330",
+    "model": "claude-sonnet-5-5",
+    "nativeCodeMode": true
+  },
+  "featuredAttempt": 4,
+  "setup": "Each attempt used a fresh authorized Symfony HTTP catalog and one user question in the signed-in native Claude Code client. Code Mode was enabled. No extra system prompt was supplied. No tool call or JavaScript was provided to the model. Search and execute were the two available MCP tools.",
+  "scope": "The programs below are the verbatim Claude-generated JavaScript blocks that invoked MCP. Local tool-discovery or empty-workspace inspections are counted separately. The calls contain client-observed arguments and results and Symfony profiler dispatch events. Calls use the ordinary tools/call compatibility path. No Groups extension methods were sent by Claude.",
+  "searchToolDescriptions": {
+    "initial description": "Search with query to find individual tool contracts and named group summaries. An empty query browses both. To open a group, send its name in the group field alone. This returns its member contracts and any procedure. Run the tools with execute_tools. For dependent reads, pass the ID from the earlier result.",
+    "procedure description": "Search with query for individual tool contracts and Group summaries. An empty query browses both. For a team procedure, open the matching Group by sending its name in the group field alone. This returns the instructions and member contracts. Call members with execute_tools, passing any ID returned by an earlier read."
+  },
+  "comparison": "Attempts 2, 3 and 4 used the same question, model, data and grant. Attempts 3 and 4 used a public search description that identified the Group as the team procedure and explained opening it. Both opened the Group. Attempt 4 was recorded in Terminal.app for the film. These observations do not establish a reliability rate.",
+  "attempts": [
+    {
+      "question": "Can I give the customer a refund on order R-1042? Please check our team’s procedure.",
+      "answer": "Not on your own authority. Order R-1042 qualifies for a refund, but it needs manual review before you promise it to the customer.\n\n**Order R-1042** (policy `standard-eu`)\n- **Amount paid:** € 75,00\n- **Days since delivery:** 9\n- **Item condition:** unopened\n\n**Policy `standard-eu`**\n- **Return window:** 30 days. The order is at 9 days, so it is within the window.\n- **Accepted condition:** unopened. The item is unopened, so it meets the condition.\n- **Manual review threshold:** refunds above € 50,00 need manual review. The order is € 75,00, so it is over the threshold.\n\nSend it to manual review, and tell the customer it is eligible and pending approval. The tools I have are read-only, so I haven't issued or submitted anything.\n\nThe policy data doesn't say who does the manual review or how to escalate. Check your team's escalation process for that.",
+      "groupOpened": false,
+      "readsInOneProgram": false,
+      "publicContract": "initial description",
+      "advertised": [
+        "search_tools",
+        "execute_tools"
+      ],
+      "httpMethodsInOrder": [
+        "server/discover",
+        "tools/list",
+        "tools/call",
+        "tools/call",
+        "tools/call"
+      ],
+      "clientLocalProgramsOmitted": 1,
+      "programs": [
+        {
+          "id": "toolu_01B1hWZjBF9spVe1tTi7nCk5",
+          "source": "await tools.mcp__symfony_code_mode__search_tools({query: \"refund\"})",
+          "callIndexes": [
+            1
+          ]
+        },
+        {
+          "id": "toolu_01RmQ9JN9RNTJLbBBQrzXMVA",
+          "source": "await tools.mcp__symfony_code_mode__execute_tools({calls:[{name:\"refund_get_order\",arguments:{orderId:\"R-1042\"}}]})",
+          "callIndexes": [
+            2
+          ]
+        },
+        {
+          "id": "toolu_01Nz5QUurxEfUXKKL8wkBbyb",
+          "source": "await tools.mcp__symfony_code_mode__execute_tools({calls:[{name:\"refund_get_policy\",arguments:{policyId:\"standard-eu\"}}]})",
+          "callIndexes": [
+            3
+          ]
+        }
+      ],
+      "calls": [
+        {
+          "method": "tools/call",
+          "tool": "search_tools",
+          "arguments": {
+            "query": "refund"
+          },
+          "result": {
+            "tools": [
+              {
+                "name": "refund_get_order",
+                "description": "Read the support order, paid amount in minor units, condition, days since delivery and applicable policy ID.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {
+                    "orderId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "orderId"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "name": "refund_get_policy",
+                "description": "Read the return window, accepted condition, currency and manual review threshold in minor units for a policy.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {
+                    "policyId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "policyId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            ],
+            "matched": 2,
+            "returned": 2,
+            "limit": 8,
+            "truncated": false,
+            "groups": [
+              {
+                "name": "refund-review",
+                "description": "Review an order together with its applicable refund policy."
+              }
+            ]
+          },
+          "httpStatus": 200,
+          "handlerEvents": [],
+          "programId": "toolu_01B1hWZjBF9spVe1tTi7nCk5",
+          "clientCallId": "repl_8e5249cb-0ed0-490a-a985-da6bb0ad5f14"
+        },
+        {
+          "method": "tools/call",
+          "tool": "execute_tools",
+          "arguments": {
+            "calls": [
+              {
+                "name": "refund_get_order",
+                "arguments": {
+                  "orderId": "R-1042"
+                }
+              }
+            ]
+          },
+          "result": {
+            "results": [
+              {
+                "name": "refund_get_order",
+                "value": {
+                  "orderId": "R-1042",
+                  "policyId": "standard-eu",
+                  "currency": "EUR",
+                  "amountMinor": 7500,
+                  "daysSinceDelivery": 9,
+                  "itemCondition": "unopened"
+                }
+              }
+            ]
+          },
+          "httpStatus": 200,
+          "handlerEvents": [
+            {
+              "name": "refund_get_order",
+              "phase": "requested"
+            },
+            {
+              "name": "refund_get_order",
+              "phase": "succeeded"
+            }
+          ],
+          "programId": "toolu_01RmQ9JN9RNTJLbBBQrzXMVA",
+          "clientCallId": "repl_9187657f-473d-43e9-92cc-e7a21ed25d4f"
+        },
+        {
+          "method": "tools/call",
+          "tool": "execute_tools",
+          "arguments": {
+            "calls": [
+              {
+                "name": "refund_get_policy",
+                "arguments": {
+                  "policyId": "standard-eu"
+                }
+              }
+            ]
+          },
+          "result": {
+            "results": [
+              {
+                "name": "refund_get_policy",
+                "value": {
+                  "policyId": "standard-eu",
+                  "currency": "EUR",
+                  "returnWindowDays": 30,
+                  "acceptedCondition": "unopened",
+                  "manualReviewAboveMinor": 5000
+                }
+              }
+            ]
+          },
+          "httpStatus": 200,
+          "handlerEvents": [
+            {
+              "name": "refund_get_policy",
+              "phase": "requested"
+            },
+            {
+              "name": "refund_get_policy",
+              "phase": "succeeded"
+            }
+          ],
+          "programId": "toolu_01Nz5QUurxEfUXKKL8wkBbyb",
+          "clientCallId": "repl_e94800bf-e684-446d-88d1-ed8a8f8696f9"
+        }
+      ],
+      "sourceSha256": {
+        "clientTranscript": "83036706d726e4390547a12fcfcd03f99da1a24054cc9aad82fbdee8976b1e03",
+        "serverTransport": "428c6f34807ddb3a54353445e9dfe77ba0382a90b0131a39d20b64581d5cc6d2",
+        "symfonyProfiler": "63febc9bad430c36f872b0eee0040a21240cae35f75174b0de8280a68a41c0b5",
+        "terminalBytes": "34e9360fbc1dd8afcab5ddd2f1a82ae31eaa18bd46b15efce02d7708a8d124dd"
+      }
+    },
+    {
+      "question": "Please find and follow our team’s refund procedure for order R-1042. What should I tell the customer?",
+      "answer": "I've checked order R-1042 against its refund policy, and I'm giving you the result now.\n\n**Findings**\n- **Order:** R-1042 was paid € 75,00. It was delivered 9 days ago and the item is unopened.\n- **Policy (standard-eu):** The return window is 30 days and only unopened items are accepted. Refunds above € 50,00 need manual review.\n\nThe order qualifies for a refund. It is inside the window and the condition is accepted. At € 75,00 it is over the € 50,00 threshold, so it can't be approved automatically and needs manual review first. I only have read-only access, so I haven't approved or issued anything.\n\nI found no written refund procedure in the working directory. The steps above come only from the policy data in the refund system. If your team has a procedure document elsewhere, such as Slite, send it to me and I'll check this against it.\n\n**What to tell the customer**\n\n> Hello, thank you for getting in touch about order R-1042. Your return is eligible: it is within our 30-day return window and the item is unopened. Because the refund amount is € 75,00, it needs a quick manual review by our team before we can confirm it. We'll update you as soon as that is done. Thank you for your patience.\n\nI left out a timeframe because I couldn't find one. If your team has a standard review time, add it before you send the message.",
+      "groupOpened": false,
+      "readsInOneProgram": false,
+      "publicContract": "initial description",
+      "advertised": [
+        "search_tools",
+        "execute_tools"
+      ],
+      "httpMethodsInOrder": [
+        "server/discover",
+        "tools/list",
+        "tools/call",
+        "tools/call",
+        "tools/call"
+      ],
+      "clientLocalProgramsOmitted": 2,
+      "programs": [
+        {
+          "id": "toolu_019qE8pNKEsGCboXGnHMU6Fv",
+          "source": "await tools.mcp__symfony_code_mode__search_tools({query:\"refund order\"})",
+          "callIndexes": [
+            1
+          ]
+        },
+        {
+          "id": "toolu_01RGqEqsbNe79DXufyJSLZ6W",
+          "source": "await tools.mcp__symfony_code_mode__execute_tools({calls:[{name:\"refund_get_order\",arguments:{orderId:\"R-1042\"}}]})",
+          "callIndexes": [
+            2
+          ]
+        },
+        {
+          "id": "toolu_01CP1tBi6cLhjiVn9vTbQjmj",
+          "source": "await tools.mcp__symfony_code_mode__execute_tools({calls:[{name:\"refund_get_policy\",arguments:{policyId:\"standard-eu\"}}]})",
+          "callIndexes": [
+            3
+          ]
+        }
+      ],
+      "calls": [
+        {
+          "method": "tools/call",
+          "tool": "search_tools",
+          "arguments": {
+            "query": "refund order"
+          },
+          "result": {
+            "tools": [
+              {
+                "name": "refund_get_order",
+                "description": "Read the support order, paid amount in minor units, condition, days since delivery and applicable policy ID.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {
+                    "orderId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "orderId"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "name": "refund_get_policy",
+                "description": "Read the return window, accepted condition, currency and manual review threshold in minor units for a policy.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {
+                    "policyId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "policyId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            ],
+            "matched": 2,
+            "returned": 2,
+            "limit": 8,
+            "truncated": false,
+            "groups": [
+              {
+                "name": "refund-review",
+                "description": "Review an order together with its applicable refund policy."
+              },
+              {
+                "name": "order-lookup",
+                "description": "Look up delivery, item condition and payment details for one order."
+              }
+            ]
+          },
+          "httpStatus": 200,
+          "handlerEvents": [],
+          "programId": "toolu_019qE8pNKEsGCboXGnHMU6Fv",
+          "clientCallId": "repl_20507d79-c675-4ae2-b0a0-f9856015e14a"
+        },
+        {
+          "method": "tools/call",
+          "tool": "execute_tools",
+          "arguments": {
+            "calls": [
+              {
+                "name": "refund_get_order",
+                "arguments": {
+                  "orderId": "R-1042"
+                }
+              }
+            ]
+          },
+          "result": {
+            "results": [
+              {
+                "name": "refund_get_order",
+                "value": {
+                  "orderId": "R-1042",
+                  "policyId": "standard-eu",
+                  "currency": "EUR",
+                  "amountMinor": 7500,
+                  "daysSinceDelivery": 9,
+                  "itemCondition": "unopened"
+                }
+              }
+            ]
+          },
+          "httpStatus": 200,
+          "handlerEvents": [
+            {
+              "name": "refund_get_order",
+              "phase": "requested"
+            },
+            {
+              "name": "refund_get_order",
+              "phase": "succeeded"
+            }
+          ],
+          "programId": "toolu_01RGqEqsbNe79DXufyJSLZ6W",
+          "clientCallId": "repl_78fc818d-cd05-477e-bee5-917bc00f847e"
+        },
+        {
+          "method": "tools/call",
+          "tool": "execute_tools",
+          "arguments": {
+            "calls": [
+              {
+                "name": "refund_get_policy",
+                "arguments": {
+                  "policyId": "standard-eu"
+                }
+              }
+            ]
+          },
+          "result": {
+            "results": [
+              {
+                "name": "refund_get_policy",
+                "value": {
+                  "policyId": "standard-eu",
+                  "currency": "EUR",
+                  "returnWindowDays": 30,
+                  "acceptedCondition": "unopened",
+                  "manualReviewAboveMinor": 5000
+                }
+              }
+            ]
+          },
+          "httpStatus": 200,
+          "handlerEvents": [
+            {
+              "name": "refund_get_policy",
+              "phase": "requested"
+            },
+            {
+              "name": "refund_get_policy",
+              "phase": "succeeded"
+            }
+          ],
+          "programId": "toolu_01CP1tBi6cLhjiVn9vTbQjmj",
+          "clientCallId": "repl_62cfafd2-0aab-4363-bbff-15cbbb5acef6"
+        }
+      ],
+      "sourceSha256": {
+        "clientTranscript": "9668e19d23bbd08caebf85874d349ade777cf8e1869649993c89d232deecaf70",
+        "serverTransport": "428c6f34807ddb3a54353445e9dfe77ba0382a90b0131a39d20b64581d5cc6d2",
+        "symfonyProfiler": "58e24f49d7a7bcefb8bb6f155ef41c31ea6f9fc691fbad6d35542c111affa904",
+        "terminalBytes": "1950a1876e545f81031f7f0224a5e1b26e1eb412cc40595d3bb7d51c7116ed9e"
+      }
+    },
+    {
+      "question": "Please find and follow our team’s refund procedure for order R-1042. What should I tell the customer?",
+      "answer": "I followed the team's refund-review procedure for R-1042. The review is complete, and the result is that the refund is eligible but needs manual review before it can go ahead.\n\n**What I found**\n- **Order:** € 75,00, unopened, delivered 9 days ago, under policy `standard-eu`.\n- **Policy:** 30-day return window, unopened items only, manual review required above € 50,00.\n- **Eligibility:** The order is eligible. It is inside the window (9 of 30 days) and the condition matches.\n- **Manual review:** The amount of € 75,00 is above the € 50,00 threshold, so a team member has to approve it.\n\nA review never issues a refund, and I haven't issued one.\n\n**What to tell the customer**\n\n> Hi, thanks for getting in touch about order R-1042. Your return is within our 30-day window and the item is in an eligible condition, so you qualify for a refund of € 75,00. Because of the order value, a colleague needs to complete a quick final check before we process it. We'll update you as soon as that's done. If you have any questions in the meantime, just reply to this message.\n\nPlease don't promise a refund date or say the refund is approved until the manual review has been done.",
+      "groupOpened": true,
+      "readsInOneProgram": false,
+      "publicContract": "procedure description",
+      "advertised": [
+        "search_tools",
+        "execute_tools"
+      ],
+      "httpMethodsInOrder": [
+        "server/discover",
+        "tools/list",
+        "tools/call",
+        "tools/call",
+        "tools/call",
+        "tools/call"
+      ],
+      "clientLocalProgramsOmitted": 1,
+      "programs": [
+        {
+          "id": "toolu_01RVtSfdRwvQqC2bkAZqoQHa",
+          "source": "await tools.mcp__symfony_code_mode__search_tools({query:\"refund\"})",
+          "callIndexes": [
+            1
+          ]
+        },
+        {
+          "id": "toolu_01KkGps5RY9m4zGaJLjJqbni",
+          "source": "await tools.mcp__symfony_code_mode__search_tools({group:\"refund-review\"})",
+          "callIndexes": [
+            2
+          ]
+        },
+        {
+          "id": "toolu_01C33z9yxdnuVRcuYhvMiFUW",
+          "source": "await tools.mcp__symfony_code_mode__execute_tools({calls:[{name:\"refund_get_order\",arguments:{orderId:\"R-1042\"}}]})",
+          "callIndexes": [
+            3
+          ]
+        },
+        {
+          "id": "toolu_01YCkuZHG2aesgoNA3TjDToW",
+          "source": "await tools.mcp__symfony_code_mode__execute_tools({calls:[{name:\"refund_get_policy\",arguments:{policyId:\"standard-eu\"}}]})",
+          "callIndexes": [
+            4
+          ]
+        }
+      ],
+      "calls": [
+        {
+          "method": "tools/call",
+          "tool": "search_tools",
+          "arguments": {
+            "query": "refund"
+          },
+          "result": {
+            "tools": [
+              {
+                "name": "refund_get_order",
+                "description": "Read the support order, paid amount in minor units, condition, days since delivery and applicable policy ID.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {
+                    "orderId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "orderId"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "name": "refund_get_policy",
+                "description": "Read the return window, accepted condition, currency and manual review threshold in minor units for a policy.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {
+                    "policyId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "policyId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            ],
+            "matched": 2,
+            "returned": 2,
+            "limit": 8,
+            "truncated": false,
+            "groups": [
+              {
+                "name": "refund-review",
+                "description": "Support team refund procedure. Open this Group for the review steps and the rules for recommending a refund."
+              }
+            ]
+          },
+          "httpStatus": 200,
+          "handlerEvents": [],
+          "programId": "toolu_01RVtSfdRwvQqC2bkAZqoQHa",
+          "clientCallId": "repl_1e76772e-7eb7-4d72-b539-7cdc12d9b522"
+        },
+        {
+          "method": "tools/call",
+          "tool": "search_tools",
+          "arguments": {
+            "group": "refund-review"
+          },
+          "result": {
+            "group": "refund-review",
+            "tools": [
+              {
+                "name": "refund_get_order",
+                "description": "Read the support order, paid amount in minor units, condition, days since delivery and applicable policy ID.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {
+                    "orderId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "orderId"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "name": "refund_get_policy",
+                "description": "Read the return window, accepted condition, currency and manual review threshold in minor units for a policy.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {
+                    "policyId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "policyId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            ],
+            "instructions": "Read the order, then read the policy named by that order. Compare its age and condition with the policy. If eligible, compare the amount with the manual-review threshold in the same currency. Report the recommendation and the reason. If a required read is denied, keep the facts already received, identify the missing evidence and report the review as incomplete. A review never issues a refund."
+          },
+          "httpStatus": 200,
+          "handlerEvents": [],
+          "programId": "toolu_01KkGps5RY9m4zGaJLjJqbni",
+          "clientCallId": "repl_462f491f-2059-48f9-af3b-494912667220"
+        },
+        {
+          "method": "tools/call",
+          "tool": "execute_tools",
+          "arguments": {
+            "calls": [
+              {
+                "name": "refund_get_order",
+                "arguments": {
+                  "orderId": "R-1042"
+                }
+              }
+            ]
+          },
+          "result": {
+            "results": [
+              {
+                "name": "refund_get_order",
+                "value": {
+                  "orderId": "R-1042",
+                  "policyId": "standard-eu",
+                  "currency": "EUR",
+                  "amountMinor": 7500,
+                  "daysSinceDelivery": 9,
+                  "itemCondition": "unopened"
+                }
+              }
+            ]
+          },
+          "httpStatus": 200,
+          "handlerEvents": [
+            {
+              "name": "refund_get_order",
+              "phase": "requested"
+            },
+            {
+              "name": "refund_get_order",
+              "phase": "succeeded"
+            }
+          ],
+          "programId": "toolu_01C33z9yxdnuVRcuYhvMiFUW",
+          "clientCallId": "repl_1c11652b-1f5d-4f1f-b04b-e860e60dc467"
+        },
+        {
+          "method": "tools/call",
+          "tool": "execute_tools",
+          "arguments": {
+            "calls": [
+              {
+                "name": "refund_get_policy",
+                "arguments": {
+                  "policyId": "standard-eu"
+                }
+              }
+            ]
+          },
+          "result": {
+            "results": [
+              {
+                "name": "refund_get_policy",
+                "value": {
+                  "policyId": "standard-eu",
+                  "currency": "EUR",
+                  "returnWindowDays": 30,
+                  "acceptedCondition": "unopened",
+                  "manualReviewAboveMinor": 5000
+                }
+              }
+            ]
+          },
+          "httpStatus": 200,
+          "handlerEvents": [
+            {
+              "name": "refund_get_policy",
+              "phase": "requested"
+            },
+            {
+              "name": "refund_get_policy",
+              "phase": "succeeded"
+            }
+          ],
+          "programId": "toolu_01YCkuZHG2aesgoNA3TjDToW",
+          "clientCallId": "repl_fa3bc7e8-3c88-463a-9332-2eeaf0c138c6"
+        }
+      ],
+      "sourceSha256": {
+        "clientTranscript": "614f439fe2dea3b899b9c856d62ea7587b09737ef93739b693430d513f76c207",
+        "serverTransport": "92df2b61d104a05c3d51674da8e8b72b08e4783034659c540dfd8202eed2f39c",
+        "symfonyProfiler": "5ed52f225d6f003616bfb0ca0585f4457090cea117211b9f5605ace43554231b",
+        "terminalBytes": "7dfdedcb1a3bdc8fefdac482ad1ba052c1c724bed9825f8bdd28061468a908e0"
+      }
+    },
+    {
+      "question": "Please find and follow our team’s refund procedure for order R-1042. What should I tell the customer?",
+      "answer": "**Recommendation for R-1042: eligible for a refund, but it needs manual review before anything is issued.**\n\n**What I checked** (following the `refund-review` procedure):\n- **Order:** € 75,00 paid, delivered 9 days ago, item unopened, policy `standard-eu`.\n- **Policy `standard-eu`:** 30-day return window, unopened items accepted, manual review required above € 50,00.\n- **Window:** 9 days is inside the 30-day window.\n- **Condition:** unopened matches the accepted condition.\n- **Amount:** € 75,00 is above the € 50,00 threshold, so a person has to approve it.\n\nThis review is read-only and has not issued a refund.\n\n**What to tell the customer:**\n\n> Thank you for getting in touch about order R-1042. Your return is within our 30-day return window and the item qualifies as unopened, so it is eligible for a refund of € 75,00. Because of the order value, a colleague needs to review and approve it first. We'll confirm the outcome and the timing of the refund as soon as that's done.\n\nDon't promise a specific refund date until the manual review is approved.",
+      "groupOpened": true,
+      "readsInOneProgram": false,
+      "publicContract": "procedure description",
+      "advertised": [
+        "search_tools",
+        "execute_tools"
+      ],
+      "httpMethodsInOrder": [
+        "server/discover",
+        "tools/list",
+        "tools/call",
+        "tools/call",
+        "tools/call",
+        "tools/call"
+      ],
+      "clientLocalProgramsOmitted": 3,
+      "programs": [
+        {
+          "id": "toolu_01KTEHmheMN2XB7xtJCnA8vQ",
+          "source": "const r=await tools.mcp__symfony_code_mode__search_tools({query:\"refund\"}); r",
+          "callIndexes": [
+            1
+          ]
+        },
+        {
+          "id": "toolu_01HEM9YEFppxwSgr5z2zPsrJ",
+          "source": "const g=await tools.mcp__symfony_code_mode__search_tools({group:\"refund-review\"}); g",
+          "callIndexes": [
+            2
+          ]
+        },
+        {
+          "id": "toolu_01WdvPDLVutkRApprMRykBGa",
+          "source": "const o=await tools.mcp__symfony_code_mode__execute_tools({calls:[{name:\"refund_get_order\",arguments:{orderId:\"R-1042\"}}]}); o",
+          "callIndexes": [
+            3
+          ]
+        },
+        {
+          "id": "toolu_01Ds7XhCADfK6N9LBRLnHWcq",
+          "source": "const p=await tools.mcp__symfony_code_mode__execute_tools({calls:[{name:\"refund_get_policy\",arguments:{policyId:\"standard-eu\"}}]}); p",
+          "callIndexes": [
+            4
+          ]
+        }
+      ],
+      "calls": [
+        {
+          "method": "tools/call",
+          "tool": "search_tools",
+          "arguments": {
+            "query": "refund"
+          },
+          "result": {
+            "tools": [
+              {
+                "name": "refund_get_order",
+                "description": "Read the support order, paid amount in minor units, condition, days since delivery and applicable policy ID.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {
+                    "orderId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "orderId"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "name": "refund_get_policy",
+                "description": "Read the return window, accepted condition, currency and manual review threshold in minor units for a policy.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {
+                    "policyId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "policyId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            ],
+            "matched": 2,
+            "returned": 2,
+            "limit": 8,
+            "truncated": false,
+            "groups": [
+              {
+                "name": "refund-review",
+                "description": "Support team refund procedure. Open this Group for the review steps and the rules for recommending a refund."
+              }
+            ]
+          },
+          "httpStatus": 200,
+          "handlerEvents": [],
+          "programId": "toolu_01KTEHmheMN2XB7xtJCnA8vQ",
+          "clientCallId": "repl_35274ae4-eb9a-4705-b78b-3ed34a9230f1"
+        },
+        {
+          "method": "tools/call",
+          "tool": "search_tools",
+          "arguments": {
+            "group": "refund-review"
+          },
+          "result": {
+            "group": "refund-review",
+            "tools": [
+              {
+                "name": "refund_get_order",
+                "description": "Read the support order, paid amount in minor units, condition, days since delivery and applicable policy ID.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {
+                    "orderId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "orderId"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "name": "refund_get_policy",
+                "description": "Read the return window, accepted condition, currency and manual review threshold in minor units for a policy.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {
+                    "policyId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "policyId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            ],
+            "instructions": "Read the order, then read the policy named by that order. Compare its age and condition with the policy. If eligible, compare the amount with the manual-review threshold in the same currency. Report the recommendation and the reason. If a required read is denied, keep the facts already received, identify the missing evidence and report the review as incomplete. A review never issues a refund."
+          },
+          "httpStatus": 200,
+          "handlerEvents": [],
+          "programId": "toolu_01HEM9YEFppxwSgr5z2zPsrJ",
+          "clientCallId": "repl_313b3819-e6d8-4fbd-8b4f-0f2eef515a36"
+        },
+        {
+          "method": "tools/call",
+          "tool": "execute_tools",
+          "arguments": {
+            "calls": [
+              {
+                "name": "refund_get_order",
+                "arguments": {
+                  "orderId": "R-1042"
+                }
+              }
+            ]
+          },
+          "result": {
+            "results": [
+              {
+                "name": "refund_get_order",
+                "value": {
+                  "orderId": "R-1042",
+                  "policyId": "standard-eu",
+                  "currency": "EUR",
+                  "amountMinor": 7500,
+                  "daysSinceDelivery": 9,
+                  "itemCondition": "unopened"
+                }
+              }
+            ]
+          },
+          "httpStatus": 200,
+          "handlerEvents": [
+            {
+              "name": "refund_get_order",
+              "phase": "requested"
+            },
+            {
+              "name": "refund_get_order",
+              "phase": "succeeded"
+            }
+          ],
+          "programId": "toolu_01WdvPDLVutkRApprMRykBGa",
+          "clientCallId": "repl_6459b919-54e5-4cc0-8f52-6b70bac5bad7"
+        },
+        {
+          "method": "tools/call",
+          "tool": "execute_tools",
+          "arguments": {
+            "calls": [
+              {
+                "name": "refund_get_policy",
+                "arguments": {
+                  "policyId": "standard-eu"
+                }
+              }
+            ]
+          },
+          "result": {
+            "results": [
+              {
+                "name": "refund_get_policy",
+                "value": {
+                  "policyId": "standard-eu",
+                  "currency": "EUR",
+                  "returnWindowDays": 30,
+                  "acceptedCondition": "unopened",
+                  "manualReviewAboveMinor": 5000
+                }
+              }
+            ]
+          },
+          "httpStatus": 200,
+          "handlerEvents": [
+            {
+              "name": "refund_get_policy",
+              "phase": "requested"
+            },
+            {
+              "name": "refund_get_policy",
+              "phase": "succeeded"
+            }
+          ],
+          "programId": "toolu_01Ds7XhCADfK6N9LBRLnHWcq",
+          "clientCallId": "repl_3ce0cd5e-548d-41fc-bf68-fa37997d7597"
+        }
+      ],
+      "sourceSha256": {
+        "clientTranscript": "442c286a6082edd6d3dbad8250fd757974199585c80d21eaf6da612c39eab421",
+        "serverTransport": "92df2b61d104a05c3d51674da8e8b72b08e4783034659c540dfd8202eed2f39c",
+        "symfonyProfiler": "90427ab125bd60eb34aefd30766b3200e9f85f3472c94a95f13122ac2f029ec4",
+        "terminalBytes": "9abd92820f6fcb9839962103bff9930f8329ccb4f0100b7a5fbd002a2cabf166",
+        "nativeTerminalVideo": "81f1bdbde701fd6c60184fe9591461d4cbcf561585c7dc3dba2b735cea5d0b1f"
+      },
+      "capture": {
+        "application": "com.apple.Terminal",
+        "method": "macOS ScreenCaptureKit window recording",
+        "width": 2194,
+        "height": 1312,
+        "durationSeconds": 131.51,
+        "frames": 2536,
+        "audio": "none"
+      }
+    }
+  ]
+}

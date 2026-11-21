@@ -1,0 +1,338 @@
+{
+    "format": "symfony-direct-tool/v1",
+    "scope": "PHP MCP SDK over authenticated HTTP in the independent Symfony app. Synthetic articles. No model calls.",
+    "calls": [
+        {
+            "subject": "demo-reader",
+            "tool": "publication_read",
+            "arguments": {
+                "id": 101
+            },
+            "result": {
+                "id": 101,
+                "title": "A Symfony application owns its tools"
+            },
+            "nativeEvents": [
+                {
+                    "name": "publication_read",
+                    "phase": "requested"
+                },
+                {
+                    "name": "publication_read",
+                    "phase": "succeeded"
+                }
+            ],
+            "budget": {
+                "phase": "saved",
+                "attempts": 1,
+                "reservedCalls": 1,
+                "knownContracts": 0
+            }
+        },
+        {
+            "subject": "demo-reader",
+            "tool": "search_tools",
+            "arguments": {
+                "query": "publications"
+            },
+            "result": {
+                "tools": [
+                    "publication_read"
+                ]
+            },
+            "nativeEvents": [],
+            "budget": {
+                "phase": "saved",
+                "attempts": 1,
+                "reservedCalls": 1,
+                "knownContracts": 1
+            }
+        },
+        {
+            "subject": "demo-reader",
+            "tool": "execute_tools",
+            "arguments": {
+                "calls": [
+                    {
+                        "name": "publication_read",
+                        "arguments": {
+                            "id": 101
+                        }
+                    }
+                ]
+            },
+            "result": {
+                "results": [
+                    {
+                        "name": "publication_read",
+                        "value": {
+                            "id": 101,
+                            "title": "A Symfony application owns its tools"
+                        }
+                    }
+                ]
+            },
+            "nativeEvents": [
+                {
+                    "name": "publication_read",
+                    "phase": "requested"
+                },
+                {
+                    "name": "publication_read",
+                    "phase": "succeeded"
+                }
+            ],
+            "budget": {
+                "phase": "saved",
+                "attempts": 2,
+                "reservedCalls": 2,
+                "knownContracts": 1
+            }
+        },
+        {
+            "subject": "demo-reader",
+            "tool": "publication_read",
+            "arguments": {
+                "id": 101
+            },
+            "result": {
+                "error": {
+                    "reason": "execution_limit"
+                },
+                "completedCalls": 0
+            },
+            "nativeEvents": [],
+            "budget": {
+                "phase": "before",
+                "attempts": 2,
+                "reservedCalls": 2,
+                "knownContracts": 1
+            }
+        },
+        {
+            "subject": "demo-reader",
+            "tool": "execute_tools",
+            "arguments": {
+                "calls": [
+                    {
+                        "name": "publication_read",
+                        "arguments": {
+                            "id": 101
+                        }
+                    }
+                ]
+            },
+            "result": {
+                "error": {
+                    "reason": "execution_limit"
+                },
+                "completedCalls": 0
+            },
+            "nativeEvents": [],
+            "budget": {
+                "phase": "before",
+                "attempts": 2,
+                "reservedCalls": 2,
+                "knownContracts": 1
+            }
+        },
+        {
+            "subject": "demo-viewer",
+            "tool": "publication_read",
+            "arguments": {
+                "id": 101
+            },
+            "result": {
+                "error": {
+                    "reason": "tool_denied",
+                    "tool": "publication_read",
+                    "index": 0
+                },
+                "completedCalls": 0
+            },
+            "nativeEvents": [],
+            "budget": {
+                "phase": "saved",
+                "attempts": 1,
+                "reservedCalls": 1,
+                "knownContracts": 0
+            }
+        },
+        {
+            "operator": "reset reader budget"
+        },
+        {
+            "subject": "demo-reader",
+            "tool": "publication_read",
+            "arguments": {
+                "id": 202
+            },
+            "result": {
+                "error": {
+                    "reason": "tool_denied",
+                    "tool": "publication_read",
+                    "index": 0
+                },
+                "completedCalls": 0
+            },
+            "nativeEvents": [],
+            "budget": {
+                "phase": "saved",
+                "attempts": 1,
+                "reservedCalls": 1,
+                "knownContracts": 0
+            }
+        },
+        {
+            "subject": "demo-reader",
+            "tool": "execute_tools",
+            "arguments": {
+                "calls": [
+                    {
+                        "name": "publication_read",
+                        "arguments": {
+                            "id": 101
+                        }
+                    }
+                ]
+            },
+            "result": {
+                "error": {
+                    "reason": "discovery_required"
+                },
+                "completedCalls": 0
+            },
+            "nativeEvents": [],
+            "budget": {
+                "phase": "before",
+                "attempts": 1,
+                "reservedCalls": 1,
+                "knownContracts": 0
+            }
+        },
+        {
+            "operator": "reset reader budget"
+        },
+        {
+            "subject": "demo-reader",
+            "tool": "publication_read",
+            "arguments": {
+                "id": 101
+            },
+            "result": {
+                "id": 101,
+                "title": "A Symfony application owns its tools"
+            },
+            "nativeEvents": [
+                {
+                    "name": "publication_read",
+                    "phase": "requested"
+                },
+                {
+                    "name": "publication_read",
+                    "phase": "succeeded"
+                }
+            ],
+            "budget": {
+                "phase": "saved",
+                "attempts": 1,
+                "reservedCalls": 1,
+                "knownContracts": 0
+            }
+        },
+        {
+            "operator": "revoke reader permission"
+        },
+        {
+            "subject": "demo-reader",
+            "tool": "publication_read",
+            "arguments": {
+                "id": 101
+            },
+            "result": {
+                "error": {
+                    "reason": "tool_denied",
+                    "tool": "publication_read",
+                    "index": 0
+                },
+                "completedCalls": 0
+            },
+            "nativeEvents": [],
+            "budget": {
+                "phase": "saved",
+                "attempts": 2,
+                "reservedCalls": 2,
+                "knownContracts": 0
+            }
+        },
+        {
+            "operator": "restore reader permission"
+        },
+        {
+            "subject": "demo-reader",
+            "tool": "publication_read",
+            "arguments": {
+                "id": 101
+            },
+            "result": {
+                "error": {
+                    "reason": "execution_limit"
+                },
+                "completedCalls": 0
+            },
+            "nativeEvents": [],
+            "budget": {
+                "phase": "before",
+                "attempts": 2,
+                "reservedCalls": 2,
+                "knownContracts": 0
+            }
+        }
+    ],
+    "advertised": {
+        "reader": [
+            "search_tools",
+            "execute_tools",
+            "publication_read"
+        ],
+        "viewer": [
+            "search_tools",
+            "execute_tools"
+        ],
+        "readerAfterRevocation": [
+            "search_tools",
+            "execute_tools"
+        ]
+    },
+    "contract": {
+        "name": "publication_read",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "additionalProperties": false
+        },
+        "outputSchema": {
+            "type": "object",
+            "required": [
+                "id",
+                "title"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

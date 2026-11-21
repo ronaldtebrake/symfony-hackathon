@@ -1,6 +1,6 @@
 {
     "format": "symfony-http-catalog/v1",
-    "capturedAt": "2026-11-20T15:22:39+00:00",
+    "capturedAt": "2026-11-21T12:35:41+00:00",
     "status": "passed",
     "scope": "Operator-authored JSON-RPC over actual Symfony MCP HTTP and bearer authentication. Independent Composer application, synthetic articles, no model or generated code. Process-control and child-process functions disabled inside the HTTP application.",
     "execution": {
@@ -1165,12 +1165,12 @@
     },
     "sourceSha256": {
         "composer.lock": "7fa44ea91c534c37297a96aec18519c0e477df27e4d7fee3ee5f8e1de0195d8d",
-        "config/bundles.php": "856288516587a38acc1186bff38902c0cd0c7d9f25ba8e43d856cf055433a2f8",
+        "config/bundles.php": "27c16dedab5e41e060763c07759086c802653befe0e318f4d6ca813c18ccc107",
         "config/packages/capability_hint.php": "503a58c15087c09c2711baeeeac973f55c8bab472b905e9f41f6d4c2f817c2ad",
         "config/routes.php": "6f5491b506141339fd48352078521241b69744ae15f5e5c8e0e04971124c1d10",
         "config/routes/capability_hint.php": "4fbfe28110178363a75896e04d608ba373b0be357012082d7a2b30cd2283648c",
-        "config/services.php": "0ae22096d63189459c3bcc811391b6d62a522a90a48072f39db1bd8f9d4b0697",
-        "public/index.php": "f1b0d41c5c7c35613fa3bc933c412875c37e663c1cf17ff5798500ff29c74fd2",
+        "config/services.php": "1da4f9935eeee0c95f6dee7cb6d26002a2402f462b70687a67f1100694b87dcc",
+        "public/index.php": "ea4b1df200f1de9d02fcf79d4cdb6491a50bd61b17139b867259e9c25148f04a",
         "scripts/http-proof.php": "921e15d50bd5d4ce0bb48d00012e37940f144f090b2f39e99b5fd559674e1fd7",
         "scripts/http-sources.php": "afe436ff2f65d53dfc1f5f83716c5e36b732d2cd524ee34280805c64092664eb",
         "src/ArticleCatalog.php": "9f4f1b18211711634ea760723a50e62c3fb5875c39e25a5ddc3825d13a6955c9",
@@ -1191,7 +1191,7 @@
         "vendor/ronaldtebrake/php-code-mode/composer.json": "ae1420972c0e286b220422c763d43afe823415125d872e5523201aeb46b7ec92",
         "vendor/ronaldtebrake/php-code-mode/src/AgentResponse.php": "59cbef7d1c1853a92e4ebb80f5de176d9e06f33078a467507bbd794d2374c918",
         "vendor/ronaldtebrake/php-code-mode/src/BatchResult.php": "938708856ccc6a12c2c2a9f197eb15aa95daa6d38ff9ab51100944dcc805d359",
-        "vendor/ronaldtebrake/php-code-mode/src/BatchSession.php": "46b5ae35b5cc340878ec063860d3ed976054be57d7a42969b89e9ab63b9d76b2",
+        "vendor/ronaldtebrake/php-code-mode/src/BatchSession.php": "9343a9f8d2349d15dbe1639b3a676470ef1c16c9e585cf79758b8fd0425bf2f7",
         "vendor/ronaldtebrake/php-code-mode/src/BrokerWorker.php": "4b98ee2374dc25d887f3e4ce6876f6696113d36732388712653017f4b979e825",
         "vendor/ronaldtebrake/php-code-mode/src/CatalogSearchInterface.php": "d46362259f402956367823bd1fbe689054c4a1af96f80bafb06a60f564418ec6",
         "vendor/ronaldtebrake/php-code-mode/src/CodeModeSession.php": "99a6333c9ef4b5c52cc1de98228c79338d3328c04f531a61013524c76f4efb08",
@@ -1237,12 +1237,14 @@
         "vendor/ronaldtebrake/symfony-code-mode/src/Ai/SelectToolFields.php": "21fece9182446812dc6678c270063b33b698d523e2b4666c753e7458f32f448f",
         "vendor/ronaldtebrake/symfony-code-mode/src/Ai/ToolAuthorizationInterface.php": "141161fe1d34a3a14d889a9a923f34169cf7803f083a40e46dccbf5af7917cd7",
         "vendor/ronaldtebrake/symfony-code-mode/src/BatchMcpServerFactory.php": "9a89fd235a6d1b7f0b12870e2adf13207cff5fb9fb3febbef6c918246397b9ab",
-        "vendor/ronaldtebrake/symfony-code-mode/src/CodeModeBundle.php": "dc4d8b026e216a3f429cb44c78401fe69bc373fd1aaf1a7cb228bb2a8041b335",
+        "vendor/ronaldtebrake/symfony-code-mode/src/CodeModeBundle.php": "c9dfe09221f5afd6e3260ba0adfe074868ac057d05d5449f2f44e597913db31c",
         "vendor/ronaldtebrake/symfony-code-mode/src/Command/DoctorCommand.php": "6a07b0966dc6d3c68a2856678d55f4e5a6b88c15c8de5ed2d646f3ae28feeefb",
         "vendor/ronaldtebrake/symfony-code-mode/src/Command/ResetBudgetCommand.php": "c76bcf033e7f2c0e5e52b51899fa1c0f2084f0014e6587143023921717ac0c43",
         "vendor/ronaldtebrake/symfony-code-mode/src/Command/ServeCommand.php": "81e53bd940924709be6b9650df4af2c2a5256f86bea4e0893793aedd3f06f8dd",
         "vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogStateStore.php": "7d9cdff25f5c746e502bbb23f85750c22f93a0706d7bf3e5a6341595c35db090",
-        "vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogTools.php": "18a915bdf3634b3de759a8a34944583e2ae2678f4520fe3537b5a05a987276ec",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Http/CatalogTools.php": "9dcaa01888d0aac4b532fbfca0a00224b13c03f99dc78140bb1da1276fef85b6",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Http/DirectTools.php": "b18bf32273218afa52d1da54dcf5e71855356642deb1e1a52362315f6614e4da",
+        "vendor/ronaldtebrake/symfony-code-mode/src/Http/DirectToolsPass.php": "1a87d541f8e3fd27e9e06514bfdf730e1272d1161dff4046edf0483106e77ada",
         "vendor/ronaldtebrake/symfony-code-mode/src/Http/SecurityIdentityProvider.php": "118ef5c1d9e566cfccc030f973e80e464a75e763c0ffe3ee36b2a1dcac447034",
         "vendor/ronaldtebrake/symfony-code-mode/src/IdentityProviderInterface.php": "2df6b58d1335b425846fc2f1996c37938866f7c56c9c3a310fc17d9970e1d84c",
         "vendor/ronaldtebrake/symfony-code-mode/src/Maker/MakeCodeModeTool.php": "8078c6ff9345403cefb698f1b098d8f5a7ea0ccec63f5f91c0da2a566c933499",
@@ -1258,6 +1260,6 @@
         "vendor/ronaldtebrake/symfony-code-mode/src/Provider/SymfonyAiProvider.php": "8d2ae91fcda3d4014d5a522d9639537a65c622a79f0b90febe42ecc83df04165",
         "vendor/ronaldtebrake/symfony-code-mode/src/ReadToolInterface.php": "e2b14b982ffa8317ae77d6978e10d0b5b6d93781d8163a3781a86321b244b7d6",
         "vendor/ronaldtebrake/symfony-code-mode/src/Security/VoterToolPolicy.php": "be80ff7cab16ae91cc7bc3955d8a1461ad503c8010c0af32cfca67af76fef6a1",
-        "vendor/ronaldtebrake/symfony-code-mode/src/SessionFactory.php": "5cd61ed3aa5c2db2e02512f40409dc70e13c8f3a1c27bc3f0046c12fd1b3f285"
+        "vendor/ronaldtebrake/symfony-code-mode/src/SessionFactory.php": "91108c0cfeb023fdb3d2ab2c8301d4bf72a652ae4282f264aa3dcc976866f055"
     }
 }

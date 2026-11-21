@@ -1,0 +1,31 @@
+{
+  "format": "symfony-desktop-workflow/v1",
+  "durationSeconds": 90,
+  "fps": 30,
+  "frames": 2700,
+  "audio": "Sound effects only",
+  "assets": {
+    "symfony-code-mode-judge-90s.mp4": "5aab5079226659cea5be29d966846da68acf2864256ed935118418cb63936cc3",
+    "symfony-code-mode-judge-poster.jpg": "d1702ba834cb7df8c4625e66de8a89b7dd00c3027bad379b097aa456c5030e78"
+  },
+  "narration": {
+    "file": "docs/judge-workflow-voiceover.txt",
+    "sha256": "521d7e4d64db80bdce6d8eca4843e69c01ac1e92a699fd33cbcd7015f86658ca",
+    "cuesSeconds": [
+      0,
+      12,
+      20,
+      32,
+      42,
+      50.5,
+      58,
+      65,
+      80
+    ]
+  },
+  "sources": [
+    "Desktop recording of the R-1042 review and its tool calls",
+    "Desktop recording of the denied R-1043 follow-up",
+    "Film-specific edit of docs/images/symfony-mcp-architecture.svg"
+  ]
+}

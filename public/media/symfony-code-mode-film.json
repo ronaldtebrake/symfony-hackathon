@@ -1,0 +1,2023 @@
+{
+  "format": "symfony-code-mode-film/v5",
+  "durationSeconds": 90,
+  "fps": 25,
+  "frames": 2250,
+  "resolution": [
+    1536,
+    864
+  ],
+  "audio": "none",
+  "scope": "Three chapters show permission-aware tool retrieval over MCP, a team’s Group of tool definitions and instructions, and permission enforcement on the next call after revocation. The opening is a separate PHP catalog fixture using an exact-name search on 3 to 128 synthetic contracts. The rest shows one recorded Codex CLI refund conversation. All catalog scale figures belong to the PHP fixture. All refund facts belong to the Codex session. Its default configuration advertises search_tools and execute_tools. Codex sends JSON MCP calls to carry out the team’s instructions.",
+  "sources": {
+    "codex-refund-review.mp4": "390bd68b0ababd699f0222e8999695424de44f2231d25a1b2727a26e380c94f5",
+    "codex-refund-review-film.json": "7872da5637208151c06e3959468e507b201cda8e946e5957af08bb3053f5d915"
+  },
+  "catalogScaleCapture": {
+    "timestampUTC": "2026-11-21T08:33:42.103329+00:00",
+    "command": [
+      "php",
+      "scripts/check-catalog-size.php"
+    ],
+    "source": "Local PHP CLI via a PTY. Symfony catalog search on synthetic contracts; no model call.",
+    "stdout": [
+      "Search: record_read_001",
+      "Catalog tools   Advertised      Matches",
+      "3                        2            1",
+      "10                       2            1",
+      "20                       2            1",
+      "40                       2            1",
+      "100                      2            1",
+      "128                      2            1"
+    ],
+    "sourceSha256": {
+      "scripts/check-catalog-size.php": "ee7d4bb25be1d883cbfcccc4e709c2936f63a94307ab1ca16cf1d1aa80bb8a5b",
+      "src/Demo/CatalogScalingProof.php": "0f2eac88041eb941892234aa475ca110f17ed3e18939d4641dd285cfb3e80ca4",
+      "docs/evidence/catalog-scaling.json": "a7f5838b52e58add9dbee3a7459c09013aa4b7005805cecf2718a28a50a0af7e"
+    },
+    "ptySha256": "dffd2c83fa3d8e113c90b5db53165a2ad53aa5c960aab1ea5967a7e62298e501",
+    "screen": {
+      "width": 824,
+      "height": 360,
+      "sha256": "f3ab5328473fb810b342af4b76cd8291c841a385351985352780c1c485327b02",
+      "render": "xterm.js rendered verified PTY output"
+    }
+  },
+  "capture": {
+    "client": "OpenAI Codex CLI",
+    "version": "0.167.0-alpha.4.1",
+    "mcpAlias": "symfony",
+    "captureStartedAt": "2026-11-20T18:19:43.991Z",
+    "transport": "interactive PTY piped directly to xterm.js",
+    "recording": "Chromium viewport of the live terminal",
+    "resolution": [
+      1536,
+      864
+    ],
+    "columns": 101,
+    "rows": 26,
+    "durationSeconds": 84.08,
+    "rawViewportSha256": "91bfd4ce32667be7ef10a5865255cd6f770a4691911e5a44926dcb94f4e918e8"
+  },
+  "presentedText": [
+    {
+      "prompt": "Find and open our team's refund procedure. Follow it for order R-1042. Should I approve the refund or send it for manual review?",
+      "answer": "Send R-1042 for manual review. The item is unopened and 9 days into the 30-day return window. The €75 refund exceeds the €50 manual-review threshold."
+    },
+    {
+      "prompt": "Check that same policy again before I act. Do I still have access?",
+      "answer": "Symfony denied access to standard-eu on recheck (tool_denied). The policy recheck for R-1042 is incomplete."
+    }
+  ],
+  "receipt": {
+    "format": "symfony-codex-catalog-receipt/v1",
+    "source": "Disposable local catalog fixture. Wire operations cross-checked with stored Symfony Code Mode profiles. Profile numbers refer to the request order in this run.",
+    "operations": [
+      {
+        "profile": 1,
+        "at": "2026-11-20T18:19:45Z",
+        "operation": "tools/list",
+        "status": "succeeded",
+        "nativeEvents": [],
+        "tools": [
+          "search_tools",
+          "execute_tools"
+        ]
+      },
+      {
+        "profile": 2,
+        "at": "2026-11-20T18:20:03Z",
+        "operation": "search_tools",
+        "status": "succeeded",
+        "nativeEvents": [],
+        "groupsReturned": [
+          "refund-review"
+        ],
+        "selectedGroup": null,
+        "codexClient": {
+          "arguments": {
+            "query": "refund procedure"
+          },
+          "result": {
+            "groups": [
+              "refund-review"
+            ]
+          }
+        }
+      },
+      {
+        "profile": 3,
+        "at": "2026-11-20T18:20:05Z",
+        "operation": "search_tools",
+        "status": "succeeded",
+        "nativeEvents": [],
+        "groupsReturned": [],
+        "selectedGroup": "refund-review",
+        "procedure": "Read the order, then read the policy named by that order. Compare its age and condition with the policy. If eligible, compare the amount with the manual-review threshold in the same currency. Report the recommendation and the reason. If a required read is denied, keep the facts already received, identify the missing evidence and report the review as incomplete. A review never issues a refund.",
+        "contracts": [
+          "refund_get_order",
+          "refund_get_policy"
+        ],
+        "codexClient": {
+          "arguments": {
+            "group": "refund-review"
+          },
+          "result": {
+            "group": "refund-review",
+            "contracts": [
+              "refund_get_order",
+              "refund_get_policy"
+            ]
+          }
+        }
+      },
+      {
+        "profile": 4,
+        "at": "2026-11-20T18:20:07Z",
+        "operation": "execute_tools",
+        "status": "succeeded",
+        "nativeEvents": [
+          {
+            "name": "refund_get_order",
+            "phase": "requested"
+          },
+          {
+            "name": "refund_get_order",
+            "phase": "succeeded"
+          }
+        ],
+        "calls": [
+          {
+            "name": "refund_get_order",
+            "status": "succeeded"
+          }
+        ],
+        "codexClient": {
+          "arguments": {
+            "calls": [
+              {
+                "name": "refund_get_order",
+                "arguments": {
+                  "orderId": "R-1042"
+                }
+              }
+            ]
+          },
+          "result": {
+            "value": {
+              "orderId": "R-1042",
+              "policyId": "standard-eu",
+              "currency": "EUR",
+              "amountMinor": 7500,
+              "daysSinceDelivery": 9,
+              "itemCondition": "unopened"
+            }
+          }
+        }
+      },
+      {
+        "profile": 5,
+        "at": "2026-11-20T18:20:09Z",
+        "operation": "execute_tools",
+        "status": "succeeded",
+        "nativeEvents": [
+          {
+            "name": "refund_get_policy",
+            "phase": "requested"
+          },
+          {
+            "name": "refund_get_policy",
+            "phase": "succeeded"
+          }
+        ],
+        "calls": [
+          {
+            "name": "refund_get_policy",
+            "status": "succeeded"
+          }
+        ],
+        "codexClient": {
+          "arguments": {
+            "calls": [
+              {
+                "name": "refund_get_policy",
+                "arguments": {
+                  "policyId": "standard-eu"
+                }
+              }
+            ]
+          },
+          "result": {
+            "value": {
+              "policyId": "standard-eu",
+              "currency": "EUR",
+              "returnWindowDays": 30,
+              "acceptedCondition": "unopened",
+              "manualReviewAboveMinor": 5000
+            }
+          }
+        }
+      },
+      {
+        "profile": 6,
+        "at": "2026-11-20T18:20:43Z",
+        "operation": "execute_tools",
+        "status": "failed",
+        "nativeEvents": [],
+        "reason": "tool_denied",
+        "calls": [
+          {
+            "name": "refund_get_policy",
+            "status": "denied"
+          }
+        ],
+        "codexClient": {
+          "arguments": {
+            "calls": [
+              {
+                "name": "refund_get_policy",
+                "arguments": {
+                  "policyId": "standard-eu"
+                }
+              }
+            ]
+          },
+          "result": {
+            "error": {
+              "reason": "tool_denied",
+              "tool": "refund_get_policy",
+              "index": 0
+            },
+            "completedCalls": 0
+          }
+        }
+      }
+    ],
+    "operator": {
+      "action": "revoked",
+      "afterProfile": 5,
+      "at": "2026-11-20T18:20:09Z"
+    },
+    "clientSource": "The codexClient fields project literal MCP arguments and results recorded in the same Codex CLI conversation. Each client call matches the corresponding Symfony operation in order, method, tool or group, and outcome."
+  },
+  "timeMapping": "Second and frame ranges include the start and exclude the end. Source coordinates and destination coordinates are x, y, width, height in pixels from the top left. Codex source frames index the public 25 fps Codex edit. Its manifest maps that edit to the original terminal capture. Active cameraFrames entries override segment geometry during the move across the wrapped instruction. The fixture still was generated directly from the recorded and verified PHP PTY stdout. All terminal text is captured source material.",
+  "treatment": "The PHP CLI still is shown at source brightness. In Codex views, each focus rectangle retains the native color and text. Surrounding context uses round(0.51 × pixel + 0.49 × 17) on each 8-bit RGB channel. Reading markers are outside the source crop.",
+  "segments": [
+    {
+      "start": 0,
+      "end": 8,
+      "frames": 200,
+      "filmFrames": [
+        0,
+        200
+      ],
+      "title": "Tool retrieval",
+      "source": "catalogScaleCapture.screen",
+      "sourceCropXYWH": [
+        0,
+        0,
+        824,
+        360
+      ],
+      "filmDestinationXYWH": [
+        619,
+        235,
+        860,
+        376
+      ],
+      "edit": "The full xterm.js screen is held for eight seconds. An editorial pointer outside the screen follows the catalog-size column. The PHP CLI scaling check and the subsequent refund conversation use separate fixtures."
+    },
+    {
+      "start": 8.0,
+      "end": 10.4,
+      "frames": 60,
+      "filmFrames": [
+        200,
+        260
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        41,
+        101
+      ],
+      "sourceSeconds": [
+        1.64,
+        4.04
+      ],
+      "sourceCropXYWH": [
+        0,
+        0,
+        1536,
+        864
+      ],
+      "filmDestinationXYWH": [
+        232,
+        90,
+        1072,
+        603
+      ],
+      "sourceFullBrightnessXYWH": [],
+      "speed": 1,
+      "title": "A teammate asks Codex to review refund R-1042.",
+      "edit": "Establish the second, separate source: the recorded Codex session and the user typing a refund request."
+    },
+    {
+      "start": 10.4,
+      "end": 14.52,
+      "frames": 103,
+      "filmFrames": [
+        260,
+        363
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        101,
+        204
+      ],
+      "sourceSeconds": [
+        4.04,
+        8.16
+      ],
+      "sourceCropXYWH": [
+        18,
+        250,
+        1498,
+        614
+      ],
+      "filmDestinationXYWH": [
+        39,
+        92,
+        1458,
+        598
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          32,
+          660,
+          1470,
+          149
+        ]
+      ],
+      "speed": 1,
+      "title": "This default configuration advertises two tools.",
+      "edit": "The refund request finishes in the original terminal. The outside margin gives the two advertised names from tools/list."
+    },
+    {
+      "start": 14.52,
+      "end": 17.08,
+      "frames": 64,
+      "filmFrames": [
+        363,
+        427
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        204,
+        268
+      ],
+      "sourceSeconds": [
+        8.16,
+        10.72
+      ],
+      "sourceCropXYWH": [
+        18,
+        39,
+        1498,
+        617
+      ],
+      "filmDestinationXYWH": [
+        39,
+        91,
+        1458,
+        601
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          32,
+          207,
+          1470,
+          136
+        ]
+      ],
+      "speed": 1,
+      "title": "This default configuration advertises two tools.",
+      "edit": "The submitted prompt is visible. The startup receipt remains identified in the margin."
+    },
+    {
+      "start": 17.08,
+      "end": 21.52,
+      "frames": 111,
+      "filmFrames": [
+        427,
+        538
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        268,
+        379
+      ],
+      "sourceSeconds": [
+        10.72,
+        15.16
+      ],
+      "sourceCropXYWH": [
+        20,
+        90,
+        1488,
+        615
+      ],
+      "filmDestinationXYWH": [
+        39,
+        90,
+        1458,
+        603
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          33,
+          365,
+          1466,
+          98
+        ]
+      ],
+      "speed": 1,
+      "title": "Codex searches for “refund procedure”.",
+      "edit": "The real search appears in the terminal. Its query is separately attributed to the recorded client request.",
+      "focusStartsAtFilmFrame": 439
+    },
+    {
+      "start": 21.52,
+      "end": 27,
+      "frames": 137,
+      "filmFrames": [
+        538,
+        675
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        287,
+        424
+      ],
+      "sourceSeconds": [
+        11.48,
+        16.96
+      ],
+      "sourceCropXYWH": [
+        27,
+        208,
+        1120,
+        461
+      ],
+      "filmDestinationXYWH": [
+        39,
+        92,
+        1458,
+        600
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          34,
+          364,
+          1133,
+          71
+        ]
+      ],
+      "speed": 1,
+      "title": "The search matches the team’s refund-review group.",
+      "edit": "Profile 2 names the matching group. In the source UI the first result initially shows the matching order reader; the second lookup can then be seen beneath it."
+    },
+    {
+      "start": 27,
+      "end": 31.6,
+      "frames": 115,
+      "filmFrames": [
+        675,
+        790
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        892,
+        1007
+      ],
+      "sourceSeconds": [
+        35.68,
+        40.28
+      ],
+      "sourceCropXYWH": [
+        26,
+        164,
+        1460,
+        203
+      ],
+      "filmDestinationXYWH": [
+        65,
+        383,
+        1406,
+        195
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          32,
+          179,
+          1425,
+          65
+        ]
+      ],
+      "speed": 1,
+      "title": "Codex opens refund-review with search_tools.",
+      "edit": "The procedure chapter asks how the team uses its tools together. The operator opens the details of the already completed group call in the actual terminal."
+    },
+    {
+      "start": 31.6,
+      "end": 35.4,
+      "frames": 95,
+      "filmFrames": [
+        790,
+        885
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        1007,
+        1102
+      ],
+      "sourceSeconds": [
+        40.28,
+        44.08
+      ],
+      "sourceCropXYWH": [
+        648,
+        246,
+        860,
+        355
+      ],
+      "filmDestinationXYWH": [
+        39,
+        90,
+        1458,
+        602
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          698,
+          429,
+          801,
+          35
+        ]
+      ],
+      "speed": 1,
+      "title": "The group returns the team’s written procedure.",
+      "edit": "The camera inspects the beginning of the team-authored instructions in the actual expanded group response."
+    },
+    {
+      "start": 35.4,
+      "end": 39.36,
+      "frames": 99,
+      "filmFrames": [
+        885,
+        984
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        1101,
+        1102
+      ],
+      "sourceSeconds": [
+        44.04,
+        44.08
+      ],
+      "sourceCropXYWH": [
+        98,
+        283,
+        1040,
+        429
+      ],
+      "filmDestinationXYWH": [
+        39,
+        91,
+        1458,
+        601
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          146,
+          458,
+          416,
+          39
+        ]
+      ],
+      "speed": 0,
+      "title": "Read the order, then read the policy named by that order.",
+      "edit": "Follow the wrapped instruction across a single recorded source frame; the camera then holds on the second half of the sentence.",
+      "heldSourceFrame": 1101,
+      "cameraFrames": [
+        {
+          "filmFrame": 885,
+          "sourceCropXYWH": [
+            648,
+            246,
+            860,
+            355
+          ],
+          "filmDestinationXYWH": [
+            39,
+            90,
+            1458,
+            602
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ]
+          ]
+        },
+        {
+          "filmFrame": 886,
+          "sourceCropXYWH": [
+            643,
+            246,
+            862,
+            356
+          ],
+          "filmDestinationXYWH": [
+            39,
+            90,
+            1458,
+            602
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ]
+          ]
+        },
+        {
+          "filmFrame": 887,
+          "sourceCropXYWH": [
+            629,
+            247,
+            866,
+            358
+          ],
+          "filmDestinationXYWH": [
+            39,
+            90,
+            1458,
+            603
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ]
+          ]
+        },
+        {
+          "filmFrame": 888,
+          "sourceCropXYWH": [
+            607,
+            249,
+            873,
+            360
+          ],
+          "filmDestinationXYWH": [
+            39,
+            91,
+            1458,
+            601
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ]
+          ]
+        },
+        {
+          "filmFrame": 889,
+          "sourceCropXYWH": [
+            579,
+            251,
+            883,
+            364
+          ],
+          "filmDestinationXYWH": [
+            39,
+            91,
+            1458,
+            601
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ]
+          ]
+        },
+        {
+          "filmFrame": 890,
+          "sourceCropXYWH": [
+            544,
+            253,
+            894,
+            369
+          ],
+          "filmDestinationXYWH": [
+            39,
+            90,
+            1458,
+            602
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ]
+          ]
+        },
+        {
+          "filmFrame": 891,
+          "sourceCropXYWH": [
+            505,
+            256,
+            907,
+            374
+          ],
+          "filmDestinationXYWH": [
+            39,
+            91,
+            1458,
+            601
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ]
+          ]
+        },
+        {
+          "filmFrame": 892,
+          "sourceCropXYWH": [
+            463,
+            258,
+            920,
+            380
+          ],
+          "filmDestinationXYWH": [
+            39,
+            90,
+            1458,
+            602
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ]
+          ]
+        },
+        {
+          "filmFrame": 893,
+          "sourceCropXYWH": [
+            419,
+            261,
+            935,
+            386
+          ],
+          "filmDestinationXYWH": [
+            39,
+            90,
+            1458,
+            602
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ],
+            [
+              148,
+              459,
+              411,
+              38
+            ]
+          ]
+        },
+        {
+          "filmFrame": 894,
+          "sourceCropXYWH": [
+            373,
+            264,
+            950,
+            392
+          ],
+          "filmDestinationXYWH": [
+            39,
+            90,
+            1458,
+            602
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ],
+            [
+              148,
+              459,
+              411,
+              38
+            ]
+          ]
+        },
+        {
+          "filmFrame": 895,
+          "sourceCropXYWH": [
+            327,
+            268,
+            965,
+            398
+          ],
+          "filmDestinationXYWH": [
+            39,
+            91,
+            1458,
+            601
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ],
+            [
+              148,
+              459,
+              411,
+              38
+            ]
+          ]
+        },
+        {
+          "filmFrame": 896,
+          "sourceCropXYWH": [
+            283,
+            271,
+            980,
+            404
+          ],
+          "filmDestinationXYWH": [
+            39,
+            91,
+            1458,
+            601
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ],
+            [
+              148,
+              459,
+              411,
+              38
+            ]
+          ]
+        },
+        {
+          "filmFrame": 897,
+          "sourceCropXYWH": [
+            241,
+            273,
+            993,
+            410
+          ],
+          "filmDestinationXYWH": [
+            39,
+            90,
+            1458,
+            602
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ],
+            [
+              148,
+              459,
+              411,
+              38
+            ]
+          ]
+        },
+        {
+          "filmFrame": 898,
+          "sourceCropXYWH": [
+            202,
+            276,
+            1006,
+            415
+          ],
+          "filmDestinationXYWH": [
+            39,
+            91,
+            1458,
+            601
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ],
+            [
+              148,
+              459,
+              411,
+              38
+            ]
+          ]
+        },
+        {
+          "filmFrame": 899,
+          "sourceCropXYWH": [
+            167,
+            278,
+            1017,
+            420
+          ],
+          "filmDestinationXYWH": [
+            39,
+            90,
+            1458,
+            602
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ],
+            [
+              148,
+              459,
+              411,
+              38
+            ]
+          ]
+        },
+        {
+          "filmFrame": 900,
+          "sourceCropXYWH": [
+            139,
+            280,
+            1027,
+            424
+          ],
+          "filmDestinationXYWH": [
+            39,
+            90,
+            1458,
+            602
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ],
+            [
+              148,
+              459,
+              411,
+              38
+            ]
+          ]
+        },
+        {
+          "filmFrame": 901,
+          "sourceCropXYWH": [
+            117,
+            282,
+            1034,
+            426
+          ],
+          "filmDestinationXYWH": [
+            39,
+            91,
+            1458,
+            601
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ],
+            [
+              148,
+              459,
+              411,
+              38
+            ]
+          ]
+        },
+        {
+          "filmFrame": 902,
+          "sourceCropXYWH": [
+            103,
+            283,
+            1038,
+            428
+          ],
+          "filmDestinationXYWH": [
+            39,
+            91,
+            1458,
+            601
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ],
+            [
+              148,
+              459,
+              411,
+              38
+            ]
+          ]
+        },
+        {
+          "filmFrame": 903,
+          "sourceCropXYWH": [
+            98,
+            283,
+            1040,
+            429
+          ],
+          "filmDestinationXYWH": [
+            39,
+            91,
+            1458,
+            601
+          ],
+          "sourceFullBrightnessXYWH": [
+            [
+              698,
+              428,
+              801,
+              37
+            ],
+            [
+              148,
+              459,
+              411,
+              38
+            ]
+          ]
+        }
+      ],
+      "panResampling": "The cameraFrames entries use Lanczos resampling from one decoded RGB source frame. The locked camera thereafter uses the standard FFmpeg crop / Lanczos scale."
+    },
+    {
+      "start": 39.36,
+      "end": 43.16,
+      "frames": 95,
+      "filmFrames": [
+        984,
+        1079
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        1020,
+        1115
+      ],
+      "sourceSeconds": [
+        40.8,
+        44.6
+      ],
+      "sourceCropXYWH": [
+        408,
+        110,
+        1100,
+        454
+      ],
+      "filmDestinationXYWH": [
+        39,
+        90,
+        1458,
+        602
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          578,
+          213,
+          679,
+          35
+        ],
+        [
+          689,
+          306,
+          694,
+          36
+        ]
+      ],
+      "speed": 1,
+      "title": "The Group pairs the team’s instructions with both reader definitions.",
+      "edit": "Both reader names are visible in the same expanded group response."
+    },
+    {
+      "start": 43.16,
+      "end": 46.16,
+      "frames": 75,
+      "filmFrames": [
+        1079,
+        1154
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        1115,
+        1190
+      ],
+      "sourceSeconds": [
+        44.6,
+        47.6
+      ],
+      "sourceCropXYWH": [
+        100,
+        148,
+        1020,
+        422
+      ],
+      "filmDestinationXYWH": [
+        40,
+        90,
+        1457,
+        603
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          150,
+          304,
+          222,
+          39
+        ],
+        [
+          150,
+          428,
+          226,
+          39
+        ]
+      ],
+      "speed": 1,
+      "title": "The readers take an orderId and a policyId.",
+      "edit": "The actual contract data lists the two required input names."
+    },
+    {
+      "start": 46.16,
+      "end": 50.44,
+      "frames": 107,
+      "filmFrames": [
+        1154,
+        1261
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        459,
+        566
+      ],
+      "sourceSeconds": [
+        18.36,
+        22.64
+      ],
+      "sourceCropXYWH": [
+        18,
+        183,
+        1498,
+        618
+      ],
+      "filmDestinationXYWH": [
+        39,
+        91,
+        1458,
+        601
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          34,
+          490,
+          1466,
+          76
+        ]
+      ],
+      "speed": 1,
+      "title": "Codex sends a JSON tool call for order R-1042.",
+      "edit": "The first execute call arrives during playback. The reader name and order argument are in the returned value.",
+      "focusStartsAtFilmFrame": 1184
+    },
+    {
+      "start": 50.44,
+      "end": 54.12,
+      "frames": 92,
+      "filmFrames": [
+        1261,
+        1353
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        512,
+        604
+      ],
+      "sourceSeconds": [
+        20.48,
+        24.16
+      ],
+      "sourceCropXYWH": [
+        712,
+        311,
+        792,
+        328
+      ],
+      "filmDestinationXYWH": [
+        40,
+        90,
+        1456,
+        603
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          766,
+          521,
+          671,
+          39
+        ]
+      ],
+      "speed": 1,
+      "title": "R-1042 returns the policy ID standard-eu.",
+      "edit": "The native order result shows R-1042 and standard-eu. The lower margin projects the amount, condition and age from the recorded result in profile 4."
+    },
+    {
+      "start": 54.12,
+      "end": 57.36,
+      "frames": 81,
+      "filmFrames": [
+        1353,
+        1434
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        588,
+        669
+      ],
+      "sourceSeconds": [
+        23.52,
+        26.76
+      ],
+      "sourceCropXYWH": [
+        16,
+        171,
+        1504,
+        621
+      ],
+      "filmDestinationXYWH": [
+        39,
+        90,
+        1458,
+        602
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          32,
+          486,
+          1472,
+          85
+        ]
+      ],
+      "speed": 1,
+      "title": "Codex reads the policy named in the order.",
+      "edit": "The second execute call appears underneath the first in the original viewport.",
+      "focusStartsAtFilmFrame": 1379
+    },
+    {
+      "start": 57.36,
+      "end": 60.04,
+      "frames": 67,
+      "filmFrames": [
+        1434,
+        1501
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        617,
+        684
+      ],
+      "sourceSeconds": [
+        24.68,
+        27.36
+      ],
+      "sourceCropXYWH": [
+        347,
+        290,
+        1060,
+        439
+      ],
+      "filmDestinationXYWH": [
+        40,
+        90,
+        1456,
+        603
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          374,
+          520,
+          953,
+          42
+        ]
+      ],
+      "speed": 1,
+      "title": "The same standard-eu policy sets the review threshold.",
+      "edit": "The actual policy result also identifies standard-eu. The lower margin projects the return window and manual-review threshold from the recorded result in profile 5."
+    },
+    {
+      "start": 60.04,
+      "end": 62.72,
+      "frames": 67,
+      "filmFrames": [
+        1501,
+        1568
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        693,
+        760
+      ],
+      "sourceSeconds": [
+        27.72,
+        30.4
+      ],
+      "sourceCropXYWH": [
+        18,
+        242,
+        1498,
+        620
+      ],
+      "filmDestinationXYWH": [
+        40,
+        90,
+        1457,
+        603
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          30,
+          541,
+          1474,
+          152
+        ]
+      ],
+      "speed": 1,
+      "title": "Codex recommends manual review.",
+      "edit": "The original agent answer streams into the conversation.",
+      "focusStartsAtFilmFrame": 1507
+    },
+    {
+      "start": 62.72,
+      "end": 65,
+      "frames": 57,
+      "filmFrames": [
+        1568,
+        1625
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        760,
+        817
+      ],
+      "sourceSeconds": [
+        30.4,
+        32.68
+      ],
+      "sourceCropXYWH": [
+        26,
+        375,
+        938,
+        387
+      ],
+      "filmDestinationXYWH": [
+        39,
+        90,
+        1458,
+        602
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          58,
+          582,
+          797,
+          41
+        ]
+      ],
+      "speed": 1,
+      "title": "The €75 refund exceeds the €50 threshold.",
+      "edit": "Read the two actual euro amounts and manual-review decision from the recorded answer."
+    },
+    {
+      "start": 65,
+      "end": 69.44,
+      "frames": 111,
+      "filmFrames": [
+        1625,
+        1736
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        1208,
+        1319
+      ],
+      "sourceSeconds": [
+        48.32,
+        52.76
+      ],
+      "sourceCropXYWH": [
+        937,
+        598,
+        574,
+        128
+      ],
+      "filmDestinationXYWH": [
+        65,
+        373,
+        980,
+        219
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          1040,
+          650,
+          463,
+          65
+        ]
+      ],
+      "speed": 1,
+      "title": "The operator revokes access between turns.",
+      "edit": "The access chapter asks whether Codex can still read the same policy. The public source includes an operator-supplied note on the offscreen grant change after the successful read. The annotation is explicitly labeled."
+    },
+    {
+      "start": 69.44,
+      "end": 75.36,
+      "frames": 148,
+      "filmFrames": [
+        1736,
+        1884
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        1319,
+        1467
+      ],
+      "sourceSeconds": [
+        52.76,
+        58.68
+      ],
+      "sourceCropXYWH": [
+        16,
+        245,
+        1504,
+        619
+      ],
+      "filmDestinationXYWH": [
+        39,
+        92,
+        1458,
+        600
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          31,
+          697,
+          1472,
+          112
+        ]
+      ],
+      "speed": 1,
+      "title": "The user asks Codex to check that same policy again.",
+      "edit": "The user types the second request after the offscreen operator action."
+    },
+    {
+      "start": 75.36,
+      "end": 77.56,
+      "frames": 55,
+      "filmFrames": [
+        1884,
+        1939
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        1468,
+        1523
+      ],
+      "sourceSeconds": [
+        58.72,
+        60.92
+      ],
+      "sourceCropXYWH": [
+        20,
+        210,
+        1470,
+        607
+      ],
+      "filmDestinationXYWH": [
+        39,
+        90,
+        1458,
+        602
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          32,
+          323,
+          1464,
+          69
+        ],
+        [
+          34,
+          485,
+          1463,
+          108
+        ]
+      ],
+      "speed": 1,
+      "title": "The earlier recommendation is still in the conversation.",
+      "edit": "The prior answer and submitted follow-up are visible in the same conversation."
+    },
+    {
+      "start": 77.56,
+      "end": 83.0,
+      "frames": 136,
+      "filmFrames": [
+        1939,
+        2075
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        1777,
+        1913
+      ],
+      "sourceSeconds": [
+        71.08,
+        76.52
+      ],
+      "sourceCropXYWH": [
+        23,
+        55,
+        1480,
+        465
+      ],
+      "filmDestinationXYWH": [
+        39,
+        162,
+        1458,
+        458
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          54,
+          429,
+          1432,
+          88
+        ]
+      ],
+      "speed": 1,
+      "title": "Codex retries refund_get_policy with standard-eu.",
+      "edit": "The expanded retry shows refund_get_policy and the same standard-eu argument. Its result is below this crop."
+    },
+    {
+      "start": 83.0,
+      "end": 86.88,
+      "frames": 97,
+      "filmFrames": [
+        2075,
+        2172
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        1863,
+        1960
+      ],
+      "sourceSeconds": [
+        74.52,
+        78.4
+      ],
+      "sourceCropXYWH": [
+        24,
+        242,
+        1474,
+        609
+      ],
+      "filmDestinationXYWH": [
+        39,
+        90,
+        1458,
+        602
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          77,
+          525,
+          1346,
+          34
+        ],
+        [
+          35,
+          613,
+          1406,
+          65
+        ]
+      ],
+      "speed": 1,
+      "title": "Symfony checks permission again and returns tool_denied.",
+      "edit": "The actual tool result gives tool_denied. The original agent says the recheck is incomplete."
+    },
+    {
+      "start": 86.88,
+      "end": 90.0,
+      "frames": 78,
+      "filmFrames": [
+        2172,
+        2250
+      ],
+      "source": "codex-refund-review.mp4",
+      "sourceFrames": [
+        1940,
+        2018
+      ],
+      "sourceSeconds": [
+        77.6,
+        80.72
+      ],
+      "sourceCropXYWH": [
+        625,
+        343,
+        884,
+        366
+      ],
+      "filmDestinationXYWH": [
+        40,
+        90,
+        1456,
+        603
+      ],
+      "sourceFullBrightnessXYWH": [
+        [
+          1024,
+          524,
+          379,
+          36
+        ]
+      ],
+      "speed": 1,
+      "title": "The server trace shows zero policy-handler calls on the retry.",
+      "edit": "The crop isolates completedCalls:0. The separate Symfony receipt confirms an empty native event list for this retry."
+    }
+  ],
+  "chapters": [
+    {
+      "title": "Retrieve tools this caller can use",
+      "startSeconds": 0,
+      "endSeconds": 27
+    },
+    {
+      "title": "Open a Group and follow the team procedure",
+      "startSeconds": 27,
+      "endSeconds": 65
+    },
+    {
+      "title": "Enforce permission on the policy retry",
+      "startSeconds": 65,
+      "endSeconds": 90
+    }
+  ],
+  "receiptCaptions": [
+    {
+      "filmSeconds": [
+        10.4,
+        17.08
+      ],
+      "profile": 1,
+      "evidence": "The authenticated tools/list receipt for this default configuration advertises search_tools and execute_tools."
+    },
+    {
+      "filmSeconds": [
+        17.08,
+        21.52
+      ],
+      "profile": 2,
+      "evidence": "The recorded client request gives the exact search phrase."
+    },
+    {
+      "filmSeconds": [
+        21.52,
+        27
+      ],
+      "profile": 2,
+      "evidence": "The first search lists refund-review among groupsReturned."
+    },
+    {
+      "filmSeconds": [
+        50.44,
+        54.12
+      ],
+      "profile": 4,
+      "evidence": "The client result reports 7500 euro cents, unopened condition and 9 days since delivery."
+    },
+    {
+      "filmSeconds": [
+        57.36,
+        60.04
+      ],
+      "profile": 5,
+      "evidence": "The client result reports a 30-day window and manual review above 5000 euro cents."
+    },
+    {
+      "filmSeconds": [
+        65,
+        69.44
+      ],
+      "evidence": "The published source recording annotates offscreen revocation after profile 5."
+    },
+    {
+      "filmSeconds": [
+        86.88,
+        90
+      ],
+      "profile": 6,
+      "evidence": "nativeEvents is empty. The actual failure contains completedCalls:0."
+    }
+  ],
+  "narration": {
+    "file": "docs/judge-voiceover.txt",
+    "sha256": "8802e00f3d575d7cd3f8e0370abb0e8dee322973a0296e52259c9c423e857a63",
+    "timing": "The three plain-text paragraphs correspond to the three embedded chapters. The video is silent."
+  },
+  "posterFilmSeconds": 6.4,
+  "assets": {
+    "symfony-code-mode-90s.mp4": "e2f6865e7f71a9a29de8382dab76a46f6d4a8572c3a25b17a69f2d98c8c9b952",
+    "symfony-code-mode-poster.jpg": "8e2dd763354b47bf6515b05549c34e591ff72800d492e7af87afcf9704448374"
+  },
+  "verification": {
+    "codec": "H.264",
+    "pixelFormat": "yuv420p",
+    "progressiveDownload": true,
+    "checked": "FFprobe verified duration, frame rate and count, dimensions, absence of audio, and all three embedded chapters and their exact boundaries. FFmpeg decoded the entire film. All 200 opener frames were compared to the captured PHP CLI screen and the catalog command was replayed. Every Codex source frame was compared with its documented crop and viewing treatment. The unaltered full-brightness reading areas were also compared directly against the resampled original source pixels. Errors use the mean absolute difference of decoded 8-bit RGB channels.",
+    "catalogCliStillFrames": 200,
+    "catalogCliStillComparison": {
+      "filmSeconds": [
+        0,
+        8
+      ],
+      "frames": 200,
+      "maximumFrameMeanAbsoluteRgbError": 1.527
+    },
+    "terminalExcerptFrames": 2050,
+    "sourcePlaybackFrames": 1951,
+    "heldSourceFramesOnScreen": 99,
+    "cropComparisons": [
+      {
+        "filmSeconds": [
+          8.0,
+          10.4
+        ],
+        "frames": 60,
+        "maximumFrameMeanAbsoluteRgbError": 2.307,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.307
+      },
+      {
+        "filmSeconds": [
+          10.4,
+          14.52
+        ],
+        "frames": 103,
+        "maximumFrameMeanAbsoluteRgbError": 2.239,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.232
+      },
+      {
+        "filmSeconds": [
+          14.52,
+          17.08
+        ],
+        "frames": 64,
+        "maximumFrameMeanAbsoluteRgbError": 1.887,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.548
+      },
+      {
+        "filmSeconds": [
+          17.08,
+          21.52
+        ],
+        "frames": 111,
+        "maximumFrameMeanAbsoluteRgbError": 2.379,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.645
+      },
+      {
+        "filmSeconds": [
+          21.52,
+          27
+        ],
+        "frames": 137,
+        "maximumFrameMeanAbsoluteRgbError": 1.951,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.688
+      },
+      {
+        "filmSeconds": [
+          27,
+          31.6
+        ],
+        "frames": 115,
+        "maximumFrameMeanAbsoluteRgbError": 2.185,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.696
+      },
+      {
+        "filmSeconds": [
+          31.6,
+          35.4
+        ],
+        "frames": 95,
+        "maximumFrameMeanAbsoluteRgbError": 1.835,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.364
+      },
+      {
+        "filmSeconds": [
+          35.4,
+          39.36
+        ],
+        "frames": 99,
+        "maximumFrameMeanAbsoluteRgbError": 1.986,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.595
+      },
+      {
+        "filmSeconds": [
+          39.36,
+          43.16
+        ],
+        "frames": 95,
+        "maximumFrameMeanAbsoluteRgbError": 2.112,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.922
+      },
+      {
+        "filmSeconds": [
+          43.16,
+          46.16
+        ],
+        "frames": 75,
+        "maximumFrameMeanAbsoluteRgbError": 2.31,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.819
+      },
+      {
+        "filmSeconds": [
+          46.16,
+          50.44
+        ],
+        "frames": 107,
+        "maximumFrameMeanAbsoluteRgbError": 2.5,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.602
+      },
+      {
+        "filmSeconds": [
+          50.44,
+          54.12
+        ],
+        "frames": 92,
+        "maximumFrameMeanAbsoluteRgbError": 1.721,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.198
+      },
+      {
+        "filmSeconds": [
+          54.12,
+          57.36
+        ],
+        "frames": 81,
+        "maximumFrameMeanAbsoluteRgbError": 2.49,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.577
+      },
+      {
+        "filmSeconds": [
+          57.36,
+          60.04
+        ],
+        "frames": 67,
+        "maximumFrameMeanAbsoluteRgbError": 1.787,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.315
+      },
+      {
+        "filmSeconds": [
+          60.04,
+          62.72
+        ],
+        "frames": 67,
+        "maximumFrameMeanAbsoluteRgbError": 2.478,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.493
+      },
+      {
+        "filmSeconds": [
+          62.72,
+          65
+        ],
+        "frames": 57,
+        "maximumFrameMeanAbsoluteRgbError": 1.937,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.879
+      },
+      {
+        "filmSeconds": [
+          65,
+          69.44
+        ],
+        "frames": 111,
+        "maximumFrameMeanAbsoluteRgbError": 2.05,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.555
+      },
+      {
+        "filmSeconds": [
+          69.44,
+          75.36
+        ],
+        "frames": 148,
+        "maximumFrameMeanAbsoluteRgbError": 2.024,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.222
+      },
+      {
+        "filmSeconds": [
+          75.36,
+          77.56
+        ],
+        "frames": 55,
+        "maximumFrameMeanAbsoluteRgbError": 2.208,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 3.119
+      },
+      {
+        "filmSeconds": [
+          77.56,
+          83.0
+        ],
+        "frames": 136,
+        "maximumFrameMeanAbsoluteRgbError": 2.232,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.645
+      },
+      {
+        "filmSeconds": [
+          83.0,
+          86.88
+        ],
+        "frames": 97,
+        "maximumFrameMeanAbsoluteRgbError": 2.061,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.531
+      },
+      {
+        "filmSeconds": [
+          86.88,
+          90.0
+        ],
+        "frames": 78,
+        "maximumFrameMeanAbsoluteRgbError": 1.831,
+        "maximumUnmodifiedFocusMeanAbsoluteRgbError": 2.168
+      }
+    ]
+  }
+}

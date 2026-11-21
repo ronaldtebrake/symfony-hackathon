@@ -56,6 +56,7 @@
         "proof": "@php scripts/proof.php",
         "proof:catalog": "@php scripts/catalog-proof.php",
         "proof:http": "@php scripts/http-proof.php",
+        "proof:direct": "@php scripts/direct-proof.php",
         "start": [
             "Composer\\Config::disableProcessTimeout",
             "@php -S 127.0.0.1:8001 -t public public/index.php"

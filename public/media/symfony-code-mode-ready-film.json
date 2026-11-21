@@ -1,0 +1,319 @@
+{
+  "format": "symfony-code-mode-ready-film/v1",
+  "title": "Symfony Code Mode · Follow the policy ID",
+  "durationSeconds": 90,
+  "width": 1920,
+  "height": 1080,
+  "fps": 25,
+  "frames": 2250,
+  "audio": "Original synthesized sound effects, no speech.",
+  "assets": {
+    "symfony-code-mode-ready-90s.mp4": "0910517c54073ae338a8edd190877d7ebc0c44fb95b194208c7833023c0b2130",
+    "symfony-code-mode-ready-poster.jpg": "81c7ec413613dbd66b9850b72d20c92cde967d3a1fe55330316b437bc5ec6427"
+  },
+  "sources": {
+    "docs/evidence/claude-structured-refund.json": "995aa201d0bab22c6e5c4f04a135151ae6ccabc5f7a814b85d7bec24903a98cc"
+  },
+  "narration": {
+    "file": "docs/judge-ready-voiceover.txt",
+    "sha256": "74a2707337667f7234b8f4ac9dcad66f629e09531b3fa23660836f186f7866a6",
+    "cuesSeconds": [
+      0,
+      9,
+      18,
+      30,
+      43,
+      60,
+      75
+    ]
+  },
+  "avatarSafeArea": {
+    "x": 72,
+    "y": 655,
+    "width": 425,
+    "height": 345
+  },
+  "chapters": [
+    {
+      "startSeconds": 0,
+      "endSeconds": 9,
+      "title": "A growing catalog"
+    },
+    {
+      "startSeconds": 9,
+      "endSeconds": 18,
+      "title": "Search and execute over MCP"
+    },
+    {
+      "startSeconds": 18,
+      "endSeconds": 30,
+      "title": "One support question"
+    },
+    {
+      "startSeconds": 30,
+      "endSeconds": 43,
+      "title": "Open the refund Group"
+    },
+    {
+      "startSeconds": 43,
+      "endSeconds": 60,
+      "title": "Claude writes the program"
+    },
+    {
+      "startSeconds": 60,
+      "endSeconds": 75,
+      "title": "Pass the policy ID"
+    },
+    {
+      "startSeconds": 75,
+      "endSeconds": 90,
+      "title": "Answer the customer"
+    }
+  ],
+  "capture": {
+    "application": "Claude Code 2.1.330 in macOS Terminal",
+    "sourceVideoSha256": "fbf7c7087102f603307060225fa02abb3ce44018df1088e983e80ae7710ded97",
+    "receipt": {
+      "file": "docs/evidence/claude-structured-refund.json",
+      "attempt": 3,
+      "programId": "toolu_01LBoyFe1Qk3DMUDrdbbrHPU",
+      "clientTranscriptSha256": "85a81a11ef9a49716b5f8b3e374e228cf5bf80e15b509ff71762e30904ab25b3"
+    },
+    "scope": "The camera recorded the completed third conversation reopened in Claude Code. The editor expanded the actual transcript and arranged excerpts in conversation order. The four MCP calls and both Symfony dispatches were captured during the original run."
+  },
+  "edit": {
+    "opening": "A schematic illustrates the catalog and the tools and instructions in the captured refund-review Group.",
+    "terminal": "The native CLI footage begins at 18 seconds. Each excerpt uses a crop of the recorded Terminal window. The paired field views show the recorded order result and the actual policy request.",
+    "protocol": "Claude opened the Group with search_tools. Its JavaScript decoded the catalog response, read the typed policyId property, then called the policy reader through execute_tools."
+  },
+  "excerpts": [
+    {
+      "at": 18,
+      "end": 25,
+      "in": 18,
+      "out": 25,
+      "crop": [
+        10,
+        362,
+        1300,
+        112
+      ],
+      "display": {
+        "x": 658,
+        "y": 384,
+        "width": 1176,
+        "height": 102
+      },
+      "label": "Support question"
+    },
+    {
+      "at": 25,
+      "end": 30,
+      "in": 41.1,
+      "out": 46.1,
+      "crop": [
+        10,
+        340,
+        1300,
+        272
+      ],
+      "display": {
+        "x": 658,
+        "y": 384,
+        "width": 1176,
+        "height": 246
+      },
+      "label": "Search the catalog"
+    },
+    {
+      "at": 30,
+      "end": 37,
+      "in": 95.9,
+      "out": 102.9,
+      "crop": [
+        10,
+        397,
+        1300,
+        338
+      ],
+      "display": {
+        "x": 658,
+        "y": 358,
+        "width": 1176,
+        "height": 306
+      },
+      "label": "Open refund-review"
+    },
+    {
+      "at": 37,
+      "end": 43,
+      "in": 133,
+      "out": 139,
+      "crop": [
+        84,
+        343,
+        1200,
+        267
+      ],
+      "display": {
+        "x": 658,
+        "y": 380,
+        "width": 1176,
+        "height": 262
+      },
+      "label": "Read the procedure"
+    },
+    {
+      "at": 43,
+      "end": 53,
+      "in": 157,
+      "out": 167,
+      "crop": [
+        10,
+        291,
+        1300,
+        406
+      ],
+      "display": {
+        "x": 658,
+        "y": 326,
+        "width": 1176,
+        "height": 368
+      },
+      "label": "Claude’s JavaScript"
+    },
+    {
+      "at": 53,
+      "end": 60,
+      "in": 169,
+      "out": 176,
+      "crop": [
+        84,
+        495,
+        1228,
+        116
+      ],
+      "display": {
+        "x": 658,
+        "y": 384,
+        "width": 1176,
+        "height": 112
+      },
+      "label": "Read the structured field"
+    },
+    {
+      "at": 60,
+      "end": 64,
+      "in": 211,
+      "out": 215,
+      "crop": [
+        122,
+        184,
+        700,
+        312
+      ],
+      "display": {
+        "x": 658,
+        "y": 248,
+        "width": 1176,
+        "height": 524
+      },
+      "label": "Order result"
+    },
+    {
+      "at": 64,
+      "end": 75,
+      "in": 216,
+      "out": 227,
+      "crop": [
+        202,
+        265,
+        744,
+        79
+      ],
+      "display": {
+        "x": 722,
+        "y": 325,
+        "width": 1064,
+        "height": 112
+      },
+      "label": "Order reader returned"
+    },
+    {
+      "at": 64,
+      "end": 75,
+      "in": 216,
+      "out": 227,
+      "crop": [
+        10,
+        682,
+        1300,
+        83
+      ],
+      "display": {
+        "x": 722,
+        "y": 610,
+        "width": 1064,
+        "height": 68
+      },
+      "label": "Policy reader received"
+    },
+    {
+      "at": 75,
+      "end": 79,
+      "in": 240,
+      "out": 244,
+      "crop": [
+        150,
+        496,
+        752,
+        275
+      ],
+      "display": {
+        "x": 658,
+        "y": 296,
+        "width": 1176,
+        "height": 430
+      },
+      "label": "Policy result"
+    },
+    {
+      "at": 79,
+      "end": 84,
+      "in": 267,
+      "out": 272,
+      "crop": [
+        24,
+        193,
+        1260,
+        495
+      ],
+      "display": {
+        "x": 658,
+        "y": 280,
+        "width": 1176,
+        "height": 462
+      },
+      "label": "Compare the order and policy"
+    },
+    {
+      "at": 84,
+      "end": 90,
+      "in": 253.5,
+      "out": 259.5,
+      "crop": [
+        10,
+        226,
+        1300,
+        126
+      ],
+      "display": {
+        "x": 658,
+        "y": 384,
+        "width": 1176,
+        "height": 114
+      },
+      "label": "Claude’s recommendation"
+    }
+  ]
+}

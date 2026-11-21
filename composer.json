@@ -86,6 +86,12 @@
             "Composer\\Config::disableProcessTimeout",
             "@php -S 127.0.0.1:8000 -t public public/index.php"
         ],
+        "demo:serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php scripts/refund-recording.php serve --catalog --rehearsal --profile"
+        ],
+        "demo:token": "@php scripts/refund-recording.php token --rehearsal",
+        "demo:chat": "App\\Demo\\RefundRecording\\InteractiveChatCommand",
         "test": "@php bin/phpunit",
         "test:package": "@php bin/phpunit -c packages/php-code-mode/phpunit.dist.xml --testsuite Unit",
         "test:sandbox": "@php bin/phpunit -c packages/php-code-mode/phpunit.dist.xml --testsuite Sandbox",
@@ -114,6 +120,8 @@
         "docs:build": "@php scripts/build-docs.php"
     },
     "scripts-descriptions": {
+        "demo:serve": "Start the local Symfony MCP catalog for your MCP client",
+        "demo:chat": "Open your signed-in Claude Code or Codex CLI against a fresh Symfony refund catalog",
         "proof:discovery": "Verify the judge demo over HTTP with the PHP MCP SDK, including a denied read after revocation",
         "start": "Start the local development server at http://127.0.0.1:8000",
         "test": "Run the tests without external API calls",

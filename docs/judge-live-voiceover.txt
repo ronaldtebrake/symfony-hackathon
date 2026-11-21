@@ -1,0 +1,11 @@
+As your Symfony app grows, so does its tool catalog. Should an agent have to read the whole catalog to answer one question?
+
+Watch what happens when Claude connects over MCP. Symfony Code Mode gives it two tools to start with, search and execute. We ask Claude to find our team’s refund procedure. Its search turns up a Group.
+
+Opening the Group gives Claude two Symfony AI tools and a short set of instructions. Read the order first. Then use the policy named on that order. Now Claude knows which tools belong together and why.
+
+Here’s the JavaScript Claude wrote and ran. Both reads fit in one block. Watch where the second call gets its argument. That policy ID came from the order. The PHP MCP SDK carries each call back to Symfony.
+
+The order read succeeds. Then our demo operator revokes access. The script asks for the policy, and Symfony checks permission again. Tool denied. The policy handler never runs.
+
+Claude can tell us the order was seventy-five euros. Without the policy, it leaves the refund review incomplete.

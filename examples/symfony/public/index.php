@@ -12,6 +12,8 @@ if (is_file(dirname(__DIR__).'/.env.local')) {
 }
 // This demo firewall is stateless. It uses no cookies or signed URLs.
 $_SERVER['APP_SECRET'] ??= bin2hex(random_bytes(32));
+// The CLI web server exposes process environment through getenv() on some platforms.
+$_SERVER['APP_CACHE_DIR'] ??= getenv('APP_CACHE_DIR') ?: null;
 $environment = $_SERVER['APP_ENV'] ?? (getenv('APP_ENV') ?: 'catalog');
 $kernel = new Kernel($environment, 'dev' === $environment || 'test' === $environment);
 $request = Request::createFromGlobals();

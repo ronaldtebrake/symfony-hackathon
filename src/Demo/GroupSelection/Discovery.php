@@ -46,7 +46,11 @@ final readonly class Discovery implements ExtensionInterface, RequestHandlerInte
     public const GROUPS = [
         'order-lookup' => ['description' => 'Look up delivery, item condition and payment details for one order.', 'members' => ['refund_get_order']],
         'policy-lookup' => ['description' => 'Look up return terms and thresholds for a named policy.', 'members' => ['refund_get_policy']],
-        'refund-review' => ['description' => 'Review an order together with its applicable refund policy.', 'members' => Tools::NAMES],
+        'refund-review' => [
+            'description' => 'Review an order together with its applicable refund policy.',
+            'procedureDescription' => 'Support team refund procedure. Open this Group for the review steps and the rules for recommending a refund.',
+            'members' => Tools::NAMES,
+        ],
     ];
     public const CATALOG = ['search_tools', 'execute_tools'];
 
@@ -60,7 +64,8 @@ final readonly class Discovery implements ExtensionInterface, RequestHandlerInte
         // Search the public labels using the same ranker. Group entries never enter the tool broker.
         $labels = [];
         foreach (self::GROUPS as $name => $group) {
-            $labels[] = new ToolDefinition($name, $group['description'], (object) ['type' => 'object']);
+            $description = $recordingCatalog ? ($group['procedureDescription'] ?? $group['description']) : $group['description'];
+            $labels[] = new ToolDefinition($name, $description, (object) ['type' => 'object']);
         }
         $this->groupIndex = new ToolCatalog($labels, $search);
     }
@@ -135,7 +140,7 @@ final readonly class Discovery implements ExtensionInterface, RequestHandlerInte
 
     private function groupSearchDefinition(ToolDefinition $search): ToolDefinition
     {
-        return new ToolDefinition($search->name, 'Search with query to find individual tool contracts and named group summaries. An empty query browses both. To open a group, send its name in the group field alone. This returns its member contracts and any procedure. Run the tools with execute_tools. For dependent reads, pass the ID from the earlier result.', (object) [
+        return new ToolDefinition($search->name, 'Search with query for individual tool contracts and Group summaries. An empty query browses both. For a team procedure, open the matching Group by sending its name in the group field alone. This returns the instructions and member contracts. Call members with execute_tools, passing any ID returned by an earlier read.', (object) [
             'type' => 'object',
             'properties' => (object) ['query' => $search->inputSchema->properties->query, 'group' => (object) ['type' => 'string', 'minLength' => 1, 'maxLength' => 64]],
             'minProperties' => 1, 'maxProperties' => 1, 'additionalProperties' => false,

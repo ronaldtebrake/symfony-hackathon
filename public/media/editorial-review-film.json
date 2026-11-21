@@ -1,5 +1,5 @@
 {
-  "format": "symfony-editorial-review-film/v11",
+  "format": "symfony-editorial-review-film/v12",
   "durationSeconds": 90,
   "fps": 30,
   "frames": 2700,
@@ -8,115 +8,132 @@
     1080
   ],
   "audio": "none",
-  "scope": "Original agent screen footage of an article lookup with the two-tool catalog, followed by a typeset replay of a separate recorded Symfony AI and Hugging Face refund conversation. Its host opened one group and verified its guide. The model selected the reads and answered both user turns. The two-tool catalog and its initial schema measurements are a separate independent HTTP fixture and offline synthetic scaling experiment. The earlier gVisor implementation is a design reference.",
-  "catalogFilm": {
-    "url": "https://github.com/ronaldtebrake/symfony-hackathon/blob/e2e1f15baf946b3479bd0e95cb1acb1c7c6927e3/public/media/symfony-native-tools-demo-90s.mp4",
-    "sha256": "f2f9ed4eaca611f71c60487a18446447a24ccd179af067c1a48da1505be8beb5"
+  "scope": "The refund conversation, six model-selected calls, operator action, native Symfony Profiler panels and two model answers come from one recorded Symfony AI conversation. Requests and results are typeset for readability. The browser insert inspects an original Profiler export from this conversation. The closing command runs a separate deterministic PHP MCP client proof.",
+  "agentProcedure": {
+    "file": "docs/evidence/agent-procedure.json",
+    "sha256": "44219f3fbf0e3cdd3d79588a383bab33fe2213dcddb961efe145bdd375ce76cf"
   },
-  "catalogFilmProvenance": {
-    "url": "https://github.com/ronaldtebrake/symfony-hackathon/blob/e2e1f15baf946b3479bd0e95cb1acb1c7c6927e3/public/media/video-proof.json",
-    "sha256": "0f8eadf49ce4480a8a013359b5dac2f4dddf52864db7a34b2be075e068592986"
+  "judgeDemo": {
+    "file": "docs/evidence/judge-demo.json",
+    "sha256": "35e1c32dde18512781e3fab38c335c7f993a386fe2e961054567a2dc4f9a74e9"
   },
-  "sandboxAudit": {
-    "url": "https://github.com/ronaldtebrake/symfony-hackathon/blob/e2e1f15baf946b3479bd0e95cb1acb1c7c6927e3/docs/evidence/huggingface-pair.json",
-    "sha256": "b3e62d4a593ab35f1905f008fd90a6e11f69cce04cfcf7194b22abf9e60ff3a1"
-  },
-  "httpCatalog": {
-    "file": "docs/evidence/http-catalog-proof.json",
-    "sha256": "0f80da5915864e447c871faae602885262359e272a90b5f42ccdb27f946a5d56"
-  },
-  "catalogScaling": {
-    "file": "docs/evidence/catalog-scaling.json",
-    "sha256": "88fb090eab90e627b70366653566478087be78e8b8a2570624ea4f05bbb8ec9d"
-  },
-  "refundProtocol": {
-    "file": "docs/evidence/refund-protocol.json",
-    "sha256": "05c8b3ad6bfe85b33701b6a90c97507aede7c091a347f0ce53ef9c66e797e430"
-  },
-  "refundStudy": {
-    "file": "docs/evidence/refund-skill.json",
-    "sha256": "45fac932cf07b36777297d5d7fad16ce4d8115347f570fe2c517135d37249550"
+  "agentRecording": {
+    "capturedAt": "2026-11-20T18:07:12+00:00",
+    "model": "openai/gpt-oss-120b",
+    "provider": "Hugging Face Inference Providers / novita",
+    "attempt": 2,
+    "editorialSelection": "The first take found the group and continued with individual readers. This take tried the group name as a reader, opened the group through search_tools, read the order and its named policy, and retried the policy after revocation.",
+    "operator": {
+      "action": "revoke",
+      "permission": "refund.review",
+      "afterTurn": 1,
+      "afterCall": 5
+    },
+    "profileExports": [
+      {
+        "request": 2,
+        "export": "002-search_tools-succeeded.html",
+        "sha256": "f75d0d40c55feb9b537aa55f5393f38fa21da59b3144b062ac2b6c3cde0e8b5f"
+      },
+      {
+        "request": 3,
+        "export": "003-execute_tools-failed.html",
+        "sha256": "62cc73e995f910b2617e5669e8c335fc3a28c9d910bb30ded8979fc4d32351c2"
+      },
+      {
+        "request": 4,
+        "export": "004-search_tools-succeeded.html",
+        "sha256": "1e3d5cb58c234875374dd6fa09492f64a6aca928aff7d7acc6472e07b7ea8083"
+      },
+      {
+        "request": 7,
+        "export": "007-execute_tools-failed.html",
+        "sha256": "29f631d4a94ba0d970eee2a83428a19bd6bfd4648c598e8f4be551b19d14c919"
+      }
+    ]
   },
   "screenRecordingEdit": {
-    "master": "symfony-native-tools-demo-90s.mp4",
+    "source": "Local Chrome recording of native Symfony Profiler HTML generated for request 4 of this agent conversation. The browser scrolls to the returned definitions and expands refund_get_order.",
+    "sourceExport": "004-search_tools-succeeded.html",
     "sourceSeconds": [
-      37,
-      48
+      0,
+      6
     ],
     "filmSeconds": [
-      9,
-      20
+      35,
+      41
     ],
-    "crop": [
-      558,
-      195,
-      1260,
-      760
+    "renderedSize": [
+      1752,
+      729
     ],
-    "speed": 1
+    "speed": 1,
+    "endHold": "Final browser frame held to the cut."
   },
-  "designReferences": [
-    "https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/19",
-    "https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/22"
-  ],
   "segments": [
     {
       "start": 0,
-      "end": 9,
-      "title": "Which tools does this job need?",
-      "source": "First user question from the recorded refund conversation"
+      "end": 10,
+      "title": "Which tools does your team use together?",
+      "source": "Editorial opening and the two readers from the captured group response."
     },
     {
-      "start": 9,
-      "end": 20,
-      "title": "Use the two-tool catalog",
-      "source": "Screen recording of an agent using the independent Symfony HTTP catalog"
+      "start": 10,
+      "end": 18,
+      "title": "Give the agent a refund to review",
+      "source": "Excerpt from the recorded first user turn."
     },
     {
-      "start": 20,
+      "start": 18,
       "end": 30,
-      "title": "Measure the opening tool list",
-      "source": "Offline schema token counts at 10 and 100 synthetic tools"
+      "title": "Find the refund group",
+      "source": "Model-selected query, returned group, and the separate denied attempt at 25.3 seconds to execute refund-review as a reader."
     },
     {
       "start": 30,
-      "end": 42,
-      "title": "Open the refund group",
-      "source": "Host-selected group, two reader schemas and a verified resource in the linked arm"
+      "end": 41,
+      "title": "Open the team’s procedure",
+      "source": "The model opened the group with search_tools. Its native Symfony Profiler panel and the returned order reader schema appear on screen."
     },
     {
-      "start": 42,
-      "end": 54,
-      "title": "Pass the policy ID to the next read",
-      "source": "Actual model-selected tools/call arguments and returned facts"
+      "start": 41,
+      "end": 51,
+      "title": "Read order R-1042",
+      "source": "Recorded execute_tools reader arguments, euro amount, age, condition and returned policy ID."
     },
     {
-      "start": 54,
-      "end": 63,
-      "title": "Read the model’s decision",
-      "source": "Verbatim first-turn model explanation"
+      "start": 51,
+      "end": 61,
+      "title": "Follow the order’s policy ID",
+      "source": "Recorded execute_tools reader arguments and the standard-eu policy result."
     },
     {
-      "start": 63,
-      "end": 72,
-      "title": "Revoke permission and ask again",
-      "source": "Second user question and the known policy reader"
+      "start": 61,
+      "end": 68,
+      "title": "Send the €75 refund for manual review",
+      "source": "The first model answer and the amounts from the two reads."
     },
     {
-      "start": 72,
-      "end": 82,
-      "title": "Receive the denial",
-      "source": "Zero completed reads and the real follow-up answer"
+      "start": 68,
+      "end": 78,
+      "title": "Revoke access and ask again",
+      "source": "Operator grant change and the verbatim second user turn."
     },
     {
-      "start": 82,
+      "start": 78,
+      "end": 86,
+      "title": "Inspect the denied policy read",
+      "source": "The new policy call returned tool_denied with zero completed calls and no native handler events. The quote comes from the second model answer."
+    },
+    {
+      "start": 86,
       "end": 90,
-      "title": "Take the revocation case upstream",
-      "source": "The PHP reference fixture and an open question about client selection"
+      "title": "Replay the requests",
+      "source": "The independent released PHP MCP client reproduces discovery, both reads and denial. It also searches again after revocation."
     }
   ],
   "assets": {
-    "editorial-review-90s.mp4": "be06b6626a36397bbc44d35869d46a69b7b5e6e1385cc20cce3ffd726b7dd7b0",
-    "editorial-review-poster.jpg": "fe2f73d487b46ed03ad7182753f5d3b585286b0e5bff0c7f75fc8b9defb3d3b1"
+    "editorial-review-90s.mp4": "5d8d74637d30c3ce36c10d5008f488bf4bbe09d9dc1192459cc7c6e215bc943d",
+    "editorial-review-poster.jpg": "20fe34c9281a31df5a1dd1b199d70794da0e74fa712ec2e09cdd0f939edfb46e"
   }
 }

@@ -1,6 +1,6 @@
 # Symfony Code Mode integration
 
-Expose two MCP tools from an ordinary Symfony HTTP endpoint. `search_tools` returns the contracts visible to the authenticated user. `execute_tools` accepts literal JSON, checks the current permissions, arguments and budget, and dispatches the approved calls. Symfony AI supplies the tool schemas and invokes the installed handlers.
+Expose a searchable catalog from an ordinary Symfony HTTP endpoint. By default, `search_tools` returns the tool contracts visible to the authenticated user and `execute_tools` calls the selected handlers. You can also advertise a frequently used reader directly. Symfony AI supplies its definition and handler for both routes.
 
 To try the live demo, [connect your agent to Symfony Code Mode](../../docs/codex.md#connect-symfony-code-mode). To integrate the package into an application, see the [independent Symfony example](../../examples/symfony/README.md) and the configuration below. These packages install from this repository using Composer path repositories.
 
@@ -34,9 +34,24 @@ mcp:
             registry: [CodeMode\Symfony\Http\CatalogTools]
 ```
 
-Import the MCP route loader (`resource: .`, `type: mcp`) in `config/routes.yaml`, and require a fully authenticated user on `/mcp` in `security.yaml`. The [example's configuration](../../examples/symfony/config/services.php) includes a local bearer-token authenticator. Real applications keep their existing authentication; use HTTPS outside loopback. Do not also register underlying handlers as directly callable MCP tools, which would bypass this catalog's broker.
+Import the MCP route loader (`resource: .`, `type: mcp`) in `config/routes.yaml`, and require a fully authenticated user on `/mcp` in `security.yaml`. The [example's configuration](../../examples/symfony/config/services.php) includes a local bearer-token authenticator. Use your application's existing authentication and HTTPS outside loopback.
 
 `search_tools` returns full approved contracts; `execute_tools` accepts literal JSON calls. Only the HTTP adapter reads Symfony's current security token. Agent arguments cannot select identity, permissions or server configuration. `code-mode:doctor` checks the selected mode's prerequisites without invoking handlers or calling a model.
+
+### Advertise a frequently used tool
+
+If most conversations need the same reader, add its approved catalog name to the existing HTTP configuration:
+
+```yaml
+code_mode:
+    http:
+        enabled: true
+        direct_tools: [publication_read]
+```
+
+An authorized client's MCP `tools/list` now includes `publication_read` alongside `search_tools` and `execute_tools`. It can call the reader immediately with `{"id":101}` or find it through search. Keep the application handler registered once, through the catalog. Both routes use the same input schema, current permission checks and per-user execution budget. Revoking access takes effect even if a client remembers the tool name.
+
+With the independent example's dependencies installed, run `composer proof:direct --working-dir=examples/symfony` from the repository root. [Mixed-route HTTP proof](../../docs/evidence/direct-tool.json)
 
 ### Reusing Symfony AI search
 

@@ -47,7 +47,7 @@ final class HttpMcpAdapterTest extends TestCase
             $this->assertSame(200, $style->getStatusCode());
             $this->assertStringContainsString('text/css', $style->getHeaders()['content-type'][0]);
             $this->assertSame(file_get_contents(\dirname(__DIR__, 2).'/public/demo.css'), $style->getContent());
-            $movie = '/media/editorial-review-90s.mp4';
+            $movie = '/media/symfony-code-mode-90s.mp4';
             $response = $http->request('GET', 'http://'.$address.$movie, ['headers' => ['Range' => 'bytes=0-99']]);
             $this->assertSame(206, $response->getStatusCode());
             $this->assertSame('video/mp4', $response->getHeaders()['content-type'][0]);

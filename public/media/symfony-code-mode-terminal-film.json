@@ -1,0 +1,325 @@
+{
+  "format": "symfony-native-terminal-film/v1",
+  "title": "Symfony Code Mode in the terminal",
+  "durationSeconds": 90,
+  "audio": "none",
+  "width": 1920,
+  "height": 1080,
+  "fps": 25,
+  "assets": {
+    "symfony-code-mode-terminal-90s.mp4": "93a700e94c69ced71d6b15b78785ecfe2527cadceebfa9cd0ad12d26d706ab25",
+    "symfony-code-mode-terminal-full.mp4": "0fdf5c2f904314f965c8513acce1186bb83b05b637a383ccbbb1f0d5702dbd7f",
+    "symfony-code-mode-terminal-operator.mp4": "173480879298b76f5959b006850a0f03af07217f043e3901f8f22be497a674cd",
+    "symfony-code-mode-terminal-poster.jpg": "9cb5336c4b47373780b6bb02c3a52f6e9b14a4b880db205d8df74b843b7127d1"
+  },
+  "poster": {
+    "file": "symfony-code-mode-terminal-poster.jpg",
+    "masterTimeSeconds": 65,
+    "frameNumberZeroBased": 1625
+  },
+  "capture": {
+    "app": "Apple Terminal (com.apple.Terminal)",
+    "method": "macOS ScreenCaptureKit with a desktop-independent filter for each dedicated window. Both recordings include the original window chrome.",
+    "sources": {
+      "conversation": {
+        "file": "symfony-code-mode-terminal-full.mp4",
+        "kind": "Claude Code session in one native Terminal.app window",
+        "durationSeconds": 254.16,
+        "screenCaptureKitOriginal": {
+          "width": 2194,
+          "height": 1312,
+          "durationSeconds": 280.686667,
+          "frames": 5747,
+          "sha256": "3f74a6c36bfa16b53af32c6788dadbc6cd383c5142e7bbcb9a87338a1c698e8f"
+        },
+        "sourceInSeconds": 0,
+        "sourceOutSeconds": 254.16,
+        "editing": "One continuous recording at normal speed through the final answer. The original continued into CLI shutdown, which displayed a local resume ID. Only that post-roll is omitted from the download."
+      },
+      "operator": {
+        "file": "symfony-code-mode-terminal-operator.mp4",
+        "kind": "A separately recorded operator terminal reading the same run’s saved Symfony trace after the session",
+        "durationSeconds": 18.32,
+        "screenCaptureKitOriginal": {
+          "width": 2194,
+          "height": 1312,
+          "durationSeconds": 18.335,
+          "frames": 447,
+          "sha256": "0bfc0b79db7710f8bb67d5e6b6c40ac029b9b318226f56318ffbae95cd9187d1"
+        },
+        "traceSha256": "10fecb43469962998b067741f7452797b8c56cb594c51ed2412e551c7a76783a"
+      }
+    }
+  },
+  "editing": "Every excerpt runs at normal speed in source order. The native window is fitted to a 16:9 canvas with black side margins. The final eight seconds show the operator inspecting the saved trace after the agent finished.",
+  "cuts": [
+    {
+      "label": "Launch the CLI",
+      "editInSeconds": 0.0,
+      "editOutSeconds": 6.0,
+      "source": "conversation",
+      "sourceInSeconds": 5.84,
+      "sourceOutSeconds": 11.84
+    },
+    {
+      "label": "Ask Claude to find the refund Group",
+      "editInSeconds": 6.0,
+      "editOutSeconds": 19.0,
+      "source": "conversation",
+      "sourceInSeconds": 23.72,
+      "sourceOutSeconds": 36.72
+    },
+    {
+      "label": "Inspect the search result",
+      "editInSeconds": 19.0,
+      "editOutSeconds": 23.0,
+      "source": "conversation",
+      "sourceInSeconds": 50.76,
+      "sourceOutSeconds": 54.76
+    },
+    {
+      "label": "Open the Group and read the procedure",
+      "editInSeconds": 23.0,
+      "editOutSeconds": 35.0,
+      "source": "conversation",
+      "sourceInSeconds": 72.16,
+      "sourceOutSeconds": 84.16
+    },
+    {
+      "label": "Inspect the Group lookup in MCP",
+      "editInSeconds": 35.0,
+      "editOutSeconds": 39.0,
+      "source": "conversation",
+      "sourceInSeconds": 115.52,
+      "sourceOutSeconds": 119.52
+    },
+    {
+      "label": "Request and run the dependent reads",
+      "editInSeconds": 39.0,
+      "editOutSeconds": 56.0,
+      "source": "conversation",
+      "sourceInSeconds": 132.24,
+      "sourceOutSeconds": 149.24
+    },
+    {
+      "label": "Inspect the denied policy request",
+      "editInSeconds": 56.0,
+      "editOutSeconds": 61.0,
+      "source": "conversation",
+      "sourceInSeconds": 157.56,
+      "sourceOutSeconds": 162.56
+    },
+    {
+      "label": "Open the generated JavaScript in Claude Code",
+      "editInSeconds": 61.0,
+      "editOutSeconds": 69.0,
+      "source": "conversation",
+      "sourceInSeconds": 194.12,
+      "sourceOutSeconds": 202.12
+    },
+    {
+      "label": "Read the dependency, review the order and return to the answer",
+      "editInSeconds": 69.0,
+      "editOutSeconds": 82.0,
+      "source": "conversation",
+      "sourceInSeconds": 240.0,
+      "sourceOutSeconds": 253.0
+    },
+    {
+      "label": "Inspect this run’s saved Symfony trace in a second operator window",
+      "editInSeconds": 82.0,
+      "editOutSeconds": 90.0,
+      "source": "operator",
+      "sourceInSeconds": 7.6,
+      "sourceOutSeconds": 15.6
+    }
+  ],
+  "session": {
+    "client": {
+      "name": "Claude Code",
+      "version": "2.1.330",
+      "model": "claude-sonnet-5-5",
+      "nativeCodeMode": true
+    },
+    "scope": "Three staged prompts in one genuine CLI session. The host revoked refund.review after a successful order dispatch and before the HTTP response left the server.",
+    "input": "Three prepared questions were entered in a live, authenticated CLI session using a PTY relay. Claude authored the responses and the JavaScript. The fixture operator automatically changed the grant between the dependent reads.",
+    "systemGuidance": "Help a support colleague in at most two sentences per reply. Use search_tools and execute_tools. A Group member is a name inside the calls array of execute_tools, not a separate JavaScript function. Decode returned JSON text or structured content. When asked for one program, use the same execute_tools binding for both calls, use results[0].value for the order, extract the policy ID at runtime, and catch a denied policy read without retrying. Do not guess any order facts, identifiers, or policy terms.",
+    "advertised": [
+      "search_tools",
+      "execute_tools"
+    ],
+    "turns": [
+      {
+        "question": "Search our Symfony catalog for a refund procedure. Which Group did you find? Please don't open it yet.",
+        "askedAt": "2026-11-21T09:29:59.973Z",
+        "answer": "I found one Group, **refund-review** (\"Review an order together with its applicable refund policy\"). I haven't opened it. The search also returned two individual tools, `refund_get_order` and `refund_get_policy`.",
+        "answeredAt": "2026-11-21T09:30:05.540Z"
+      },
+      {
+        "question": "Open that Group. Which tools does the procedure connect, and in what order? Hold off on the reads.",
+        "askedAt": "2026-11-21T09:30:48.251Z",
+        "answer": "The **refund-review** Group connects two tools in this order: `refund_get_order` first, then `refund_get_policy`, using the policy ID from the order. You then compare the order's age and condition with the policy. If it's eligible, you compare the amount with the manual-review threshold in the same currency. I haven't done any reads, and a review never issues a refund.",
+        "answeredAt": "2026-11-21T09:30:52.433Z"
+      },
+      {
+        "question": "Review R-1042 in one JavaScript block. Call execute_tools twice. Pass the policy ID from the order into the second read. Keep the order facts and report any denial.",
+        "askedAt": "2026-11-21T09:31:50.157Z",
+        "answer": "**The review of R-1042 is incomplete.** The `refund_get_policy` read for `standard-eu` was denied (`tool_denied`), and I didn't retry it.\n\n- **Order facts received:** € 75,00 (7500 minor units, EUR), delivered 9 days ago, item unopened, policy `standard-eu`.\n- **Missing evidence:** the policy's return window, accepted condition and manual-review threshold. Without them I can't say whether the order is eligible or needs manual review.",
+        "answeredAt": "2026-11-21T09:31:59.629Z"
+      }
+    ],
+    "script": "const execute_tools = tools.mcp__symfony_code_mode__execute_tools;\nconst decode = r => {\n  if (r && r.structuredContent) return r.structuredContent;\n  if (typeof r === 'string') { try { return JSON.parse(r); } catch { return r; } }\n  const t = r?.content?.find?.(c => c.type === 'text')?.text;\n  if (t) { try { return JSON.parse(t); } catch { return t; } }\n  return r;\n};\nconst first = decode(await execute_tools({calls:[{name:\"refund_get_order\", arguments:{orderId:\"R-1042\"}}]}));\nconst orderRes = first.results?.[0];\nconst order = orderRes?.value ?? orderRes;\nconst policyId = order?.policyId ?? order?.policy_id ?? order?.policy?.id;\nlet policy, denial;\ntry {\n  if (!policyId) throw new Error(\"no policy ID in order\");\n  const second = decode(await execute_tools({calls:[{name:\"refund_get_policy\", arguments:{policyId}}]}));\n  const r = second.results?.[0] ?? second;\n  if (second.error || r?.error || r?.isError) denial = second.error ?? r.error ?? r;\n  else policy = r?.value ?? r;\n} catch (e) { denial = e.message; }\n({first, order, policyId, policy, denial})",
+    "scriptSha256": "c67865c1d64960bc777eb3f3ad3642006ecc03bc93984e1b3f208d965b4908f9",
+    "programId": "toolu_011yTNQWCXtGdU3xhmQk4yQm",
+    "events": [
+      {
+        "label": "Search the catalog",
+        "clientCallId": "repl_f147f1fe-4232-4892-9169-f4d3ef72c779",
+        "programId": "toolu_017pXGVmJZLpacNvNJumGkRd",
+        "method": "tools/call",
+        "httpStatus": 200,
+        "tool": "search_tools",
+        "arguments": {
+          "query": "refund procedure"
+        },
+        "isError": false,
+        "result": {
+          "tools": [
+            "refund_get_order",
+            "refund_get_policy"
+          ],
+          "groups": [
+            "refund-review"
+          ]
+        },
+        "broker": [],
+        "nativeEvents": []
+      },
+      {
+        "label": "Open the refund-review Group",
+        "clientCallId": "repl_154999dd-ff1d-4353-a92b-78632528ebd7",
+        "programId": "toolu_01Aa6EVVGbg5bpMWCAK8bpkG",
+        "method": "tools/call",
+        "httpStatus": 200,
+        "tool": "search_tools",
+        "arguments": {
+          "group": "refund-review"
+        },
+        "isError": false,
+        "result": {
+          "tools": [
+            "refund_get_order",
+            "refund_get_policy"
+          ],
+          "group": "refund-review",
+          "instructions": "Read the order, then read the policy named by that order. Compare its age and condition with the policy. If eligible, compare the amount with the manual-review threshold in the same currency. Report the recommendation and the reason. If a required read is denied, keep the facts already received, identify the missing evidence and report the review as incomplete. A review never issues a refund."
+        },
+        "broker": [],
+        "nativeEvents": []
+      },
+      {
+        "label": "Read R-1042",
+        "clientCallId": "repl_9e5e4e02-ef93-47ef-a354-7f81a12e4875",
+        "programId": "toolu_011yTNQWCXtGdU3xhmQk4yQm",
+        "method": "tools/call",
+        "httpStatus": 200,
+        "tool": "execute_tools",
+        "arguments": {
+          "calls": [
+            {
+              "name": "refund_get_order",
+              "arguments": {
+                "orderId": "R-1042"
+              }
+            }
+          ]
+        },
+        "isError": false,
+        "result": {
+          "results": [
+            {
+              "name": "refund_get_order",
+              "value": {
+                "orderId": "R-1042",
+                "policyId": "standard-eu",
+                "currency": "EUR",
+                "amountMinor": 7500,
+                "daysSinceDelivery": 9,
+                "itemCondition": "unopened"
+              }
+            }
+          ]
+        },
+        "broker": [
+          {
+            "name": "refund_get_order",
+            "status": "succeeded"
+          }
+        ],
+        "nativeEvents": [
+          {
+            "name": "refund_get_order",
+            "phase": "requested"
+          },
+          {
+            "name": "refund_get_order",
+            "phase": "succeeded"
+          }
+        ]
+      },
+      {
+        "label": "Symfony fixture revokes refund.review",
+        "operator": "revoke",
+        "permission": "refund.review",
+        "previous": "granted",
+        "current": "revoked"
+      },
+      {
+        "label": "Policy read denied before dispatch",
+        "clientCallId": "repl_8935654c-b296-4e9b-9259-debb8f96fe5e",
+        "programId": "toolu_011yTNQWCXtGdU3xhmQk4yQm",
+        "method": "tools/call",
+        "httpStatus": 200,
+        "tool": "execute_tools",
+        "arguments": {
+          "calls": [
+            {
+              "name": "refund_get_policy",
+              "arguments": {
+                "policyId": "standard-eu"
+              }
+            }
+          ]
+        },
+        "isError": true,
+        "result": {
+          "error": {
+            "reason": "tool_denied",
+            "tool": "refund_get_policy",
+            "index": 0
+          },
+          "completedCalls": 0
+        },
+        "broker": [
+          {
+            "name": "refund_get_policy",
+            "status": "denied",
+            "reason": "tool_denied"
+          }
+        ],
+        "nativeEvents": []
+      }
+    ],
+    "sourceSha256": {
+      "sourceVideo": "3f74a6c36bfa16b53af32c6788dadbc6cd383c5142e7bbcb9a87338a1c698e8f",
+      "terminalOutput": "387949fd8343d4a1267d6aa6afc8be9d1a21d4714b583e295cdcce63de4fb83b",
+      "clientTranscript": "cfb5628f8b8f6d2b57e4e020c3f2ada574d1327dbe843d52a0d1fb6f4cc4456f",
+      "serverTrace": "10fecb43469962998b067741f7452797b8c56cb594c51ed2412e551c7a76783a"
+    }
+  },
+  "verification": {
+    "editedFrames": 2250,
+    "maximumMeanChannelError": 0.345,
+    "comparison": "Every edited frame compared at 256×144 with its indexed frame in the corresponding continuous source MP4."
+  }
+}

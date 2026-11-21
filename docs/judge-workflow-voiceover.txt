@@ -1,0 +1,17 @@
+Connect your AI agent to your Symfony app. Two MCP tools give it a way in. One searches the catalog. The other calls a tool the user can access.
+
+Some jobs take more than one tool. A Group lets a team publish its tools together with the procedure for using them.
+
+A support colleague asks for help with a refund. The agent searches for the team’s procedure and opens the refund review Group.
+
+Here are the instructions Symfony returned. Read the order, then check the policy it names. If a required read fails, explain why the review is incomplete.
+
+The order gives the agent a policy ID: standard EU. Watch where that value goes next.
+
+The agent passes it straight to the policy reader. Now it has the rules that apply to this order.
+
+The order is worth seventy-five euros. That’s above the fifty-euro threshold, so the agent recommends manual review.
+
+The colleague asks about another order using the same procedure. This time Symfony denies the order read. The agent has no order details and leaves the refund undecided.
+
+Symfony AI and the PHP MCP SDK power our catalog and our prototype of the MCP Groups draft. Clone the demo and connect your agent.

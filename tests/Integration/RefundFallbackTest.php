@@ -23,6 +23,25 @@ use Symfony\Component\HttpKernel\Profiler\FileProfilerStorage;
 
 final class RefundFallbackTest extends TestCase
 {
+    public function testSameReviewerCanReadOnlyTheAssignedOrder(): void
+    {
+        $this->assertSame('R-1043', (new Tools())->order('R-1043')['orderId']);
+        $fixture = new Fixture(\dirname(__DIR__, 2), null, 'catalog');
+        try {
+            $client = $fixture->connectReader();
+            $client->callTool('search_tools', ['group' => 'refund-review']);
+            $read = static fn (string $id) => $client->callTool('execute_tools', ['calls' => [['name' => 'refund_get_order', 'arguments' => ['orderId' => $id]]]]);
+            $this->assertSame('R-1042', $read('R-1042')->structuredContent['results'][0]['value']['orderId']);
+            $denied = $read('R-1043');
+            $this->assertTrue($denied->isError);
+            $this->assertSame(['error' => ['reason' => 'tool_denied', 'tool' => 'refund_get_order', 'index' => 0], 'completedCalls' => 0], $denied->structuredContent);
+            $this->assertSame([], $fixture->lastOperation()['nativeEvents']);
+            $client->disconnect();
+        } finally {
+            $fixture->close();
+        }
+    }
+
     #[RunInSeparateProcess]
     #[PreserveGlobalState(false)]
     #[DataProvider('modes')]
@@ -171,6 +190,13 @@ final class RefundFallbackTest extends TestCase
             $this->assertSame(Discovery::CATALOG, array_column($listed, 'name'));
             $this->assertStringNotContainsString('refund-review', json_encode($listed, \JSON_THROW_ON_ERROR));
             $this->assertEqualsCanonicalizing(['query', 'group'], array_keys($listed[0]['inputSchema']['properties']));
+            // Claude Code's native tool search showed only the opening 160 characters in the recorded run.
+            $preview = substr($listed[1]['description'], 0, 160);
+            $this->assertStringContainsString('JSON.parse', $preview);
+            $this->assertStringContainsString('results[i].value', $preview);
+            $resultEntry = $listed[1]['outputSchema']['properties']['results']['items'];
+            $this->assertSame(['name', 'value'], $resultEntry['required']);
+            $this->assertArrayHasKey('value', $resultEntry['properties']);
         }
         $this->assertSame('discovery_required', $send('tools/call', $execute($order), $reader)['result']['structuredContent']['error']['reason']);
         $hidden = $send('tools/call', $search, $viewer)['result']['structuredContent'];
@@ -188,6 +214,9 @@ final class RefundFallbackTest extends TestCase
         $opened = $send('tools/call', $open('refund-review'), $reader)['result']['structuredContent'];
         $this->assertSame('refund-review', $opened['group']);
         $this->assertSame(Tools::NAMES, array_column($opened['tools'], 'name'));
+        $orderSchema = $opened['tools'][0]['outputSchema'];
+        $this->assertContains('policyId', $orderSchema['required']);
+        $this->assertSame('string', $orderSchema['properties']['policyId']['type']);
         $this->assertSame(Fixture::instructions(), $opened['instructions']);
         $gateway = $kernel->getContainer()->get(Gateway::class);
         $this->assertSame(['search_tools'], array_column($gateway->trace()['operations'], 'operation'));
@@ -196,7 +225,9 @@ final class RefundFallbackTest extends TestCase
         $this->assertSame('refund-review', $openTrace['groupDiscovery']['selectedGroup']);
         $this->assertSame($opened['instructions'], $openTrace['groupDiscovery']['instructions']);
         $this->assertSame(Tools::NAMES, array_column($openTrace['discovery']['toolDefinitions'], 'name'));
-        $first = $send('tools/call', $execute($order), $reader)['result']['structuredContent']['results'][0]['value'];
+        $reply = $send('tools/call', $execute($order), $reader)['result'];
+        $this->assertSame($reply['structuredContent'], json_decode($reply['content'][0]['text'], true, flags: \JSON_THROW_ON_ERROR));
+        $first = $reply['structuredContent']['results'][0]['value'];
         $policy = ['name' => 'refund_get_policy', 'arguments' => ['policyId' => $first['policyId']]];
         $current = $send('tools/call', $execute($policy), $reader)['result']['structuredContent']['results'][0]['value'];
         $this->assertSame('standard-eu', $first['policyId']);
@@ -204,13 +235,17 @@ final class RefundFallbackTest extends TestCase
         $matches = $send('tools/call', $search, $reader)['result']['structuredContent'];
         $this->assertEqualsCanonicalizing(Tools::NAMES, array_column($matches['tools'], 'name'));
         $this->assertContains('refund-review', array_column($matches['groups'], 'name'));
+        $reviewSummary = array_column($matches['groups'], 'description', 'name')['refund-review'];
+        $this->assertStringContainsString('procedure', $reviewSummary);
         $this->assertSame($matches['groups'], $gateway->trace()['operations'][0]['groupDiscovery']['groupSummaries']);
         $this->assertNull($gateway->trace()['operations'][0]['groupDiscovery']['selectedGroup']);
         foreach ($matches['groups'] as $summary) {
             $this->assertEqualsCanonicalizing(['name', 'description'], array_keys($summary));
         }
         $this->assertSame([], $send('tools/call', ['name' => 'search_tools', 'arguments' => ['query' => 'xylophone']], $reader)['result']['structuredContent']['groups']);
-        $this->assertSame(array_keys(Discovery::GROUPS), array_column($send('groups/list', [], $reader, $negotiated)['result']['groups'], 'name'));
+        $groupList = $send('groups/list', [], $reader, $negotiated)['result']['groups'];
+        $this->assertSame(array_keys(Discovery::GROUPS), array_column($groupList, 'name'));
+        $this->assertSame($reviewSummary, array_column($groupList, 'description', 'name')['refund-review']);
         $review = $send('groups/get', ['name' => 'refund-review'], $reader, $negotiated)['result'];
         $this->assertSame($review['tools'], $opened['tools']);
         $this->assertSame($review['instructions'], $opened['instructions']);

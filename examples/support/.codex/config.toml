@@ -1,0 +1,4 @@
+[mcp_servers.symfony_code_mode]
+url = "http://127.0.0.1:8017/mcp"
+http_headers_helper = "php ../../scripts/refund-recording.php headers --rehearsal"
+enabled_tools = ["search_tools", "execute_tools"]

@@ -1,27 +1,35 @@
 # Symfony Code Mode
 
-A Symfony application can offer an agent dozens of tools. Sending every definition up front costs tokens, and the list tells the agent little about how the team uses those tools together. Symfony Code Mode exposes two tools over the Model Context Protocol (MCP). An agent uses `search_tools` to find what its user can access, then `execute_tools` to call the Symfony services it needs.
+**Give agents the right Symfony tools and a procedure they can follow.**
 
-[Watch the 90-second demo](https://ronaldtebrake.github.io/symfony-hackathon/#demo-tour) · [Explore the GitHub Pages workbench](https://ronaldtebrake.github.io/symfony-hackathon/) · [Try it locally](#try-it-locally)
+An agent shouldn’t have to load every tool your application offers to answer one question. Symfony Code Mode exposes two tools over the Model Context Protocol (MCP) by default. `search_tools` finds the definitions the user can access. `execute_tools` calls the approved Symfony AI handlers. When a job needs several tools, a team can publish them together in a **Group**, with instructions for when to use each one.
 
-We started with agent-written PHP in a sandbox. Hosting a sandbox was a lot to ask just to call services a team already runs. With the PHP MCP SDK and Symfony AI, the agent can send JSON arguments to those services through ordinary Symfony HTTP requests. [Design journey](https://ronaldtebrake.github.io/symfony-hackathon/#journey)
+[![Watch the 90-second desktop demo of the refund Group](public/media/symfony-code-mode-judge-poster.jpg)](https://ronaldtebrake.github.io/symfony-hackathon/#judge-demo)
+
+[Watch the 90-second demo](https://ronaldtebrake.github.io/symfony-hackathon/#judge-demo) · [Try it in your MCP client](#try-it-locally)
+
+**What makes it Code Mode–ready?** One tool can return a field another tool takes as input. In the film, the agent follows the team’s Group, using the order’s `policyId` to read its policy. Symfony checks permission again for the second order and denies the read. Clients can make these calls one at a time or compose them in code. [See a separate run with Claude’s JavaScript and four MCP calls](https://ronaldtebrake.github.io/symfony-hackathon/#code-mode-ready)
 
 [![Architecture of Symfony Code Mode. An agent can search the catalog or open a named group. Both routes check the caller’s current access before Symfony AI invokes the application’s reader. Pink diamonds mark what we built and purple squares mark Symfony and PHP MCP SDK components.](docs/images/symfony-mcp-architecture.svg)](https://ronaldtebrake.github.io/symfony-hackathon/#mcp-architecture)
 
-For recurring work, we prototyped the MCP working group’s idea of named groups. In the demo, an agent opens a team procedure and gets the tools it needs to follow it. The same endpoint supports this through catalog search and the draft Groups methods. Symfony checks permission on each read. Revoke access mid-review and the next read is denied before the handler runs. [Try the judge prompt](docs/demo.md#record-the-refund-review-and-the-symfony-profiler)
+We started with agent-written PHP in a sandbox. Letting the client run its own code brought the server back to ordinary Symfony hosting. We built the catalog and prototyped the MCP working group’s Groups proposal using Symfony AI tool definitions and the PHP MCP SDK. [Design journey](https://ronaldtebrake.github.io/symfony-hackathon/#journey)
 
 ## Try it locally
 
-With PHP 8.2+ and Composer 2, run these commands.
+With PHP 8.2+ and Composer 2.5+, start the local Symfony MCP server. Leave it running.
 
 ```sh
 git clone https://github.com/ronaldtebrake/symfony-hackathon.git
 cd symfony-hackathon
 composer install
-composer proof:discovery
+composer demo:serve
 ```
 
-The proof starts a fresh Symfony HTTP server and uses the PHP MCP SDK to find the group, open its procedure and call both readers. It then revokes access and checks the denial and empty search results. This uses no model or provider key. To try the conversation yourself, enable the `symfony_code_mode` server in your agent. [Connect Symfony Code Mode](docs/codex.md#connect-symfony-code-mode)
+Open the **`examples/support` folder** as a local project in Claude Code or Codex (desktop or CLI). Trust the project and approve `symfony_code_mode` if prompted. Both clients have a project configuration that fetches the demo credential for you. Open `/mcp` to check for `search_tools` and `execute_tools`, then ask:
+
+> Please find and follow our team’s refund procedure for order R-1042. What should I tell the customer?
+
+[Connect another MCP client, try revocation, or inspect the native Groups trace](docs/codex.md#run-the-film-prompts)
 
 ## What we can contribute
 

@@ -1,0 +1,11 @@
+Why send a hundred tool definitions to look up one order? In our test, 128 definitions took eleven thousand tokens up front.
+
+Symfony starts with two MCP tools. Search finds the order reader. Execute calls it. This customer paid seventy-five euros.
+
+Which policy applies to that order? A Group gives the agent the team's procedure and the tools for each step. Here's our implementation of the MCP Groups proposal.
+
+Now watch Claude. A support colleague asks what to tell the customer. Claude searches for the refund procedure and opens the Group through the catalog.
+
+Here's the JavaScript Claude wrote. The first call reads the order. Claude picks out its policy ID and passes that value to the second call. Both reads run in one program. Symfony checks permission on each call.
+
+The item is unopened and within the return window. Seventy-five euros puts it above the automatic approval threshold. Claude tells support to send it for manual review.

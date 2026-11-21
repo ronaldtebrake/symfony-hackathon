@@ -1,0 +1,13 @@
+Why load an entire tool catalog to answer one question?
+
+Here’s Claude Code connecting to Symfony over MCP. It starts with two tools, search and execute. We ask for the team’s refund procedure. Search finds a Group called refund review.
+
+Open the Group and Symfony returns the team’s instructions and two tool definitions. First, read the order. Then look up the policy named on that order.
+
+We ask Claude to do both reads in one JavaScript program. Claude writes and runs it. Each call still goes through the PHP MCP SDK to our Symfony application.
+
+The order comes back. The policy read is denied.
+
+Open Claude’s code and follow the policy ID. The script takes it from the order response and passes it to the next call. Claude can tell us what it learned about the order. Without the policy, it leaves the review incomplete.
+
+Here’s Symfony’s record. Access was revoked between the calls. The policy handler never ran.

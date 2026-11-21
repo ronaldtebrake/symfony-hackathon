@@ -33,6 +33,7 @@ final class CodeModeBundle extends AbstractBundle
             ->scalarNode('visibility_policy')->defaultNull()->end()
             ->arrayNode('http')->canBeEnabled()->children()
                 ->arrayNode('permissions')->useAttributeAsKey('permission')->scalarPrototype()->cannotBeEmpty()->end()->end()
+                ->arrayNode('direct_tools')->scalarPrototype()->cannotBeEmpty()->end()->end()
             ->end()->end()
             ->arrayNode('tools')->scalarPrototype()->cannotBeEmpty()->end()->end()
             ->arrayNode('providers')->scalarPrototype()->cannotBeEmpty()->end()->end()
@@ -50,6 +51,13 @@ final class CodeModeBundle extends AbstractBundle
             ->integerNode('tool_time_ms')->min(50)->max(30000)->defaultValue(1000)->end()
             ->integerNode('max_tool_calls')->min(0)->max(100)->defaultValue(10)->end()
         ->end();
+    }
+
+    public function build(ContainerBuilder $container): void
+    {
+        parent::build($container);
+        // Run after McpBundle assigns its attributed tools to each named server.
+        $container->addCompilerPass(new Http\DirectToolsPass(), priority: -10);
     }
 
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
@@ -104,6 +112,12 @@ final class CodeModeBundle extends AbstractBundle
             if ('catalog' !== $config['mode']) {
                 throw new \InvalidArgumentException('The HTTP integration exposes the JSON catalog only.');
             }
+            $names = $config['http']['direct_tools'];
+            if (array_filter($names, static fn ($name) => !\is_string($name) || !preg_match('/\A[a-zA-Z][a-zA-Z0-9_.-]{0,63}\z/D', $name))
+                || \count(array_unique($names)) !== \count($names) || array_intersect($names, ['search_tools', 'execute_tools'])) {
+                throw new \InvalidArgumentException('Configure unique HTTP direct_tools using approved tool names, excluding search_tools and execute_tools.');
+            }
+            $builder->setParameter('code_mode.http.direct_tools', $names);
             $services->set(Http\SecurityIdentityProvider::class)->args([
                 new Reference('security.token_storage'), new Reference('security.authorization_checker'), $config['http']['permissions'],
             ]);

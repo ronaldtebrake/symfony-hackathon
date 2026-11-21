@@ -1,0 +1,178 @@
+{
+  "format": "symfony-native-explainer-film/v1",
+  "title": "Symfony Code Mode · a team procedure over MCP",
+  "durationSeconds": 90,
+  "width": 1920,
+  "height": 1080,
+  "fps": 25,
+  "audio": "editorial sound effects only; no speech",
+  "assets": {
+    "symfony-code-mode-native-explainer-90s.mp4": "9684822d41273f415cc96919848c903731f9ed2170fc51bdc7a1d60b1a84c759",
+    "symfony-code-mode-native-explainer-poster.jpg": "cb4583873fbfe5711d758460369a8827132e0887d32487471c6b3ca56af1d8fa"
+  },
+  "narration": {
+    "file": "docs/judge-native-explainer-voiceover.txt",
+    "sha256": "b304b1bb626d2124c5fdd46304791c1de18edaff7c58a30f696f21a66b3a2556"
+  },
+  "sources": {
+    "public/media/symfony-code-mode-terminal-90s.mp4": "93a700e94c69ced71d6b15b78785ecfe2527cadceebfa9cd0ad12d26d706ab25",
+    "public/media/symfony-code-mode-terminal-film.json": "3b96c3d3bff624b26d3feaa26df320b8b1fb04643058fece9daad4ef4df5150d",
+    "public/media/symfony-code-mode-terminal-full.mp4": "0fdf5c2f904314f965c8513acce1186bb83b05b637a383ccbbb1f0d5702dbd7f",
+    "public/media/symfony-code-mode-terminal-operator.mp4": "173480879298b76f5959b006850a0f03af07217f043e3901f8f22be497a674cd"
+  },
+  "poster": {
+    "file": "symfony-code-mode-native-explainer-poster.jpg",
+    "masterTimeSeconds": 65,
+    "frameNumberZeroBased": 1625
+  },
+  "chapters": [
+    {
+      "startSeconds": 0,
+      "endSeconds": 6,
+      "title": "A growing tool catalog"
+    },
+    {
+      "startSeconds": 6,
+      "endSeconds": 23,
+      "title": "Find the team procedure"
+    },
+    {
+      "startSeconds": 23,
+      "endSeconds": 39,
+      "title": "Open the refund Group"
+    },
+    {
+      "startSeconds": 39,
+      "endSeconds": 56,
+      "title": "One script makes both calls"
+    },
+    {
+      "startSeconds": 56,
+      "endSeconds": 61,
+      "title": "The policy read is denied"
+    },
+    {
+      "startSeconds": 61,
+      "endSeconds": 82,
+      "title": "Inspect the generated JavaScript"
+    },
+    {
+      "startSeconds": 82,
+      "endSeconds": 90,
+      "title": "Read the saved Symfony trace"
+    }
+  ],
+  "avatarSafeArea": {
+    "x": 48,
+    "y": 654,
+    "width": 452,
+    "height": 376
+  },
+  "terminalPanel": {
+    "x": 544,
+    "y": 168,
+    "width": 1326,
+    "height": 792,
+    "sourceCrop": {
+      "x": 56,
+      "y": 0,
+      "width": 1808,
+      "height": 1080
+    },
+    "edit": "Every output frame uses the matching frame of the verified 90-second native capture. Cropping removes only the black pillarbox, preserving the entire Mac window and title bar.",
+    "operatorReadbackFromSeconds": 82
+  },
+  "cuts": [
+    {
+      "label": "Launch the CLI",
+      "editInSeconds": 0.0,
+      "editOutSeconds": 6.0,
+      "source": "conversation",
+      "sourceInSeconds": 5.84,
+      "sourceOutSeconds": 11.84
+    },
+    {
+      "label": "Ask Claude to find the refund Group",
+      "editInSeconds": 6.0,
+      "editOutSeconds": 19.0,
+      "source": "conversation",
+      "sourceInSeconds": 23.72,
+      "sourceOutSeconds": 36.72
+    },
+    {
+      "label": "Inspect the search result",
+      "editInSeconds": 19.0,
+      "editOutSeconds": 23.0,
+      "source": "conversation",
+      "sourceInSeconds": 50.76,
+      "sourceOutSeconds": 54.76
+    },
+    {
+      "label": "Open the Group and read the procedure",
+      "editInSeconds": 23.0,
+      "editOutSeconds": 35.0,
+      "source": "conversation",
+      "sourceInSeconds": 72.16,
+      "sourceOutSeconds": 84.16
+    },
+    {
+      "label": "Inspect the Group lookup in MCP",
+      "editInSeconds": 35.0,
+      "editOutSeconds": 39.0,
+      "source": "conversation",
+      "sourceInSeconds": 115.52,
+      "sourceOutSeconds": 119.52
+    },
+    {
+      "label": "Request and run the dependent reads",
+      "editInSeconds": 39.0,
+      "editOutSeconds": 56.0,
+      "source": "conversation",
+      "sourceInSeconds": 132.24,
+      "sourceOutSeconds": 149.24
+    },
+    {
+      "label": "Inspect the denied policy request",
+      "editInSeconds": 56.0,
+      "editOutSeconds": 61.0,
+      "source": "conversation",
+      "sourceInSeconds": 157.56,
+      "sourceOutSeconds": 162.56
+    },
+    {
+      "label": "Open the generated JavaScript in Claude Code",
+      "editInSeconds": 61.0,
+      "editOutSeconds": 69.0,
+      "source": "conversation",
+      "sourceInSeconds": 194.12,
+      "sourceOutSeconds": 202.12
+    },
+    {
+      "label": "Read the dependency, review the order and return to the answer",
+      "editInSeconds": 69.0,
+      "editOutSeconds": 82.0,
+      "source": "conversation",
+      "sourceInSeconds": 240.0,
+      "sourceOutSeconds": 253.0
+    },
+    {
+      "label": "Inspect this run’s saved Symfony trace in a second operator window",
+      "editInSeconds": 82.0,
+      "editOutSeconds": 90.0,
+      "source": "operator",
+      "sourceInSeconds": 7.6,
+      "sourceOutSeconds": 15.6
+    }
+  ],
+  "serverTraceSha256": "10fecb43469962998b067741f7452797b8c56cb594c51ed2412e551c7a76783a",
+  "verification": {
+    "comparedFrames": 2250,
+    "sampleWidth": 256,
+    "sampleHeight": 152,
+    "maximumMeanChannelError": 0.1753,
+    "averageMeanChannelError": 0.0706,
+    "comparison": "Terminal region compared against the corresponding independently cropped and scaled source frame at every output frame. Channel errors measured on the 0–255 RGB scale.",
+    "avatarAreaMaximumTemporalMeanChannelError": 0.0083,
+    "avatarComparison": "Compared the safe-area pixels in every frame against the first frame after area downsampling to 113 × 94."
+  }
+}

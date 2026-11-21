@@ -1,0 +1,9 @@
+{
+    "mcpServers": {
+        "symfony_code_mode": {
+            "type": "http",
+            "url": "http://127.0.0.1:8017/mcp",
+            "headersHelper": "php ../../scripts/refund-recording.php headers --rehearsal"
+        }
+    }
+}

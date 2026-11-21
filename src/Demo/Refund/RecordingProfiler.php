@@ -149,7 +149,8 @@ final class RecordingProfiler
             $name = $group->name ?? null;
             $description = $group->description ?? null;
             if (\is_string($name) && isset(Discovery::GROUPS[$name])
-                && (Discovery::GROUPS[$name]['description'] === $description || (Group::ENTRY['name'] === $name && Group::ENTRY['description'] === $description))) {
+                && (Discovery::GROUPS[$name]['description'] === $description || (Discovery::GROUPS[$name]['procedureDescription'] ?? null) === $description
+                    || (Group::ENTRY['name'] === $name && Group::ENTRY['description'] === $description))) {
                 $summaries[] = ['name' => $name, 'description' => $description];
             }
         }

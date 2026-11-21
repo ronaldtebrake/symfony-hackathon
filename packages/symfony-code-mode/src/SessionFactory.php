@@ -20,6 +20,7 @@ use CodeMode\Symfony\Ai\Search\SymfonyCatalogSearch;
 use CodeMode\Tool;
 use CodeMode\ToolBroker;
 use CodeMode\ToolCatalog;
+use CodeMode\ToolDefinition;
 use CodeMode\ToolVisibilityInterface;
 use CodeMode\WeightedCatalogSearch;
 
@@ -61,6 +62,15 @@ final readonly class SessionFactory
     public function catalog(): ToolCatalog
     {
         return new ToolCatalog([...array_map(static fn (ReadToolInterface $tool) => $tool->definition(), $this->approvedTools()), ...([] === $this->providers ? [] : (new ProviderRegistry($this->providers))->catalog()->all())], $this->catalogSearch);
+    }
+
+    /** @param list<string> $names Host-configured tools eligible for direct listing. */
+    public function visibleDirectTools(ExecutionIdentity $identity, array $names): ToolCatalog
+    {
+        $selected = array_fill_keys($names, true);
+        $direct = array_filter($this->catalog()->all(), static fn (ToolDefinition $tool): bool => isset($selected[$tool->name]));
+
+        return (new ToolCatalog($direct, $this->catalogSearch))->visibleTo($identity, $this->visibility);
     }
 
     /** Both paths assemble identical contracts and handlers; execution does not change policy. */

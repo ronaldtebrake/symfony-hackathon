@@ -11,7 +11,7 @@
   background: #fff;
 }
 * { box-sizing: border-box }
-body, figure, h1, h2, h3, p, blockquote { margin: 0 }
+body, figure, h1, h2, h3, p { margin: 0 }
 a { color: var(--purple); text-underline-offset: .19em }
 a:hover { color: var(--pink) }
 a:focus-visible, summary:focus-visible { outline: 3px solid var(--pink); outline-offset: 4px }
@@ -24,10 +24,16 @@ nav, .actions { display: flex; align-items: center; flex-wrap: wrap; gap: 1.4rem
 nav a { color: var(--muted); font-size: .87rem; font-weight: 570; text-decoration: none }
 main { max-width: 1160px; width: 90%; margin: auto }
 section { padding: clamp(3rem, 7vw, 5.5rem) 0; border-bottom: 1px solid var(--line); scroll-margin: 1.5rem }
-.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: center; gap: clamp(2rem, 5vw, 4.3rem) }
+.hero > figure { margin-top: 2rem; scroll-margin-top: 1rem }
+@media (min-width: 801px) {
+  .hero > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: start; column-gap: 3.5rem }
+  .hero .eyebrow { grid-column: 1 / -1; margin-bottom: .8rem }
+  .hero h1 { grid-row: span 2; margin: 0 }
+  .hero .actions { margin-top: .8rem }
+}
 .eyebrow { color: var(--purple); font-size: .75rem; text-transform: uppercase; letter-spacing: .15em; font-weight: 720 }
 h1, h2, h3 { line-height: 1.1; text-wrap: balance; letter-spacing: -.045em }
-h1 { margin: .9rem 0 1.4rem; font-size: clamp(3.1rem, 6.2vw, 5.5rem); font-weight: 740 }
+h1 { margin: .9rem 0 1.4rem; font-size: clamp(2.65rem, 4.5vw, 4.15rem); font-weight: 740 }
 h1 em { font-style: normal; color: var(--pink); background: linear-gradient(110deg, var(--purple), var(--pink)); background-clip: text; -webkit-text-fill-color: transparent }
 h2 { font-size: clamp(2rem, 4.5vw, 3.3rem); margin: .7rem 0 1.5rem }
 h3 { font-size: 1.4rem; margin-bottom: .65rem }
@@ -37,16 +43,26 @@ figure { min-width: 0 }
 video, .architecture img { display: block; width: 100%; height: auto; border-radius: .85rem; border: 1px solid var(--line) }
 video { background: #1e142d; box-shadow: 0 18px 50px -30px #4c126a80 }
 figcaption, .caption { color: var(--muted); font-size: .88rem; margin: .85rem 0 }
+.film-links { display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; margin-top: .7rem; font-size: .92rem }
+.hero > figure:not(#judge-demo):not(:target):not(:has(:target)),
+.hero > figure:is(:target, :has(:target)) ~ #judge-demo,
+#live-demo:not(:target), #terminal-demo:not(:target), #proof:not(:target), #programmatic-refund:not(:target) { display: none }
+.alternate-film-link { display: inline-block; font-size: .92rem; font-weight: 650 }
+.alternate-film { max-width: 62rem; margin: 2.5rem 0; scroll-margin: 1.5rem }
+.alternate-film h3 { margin-bottom: 1rem }
 .actions { margin-top: 1.5rem; font-size: .92rem; font-weight: 630 }
 .button { color: white; background: linear-gradient(115deg, var(--purple), #9a236f); padding: .65rem 1.1rem; border-radius: .4rem; text-decoration: none }
 .button:hover { color: white; background: var(--purple) }
-blockquote { padding: .2rem 0 .2rem 1.2rem; margin: 1rem 0; border-left: 3px solid var(--pink); font-size: 1.13rem; max-width: 64ch }
 .trace { border: 1px solid var(--line); border-radius: .8rem; overflow: hidden; margin: 1.6rem 0 1rem }
-.trace-head, .permission-change { max-width: none; padding: .8rem 1.1rem; font-size: .87rem; font-weight: 650 }
-.trace-head { display: flex; justify-content: space-between; background: #2a1a3c; color: white }
+.trace-head, .exchange, .permission-change { max-width: none; margin: 0; padding: .8rem 1.1rem; font-size: .87rem }
+.trace-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .25rem 1rem; background: #2a1a3c; color: white }
 .trace-head code { background: none; font-size: 1em; padding: 0 }
 .trace-head span { font-weight: 430; color: #e2d5ec }
-.permission-change { color: #872351; background: #fcf1f6 }
+.programmatic-trace summary { grid-template-columns: 1rem 1fr }
+.programmatic-trace details:first-child { border-top: 0 }
+.exchange { color: var(--ink); border-top: 1px solid var(--line) }
+.exchange strong { color: var(--purple); margin-right: .5em }
+.permission-change { margin: 0; color: #872351; background: #fcf1f6 }
 details { border-top: 1px solid var(--line) }
 summary { display: grid; align-items: center; grid-template-columns: 1rem 9.5rem 1fr auto; gap: .7rem; padding: .8rem 1rem; cursor: pointer }
 summary:hover, details[open] summary { background: var(--soft) }
@@ -61,6 +77,23 @@ summary small { font-size: .78rem; font-weight: 600 }
 pre { overflow: auto; font-size: .87rem; line-height: 1.65 }
 details pre, .command { margin: 0; padding: 1.1rem 1.5rem; color: #f6f1fa; background: #20142e }
 .command { border-radius: .7rem; margin: 1.3rem 0; max-width: 80ch }
+#support-calls details p { padding: .65rem 1rem .85rem; margin: 0 }
+#support-calls ol, #plain-claude ol { margin: .15rem 1rem .6rem; padding-left: 1.5rem; overflow-wrap: anywhere }
+#support-calls details pre { white-space: pre-wrap }
+#plain-claude p, #plain-claude blockquote { margin: .7rem 1rem; color: var(--muted) }
+#plain-claude blockquote { padding-left: .8rem; border-left: 3px solid var(--purple); color: var(--ink) }
+#plain-claude pre { white-space: pre-wrap; overflow-wrap: anywhere }
+.structured-review pre { white-space: pre-wrap; overflow-wrap: anywhere }
+.structured-review blockquote { margin: 1rem 1.5rem; padding-left: .8rem; border-left: 3px solid var(--purple) }
+.field-handoff { display: flex; flex-wrap: wrap; gap: .75rem 2.5rem; margin: 1.2rem 0; padding: 1rem 1.25rem; border-left: 3px solid var(--purple); background: var(--soft) }
+.field-handoff dt { font-size: .85rem; color: var(--muted) }
+.field-handoff dd { margin: .2rem 0 0; overflow-wrap: anywhere }
+.field-handoff dd strong { color: var(--purple) }
+.attempt-history summary { grid-template-columns: 1rem 1fr }
+.attempt-history ol { padding-right: 1rem }
+.attempt-history li + li { margin-top: 1rem }
+.attempt-history li p { color: var(--muted); font-size: .85rem; margin: .3rem 0 }
+#quickstart blockquote { border-left: 3px solid var(--purple); margin: 1rem 0; padding: .3rem 1.2rem; max-width: 65ch; font-size: 1.08rem }
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin: 2rem 0 }
 .steps article { border-top: 2px solid #c9a6d8; padding-top: .95rem }
 .architecture { max-width: 56rem; margin: 2rem auto 0 }
@@ -70,7 +103,6 @@ details pre, .command { margin: 0; padding: 1.1rem 1.5rem; color: #f6f1fa; backg
 footer { border: 0; font-size: .87rem }
 @media (max-width: 800px) {
   .site-header { flex-wrap: wrap }
-  .hero { grid-template-columns: 1fr }
   nav, .actions { gap: 1rem }
   .steps { grid-template-columns: 1fr; gap: 1rem }
   .decisions article { display: block }

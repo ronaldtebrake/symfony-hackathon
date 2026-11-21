@@ -1,0 +1,13 @@
+As an application grows, sending every tool definition can fill an agent’s context before it makes a single call.
+
+Symfony Code Mode starts with two MCP tools. Search finds a tool or a team procedure. Execute calls the approved Symfony handler.
+
+Here’s the third run in Claude Code. A support colleague asks what to tell a customer about a refund. Claude searches for the team’s procedure.
+
+Claude opens the refund review Group. It gets two readers and the team’s instructions. Start with the order, then use the policy that order names.
+
+Here’s the JavaScript Claude wrote. This client receives JSON text, so it decodes the reply and takes the order value. That value has a required string field called policy ID.
+
+Watch that field travel. The first read returns standard EU. Claude passes the field directly into its second call. Symfony checks access again and returns the applicable policy.
+
+At seventy-five euros, the order crosses the fifty-euro threshold. Claude recommends manual review. The team published the procedure in Symfony, and the client wrote the code to follow it.

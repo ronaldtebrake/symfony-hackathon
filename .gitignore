@@ -20,6 +20,7 @@
 /.idea/
 /.vscode/
 /.codex/config.toml
+/examples/support/.claude/settings.local.json
 .DS_Store
 
 ###> php-cs-fixer/shim ###

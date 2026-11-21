@@ -35,7 +35,13 @@ final readonly class CatalogTools
         return $this->invoke('execute_tools', fn ($session) => $session->respond($calls, fn (array $_calls, array $trace) => $this->trace?->ledger($trace)));
     }
 
-    private function invoke(string $name, \Closure $operation): CallToolResult
+    /** Called only by the host's registered MCP entry for this name. */
+    public function direct(string $name, array $arguments): CallToolResult
+    {
+        return $this->invoke($name, fn ($session) => $session->respondDirect($name, $arguments, fn (array $_calls, array $trace) => $this->trace?->ledger($trace)), direct: true);
+    }
+
+    private function invoke(string $name, \Closure $operation, bool $direct = false): CallToolResult
     {
         // Authentication failures stay HTTP security failures, not successful tool results.
         $identity = $this->identities->identity();
@@ -58,6 +64,9 @@ final readonly class CatalogTools
             $failed = true;
         }
         $this->trace?->finish($value, $failed, (hrtime(true) - $started) / 1_000_000);
+        if ($direct && !$failed) {
+            $value = $value['results'][0]['value'];
+        }
 
         return new CallToolResult([new TextContent(json_encode($value, \JSON_THROW_ON_ERROR))], isError: $failed, structuredContent: $value);
     }
