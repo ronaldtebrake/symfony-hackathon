@@ -34,7 +34,7 @@ h3 { font-size: 1.4rem; margin-bottom: .65rem }
 p { color: var(--muted); overflow-wrap: break-word }
 p + p { margin-top: .85rem }
 figure { min-width: 0 }
-video, .architecture img, .profiler img { display: block; width: 100%; height: auto; border-radius: .85rem; border: 1px solid var(--line) }
+video, .profiler img { display: block; width: 100%; height: auto; border-radius: .85rem; border: 1px solid var(--line) }
 video { background: #1e142d; box-shadow: 0 18px 50px -30px #4c126a80 }
 figcaption, .caption { color: var(--muted); font-size: .88rem; margin: .85rem 0 }
 .film-links { display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; margin-top: .7rem; font-size: .92rem }
@@ -79,8 +79,8 @@ details pre, .command { margin: 0; padding: 1.1rem 1.5rem; color: #f6f1fa; backg
 .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: clamp(1rem, 3vw, 2rem); margin: 2rem 0 }
 .steps article { border-top: 2px solid #c9a6d8; padding-top: .95rem }
 .architecture { margin: 2rem auto 0; container-type: inline-size }
-.diagram-view { display: block; overflow-x: auto; border-radius: .85rem }
-.architecture img { min-width: 64rem }
+.diagram-view { display: block; overflow-x: auto }
+.architecture img { display: block; width: 100%; min-width: 64rem; height: auto }
 .diagram-hint { display: none; margin-bottom: .6rem; font-size: .9rem }
 @container (max-width: 64rem) {
   .diagram-hint { display: block }

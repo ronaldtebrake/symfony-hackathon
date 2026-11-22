@@ -56,9 +56,13 @@ $escape = static fn (string $text): string => htmlspecialchars($text, \ENT_QUOTE
     </figure>
 
     <figure id="mcp-architecture" class="architecture">
+      <figcaption>
+        <h3>Why did Symfony deny the last read?</h3>
+        <p>The agent had already found the order reader. When it asked for R-1043, Symfony checked whether the user could read that order. In the diagram, follow the catalog route to the permission check: the denial goes back to the client before the PHP handler runs.</p>
+      </figcaption>
       <p class="diagram-hint">Scroll across the diagram or <a href="images/symfony-mcp-architecture.svg">open it full size</a>.</p>
       <a class="diagram-view" href="images/symfony-mcp-architecture.svg"><img src="images/symfony-mcp-architecture.svg" width="1120" height="748" loading="lazy" alt="A client finds and opens a procedure through the catalog or negotiated Groups methods. Both paths check each read before the Symfony AI Toolbox invokes the handler. Pink diamonds mark this project’s additions and purple squares mark upstream components."></a>
-      <figcaption>In the film, the client opens the procedure with <code>search_tools</code> and passes the order’s <code>policyId</code> into the next read. A Symfony AI agent can use its MCP bridge to reach this same endpoint. A client that negotiates the Groups extension can use <code>groups/list</code> and <code>groups/get</code> and then call a member by name. <a href="https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/19">Read the proposal ↗</a></figcaption>
+      <p class="caption">The second route shows how a client that supports the Groups draft can reach those same readers. <a href="https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/19">Read the Groups proposal ↗</a></p>
     </figure>
   </section>
 

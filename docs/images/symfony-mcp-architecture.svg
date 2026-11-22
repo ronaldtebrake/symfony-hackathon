@@ -3,9 +3,6 @@
   <desc id="description">A user asks an agent a question. The agent’s MCP client contacts Symfony over HTTP. A Symfony AI agent can use its MCP bridge; Claude Code can call the same endpoint and chain reads in client-side JavaScript. Pink diamonds mark our additions. In the filmed catalog route, search_tools finds tools or Groups visible to the caller. Opening refund-review with search_tools returns the procedure and its member definitions. The client issues the order and policy reads with execute_tools, passing the returned policyId into the second read. On the same endpoint a client supporting the draft Groups extension can discover the procedure with groups/list and groups/get. A client calls a group member by name with tools/call. On either route, our package checks the budget, arguments and the application’s current permissions for each read. Only allowed calls reach the Symfony AI Toolbox and the app’s PHP handler. The agent receives the result or denial and can answer the user or request another read. Purple squares mark Symfony and PHP MCP SDK components. Grey circles mark the user, client and application context.</desc>
 
   <defs>
-    <linearGradient id="paper" x2="0" y2="1">
-      <stop stop-color="#fff"/><stop offset="1" stop-color="#f7f5fc"/>
-    </linearGradient>
     <marker id="arrow" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto" markerUnits="userSpaceOnUse">
       <path d="m1 1 5 3-5 3" fill="none" stroke="#746582" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
     </marker>
@@ -32,7 +29,7 @@
     </style>
   </defs>
 
-  <rect x="1" y="1" width="1118" height="746" rx="24" fill="url(#paper)" stroke="#ddd5e8"/>
+  <rect width="1120" height="748" fill="#fff"/>
   <text x="32" y="55" class="title">What Symfony Code Mode adds to MCP</text>
   <text x="33" y="86" class="subtitle">An agent can find the right tools for a job. Symfony decides whether each read can run.</text>
 
