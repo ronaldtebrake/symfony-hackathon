@@ -23,9 +23,7 @@ final readonly class DemoController
     {
         $this->requireLocalRequest($request);
         $session = json_decode(file_get_contents($this->projectDir.'/docs/evidence/agent-procedure.json'), true, flags: \JSON_THROW_ON_ERROR);
-        $programmatic = json_decode(file_get_contents($this->projectDir.'/docs/evidence/programmatic-refund.json'), true, flags: \JSON_THROW_ON_ERROR);
         $structured = json_decode(file_get_contents($this->projectDir.'/docs/evidence/claude-structured-refund.json'), true, flags: \JSON_THROW_ON_ERROR);
-        $groupTrace = json_decode(file_get_contents($this->projectDir.'/docs/evidence/refund-group-discovery.json'), true, flags: \JSON_THROW_ON_ERROR);
         $scale = json_decode(file_get_contents($this->projectDir.'/docs/evidence/catalog-scaling.json'), true, flags: \JSON_THROW_ON_ERROR)['samples'];
         $largestCatalog = $scale[array_key_last($scale)];
         ob_start();

@@ -42,8 +42,8 @@ final class DemoPageTest extends WebTestCase
         $verified = array_values(array_filter($after['attempts'], static fn (array $attempt): bool => 'verified' === $attempt['status']));
         $this->assertCount(1, $verified);
         $attempt = $verified[0];
-        $this->assertSame(array_column($after['attempts'], 'reason'), $proof->filterXPath('.//details[@class="attempt-history"]//li/span')->each(static fn ($node): string => $node->text()));
-        $this->assertSame(array_column($after['attempts'], 'clientDiscoveryPreview'), $proof->filterXPath('.//details[@class="attempt-history"]//li/pre')->each(static fn ($node): string => $node->getNode(0)->textContent));
+        $this->assertCount(1, $proof->filterXPath('.//*[@id="programmatic-refund"]/a[@href="evidence/programmatic-refund.json"]'));
+        $this->assertCount(1, $proof->filterXPath('.//a[@href="evidence/claude-structured-refund.json"]'));
         $this->assertSame($after['question'], $proof->filterXPath('.//blockquote')->text());
         $this->assertSame($attempt['script'], $proof->filterXPath('.//details[@class="verified-program"]/pre/code')->getNode(0)->textContent);
         $reads = array_values(array_filter($attempt['calls'], static fn (array $call): bool => 'execute_tools' === $call['tool'] && !$call['isError']));
@@ -57,20 +57,6 @@ final class DemoPageTest extends WebTestCase
             $call = $attempt['calls'][$index];
             $this->assertSame(['arguments' => $call['arguments'], 'result' => $call['result']], json_decode($node->textContent, true, flags: \JSON_THROW_ON_ERROR));
         }
-    }
-
-    public function testProgrammaticReviewShowsTheRecordedSourceAndEventsInOrder(): void
-    {
-        $page = self::createClient()->request('GET', '/demo');
-        $proof = $page->filterXPath('//*[@id="programmatic-refund"]');
-        $receipt = json_decode(file_get_contents(\dirname(__DIR__, 2).'/docs/evidence/programmatic-refund.json'), true, flags: \JSON_THROW_ON_ERROR);
-        $this->assertStringContainsString($receipt['client'], $proof->text());
-        $this->assertSame($receipt['script'], $proof->filterXPath('.//details[1]/pre')->getNode(0)->textContent);
-        $this->assertSame($receipt['stdout'], $proof->filterXPath('.//details[@class="execution-result"]/pre')->getNode(0)->textContent);
-        $this->assertSame($receipt['answer'], $proof->filterXPath('.//details[last()]/pre')->getNode(0)->textContent);
-        $events = $proof->filterXPath('.//details[@class="event"]/pre')->each(static fn ($node): array => json_decode($node->text(null, false), true, flags: \JSON_THROW_ON_ERROR));
-        $this->assertSame($receipt['events'], $events);
-        $this->assertCount(1, $proof->filterXPath('.//a[@href="evidence/programmatic-refund.json"]'));
     }
 
     public function testReadonlyAssetsAreLocalAndCannotBeSelectedByUserInput(): void
