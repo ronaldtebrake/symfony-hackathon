@@ -93,6 +93,7 @@ details pre, .command { margin: 0; padding: 1.1rem 1.5rem; color: #f6f1fa; backg
 .topic-cards a { margin-top: auto; padding-top: .45rem }
 #whats-next .topic-cards article { border: 0; border-radius: 0; border-top: 2px solid var(--pink); background: transparent; padding-inline: 0 }
 footer { flex-wrap: wrap; border: 0; font-size: .87rem }
+footer p { flex-basis: 100% }
 @media (max-width: 800px) {
   .site-header { flex-wrap: wrap }
   nav, .actions { gap: 1rem }
