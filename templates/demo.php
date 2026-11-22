@@ -160,7 +160,7 @@ composer demo:serve</code></pre>
 
   <section id="contributions">
     <h2>What we can contribute</h2>
-    <p>Three pieces from the demo that maintainers can try independently.</p>
+    <p>Three things we learned from running the demo that can inform upstream work.</p>
     <div class="topic-cards">
       <article id="direct-tool"><p class="eyebrow">Symfony AI</p><h3>A permission-aware tool catalog</h3><p>Expose the tool definitions a caller can discover. When the agent asks to run one, check access again before the Toolbox calls the Symfony service.</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/src/Demo/GroupSelection/Discovery.php">Read the discovery implementation →</a><a href="evidence/direct-tool.json">Compare a directly exposed reader</a></article>
       <article><p class="eyebrow">PHP MCP SDK</p><h3>One endpoint, two client paths</h3><p>Our compatibility test compares the definitions returned through catalog search and through the Groups draft. It also checks the shared call budget and what happens after permission is revoked.</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/tests/Integration/RefundFallbackTest.php">Inspect the compatibility test →</a></article>
@@ -171,11 +171,13 @@ composer demo:serve</code></pre>
 
   <section id="whats-next">
     <h2>What’s next</h2>
+    <p>We want another Symfony team to publish its own procedure using tools it already has. The catalog is reusable today. The Group in the film is still wired into the refund demo. Our first step is to work out how much of that wiring belongs in Symfony and the PHP MCP SDK.</p>
     <div class="topic-cards">
-      <article><h3>Can the agent pick the right procedure?</h3><p>Give several Groups overlapping tools and similar names. Compare the agent’s first choice with the procedure the team intended.</p></article>
-      <article><h3>When does a Skill help?</h3><p>Our experimental client could read a remote guide by URI. With a client that can select the Skill, we’d compare the same task with Group instructions alone and with a shared reporting template.</p><a href="https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/22">Groups and Skills discussion ↗</a></article>
-      <article><h3>What does a whole task cost?</h3><p>We measured how many tokens it takes to advertise the catalog. Next we’d run matched conversations and compare correct answers, total tokens and requests as the catalog grows.</p><a href="evidence/catalog-scaling.json">See the startup measurement →</a></article>
+      <article><h3>Could Symfony expose the catalog?</h3><p>A developer could opt in to searchable MCP tools in the bundle. We’ll ask where Symfony AI’s discovery work fits and whether the bundle should offer search and execution together. The application would still decide who may read each record.</p><a href="https://github.com/symfony/ai/issues/2623">Symfony AI discovery discussion ↗</a></article>
+      <article><h3>Take a procedure to a second app</h3><p>Once we know what upstream can provide, try an unrelated job: investigate a slow route. Can a developer publish the steps and point to existing profiler and log readers without copying our refund code?</p><a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/contributing/README.md#try-a-second-symfony-app">Portability checklist →</a></article>
+      <article><h3>Find out when Groups and Skills help</h3><p>Can an agent choose between procedures that share tools? Does a linked guide help it finish the job correctly? We’ll compare answers, requests and tokens across whole tasks.</p><a href="https://github.com/modelcontextprotocol/progressive-disclosure-wg/pull/22">Groups and Skills discussion ↗</a></article>
     </div>
+    <a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/contributing/README.md">Follow the post-hackathon checklist →</a>
     <p class="caption">Explore the evidence · <a href="#mcp-profiler">Client tool calls</a> · <a href="#proof">Symfony AI conversation</a></p>
   </section>
 </main>
