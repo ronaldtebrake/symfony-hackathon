@@ -182,7 +182,7 @@ composer demo:serve</code></pre>
 <footer>
   <a class="brand" href="#overview">Symfony Code Mode</a>
   <a href="https://github.com/ronaldtebrake/symfony-hackathon">Source on GitHub ↗</a>
-  <p><strong>AI disclosure.</strong> I used AI tools to help write the code and documentation, and ElevenLabs to narrate the demo using my voice. The tool calls and access decisions shown in the demo come from real runs against a Symfony app with synthetic refund data.</p>
+  <p><strong>AI disclosure.</strong> I used AI tools to help write the code and documentation.</p>
 </footer>
 </body>
 </html>

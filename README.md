@@ -41,4 +41,4 @@ Open the **`examples/support` folder** as a local project in Claude Code or Code
 
 We can share a catalog recipe for Symfony AI tools, a Groups compatibility test for the PHP MCP SDK, and traces for the MCP working group showing what happens when access changes after discovery. [Contributions and evidence](https://ronaldtebrake.github.io/symfony-hackathon/#contributions)
 
-**AI disclosure.** I used AI tools to help write the code and documentation, and ElevenLabs to narrate the demo using my voice. The tool calls and access decisions shown in the demo come from real runs against a Symfony app with synthetic refund data.
+**AI disclosure.** I used AI tools to help write the code and documentation.
