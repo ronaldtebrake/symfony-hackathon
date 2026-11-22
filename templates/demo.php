@@ -143,7 +143,9 @@ composer demo:serve</code></pre>
     <p>Open <strong><code>examples/support</code></strong> as a local project in Claude Code or Codex. Trust the project and approve <code>symfony_code_mode</code> if prompted. Each client uses its own project configuration to fetch the temporary credential.</p>
     <p>Open <code>/mcp</code> to see <code>search_tools</code> and <code>execute_tools</code>, then ask:</p>
     <blockquote><?php echo $escape($structured['question']); ?></blockquote>
-    <p>Then ask about R-1043 in the same chat to see an order-level denial.</p>
+    <p>In the same chat, ask about a second order.</p>
+    <blockquote>Could you check order R-1043 using the same refund procedure? What should I tell this customer?</blockquote>
+    <p>R-1042 needs manual review because €75 exceeds the policy’s €50 threshold. For R-1043, the agent should explain that access was denied and it couldn’t complete the review.</p>
     <p><a href="https://github.com/ronaldtebrake/symfony-hackathon/blob/main/docs/codex.md">Client setup and permission-change demo →</a></p>
   </section>
 

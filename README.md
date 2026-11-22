@@ -18,7 +18,7 @@ We started with agent-written PHP in a sandbox. Letting the client run its own c
 
 ## Try it locally
 
-With PHP 8.2+ and Composer 2.5+, start the local Symfony MCP server. Leave it running.
+With PHP 8.2+ and Composer 2.5+, start the local Symfony MCP server. Leave it running. To watch your own calls as you go, [start the optional Symfony Profiler](docs/codex.md#connect-symfony-code-mode) before running `composer demo:serve`.
 
 ```sh
 git clone https://github.com/ronaldtebrake/symfony-hackathon.git
@@ -31,7 +31,13 @@ Open the **`examples/support` folder** as a local project in Claude Code or Code
 
 > Please find and follow our team’s refund procedure for order R-1042. What should I tell the customer?
 
-[Connect another MCP client, try revocation, or inspect the native Groups trace](docs/codex.md#run-the-film-prompts)
+In the same chat, ask about a second order.
+
+> Could you check order R-1043 using the same refund procedure? What should I tell this customer?
+
+R-1042 needs **manual review** because €75 exceeds the policy’s €50 threshold. For R-1043, the agent should explain that **access was denied** and it couldn’t complete the review.
+
+[Connect another client or try revocation](docs/codex.md#run-the-film-prompts)
 
 **What you’ll see in Symfony Profiler.** In this PHP MCP SDK replay, search finds and opens the refund Group. The order and policy reads succeed for R-1042. Symfony denies the order read for R-1043.
 

@@ -55,19 +55,18 @@ Press **Ctrl+O** to inspect the tool activity. In the earlier JavaScript proof, 
 
 ## Connect Symfony Code Mode
 
-For the judge quickstart on port 8017, you can also watch the calls in the native Symfony Profiler. Start the dev app below and open the [Profiler for port 8017](http://127.0.0.1:8001/_profiler/empty/search/results?method=POST&url=http%3A%2F%2F127.0.0.1%3A8017%2Fmcp&limit=20) before starting `composer demo:serve` so the server can share the dev profile store. Refresh after each prompt.
-
-Click an operation in the filtered request list to open the **MCP** panel. For the refund demo, follow the search for `refund procedure`, the opened Group’s instructions and tool definitions, then the two reads. Compare the returned `policyId` on the order with the argument on the policy call. The R-1043 read shows `tool_denied` and no toolbox invocation. The panel shows selected public fixture fields and redacts unfamiliar search text.
-
-The following alternative uses port 8016 for the original Codex recording and port 8001 for the Profiler.
-
-From the repository root, install the project and start the Profiler.
+To watch the judge quickstart in the native Symfony Profiler, start the dev app from the repository root.
 
 ```sh
-composer install
 composer install --working-dir=examples/symfony
 APP_ENV=dev composer start --working-dir=examples/symfony
 ```
+
+Open the [Profiler for port 8017](http://127.0.0.1:8001/_profiler/empty/search/results?method=POST&url=http%3A%2F%2F127.0.0.1%3A8017%2Fmcp&limit=20) once. In another terminal at the root, run `composer demo:serve`. Opening the Profiler first creates the profile store that the MCP server will use. Refresh the request list after each prompt.
+
+Click an operation in the filtered request list to open the **MCP** panel. For the refund demo, follow the search for `refund procedure`, the opened Group’s instructions and tool definitions, then the two reads. Compare the returned `policyId` on the order with the argument on the policy call. The R-1043 read shows `tool_denied` and no toolbox invocation. The panel shows selected public fixture fields and redacts unfamiliar search text.
+
+### Original recording on port 8016
 
 Open the [filtered Profiler request list](http://127.0.0.1:8001/_profiler/empty/search/results?method=POST&url=http%3A%2F%2F127.0.0.1%3A8016%2Fmcp&limit=20). In a second terminal, start the MCP server and leave it running.
 
